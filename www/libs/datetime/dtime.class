@@ -1,0 +1,469 @@
+<?
+
+class dtime
+{
+	// -----------------------------------------------------------------------------
+	// validate a DD.MM.YYYY format date
+	// public
+	// -----------------------------------------------------------------------------
+	function isValidDate($cDate)
+	{
+		$aDate=explode('.',$cDate);
+		if (isset($aDate[0])
+		  &&isset($aDate[1])
+		  &&isset($aDate[2])
+		  &&checkdate((int)$aDate[1],(int)$aDate[0],(int)$aDate[2]))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// compare two DD.MM.YYYY date strings, return true if the first one is older or equal
+	// public
+	// -----------------------------------------------------------------------------
+	function isDateSequence($cFirstDate,$cSecondDate)
+	{
+		if (!$cFirstDate) $cFirstDate=C_DATE_NULL;
+		if (!$cSecondDate) $cSecondDate=C_DATE_UNDEFINED;
+		$nFirstDateInt=dtime::dateToInt($cFirstDate);
+		$nSecondDateInt=dtime::dateToInt($cSecondDate);
+		if (($nFirstDateInt&&$nSecondDateInt)&&($nFirstDateInt<=$nSecondDateInt))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// converts a DD.MM.YYYY date to YYYYMMDD, used for comparing dates
+	// private
+	// -----------------------------------------------------------------------------
+	function dateToInt($cDate)
+	{
+		$aDate=explode('.',$cDate);
+		if ((isset($aDate[0])&&isset($aDate[1])&&isset($aDate[2]))) 
+		{
+			 return (((int)$aDate[2]*10000)+((int)$aDate[1]*100)+((int)$aDate[0]));
+		}
+		else 
+		{
+			return false;
+		}
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// returns true if current system time is within the specified period
+	// public
+	// -----------------------------------------------------------------------------
+	function isPeriodActive($cStartDate,$cEndDate)
+	{
+		if (!$cStartDate) $cStartDate=C_DATE_NULL;
+		if (!$cEndDate) $cEndDate=C_DATE_UNDEFINED;
+		$cSysdate=dtime::now();
+		return (dtime::isDateSequence($cStartDate,$cSysdate)&&dtime::isDateSequence($cSysdate,$cEndDate));
+	}
+
+	// -----------------------------------------------------------------------------
+	// returns true if specified periods of time do not overlap
+	// if additional param nSticky is set to true, 
+	// then the latest period is forbidden to start the day after the first has ended
+	// in order to pass the validation 
+	// public
+	// -----------------------------------------------------------------------------
+	function isPeriodIndependent($cStartDate1,$cEndDate1,$cStartDate2,$cEndDate2,$nSticky=false)
+	{
+		if (!$cStartDate1) $cStartDate1=C_DATE_NULL;
+		if (!$cStartDate2) $cStartDate2=C_DATE_NULL;
+		if (!$cEndDate1) $cEndDate1=C_DATE_UNDEFINED;
+		if (!$cEndDate2) $cEndDate2=C_DATE_UNDEFINED;
+
+		$nStartDate1=dtime::dateToInt($cStartDate1);
+		$nEndDate1=dtime::dateToInt($cEndDate1);
+		$nStartDate2=dtime::dateToInt($cStartDate2);
+		$nEndDate2=dtime::dateToInt($cEndDate2);
+
+		if ($nStartDate1&&$nEndDate1&&$nStartDate2&&$nEndDate2)
+		{
+			return ( 
+				($nStartDate1<=$nEndDate1)&&
+				($nStartDate2<=$nEndDate2)&&
+				(($nEndDate1<$nStartDate2)||($nEndDate2<$nStartDate1))&&
+				($nSticky?($nEndDate1!=($nStartDate2-1)&&($nEndDate2!=($nStartDate1-1))):true)
+					);
+		}
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// returns the current server date in DD.MM.YYYY format
+	// public
+	// -----------------------------------------------------------------------------
+	function now()
+	{
+		return date('d.m.Y');
+	}
+
+	// -----------------------------------------------------------------------------
+	// converts a hh:mm format string to int of minutes
+	// if input time format is invalid, the function returns -1
+	// public
+	// -----------------------------------------------------------------------------
+	function toMinutes($cTime)
+	{
+		$nResult=0;
+		$aElements=explode(':',$cTime);
+		if (isset($aElements[0])&&is_numeric($aElements[0])&&($aElements[0]>=0))
+		{
+			$nResult+=$aElements[0]*60;
+		}
+		else
+		{
+			return -1;
+		}
+		if (isset($aElements[1])&&is_numeric($aElements[1]))
+		{
+			if (($aElements[1]>=0)&&($aElements[1]<60))
+			{
+				$nResult+=$aElements[1];
+			}
+			else
+			{
+				return -1;
+			}
+		}		
+		return $nResult;
+	}
+
+	// -----------------------------------------------------------------------------
+	// converts a int of minutes to hh:mm format string
+	// public
+	// -----------------------------------------------------------------------------
+	function toHours($nMinutes)
+	{
+		if (is_numeric($nMinutes))
+		{
+			return sprintf("%02d",floor($nMinutes/60)).':'.sprintf("%02d",($nMinutes%60));;
+		}
+	}
+	
+	// -----------------------------------------------------------------------------
+	// returns the DD.MM.YYYY date of monday on the same week as the given date
+	// public
+	// -----------------------------------------------------------------------------
+	function getPrevMonday($cDate)
+	{
+		if (dtime::isValidDate($cDate))
+		{
+			$aDate=explode('.',$cDate);
+			$nTimestamp=mktime(0,0,0,$aDate[1],$aDate[0],$aDate[2]);
+			$aTimeData=getdate($nTimestamp);
+			//get the weekday, monday=1, sunday=7
+			$nWeekday=($aTimeData['wday']?$aTimeData['wday']:'7');
+			$nOffset=1-$nWeekday;
+			return date('d.m.Y',strtotime($nOffset.' day',$nTimestamp));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// returns the DD.MM.YYYY date of sunday on the same week as the given date
+	// public
+	// -----------------------------------------------------------------------------
+	function getNextSunday($cDate)
+	{
+		if (dtime::isValidDate($cDate))
+		{
+			$aDate=explode('.',$cDate);
+			$nTimestamp=mktime(0,0,0,$aDate[1],$aDate[0],$aDate[2]);
+
+			$aTimeData=getdate($nTimestamp);
+			//get the weekday, monday=1, sunday=7
+			$nWeekday=($aTimeData['wday']?$aTimeData['wday']:'7');
+			$nOffset=7-$nWeekday;
+
+			return date('d.m.Y',strtotime($nOffset.' day',$nTimestamp));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// returns an array of DD.MM.YYYY dates that are on the same week as the given date 
+	// array indexes are monday=1, sunday=7
+	// public
+	// -----------------------------------------------------------------------------
+	function getWeekArray($cDate)
+	{
+		if (dtime::isValidDate($cDate))
+		{
+			$aDate=explode('.',$cDate);
+			$nTimestamp=mktime(0,0,0,$aDate[1],$aDate[0],$aDate[2]);
+			$aTimeData=getdate($nTimestamp);
+			//get the weekday, monday=1, sunday=7
+			$nWeekday=($aTimeData['wday']?$aTimeData['wday']:'7');
+			$aReturn=array();
+			for ($nI=1;$nI<=7;$nI++)
+			{
+				$nOffset=$nI-$nWeekday;
+				$aReturn[$nI]=date('d.m.Y',strtotime($nOffset.' day',$nTimestamp));
+			}
+			return $aReturn;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+    // -----------------------------------------------------------------------------
+	// returns function to get month (1-12) array
+	// public
+	// ---------------------------
+
+    function getMonthArray()
+    {
+      $monthList = array();
+      for($i = 1; $i < 13; $i ++)
+      {
+          $monthList[$i] = dtime::getMonthName($i);
+      }
+      return $monthList;
+    }
+
+    // -----------------------------------------------------------------------------
+	// returns function to get current month
+	// public
+	// ---------------------------
+
+    function getCurrentMonth()
+    {
+      $cDate = dtime::now();
+      $aDate=explode('.',$cDate);
+      return $aDate[1];
+    }
+
+    // -----------------------------------------------------------------------------
+	// returns function to get year (2009-2099) array
+	// public
+	// ---------------------------
+
+  /*  function getYearArray()
+    {
+      $yearList = array();
+      for($i = 2009; $i < 2016; $i ++)
+      {
+          $yearList[$i] = $i;
+      }
+      return $yearList;
+
+    }
+*/
+// returns current year, from user defined date from config file
+    function getSmartCurrentYear()
+    {
+        $current_year = ((dtime::dateToInt(dtime::now()) > NEXT_YEAR_START && dtime::dateToInt(dtime::now()) < PREV_YEAR_END) ?  date("Y") + 1 : date("Y") );
+        return $current_year;
+    }
+
+    // -----------------------------------------------------------------------------
+	// returns function to get year (2009-2099) array
+	// public
+	// ---------------------------
+
+    function getYearArray()
+    {
+      $yearList = array();
+      $init_year = 2009;
+      $current_year = dtime::getSmartCurrentYear();
+      for($i = $init_year; $i < $current_year+1   ; $i ++)
+      {
+          $yearList[$i] = $i;
+      }
+      return $yearList;
+    }
+
+    function getCurYearArray()
+    {
+      $yearList = array();
+      $current_year = dtime::getSmartCurrentYear();
+      for($i = $current_year-1; $i < $current_year+1; $i ++)
+      {
+          $yearList[$i] = $i;
+      }
+      return $yearList;
+    }
+
+    // -----------------------------------------------------------------------------
+	// returns function to get current year
+	// public
+	// ---------------------------
+
+    function getCurrentYear()
+    {
+      $cDate = dtime::now();
+      $aDate=explode('.',$cDate);
+      return $aDate[2];
+    }
+
+    // -----------------------------------------------------------------------------
+	// returns function to get quarter (I-IV) array
+	// public
+	// ---------------------------
+
+    function getQuarterArray()
+    {
+      $quarterList = array();
+      for($i = 1; $i < 5; $i ++)
+      {
+            switch($i)
+            {
+              case 1: $quarterList[$i] = 'I'; break;
+              case 2: $quarterList[$i] = 'II'; break;
+              case 3: $quarterList[$i] = 'III'; break;
+              case 4: $quarterList[$i] = 'IV'; break;
+            }
+
+      }
+      return $quarterList;
+    }
+
+	// -----------------------------------------------------------------------------
+	// returns function to convert month number (1-12) to the month name
+	// public
+	// -----------------------------------------------------------------------------
+
+	function getMonthName($monthNumber)
+	{
+		$month = '';
+		switch($monthNumber)
+		{
+			case 1: $month = text::get('JANUARY'); break;
+			case 2: $month = text::get('FEBRUARY'); break;
+			case 3: $month = text::get('MARCH'); break;
+			case 4: $month = text::get('APRIL'); break;
+			case 5: $month = text::get('MAY'); break;
+			case 6: $month = text::get('JUNE'); break;
+			case 7: $month = text::get('JULY'); break;
+			case 8: $month = text::get('AUGUST'); break;
+			case 9: $month = text::get('SEPTEMBER'); break;
+			case 10: $month = text::get('OCTOBER'); break;
+			case 11: $month = text::get('NOVEMBER'); break;
+			case 12: $month = text::get('DECEMBER'); break;
+		}
+		return $month;
+	}
+
+    // -----------------------------------------------------------------------------
+	// returns function to convert month number (1-12) to the month name
+	// public
+	// -----------------------------------------------------------------------------
+
+	function getMonthNameInTime($monthNumber)
+	{
+		$month = '';
+		switch($monthNumber)
+		{
+			case 1: $month = text::get('JANUARYT'); break;
+			case 2: $month = text::get('FEBRUARYT'); break;
+			case 3: $month = text::get('MARCHT'); break;
+			case 4: $month = text::get('APRILT'); break;
+			case 5: $month = text::get('MAYT'); break;
+			case 6: $month = text::get('JUNET'); break;
+			case 7: $month = text::get('JULYT'); break;
+			case 8: $month = text::get('AUGUSTT'); break;
+			case 9: $month = text::get('SEPTEMBERT'); break;
+			case 10: $month = text::get('OCTOBERT'); break;
+			case 11: $month = text::get('NOVEMBERT'); break;
+			case 12: $month = text::get('DECEMBERT'); break;
+		}
+		return $month;
+	}
+
+	// -----------------------------------------------------------------------------
+	// function returns weekday short name by latvian format index (mon=1, sun=7)
+	// public
+	// -----------------------------------------------------------------------------
+	function getWeekdayNames()
+	{
+		return array(
+			1 =>text::get('WEEKDAY_MON'),
+			2 =>text::get('WEEKDAY_TUE'),
+			3 =>text::get('WEEKDAY_WED'),
+			4 =>text::get('WEEKDAY_THU'),
+			5 =>text::get('WEEKDAY_FRI'),
+			6 =>text::get('WEEKDAY_SAT'),
+			7 =>text::get('WEEKDAY_SUN')
+		);
+	}
+
+	// -----------------------------------------------------------------------------
+	// function increments or decrements the given DD.MM.YYYY format date by specified number of days
+	// public
+	// -----------------------------------------------------------------------------
+	function offsetDateByDays($cDate,$nOffsetDays)
+	{
+		if (dtime::isValidDate($cDate)&&is_numeric($nOffsetDays))
+		{
+			$aDate=explode('.',$cDate);
+			$nTimestamp=mktime(0,0,0,$aDate[1],$aDate[0],$aDate[2]);
+			$aTimeData=getdate($nTimestamp);
+			return date('d.m.Y',strtotime($nOffsetDays.' day',$nTimestamp));
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+    // format input date DD.MM.YYYY in lv string format
+    function dateToLvString($cDate)
+    {
+        if (dtime::isValidDate($cDate))
+		{
+			$aDate=explode('.',$cDate);
+
+			return  $aDate[2].'. gada'. ' '. $aDate[0] .'. '. dtime::getMonthName($aDate[1]);
+		}
+		else
+		{
+			return false;
+		}
+    }
+
+    // format input date DD.MM.YYYY in empty string
+    function dateToLvStringEmpty($cDate)
+    {
+        if (dtime::isValidDate($cDate))
+		{
+			$aDate=explode('.',$cDate);
+
+			return  $aDate[2].'. gada'. ' __._________________ ';
+		}
+		else
+		{
+			return false;
+		}
+    }
+
+    
+
+
+   
+
+}
+
+?>

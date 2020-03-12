@@ -1,0 +1,349 @@
+<?
+
+
+class RequestHandler
+{
+	
+	
+	// -----------------------------------------------------------------------------
+	// add a javascript window open code to a href string
+	// -----------------------------------------------------------------------------
+	function popupHref($cHref,$cHrefParser=false,$cWidth=500,$cHeight=400,$nForLink=true,$nOrigWin=false,$nResizable=false)
+	{
+		return	($nForLink?"javascript:":'').($nOrigWin?"openOriginalWin":"openWin")."("
+		.(strlen($cHrefParser)?$cHrefParser."('".$cHref."')":"'".$cHref."'")
+		.", 'toolbar=no,".($nResizable?'resizable=yes,':'')."scrollbars=yes,width=".$cWidth.",height=".$cHeight.",left=200,right=200');".($nForLink?"return false;":'');
+		
+	}
+
+    // -----------------------------------------------------------------------------
+	// die with opener window reload javascript (for popups to return to main window)
+	// -----------------------------------------------------------------------------
+	function makeParentReload()
+	{
+		die('<script>window.opener.location.reload();</script>');
+	}
+
+	// -----------------------------------------------------------------------------
+	// die with opener window perlace javascript (for popups to return to main window)
+	// -----------------------------------------------------------------------------
+	function makeParentReplace( $url )
+	{
+		// window.close();
+        die('<script>window.opener.location.replace( "'.$url.'" );window.close();</script>');
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// show error message and die
+	// if this is xmlHTTP query - return null
+	// -----------------------------------------------------------------------------
+	function showErrorAndDie( $errorMessage , $isHtmlError=false )
+	{
+		include_once(RequestHandler::getFormPath('fmk_header'));
+		include(RequestHandler::getFormPath('fmk_critical_error'));
+		include_once(RequestHandler::getFormPath('fmk_footer'));
+		exit;
+	}
+
+
+
+	// -----------------------------------------------------------------------------
+	// return micro time 
+	// -----------------------------------------------------------------------------
+	function getMicroTime()
+	{ 
+		list($usec, $sec) = explode(" ",microtime()); 
+		return ((float)$usec + (float)$sec); 
+	} 
+
+
+	// -----------------------------------------------------------------------------
+	// return new validate password (random)
+	// -----------------------------------------------------------------------------
+	function getNewPassword($length=6)
+	{
+		$r='';
+		$aValidateSimbols[0]='0123456789';
+		$aValidateSimbols[1]='qwertyuiopasdfghjklxzcvbnm';
+		$aValidateSimbols[2]='QWERTYUIOPASDFGHJKLZXCVBNM';
+		for ($i=0; $i < $length; $i++)
+		{
+			$c=$aValidateSimbols[$i%3] {mt_rand(0, strlen( $aValidateSimbols[$i%3] )-1 ) };
+			$rand=mt_rand(0,strlen($r)-1);
+			$r=substr($r,0,$rand).$c.substr($r,$rand);
+		}
+		return $r;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return encrypt key
+	// -----------------------------------------------------------------------------
+	function getEncryptKey()
+	{
+        if (!isset($_SESSION[ENCRYPT_KEY]))
+        {
+	        $_SESSION[ENCRYPT_KEY]=RequestHandler::getNewPassword(20);
+		}
+        return $_SESSION[ENCRYPT_KEY];
+	}
+
+	// -----------------------------------------------------------------------------
+	// return encrypt string
+	// -----------------------------------------------------------------------------
+	function encryptString($string)
+	{
+		$key=RequestHandler::getEncryptKey();
+		if ($key!==false)
+		{
+			$td = mcrypt_module_open(MCRYPT_BLOWFISH, '', 'ecb', '');
+			$iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+			mcrypt_generic_init($td, $key, $iv);
+			$r = mcrypt_generic($td, $string);
+			mcrypt_generic_deinit($td);
+			mcrypt_module_close($td);
+			return $r;
+		}
+		else
+		{
+			return $string;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return descrypt string
+	// -----------------------------------------------------------------------------
+	function decryptString($string)
+	{
+		$key=RequestHandler::getEncryptKey();
+		if ($key!==false)
+		{
+			$td = mcrypt_module_open(MCRYPT_BLOWFISH, '', 'ecb', '');
+			$iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+			mcrypt_generic_init($td, $key, $iv);
+			$r = mdecrypt_generic($td, $string);
+			mcrypt_generic_deinit($td);
+			mcrypt_module_close($td);
+			return $r;
+		}
+		else
+		{
+			return $string;
+		}
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// make redirect
+	// -----------------------------------------------------------------------------
+	function makeRedirect($url)
+	{
+		header('Location: '.$url);
+		exit;
+	}
+
+	// -----------------------------------------------------------------------------
+	// function truncate $string to the max of $amount chars
+	// -----------------------------------------------------------------------------
+	function truncateText($string, $amount = MAX_SHOW_TEXT_LENGTH)
+	{
+		$str = trim($string);
+		$firstSpace = strpos($str, ' ');
+		// Changed from strlen($str) to $amount in the next line to deal with long unspaced strings
+		$firstSpace = $firstSpace > 0 ? $firstSpace : $amount;
+		$str = substr($str, 0, max($amount, $firstSpace));
+		$lastSpace = strrpos($str, ' ');
+		if(strlen($str) != strlen($string))
+		{
+			$str = $lastSpace ? substr($str, 0, $lastSpace) : $str;
+		}
+
+		$str_len=strlen($str);
+		$str=htmlspecialchars($str);
+
+		/*
+		// generate popup link if truncated
+		if($str_len < strlen($string))
+		{
+			$key=md5($string);
+			$_SESSION[SESSION_LONG_TEXT][$key]=$string;
+			$oLink =& new urlQuery();
+			$oLink->addPrm('formId', 'f.glb.cmt.a.1'); 
+			$oLink->addPrm('subsysId', GLB_ID);
+			$oLink->addPrm('text', $key); //urlencode($string)
+			$oLink->addPrm(POPUP_VAR_NAME, true);
+			$str = '<a href=# onclick="javascript:window.open(\'' . $oLink->getQuery() . '\',\''.$key.'\',\'top=200,left=200,toolbar=no,scrollbars=yes,resizable=yes,width=300,height=200\');return false;">' . $str . '...</a>';
+			unset($oLink);
+		}
+		*/
+
+		return $str;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return from cookie last access login name
+	// -----------------------------------------------------------------------------
+	function getLastAccessLogin()
+	{
+		if (isset($_COOKIE[COOKIE_LOGIN]))
+		{
+			return $_COOKIE[COOKIE_LOGIN];
+		}
+		else
+		{
+			return '';
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return path on server for this form
+	// -----------------------------------------------------------------------------
+	function getFormPath($formId)
+	{
+		if (file_exists(ZR_FORMS_DIR.'/'.$formId.'.inc'))
+		{
+
+			return ZR_FORMS_DIR.'/'.$formId.'.inc';
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// ZR application start
+	// -----------------------------------------------------------------------------
+	function run()
+	{
+
+       	// -----------------------------------------------------------------------------
+		// Session name
+		// -----------------------------------------------------------------------------
+		session::start();
+
+		// -----------------------------------------------------------------------------
+		// Headers
+		// -----------------------------------------------------------------------------
+		// header('Cache-Control: no-cache, no-store');
+		// header('Pragma: no-cache');
+		header('Content-type: text/html; Charset=UTF-8'."\n");
+
+		// if exist session...
+		if (!session::isNew())
+		{
+			if (!urlQuery::decodeUrl() || !urlQuery::validateHash())
+			{
+				RequestHandler::showErrorAndDie(text::get('ERROR_INCORRECT_URL_QUERY'));
+			}
+		}
+
+		// get all TEXT label
+		text::getDataFromMySQL();
+        //echo $_SERVER["REMOTE_ADDR"];
+//        print_r($_POST) ;
+// print_r($_REQUEST) ;
+		// -----------------------------------------------------------------------------
+		// Authorization proccess
+		// -----------------------------------------------------------------------------
+		if (!userAuthorization::isLogin())
+		{
+            if ( reqVar::get('login')!==false && reqVar::get('password')!==false )
+			{
+
+                if (userAuthorization::login(reqVar::get('login'),reqVar::get('password')))
+				{
+					setcookie(COOKIE_LOGIN,reqVar::get('login'),time()+60*60*24*30);
+
+					$url=new urlQuery();
+					$url->addPrm(FORM_ID,'fmk_main');
+					RequestHandler::makeRedirect($url->getQuery());
+				}
+
+			}
+            else
+            {
+              if ($_SERVER["REMOTE_ADDR"] == "10.0.17.3" && (isset($_REQUEST[COOKIE_LOGIN]) || (reqVar::get('login')!==false && reqVar::get('password')!==false)))
+              {
+                if (userAuthorization::loginAuto(reqVar::get('login'), ''))
+				{
+					setcookie(COOKIE_LOGIN,reqVar::get('login'),time()+60*60*24*30);
+
+					$url=new urlQuery();
+					$url->addPrm(FORM_ID,'fmk_main');
+					RequestHandler::makeRedirect($url->getQuery());
+				}
+              }
+            }
+			include(RequestHandler::getFormPath('fmk_header'));
+			require_once(RequestHandler::getFormPath('f.lgn.s.1'));
+			include(RequestHandler::getFormPath('fmk_footer'));
+		}
+		else
+		{
+
+			// -----------------------------------------------------------------------------
+			// Getting file (image or other)
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_FILE_VARIABLE) && is_numeric(reqVar::get(GET_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_FILE_VARIABLE));
+			}
+
+            // -----------------------------------------------------------------------------
+			// Getting GPS file
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_GPS_FILE_VARIABLE) && is_numeric(reqVar::get(GET_GPS_FILE_VARIABLE)))
+			{
+				files::sendGpsFile(reqVar::get(GET_GPS_FILE_VARIABLE));
+			}
+
+			$formId=reqVar::get(FORM_ID);
+
+			if ($formId=='exit')
+			{
+			    setcookie(COOKIE_LOGIN,reqVar::get('login'),time()-3600);
+                $_SESSION[CURRENT_YEAR] = '';
+				session::destroy();
+				RequestHandler::makeRedirect(ZR_BASEURL);
+			}
+
+			if (empty($formId))
+			{
+				$formId='fmk_main';
+			}
+            if (reqVar::get(POPUP_MODE))
+			{
+				include_once(RequestHandler::getFormPath('fmk_popup_header'));
+			}
+			elseif (!reqVar::get(DONT_USE_GLB_TPL))
+			{
+				include_once(RequestHandler::getFormPath('fmk_header'));
+			}
+
+			$formPath=RequestHandler::getFormPath($formId);
+            //echo $formPath;
+			if ($formPath!==false)
+			{
+			  
+				include($formPath);
+			}
+			else
+			{
+				RequestHandler::showErrorAndDie(text::get('ERROR_NOT_FOUND_FORM_FILE'));
+			}
+            if (reqVar::get(POPUP_MODE))
+			{
+				include_once(RequestHandler::getFormPath('fmk_popup_footer'));
+			}
+			elseif (!reqVar::get(DONT_USE_GLB_TPL))
+			{
+				include_once(RequestHandler::getFormPath('fmk_footer'));
+			}
+		}
+
+	}
+}
+
+?>

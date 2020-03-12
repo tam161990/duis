@@ -1,0 +1,251 @@
+<?
+
+// created by Sergejs Denisovs
+
+// -----------------------------------------------------------------------------
+// class dbLayer
+// -----------------------------------------------------------------------------
+
+class dbLayer
+{
+
+	var $error;		// errors
+	var $debug;             // debug flag
+	var $debugInfo; 	// debug info 
+
+	// -----------------------------------------------------------------------------
+	// contructor
+	// public
+	// -----------------------------------------------------------------------------
+	function dbLayer()
+	{
+		$this->param=array();
+		$this->debug=false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// connect to DB server
+	// privat
+	// -----------------------------------------------------------------------------
+    function dbConnect()
+	{
+		$r=true;
+		echo MYSQL_HOST;
+		echo MYSQL_USER;
+		echo MYSQL_PASSWORD;
+		echo MYSQL_DB;
+		
+		if (empty($GLOBALS['sql_connect']))
+		{
+			$GLOBALS['sql_connect']=mysqli_connect(MYSQL_HOST,MYSQL_USER,MYSQL_PASSWORD);
+
+			if ($GLOBALS['sql_connect'])
+			{
+				if (!mysqli_select_db($GLOBALS['sql_connect'],MYSQL_DB)) $r=false;
+				if ($r && !mysqli_query($GLOBALS['sql_connect'],'SET NAMES "utf8"')) $r=false;
+			}
+			else
+			{
+				$r=false;
+			}
+		}
+
+		if ($r)
+		{
+			return true;
+		}
+		else
+		{
+			RequestHandler::showErrorAndDie(text::get('ERROR_DB_CONNECT').$this->getError(false));
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// DB disconnect
+	// privat
+	// -----------------------------------------------------------------------------
+	function dbDisconnect()
+	{
+		//  mysql_close()
+		return true;
+	}
+
+	// -----------------------------------------------------------------------------
+	// privat
+	// save oracle work time
+	// -----------------------------------------------------------------------------
+	function addSQLTime($query)
+	{
+		if (DEBUG_MODE)
+		{
+			$GLOBALS['oracleWorkTime'][]=$query;
+		}
+	}
+
+
+	function quote_smart($value)
+	{
+		if ($value==='')
+		{
+			return 'NULL';
+		}
+		// Stripslashes
+		if (get_magic_quotes_gpc()) 
+		{
+			$value = stripslashes($value);
+		}
+		// Quote if not integer
+		if (is_string($value)) 
+		{
+			$value = mysqli_real_escape_string($GLOBALS['sql_connect'],$value);
+		}
+		return $value;
+	}
+
+	// -----------------------------------------------------------------------------
+	// "Query" query
+	// public
+	// -----------------------------------------------------------------------------
+	function makeQuery($sqlQuery)
+	{
+
+		ob_start();
+
+		dbLayer::dbConnect();
+
+		$sqlQuery=str_replace('"NULL"','NULL',$sqlQuery);
+
+		echo '<hr />'.$sqlQuery;
+
+		$timeStart=RequestHandler::getMicroTime();
+
+		$res=@mysqli_query($GLOBALS['sql_connect'],$sqlQuery);
+
+		if ($res)
+		{
+			$r=array();
+			if (@mysqli_num_rows($res))
+			{
+				while($row=mysqli_fetch_array($res,MYSQLI_ASSOC))
+				{
+					$r[]=$row;					
+				}				
+			}
+		}
+		else
+		{
+			$r=false;
+		}
+
+
+		dbLayer::dbDisconnect();
+
+		$workTime=RequestHandler::getMicroTime()-$timeStart;
+
+		echo '<hr />Time: '.$workTime;
+
+		$this->addSQLTime($sqlQuery);
+
+		$this->debugInfo = ob_get_contents();
+		ob_end_clean();
+		if ($this->debug)
+		{
+			echo $this->debugInfo;
+		}
+
+		if ($r===false)
+		{
+		   	RequestHandler::showErrorAndDie(text::get('ERROR_IN_DB_QUERY').(dbProc::getError()));
+		}
+
+		return $r;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return last error text
+	// public
+	// -----------------------------------------------------------------------------
+	function getError($withHtml=true)
+	{
+		
+		return @mysqli_error($GLOBALS['sql_connect']);
+	}
+
+	// -----------------------------------------------------------------------------
+	// return last insert id
+	// public
+	// -----------------------------------------------------------------------------
+	function getInsertId()
+	{
+		return @mysqli_insert_id($GLOBALS['sql_connect']);
+	}
+
+    // -----------------------------------------------------------------------------
+	// parse date from LV to USA format (for MySQL)
+	// public
+	// -----------------------------------------------------------------------------
+	function parseDate($date)
+	{
+		$m=explode('.',$date);
+		if (count($m)==3)
+		{
+			return $m[2].'-'.$m[1].'-'.$m[0];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+    function parseDateWithTime($date, $time)
+	{
+		$m=explode('.',$date);
+		if (count($m)==3 && $time != '')
+		{
+			return $m[2].'-'.$m[1].'-'.$m[0].' '.$time;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return sql for date in LV format
+	// public
+	// -----------------------------------------------------------------------------
+	function sqlParseDate($field, $isAlias=true)
+	{
+		return ' IF (`'.$field.'` != "0000-00-00" , DATE_FORMAT(`'.$field.'`,"%d.%m.%Y"), "")  '.(($isAlias)?' as `'.$field.'` ':' ');
+	}
+
+	// -----------------------------------------------------------------------------
+	// return sql for date-time in LV format
+	// public
+	// -----------------------------------------------------------------------------
+	function sqlParseDateTime($field, $isAlias=true)
+	{
+		return ' IF (`'.$field.'` != "0000-00-00 00:00:00" , DATE_FORMAT(`'.$field.'`,"%d.%m.%Y %H:%i:%s"), "")  '.(($isAlias)?' as `'.$field.'` ':' ');
+	}
+
+	// -----------------------------------------------------------------------------
+	// prepare data from a php array for use with the sql IN keyword
+	// public
+	// -----------------------------------------------------------------------------
+	function parseArray($aData)
+	{
+		$cParsedString='';
+		if (is_array($aData))
+		{
+			foreach ($aData as $cValue)
+			{
+				$cParsedString.=(strlen($cParsedString)?',':'')."'".dbLayer::quote_smart($cValue)."'";
+			}
+		}
+		return (strlen($cParsedString)?"(".$cParsedString.")":false);
+	}
+
+}
+
+?>

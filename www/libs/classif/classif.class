@@ -1,0 +1,207 @@
+<?
+
+
+class classif
+{
+
+	function getValueArray($classifName)
+	{
+		$m=array();
+		switch ($classifName)
+		{
+            case KL_CALCULALATION_GROUP:
+               $res=dbProc::getCalculationGroupActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KKLG_KODS']]=$row['KKLG_NOSAUKUMS'];
+					}
+				}
+				break;
+
+            case KL_ED_AREA:
+				$res=dbProc::getEDAreaActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KEDI_ID']]=$row['KEDI_REGIONS'].' : '.$row['KEDI_KODS'].' : '.$row['KEDI_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_ED_SECTIONS:
+				$res=dbProc::getEDAreaSectionList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KEDI_SECTION']]=$row['KEDI_SECTION'];
+					}
+				}
+				break;
+		   	case KL_USERS:
+				$res=dbProc::getActiveUserList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
+					}
+				}
+				break;
+            case KL_VOLTAGE:
+				$res=dbProc::getVoltageActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KSRG_ID']]=$row['KSRG_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_VOLTAGE_TRASE:
+				$res=dbProc::getTraseVoltageActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KSRG_ID']]=$row['KSRG_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_ACT_TYPE:
+				$res=dbProc::getActTypeActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+					}
+				}
+				break;
+             case KL_ACT_TYPE_TRASE:
+				$res=dbProc::getActTraseTypeActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_ACT_TYPE_ALL:
+				$res=dbProc::getActAllTypeActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_WORK_OWNERS:
+				$res=dbProc::getWorkOwnerActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KWOI_KODS']]=$row['KWOI_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_OBJECTS:
+				$res=dbProc::getObjectActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KOBJ_ID']]=$row['KOBJ_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_OBJECTS_TRASE:
+				$res=dbProc::getTraseObjectActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KOBJ_ID']]=$row['KOBJ_NOSAUKUMS'];
+					}
+				}
+				break;
+            case KL_WRITEOFF:
+				$res=dbProc::getWrieoffActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KWRC_ID']]=$row['KWRC_TITLE'];
+					}
+				}
+				break;
+		}
+		return $m;
+	}
+		
+
+	function getHtml($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+	{
+		$m=classif::getValueArray($classifName);
+
+		if ($onlyLabel)
+		{
+		        return isset($m[$value])?$m[$value]:'';
+		}
+
+		$r='<select '.($disabled?'DISABLED':'').' class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$attributes.' name="'.$name.'">';
+		$r.='<option value="">'.text::get('EMPTY_SELECT_OPTION').'</option>';
+		foreach ($m as $i=>$v)
+		{
+			$r.='<option '.($value==$i?'selected':'').' value="'.$i.'">'.$v.'</option>';
+		}
+		$r.='</select>';
+		return $r;
+	}
+
+    function getHtml2($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+	{
+		$m=classif::getValueArray($classifName);
+
+		if ($onlyLabel)
+		{
+		        return isset($m[$value])?$m[$value]:'';
+		}
+
+		$r='<select '.($disabled?'DISABLED':'').' class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$attributes.' name="'.$name.'">';
+		$r.='<option value="-1">'.text::get('ALL').'</option>';
+		foreach ($m as $i=>$v)
+		{
+			$r.='<option '.($value==$i?'selected':'').' value="'.$i.'">'.$v.'</option>';
+		}
+		$r.='</select>';
+		return $r;
+	}
+    function getHtml3($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+	{
+		$m=classif::getValueArray($classifName);
+
+		if ($onlyLabel)
+		{
+		        return isset($m[$value])?$m[$value]:'';
+		}
+
+		$r='<select '.($disabled?'DISABLED':'').' class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$attributes.' name="'.$name.'">';
+		
+		foreach ($m as $i=>$v)
+		{
+//echo $value."<br>";
+
+//echo $i."-".$v."<br>";
+			$r.='<option '.($value==$i?'selected':'').' value="'.$i.'">'.$v.'</option>';
+		}
+		$r.='</select>';
+		return $r;
+	}
+}
+?>

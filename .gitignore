@@ -1,0 +1,6 @@
+config/
+files/
+temp/
+output/
+gps_files/
+info.php

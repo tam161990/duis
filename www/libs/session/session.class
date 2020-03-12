@@ -1,0 +1,86 @@
+<?
+
+define ('SESSION_PRFX','session_class_');
+
+class session
+{
+
+
+
+	// -----------------------------------------------------------------------------
+	// return session variable value
+	// public
+	// -----------------------------------------------------------------------------
+	function get($name)
+	{
+		if (isset($_SESSION[$name]))
+		{
+			return $_SESSION[$name];
+		}
+
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// set session variable value
+	// public
+	// -----------------------------------------------------------------------------
+	function set($name,$value)
+	{
+		$_SESSION[$name]=$value;
+	}
+
+	// -----------------------------------------------------------------------------
+	// erase session variable 
+	// public
+	// -----------------------------------------------------------------------------
+	function del($name)
+	{
+		if (isset($_SESSION[$name]))
+		{
+			unset($_SESSION[$name]);
+			return true;
+		}
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// start sessions
+	// public
+	// -----------------------------------------------------------------------------
+	function start()
+	{
+		session_cache_limiter('none');
+       	session_name(SESSION_NAME);
+		session_start();
+
+		if (session::get(SESSION_PRFX.'is_session'))
+		{
+			session::set(SESSION_PRFX.'is_new',0);
+		}
+		else
+		{
+			session::set(SESSION_PRFX.'is_session',1);
+			session::set(SESSION_PRFX.'is_new',1);
+		}
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// destroy session
+	// public
+	// -----------------------------------------------------------------------------
+	function destroy()
+	{
+		$_SESSION = array();
+		session_destroy();
+	}
+
+	function isNew()
+	{
+		return session::get(SESSION_PRFX.'is_new');
+	}
+
+
+}
+?>

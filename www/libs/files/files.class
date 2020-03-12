@@ -1,0 +1,265 @@
+<?
+
+
+class files
+{
+
+	// -----------------------------------------------------------------------------
+	// Ja fails ir noladets - atgriezh true
+	// -----------------------------------------------------------------------------
+	function isUploadFile($fieldName)
+	{
+		if (isset($_FILES[$fieldName]) && empty($_FILES[$fieldName]['error']))
+		{
+			return true;
+		}
+		return false;
+	}
+
+    // -----------------------------------------------------------------------------
+	// Ja fails ir pareiza datu tipa - atgriezh true
+	// -----------------------------------------------------------------------------
+	function isUploadFileOfTYpe($fieldName, $type)
+	{
+		if ($_FILES[$fieldName]['type'] == $type)
+		{
+			return true;
+		}
+		return false;
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// nodzes failu no diska
+	// -----------------------------------------------------------------------------
+	function eraseFileFromStore($idFile)
+	{
+		return @unlink(FILES_STORE_PATH.'/'.$idFile);
+	}
+
+    // -----------------------------------------------------------------------------
+	// nodzes failu no diska
+	// -----------------------------------------------------------------------------
+	function eraseFileFromGpsStore($idFile)
+	{
+		return @unlink(GPS_FILES_STORE_PATH.'/'.$idFile);
+	}
+
+    // -----------------------------------------------------------------------------
+	// nodzes failu no diska
+	// -----------------------------------------------------------------------------
+	function eraseFileFromStore2($File)
+	{
+		return @unlink($File);
+	}
+
+	// -----------------------------------------------------------------------------
+	// nodzes failu no MySQL tabulu un no diska
+	// -----------------------------------------------------------------------------
+	function deleteFile($idFile)
+	{
+		$res=false;
+		if (is_numeric($idFile))
+		{
+			$res=dbProc::deleteFile($idFile);
+			if ($res)
+			{
+				$res=files::eraseFileFromStore($idFile);
+			}
+		}
+		return $res;
+	}
+
+    // -----------------------------------------------------------------------------
+	// nodzes GPS failu no MySQL tabulu un no diska
+	// -----------------------------------------------------------------------------
+	function deleteGpsFile($idFile)
+	{
+		$res=false;
+		if (is_numeric($idFile))
+		{
+			$res=dbProc::deleteGpsFile($idFile);
+			if ($res)
+			{
+				$res=files::eraseFileFromGpsStore($idFile);
+			}
+		}
+		return $res;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// saglaba failu
+	// -----------------------------------------------------------------------------
+	function saveFile($fieldName,$description=false,$userId,$messagesId,$idFile=false)
+	{
+	        if (files::isUploadFile($fieldName))
+	        {
+	        	if (!empty($idFile))
+	        	{
+		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $description, $userId, $messagesId, $_FILES[$fieldName]['type'],$idFile);
+		        	if (!$res)
+		        	{
+		        		return false;
+		        	}
+		        	files::eraseFileFromStore($idFile);
+	        	}
+	        	else
+	        	{
+		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $description, $userId, $messagesId, $_FILES[$fieldName]['type']);
+		        	if ($res)
+		        	{
+		        		$idFile=dbLayer::getInsertId();
+		        	}
+		        	else
+		        	{
+		        		return false;
+		        	}
+		        	if ($idFile===false)
+		        	{
+		        		return false;
+		        	}
+	        	}
+	        	$res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],FILES_STORE_PATH.'/'.$idFile);
+	        	if ($res)
+	        	{
+	        		return $idFile;
+	        	}
+	        	else
+	        	{
+	        		dbProc::deleteFile($idFile);
+	        	}
+	        }
+	        return false;
+	}
+
+    // -----------------------------------------------------------------------------
+	// saglaba GPS failu
+	// -----------------------------------------------------------------------------
+	function saveGpsFile($fieldName,$region="-1",$idFile=false)
+	{
+	        if (files::isUploadFile($fieldName))
+	        {
+	        	if (!empty($idFile))
+	        	{
+		        	$res=dbProc::replaceGpsFile($_FILES[$fieldName]['name'], $region, $_FILES[$fieldName]['type'],$idFile);
+		        	if (!$res)
+		        	{
+		        		return false;
+		        	}
+		        	files::eraseFileFromGpsStore($idFile);
+	        	}
+	        	else
+	        	{
+		        	$res=dbProc::replaceGpsFile($_FILES[$fieldName]['name'], $region, $_FILES[$fieldName]['type']);
+		        	if ($res)
+		        	{
+		        		$idFile=dbLayer::getInsertId();
+		        	}
+		        	else
+		        	{
+		        		return false;
+		        	}
+		        	if ($idFile==false)
+		        	{
+		        		return false;
+		        	}
+	        	}
+	        	$res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],GPS_FILES_STORE_PATH.'/'.$idFile);
+	        	if ($res)
+	        	{
+	        		return $idFile;
+	        	}
+	        	else
+	        	{
+	        		dbProc::deleteGpsFile($idFile);
+	        	}
+	        }
+	        return false;
+	}
+
+    // -----------------------------------------------------------------------------
+	// saglabât failu diskâ
+	// -----------------------------------------------------------------------------
+	function saveFileToStore($fieldName)
+	{
+        if (files::isUploadFile($fieldName))
+	    {
+            $res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],FILES_STORE_PATH.'/'.IMPORT_FILES_STORE_NAME);
+	        if ($res)
+	        {
+	           	return FILES_STORE_PATH.'/'.IMPORT_FILES_STORE_NAME;
+	        }
+
+        }
+        return false;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// atgriezh informaciju par failu
+	// -----------------------------------------------------------------------------
+	function getFileInfo($idFile)
+	{
+	        return dbProc::getFileInfo($idFile);
+	}
+
+    // -----------------------------------------------------------------------------
+	// atgriezh informaciju par GPS failu
+	// -----------------------------------------------------------------------------
+	function getGpsFileInfo($idFile)
+	{
+	        return dbProc::getGpsFileInfo($idFile);
+	}
+
+	// -----------------------------------------------------------------------------
+	// suta failu klientam
+	// -----------------------------------------------------------------------------
+	function sendFile($idFile,$isExit=true)
+	{
+		$info=files::getFileInfo($idFile);
+		if ($info)
+		{
+			$c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
+			if ($c)
+			{
+
+				header('Content-type: '.$info['RFLS_META_INFO']."\n");
+				header('Content-Disposition: attachment; filename="'.$info['RFLS_NOSAUKUMS'].'"'."\n");
+                echo $c;
+				if ($isExit)
+				{
+					exit();
+				}
+			}
+		}
+		return false;
+	}
+
+    // -----------------------------------------------------------------------------
+	// suta GPS failu klientam
+	// -----------------------------------------------------------------------------
+	function sendGpsFile($idFile,$isExit=true)
+	{
+		$info=files::getGpsFileInfo($idFile);
+		if ($info)
+		{
+			$c=@file_get_contents(GPS_FILES_STORE_PATH.'/'.$idFile);
+			if ($c)
+			{
+
+				header('Content-type: '.$info['GFLS_META_INFO']."\n");
+				header('Content-Disposition: attachment; filename="'.$info['GFLS_NOSAUKUMS'].'"'."\n");
+                echo $c;
+				if ($isExit)
+				{
+					exit();
+				}
+			}
+		}
+		return false;
+	}
+
+}
+
+?>

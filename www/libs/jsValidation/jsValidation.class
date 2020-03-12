@@ -1,0 +1,592 @@
+<?
+
+
+class jsValidation
+{
+	
+	
+	function getValidationFunctionName($formName)
+	{
+		return $formName.'ValidationScript';
+	}
+
+	function getStartHtml($formName)
+	{
+		ob_start();
+		?>
+	        <script>
+		var errSpans = new Array();
+		function <?=jsValidation::getValidationFunctionName($formName);?>()
+		{
+			var validate=true;
+			var good_fields=false;
+			var isMoveCursor=true;
+			var msg;
+			removeErrSpans();
+			var errFlag = new Array();
+		<?
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+
+	function getValidationHtml($formName='',$name,$type,$fieldName,$other='')
+	{
+		ob_start();
+		?>
+		function <?=$name;?>()
+		{
+		<?
+		switch($type)
+		{
+
+			case 'ifonefilled':
+				if (is_array($fieldName))
+				{
+					foreach ($fieldName as $name)
+					{
+						?>
+						if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>('<?=$formName;?>','<?=$name;?>')) {return true;}
+						<?
+					}
+				}
+				else
+				{
+					?>
+					if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>('<?=$formName;?>','<?=$fieldName;?>')) {return true;}
+					<?
+				}
+				break;
+
+			case 'ifequal':
+				if (is_array($fieldName))
+				{
+					foreach ($fieldName as $name)
+					{
+						?>
+						if (document.forms['<?=$formName;?>']['<?=$name;?>'].value=="<?=$other;?>") {return true;}
+						<?
+					}               
+				}
+				else
+				{
+					?>
+					if (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value=="<?=$other;?>") {return true;}
+					<?
+				}
+				break;
+             case 'ifnotequal':
+				if (is_array($fieldName))
+				{
+					foreach ($fieldName as $name)
+					{
+						?>
+						if (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') && document.forms['<?=$formName;?>']['<?=$name;?>'].value!="<?=$other;?>") {return true;}
+						<?
+					}
+				}
+				else
+				{
+					?>
+					if (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') && parseFloat(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value)!="<?=$other;?>") {return true;}
+					<?
+				}
+				break;
+			default:
+				?>return true;<?
+				break;
+		}
+		?>
+			return false;
+		}
+		<?
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+	function getRuleHtml($formName,$type,$fieldName,$fieldType,$message,$other)
+	{
+		
+		ob_start();
+
+		switch(strtolower($type))
+		{
+			case 'required':
+				?>                                      
+				if ( (!errFlag['<?=$fieldName;?>']) && ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			case 'requiredext':
+				?>                                      
+				if ( ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+
+			case 'validatedate':					
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			case 'numeric':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && ((!isNumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+            case 'alphanumeric':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlphanumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			case 'toid':
+			?>
+			if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && 
+				(!isToIdn(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value, 
+						'<?=ACT_TYPE_STIHIJA_ID;?>', 
+						'<?=ACT_TYPE_STIHIJA_TR_ID;?>',
+						document.forms['<?=$formName;?>']['<?=$other;?>'].options[document.forms['<?=$formName;?>']['<?=$other;?>'].selectedIndex].value
+						) ) )
+			{
+				showError( '<?=$fieldName;?>', "<?=$message;?>" );
+				isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+				errFlag['<?=$fieldName;?>'] = true;
+				validate=false;
+			}
+			<?
+			break;
+             case 'alpha':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlpha(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+            case 'alphanumericonly':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlphanumericOnly(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			case 'double':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && ((!isDouble(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value,<?=$other;?>) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			case 'maxlength':
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) > <?=$other;?>)  )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+
+			case 'minlength':					
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) > 0 ) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) < <?=$other;?>)  )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+
+			case 'isequal':					
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value == <?=$other;?>)  )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+			
+			case 'ifequal':
+				if (is_array($fieldName))
+				{
+					foreach ($fieldName as $name)
+					{
+						?>
+						if (document.forms['<?=$formName;?>']['<?=$name;?>'].value=="<?=$other;?>") {return true;}
+						<?	
+					}               
+				}
+				else
+				{
+					?>
+					alert(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value);
+					alert(<?=$other;?>);
+					if (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value=="<?=$other;?>") {return true;}
+					<?
+				}
+				break;
+
+			case 'atleast':
+				?>
+				var fieldCount=0;
+				var errFieldName='';
+				var errFieldNameTemp='';
+				<?
+				if (is_array($fieldName) && count($fieldName)>0 )
+				{
+					foreach($fieldName as $name)
+					{
+						?>
+						if ( !isEmptyFormField('<?=$formName;?>','<?=$name;?>') ) 
+						{
+							fieldCount++;
+							if ( (errFieldNameTemp=='') && (isShowFormField('<?=$formName;?>','<?=$name;?>')) )
+							{
+								errFieldNameTemp='<?=$name;?>';
+							}			
+						}
+						else
+						{
+							if ( (errFieldName=='') && (isShowFormField('<?=$formName;?>','<?=$name;?>')) )
+							{
+								errFieldName='<?=$name;?>';
+							}
+		                                }
+						<?
+						$z='&&';
+					}
+					?>
+
+				        if (errFieldName=='')
+				        {
+						errFieldName=errFieldNameTemp;
+				        }
+
+					if ( (!errFlag[errFieldName]) && (fieldCount < <?=empty($other)?1:$other;?>) )
+					{
+						showError( errFieldName , "<?=$message;?>"  );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>',errFieldName,isMoveCursor); 
+						errFlag[errFieldName] = true;
+						validate=false;
+					}
+					<?
+				}
+				
+				break;
+
+			case 'or':
+				?>
+				var fieldCount=0;
+				var errFieldName='';
+				var errFieldNameTemp='';
+				<?
+				if (is_array($fieldName) && count($fieldName)>0 )
+				{
+					foreach($fieldName as $name)
+					{
+						?>
+						if (!isEmptyFormField('<?=$formName;?>','<?=$name;?>')) 
+						{
+							fieldCount++;
+							if ( (errFieldNameTemp=='') && (isShowFormField('<?=$formName;?>','<?=$name;?>')) )
+							{
+								errFieldNameTemp='<?=$name;?>';
+							}			
+						}
+						else
+						{
+							if ( (errFieldName=='')  && (isShowFormField('<?=$formName;?>','<?=$name;?>')) )
+							{
+								errFieldName='<?=$name;?>';
+							}
+						}
+						<?
+						$z='&&';
+					}
+					?>
+
+				        if (errFieldName=='')
+				        {
+						errFieldName=errFieldNameTemp;
+				        }
+
+					if ( (<?
+						$z='';
+						if (is_array($other))
+						{
+							foreach ($other as $amount)
+							{
+								?> <?=$z;?> (fieldCount != <?=$amount;?>)<?	
+								$z='&&';
+							}
+						}
+						else
+						{
+							?>fieldCount != <?=empty($other)?1:$other;?><?
+						}
+					?>) && (!errFlag[errFieldName]) )
+					{
+						showError(errFieldName, "<?=$message;?>"  );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>',errFieldName,isMoveCursor);
+						errFlag[errFieldName] = true;
+						validate=false;
+					}
+					<?
+				}
+				
+				break;
+
+			case 'countryandorg':
+				if (is_array($fieldName) && count($fieldName)==2 )
+				{
+					?>
+					if ( (!errFlag['<?=$fieldName[0];?>']) && 
+						(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value == '<?=RequestHandler::getLatviaId();?>') 
+						&& (isEmptyFormField('<?=$formName;?>','<?=$fieldName[1];?>')) 
+						)
+					{
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
+						errFlag['<?=$fieldName[0];?>'] = true;
+						validate=false;
+					}
+					<?
+				}
+				break;
+
+			case 'countryand2org':
+				if (is_array($fieldName) && count($fieldName)==3 )
+				{
+					?>
+					if ((!errFlag['<?=$fieldName[0];?>']) && 
+						( 
+							(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value == '<?=RequestHandler::getLatviaId();?>')
+							&& (isEmptyFormField('<?=$formName;?>','<?=$fieldName[1];?>')) 
+						)
+						|| 
+						( 
+							(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value != '<?=RequestHandler::getLatviaId();?>') 
+							&& (isEmptyFormField('<?=$formName;?>','<?=$fieldName[2];?>')) 
+						) 
+					)
+					{
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
+						errFlag['<?=$fieldName[0];?>'] = true;
+						validate=false;
+					}
+					<?
+				}
+				break;
+				
+			case 'jsvalidatefunction':
+				?>
+				if (validate) { validate=<?=$fieldName;?> };
+				<?
+				break;
+
+			case 'perscode':
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isPersCode(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+            case 'url':
+			        ?>
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isUrl(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+            case 'kvikstep':
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) && (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  )
+				{
+				  var res =  isKvikStep(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value, '<?=$other;?>' );
+                    if( res == 'FALSE' )
+                    {
+    					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+    					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+    					errFlag['<?=$fieldName;?>'] = true;
+    					validate=false;
+                    }
+                    else
+                    {
+                        document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value = res;
+                    }
+				}
+				<?
+				break;
+			case 'validatetime':
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) &&  (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isTime(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+
+			case 'validatedatetime':
+				?>
+				if ( (!errFlag['<?=$fieldName;?>']) &&  (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isDateTime(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				{
+					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
+					errFlag['<?=$fieldName;?>'] = true;
+					validate=false;
+				}
+				<?
+				break;
+				
+			case 'compare':
+				if (is_array($fieldName) && count($fieldName)==2 )
+				{
+					if (empty($other))
+					{
+						$other='==';
+					}
+					?>
+					if ( (!errFlag['<?=$fieldName[0];?>']) && (!(convertStrToNum(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?> convertStrToNum(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value) )) )
+					{
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
+						errFlag['<?=$fieldName[0];?>'] = true;
+						validate=false;
+					}
+					<?
+				}
+				break;
+            case 'comparedouble':
+               	if (is_array($fieldName) && count($fieldName)==2 )
+				{
+					if (empty($other))
+					{
+						$other='==';
+					}
+					?>   
+					if ( (!errFlag['<?=$fieldName[0];?>']) &&
+                    (!(parseFloat(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?>
+                     parseFloat(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value) )) )
+					{
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
+						errFlag['<?=$fieldName[0];?>'] = true;
+						validate=false;
+					}
+					<?
+				}
+				break;
+			case 'comparedate':
+				if (is_array($fieldName) && count($fieldName)==2 )
+				{
+					if (empty($other))
+					{
+						$other='==';
+					}
+					?>
+					if ( (!errFlag['<?=$fieldName[0];?>']) && ((!isDate(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value)) || (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value)) || !(dateConvert('Y.M.D',document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?> dateConvert('Y.M.D',document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value))) )
+					{
+					
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
+						errFlag['<?=$fieldName[0];?>'] = true;
+						validate=false;
+					}
+
+					<?
+				}
+				break;
+
+		}
+
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+
+	function getFinishHtml($formName,$jsCode='')
+	{
+		ob_start();
+		if (!empty($jsCode))
+		{
+			?>
+			if (validate)
+			{
+				<?=$jsCode;?>
+				//enableAll("<?=$formName;?>");
+			}
+			<?
+		}
+		?>
+			return validate;
+		}
+	        </script>
+		<?
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+}
+?>

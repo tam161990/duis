@@ -1,0 +1,161 @@
+<?
+
+
+define('URL_QUERY_CRYPT_CRC_SLASH','|');
+
+// hashing variable name
+define ('URL_QUERY_HASH','urlHash');
+
+// crypt variable name
+define ('URL_QUERY_CRYPT','q');
+
+class urlQuery
+{
+	var $param;
+
+	function urlQuery ()
+	{
+		$this->param=array();
+	}
+
+	// addPrm - add parametrs
+	// public
+	function addPrm($paramName,$paramValue)
+	{
+		if (!is_array($this->param)) $this->param=array();
+		$this->param[$paramName]=array( 'name' => $paramName, 'value' => $paramValue);
+	}
+
+	// public
+	function addPrmByRef($paramName,&$paramValue)
+	{
+		if (!is_array($this->param)) $this->param=array();
+		$this->param[$paramName]=array( 'name' => $paramName, 'value' => &$paramValue);
+	}
+
+	function delPrm($paramName)
+	{
+		if (isset($this->param[$paramName])) unset($this->param[$paramName]);
+	}
+
+	function delAllPrm()
+	{
+		$this->param=array();
+	}
+
+	function getQuery($isEncrypt=URL_QUERY_IS_CRYPT)
+	{
+		if (isset($this->param) && is_array($this->param))
+		{
+			$z='';
+			$query='';
+			$hashString='';
+			foreach($this->param as $paramName=>$paramDescription)
+			{
+				$query.=$z.$paramName.'='.urlencode($paramDescription['value']);
+				$hashString.=$paramName.$paramDescription['value'];
+				$z='&';
+			}
+		}
+
+		if (URL_QUERY_IS_HASH)
+		{
+			$query.=$z.URL_QUERY_HASH.'='.md5(urlencode($hashString));
+		}
+
+		if ($isEncrypt)
+		{
+			$query=$this->encodeUrl($query);
+		}
+				
+		return '?'.$query.'&fakeVar=';
+	}
+
+	// validate hash of url query string
+	function validateHash()
+	{
+		if (URL_QUERY_IS_HASH)
+		{
+			if ( !empty($_GET) && is_array($_GET) )
+			{
+				$hashString='';
+				foreach ($_GET as $name=>$value)
+				{       	
+					// if variable is hass md5 => break
+					if ($name==URL_QUERY_HASH)
+					{
+						break;
+					}
+					// if variable name != crypt value
+					if ($name!=URL_QUERY_CRYPT)
+					{
+						$hashString.=$name.$value;
+					}
+				}
+				if (md5(urlencode($hashString))==$value)
+				{
+					return true;
+				}	
+				else
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	// ecoding url
+	function encodeUrl($query)
+	{
+		return URL_QUERY_CRYPT.'='.urlencode(base64_encode(RequestHandler::encryptString(md5($query).URL_QUERY_CRYPT_CRC_SLASH.$query)));
+	}
+
+	// decoding url and put variables into $_GET and $_REQUEST
+	function decodeUrl()
+	{
+		if (isset($_GET[URL_QUERY_CRYPT]))
+		{
+			// decoding
+			$get=RequestHandler::decryptString(base64_decode(urldecode($_GET[URL_QUERY_CRYPT])));
+
+			// deleting crypvalue from GET and REQUEST
+			unset($_GET[URL_QUERY_CRYPT]);
+			unset($_REQUEST[URL_QUERY_CRYPT]);
+
+			$m=explode(URL_QUERY_CRYPT_CRC_SLASH,trim($get));
+
+			// check CRC
+			if (is_array($m) && count($m)==2 )
+			{
+				if ($m[0]==md5($m[1]))
+				{
+					// parsing variables
+					$m=explode('&',$m[1]);
+					if (is_array($m))
+					{
+						foreach ($m as $v)
+						{
+							$d=explode('=',$v);
+			        	
+							if (is_array($d) && count($d)==2 )
+							{
+								$_GET[$d[0]]=urldecode($d[1]);
+								$_REQUEST[$d[0]]=$_GET[$d[0]];
+							}
+						}				
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+}
+
+?>

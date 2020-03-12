@@ -1,0 +1,90 @@
+<?
+class email
+{
+
+	// -----------------------------------------------------------------------------
+	// on message statuss change define email text, get subscribers list and send email notification 
+	// public
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	
+	function sendMsgStatusChangeNotification($messageId, $projectId, $actionId, $msgId, $msgType, $msgShortDescr, $msgDescr, $eventDescr=false, $changedEventId=false, $actionCode=false, $msgTypeCode=false)
+	{
+		// email subject
+		$subject = text::latvianToLatin($msgType).' - '.text::latvianToLatin($msgShortDescr);
+
+		// email body
+		$body = '';
+
+		// get project code
+		$project = dbProc::getProjectInfo($projectId);
+		if($project !== false)
+		{	
+			$projectCode = $project['RPRJ_KODS'];
+		}
+
+		$userInfo = dbProc::getUserInfo( userAuthorization::getUserId() );
+
+		if (isset($userInfo[0]) && is_array($userInfo[0]) )
+		{
+			$userEmail=$userInfo[0]['RLTT_EPASTA_ADRESE'];
+			$userInfo=$userInfo[0]['RLTT_VARDS'].' '.$userInfo[0]['RLTT_UZVARDS'];
+		}
+		else
+		{
+			$userEmail='';
+			$userInfo='';
+		}
+
+		$msgTypeLabel=dbProc::getMessageState($actionCode);
+
+		$body .= text::get('ID').': '.(isset($projectCode)?$projectCode:'').'-'.$msgId."\n\r";
+		$body .= text::get('NOTIFICATION_ABOUT').': '.strftime("%d.%m.%Y %H:%M", time()).', '.$msgTypeLabel.', '.$userInfo."\n\r";;
+		$body .= text::get('MESSAGE_DESCRIPTION').': '.$msgDescr."\n\r";
+		$body .= (($eventDescr)? text::get('EVENT_DESCRIPTION').': '.$eventDescr:'');
+
+		$headers  = "MIME-Version: 1.0\r\n";
+		$headers .= "Content-type: text/plain;  charset=utf-8\r\n";
+		$headers .= "From: ".$userInfo." <".$userEmail.">\r\n";
+
+												
+		$subscribers = dbProc::getSubscribersList($projectId, $actionId, $changedEventId);
+
+		if($msgTypeCode ==CHANGES_MSG || $msgTypeCode == PROBLEM_MSG )
+		{
+			$msgAuthInfo = dbProc::getMsgAuthInfoForRole($messageId, 'CONSULTANT');
+			if($msgAuthInfo !== false)
+			{	
+				$userInfo = dbProc::getUserInfoForRole($projectId, 'CONSULTANT');
+				if($userInfo !== false)
+				{
+					$y = ($subscribers !== false)? count($subscribers) : 0;
+
+					foreach($userInfo as $Info)
+					{
+						$subscribers[$y]['RLTT_EPASTA_ADRESE']=$Info['RLTT_EPASTA_ADRESE'];
+						$subscribers[$y]['RLTT_ID']=$Info['RLTT_ID'];
+						$y++;
+					}
+				}
+			}
+		}
+
+
+		if($subscribers !== false)
+		{
+			$isSend=array();
+			foreach($subscribers as $user)
+			{
+				// ja e-pasts ir tuks, vai jau atsutijam vestuli uz so e-pastu, vai lietotajsa taisa si notikumu (tad vinam nevajag sutit vestuli)
+				if(!empty($user['RLTT_EPASTA_ADRESE']) && !isset($isSend[$user['RLTT_EPASTA_ADRESE']]) && ($user['RLTT_ID']!=userAuthorization::getUserId()) )
+				{ 
+					$isSend[$user['RLTT_EPASTA_ADRESE']]=true;
+					//echo $user['RLTT_EPASTA_ADRESE'];
+					mail($user['RLTT_EPASTA_ADRESE'], $subject, $body, $headers);
+				}
+			}
+		}
+	}
+}
+?>

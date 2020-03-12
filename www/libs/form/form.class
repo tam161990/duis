@@ -1,0 +1,1459 @@
+<?
+
+
+define('DISABLED_PREFIX', 'disabled_');
+
+class form
+{
+
+	var $aParam; 		// parametrs for template
+	var $aAllParam; 	// all parametrs
+	var $aRules; 		// rules (with group)
+	var $aAllRules; 	// all rules
+	var $aForm;  		// form variables
+	var $aSubmitValues; 	// value of submited variables
+	var $frozen;            // frozen flag
+	var $aValidation; 	// validation
+	var $aAllValidation;	// all validation
+	var $aFeatures;		// features
+	var $aSubmitName;       // submit name
+	var $aHtml;
+	var $aErrors;
+	var $aSuccess;
+
+    /**
+	 * List of rows that will be created dynamicly via JScript
+	 *
+	 * @var array
+	 */
+	var $aDynamicRows = array();
+
+	// -----------------------------------------------------------------------------
+	// constructor
+	// $name - form name
+	// $action - form action, default ''
+	// $method - post or get, default - post
+	// $attributes - form attributes
+	// -----------------------------------------------------------------------------
+	function form($name='frmMain',$method='post',$action='',$attributes='')
+	{                       
+		$this->aForm=array('name'=>$name,
+				'action'=>$action,
+				'method'=>$method,
+				'attributes'=>$attributes);
+
+		$this->aParam=array();
+		$this->aAllParam=array();
+		$this->aRules=array();
+		$this->aAllRules=array();
+		$this->aValidation=array();
+		$this->aAllValidation=array();
+		$this->aFeatures=array();
+		$this->aSubmitName=array();
+		$this->aErrors=array();
+		$this->aSuccess=array();
+		$this->aHtml=false;
+		$frozen=false;
+
+		$this->getSubmitArray();
+
+		$this->addElement('hidden',$this->getIsSubmitVariable(),'',1);
+		$this->addElement('hidden',$this->aForm['name'].'disabledName' ,'','');
+
+		$disabledName=$this->getValue($this->aForm['name'].'disabledName');
+		$aDisabledName=explode(',',$disabledName);
+		if (is_array($aDisabledName))
+		{
+			foreach ($aDisabledName as $fName)
+			{
+				if (!empty($fName))
+				{
+					$this->idDisabled[$fName]=true;
+				}
+			}
+		}
+        //$this->ignoreRequestData = false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// save submited variables in our array
+	// -----------------------------------------------------------------------------
+	function getSubmitArray()
+	{
+		if (strtolower($this->aForm['method'])=='get')
+		{
+			$this->aSubmitValues=&$_GET;
+		}
+		else
+		{
+			$this->aSubmitValues=&$_POST;
+		}
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return variable name
+	// if we have this variable in post or get array, that mean: form is submitted
+	// -----------------------------------------------------------------------------
+	function getIsSubmitVariable()
+	{
+		return $this->aForm['name'].'_isSubmitVariable';
+	}
+
+	// -----------------------------------------------------------------------------
+	// is form submitted
+	// -----------------------------------------------------------------------------
+	function isFormSubmitted()
+	{
+		if (!empty($this->aSubmitValues[$this->getIsSubmitVariable()]))
+		{
+			return true;			
+		}
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// create element - return pointer
+	// -----------------------------------------------------------------------------
+	function &createElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false)
+	{
+		if (empty($name))
+		{
+			echo '<li> FORM ERROR: empty name! Type = '.$type.' :: Label = '.$label;
+		}
+		if (isset($this->aAllParam[$name]))
+		{
+			echo '<li> FORM ERROR: dublicate name! Name = '.$name;
+		}
+		if ($type=='hidden' && !empty($label))
+		{
+			echo '<li> FORM ERROR: hidden name with label! Name = '.$name;
+		}
+		if ($type=='group' && !empty($defaultValue) && !is_array($defaultValue))
+		{
+			echo '<li> FORM ERROR: group name defaultValue is not array! Name = '.$name;
+		}
+
+		$this->aAllParam[$name]=array('type'=>$type,
+					'name'=>$name,
+					'defaultValue'=>$defaultValue,
+					'tInfo'=>$tInfo,
+					'label'=>$label,
+					'attributes'=>$attributes,
+					'features'=>$features,
+					'options'=>$options,
+					'isSubmitByEnter'=>$isSubmitByEnter
+					);		
+
+		return $this->aAllParam[$name];
+	}
+
+	// -----------------------------------------------------------------------------
+	// add new prm
+	// $type - parametr type
+	// $name - parametr name
+	// $attributes - html attributes
+	// -----------------------------------------------------------------------------
+	function addElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false)
+	{
+		$this->aParam[$name]=$this->createElement($type,$name,$label,$defaultValue,$attributes,$tInfo,$features,$options,$isSubmitByEnter);
+	}
+
+    function delElement($name)
+	{
+		if (isset($this->aAllParam[$name]))
+		{
+			unset($this->aAllParam[$name]);
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// add error
+	// -----------------------------------------------------------------------------
+	function addError($value)
+	{
+		$this->aErrors[]=$value;
+        $aGlobalErrors=session::get('glb_form_errors');
+		if (!is_array($aGlobalErrors)||!in_array($value,$aGlobalErrors))
+		{
+			$aGlobalErrors[]=$value;
+		}
+		session::set('glb_form_errors',$aGlobalErrors);
+	}
+
+	// -----------------------------------------------------------------------------
+	// add success
+	// -----------------------------------------------------------------------------
+	function addSuccess($value)
+	{
+		$this->aSuccess[]=$value;
+        $aGlobalSuccess=array();
+		$aGlobalSuccess[]=$value;
+		session::set('glb_form_success',$aGlobalSuccess);
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// unset all elements
+	// -----------------------------------------------------------------------------
+	function unsetAllElements()
+	{
+		$this->aParam=array();
+		$this->aAllParam=array();
+	}
+	// -----------------------------------------------------------------------------
+	// get value 
+	// function return value of argument
+	// -----------------------------------------------------------------------------
+	function getValue($name,$defaultValue='',$default=false)
+	{
+		if ($this->isFormSubmitted() && !$default)
+		{
+			if (!empty($this->idDisabled[$name]))
+			{
+				$name=DISABLED_PREFIX.$name;
+			}
+            //---------- get variables like name[1] ----------
+			$openBracketPos = strpos($name, '[');
+			if ($openBracketPos !== false)
+			{
+				$closeBracketPos = strpos($name, ']');
+
+				// if value won't be splited to array by php
+				if ($closeBracketPos === false)
+				{
+					return $this->getValue($name);
+				}
+
+				$tmpName = substr($name, 0, $openBracketPos);// array name
+				$index = substr($name, $openBracketPos + 1, $closeBracketPos - $openBracketPos -1 );
+
+				$aTmp = $this->getValue($tmpName);
+
+				// suppress undefined index error and return value
+				if (isset($aTmp[$index]))
+				{
+					return $aTmp[$index];
+				}
+				else
+				{
+					return null;
+				}
+
+			}
+			//--------------------
+
+			// if this is upload file
+		        if ( isSet($this->aAllParam[$name]['type']) && strtolower($this->aAllParam[$name]['type'])=='uploadfile')
+		        {
+		        	if (isset($_FILES[$name]))
+		        	{
+		        		return $_FILES[$name];
+		        	}
+		        	else
+		        	{
+					return is_array($defaultValue)?$defaultValue:trim($defaultValue);		
+		        	}
+		        }
+		        // other element type
+		        else
+		        {
+				if (isset($this->aSubmitValues[$name]))
+				{
+					if ($this->aSubmitValues[$name]=='')
+					{
+						return is_array($defaultValue)?$defaultValue:trim($defaultValue);		
+					}
+					else
+					{
+						return is_array($this->aSubmitValues[$name])?$this->aSubmitValues[$name]:trim($this->aSubmitValues[$name]);		
+					}
+				}
+				else
+				{
+					return is_array($defaultValue)?$defaultValue:trim($defaultValue);		
+				}
+			}
+		}
+		else
+		{
+			if (isset($this->aAllParam[$name]['defaultValue']))
+			{
+				if (is_array($this->aAllParam[$name]['defaultValue']))
+				{
+					if (isset($this->aAllParam[$name]['defaultValue']['value']))
+					{
+						return ($this->aAllParam[$name]['defaultValue']['value']);
+					}
+					else
+					{
+						return ($this->aAllParam[$name]['defaultValue']);
+					}
+				}
+				else
+				{
+					return ($this->aAllParam[$name]['defaultValue']);
+				}
+			}
+			else
+			{
+				return ($defaultValue); 
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// freeze form
+	// -----------------------------------------------------------------------------
+	function freeze()
+	{
+		$this->frozen=true;
+	}
+
+	// -----------------------------------------------------------------------------
+	// create validation
+	// -----------------------------------------------------------------------------
+	function &createValidation($name,$fieldName,$type,$other=false)
+	{
+		$this->aAllValidation[]=array('type'=>$type,
+					'fieldName'=>$fieldName,
+					'name'=>$name,
+					'other'=>$other
+					);
+		return $this->aAllValidation[count($this->aAllValidation)-1];
+	}
+
+	// -----------------------------------------------------------------------------
+	// add rules
+	// $type - type of rule
+	// $fieldName - variable or array of variables
+	// $message - error message
+	// $other - information for some rules
+	// $active - is active rule or not
+	// -----------------------------------------------------------------------------
+
+	function &createRule($fieldName, $message, $type, $other='', $active=true)
+	{
+		$this->aAllRules[]=array('type'=>$type,
+					'fieldName'=>$fieldName,
+					'message'=>$message,
+					'active'=>$active,
+					'other'=>$other,
+                    'form'=>  $this->aForm['name']
+					);
+		// Features
+		switch($type)
+		{
+			case 'validatedate':
+				$this->aFeatures[$fieldName]['calendar']=true;
+				break;
+		}
+
+
+		return $this->aAllRules[count($this->aAllRules)-1];
+	}
+
+	// -----------------------------------------------------------------------------
+	// add rule
+	// -----------------------------------------------------------------------------
+	function addRule($fieldName, $message, $type, $other='', $active=true)
+	{
+		$this->aRules[]=$this->createRule($fieldName, $message, $type, $other, $active);
+	}
+
+	// -----------------------------------------------------------------------------
+	// get html code of features
+	// -----------------------------------------------------------------------------
+	function getHtmlFeatures($data)
+	{
+		$r='';
+		switch(strtolower($data['type']))
+		{
+			case 'date':
+				$r.='<a href="javascript:void(0)" onclick="if (document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'].disabled==false) {gfPop.fStartPop(document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'],0);}return false;" hidefocus><img src="img/ico_date.gif" hspace=2 width="16" height="15" border="0" class="noblock" align=absmiddle alt=""/></a>';
+				break;
+			case 'personalcode':
+				if (isset($data['features']['getNew']))
+				{
+					$oUrl = new urlQuery();
+					$oUrl -> addPrm ('subsysId','fun');
+					$oUrl -> addPrm ('function','getNewPersCode');
+					$r.=' <input align=absmiddle onclick="document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'].value=xmlHttpGetValue(\''.$oUrl->getQuery().'\');return false;" type="button" class="button_90" value="Ģenerēt kodu" />';
+				}
+				break;
+
+		}
+		return $r;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// get html code for variables
+	// -----------------------------------------------------------------------------
+	function getHtml($data)
+	{
+		$isDisable=false;
+		if (!empty($this->idDisabled[$data['name']]))
+		{
+			$data['attributes'].=' disabled ';
+			$isDisable=true;
+		}
+
+        	/* Code for exisiting js form validation speed-up */
+      /*	if (in_array($data['type'],
+			array('hidden2','hidden','checkbox','kls','password','date','text',
+			'personalcode','textarea','select','multipleselect','radio')))
+		{
+
+			$cVFString="setFlag('".$data['name']."');";
+			preg_replace(
+				array(  '/onchange="([^"]*)"/i',
+						'/onchange=\'([^\']*)\'/i'),
+				array( 'onchange="$1'.$cVFString.'"',
+						'onchange="$1'.$cVFString.'"'),
+			$data['attributes']) != $data['attributes'] ||
+			$data['attributes']=$data['attributes'].' onchange="'.$cVFString.'"';
+		}*/
+
+		if ($this->frozen)
+		{
+			switch(strtolower($data['type']))
+			{
+				case 'closewindow':
+					return '<script>window.close()</script>';
+					break;
+
+		        	case 'img':
+		        		$oLink=new urlQuery();
+		        		$oLink->addPrm(IS_GET_FILE_VARIABLE,1);
+		        		$oLink->addPrm(GET_FILE_VARIABLE,$this->getValue($data['name'], $data['defaultValue']));
+					$html = '<img src="'.$oLink->getQuery().'" '.$data['attributes'].'/>'.
+						'<input type="hidden" name="'.$data['name'].'" value="'.$this->getValue($data['name']).'" />';
+					unset($oLink);
+					return $html;
+					break;
+
+				case 'file':
+		        		$oLink=new urlQuery();
+		        		$oLink->addPrm(IS_GET_FILE_VARIABLE,1);
+		        		$oLink->addPrm(GET_FILE_VARIABLE,$this->getValue($data['name'], $data['defaultValue']));
+					$html = '<a href="'.$oLink->getQuery().'" '.$data['attributes'].'>'.$data['label'].'</a>'.
+						'<input type="hidden" name="'.$data['name'].'" value="'.$this->getValue($data['name']).'" />';
+					unset($oLink);
+					return $html;
+					break;
+
+				case 'password':
+					return '*****';
+					break;	
+				case 'hidden':
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" />';
+					break;
+				case 'submit':
+					$this->aSubmitName[]=$data['name'];
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'],null,true)).'" />';
+					break;
+				case 'submitimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<input type="image" src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/>';
+					break;
+				case 'buttonImg':
+					$this->aSubmitName[]=$data['name'];
+					return '<a href="#"><img src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/></a>';
+					break;
+				case 'resetimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<input onclick="document.forms.'.$this->aForm['name'].'.reset();return false;" type="image" src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/>';
+					break;
+				case 'reset':
+				case 'button':
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'],null,true)).'" />';
+					break;
+				case 'checkbox':
+					$value=$this->getValue($data['name']);
+					return '<input class="checkbox" DISABLED type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="1" '.( empty( $value ) ? '' : 'checked' ).' />';				
+					break;
+				case 'kls':
+					return classif::getHtml($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								true);
+					break;
+                case 'kls2':
+					return classif::getHtml2($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								true);
+					break;
+                case 'kls3':
+					return classif::getHtml3($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								true);
+					break;
+				case 'link':
+					return '<a '.$data['attributes'].' href="'.$this->getValue($data['name'],null,true).'">'.$data['label'].'</a>';
+					break;
+
+				case 'select':	
+				case 'radio':
+					return isset( $data['options'][$this->getValue($data['name'])] )?$data['options'][$this->getValue($data['name'])]:'';
+					break;
+
+
+				case 'subheader':
+				case 'header':
+					if (empty($this->aAllParam[$data['name']]['defaultValue']))
+					{
+						$this->aAllParam[$data['name']]['defaultValue']=$this->aAllParam[$data['name']]['label'];
+					}
+
+				case 'static':
+					return $this->getValue($data['name'],null);
+					break;
+
+				case 'label':
+				case 'textarea':
+				case 'text':
+				case 'personalcode':
+				case 'date':
+				default:
+					return htmlspecialchars($this->getValue($data['name'],null));
+					break;
+
+			}
+		}
+		else
+		{
+			switch(strtolower($data['type']))
+			{
+				
+				case 'closewindow':
+					return '<script>window.close()</script>';
+					break;
+
+		        	case 'img':
+		        		$oLink=new urlQuery();
+		        		$oLink->addPrm(IS_GET_FILE_VARIABLE,1);
+		        		$oLink->addPrm(GET_FILE_VARIABLE,$this->getValue($data['name'], $data['defaultValue']));
+					$html = '<img src="'.$oLink->getQuery().'" '.$data['attributes'].'/>'.
+						'<input type="hidden" name="'.$data['name'].'" value="'.$this->getValue($data['name']).'" />';
+					unset($oLink);
+					return $html;
+					break;
+
+				case 'file':
+		        		$oLink=new urlQuery();
+		        		$oLink->addPrm(IS_GET_FILE_VARIABLE,1);
+		        		$oLink->addPrm(GET_FILE_VARIABLE,$this->getValue($data['name'], $data['defaultValue']));
+					$html = '<a href="'.$oLink->getQuery().'" '.$data['attributes'].'>'.$data['label'].'</a>'.
+						'<input type="hidden" name="'.$data['name'].'" value="'.$this->getValue($data['name']).'" />';
+					unset($oLink);
+					return $html;
+					break;
+
+				case 'uploadfile':
+					$html='<INPUT '.$data['attributes'].' NAME="'.$data['name'].'" TYPE="file">';
+					return $html;
+					break;
+
+				case 'password':
+					return '<input class="flex"  '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').'  type="password" '.$data['attributes'].' name="'.$data['name'].'"/>';
+					break;	
+
+				case 'hidden':
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" />'.$this->getHtmlFeatures($data);
+					break;
+
+				case 'date':
+					return '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width=100%><input class="flex" onBlur="if (!isDate(document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'].value)) {this.focus();}"  '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').'  type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" /></td><td>'.$this->getHtmlFeatures($data).'</td></tr></table>';
+					break;
+
+				case 'personalcode':
+				case 'text':
+					return '<input class="flex" '.(empty($data['isSubmitByEnter'])?' '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').' ':'').' type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" />'.$this->getHtmlFeatures($data);
+					break;
+
+				case 'submit':
+					$this->aSubmitName[]=$data['name'];
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'],null,true)).'" />';
+					break;
+
+				case 'submitimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<input type="image" src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/>';
+					break;
+
+				case 'buttonimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<a href="#"><img src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/></a>';
+					break;
+
+				case 'resetimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<input onclick="document.forms.'.$this->aForm['name'].'.reset();return false;" type="image" src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/>';
+					break;
+
+                case 'clearimg':
+					$this->aSubmitName[]=$data['name'];
+					return '<input onclick="'.$this->aForm['name'].'_clear();'.(isset($data['options']['onClick'])?$data['options']['onClick']:'').'return false;" type="image" src="'.$this->getValue($data['name'],null,true).'" alt="'.$data['label'].'" '.$data['attributes'].' name="'.$data['name'].'" border=0/>';
+					break;
+
+				case 'button':
+				case 'reset':
+					return '<input type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'],null,true)).'" />';
+					break;
+
+				case 'checkbox':
+					$value=$this->getValue($data['name']);
+					return '<input  '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').'  class="checkbox" type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="1" '.( empty( $value ) ? '' : 'checked' ).' />';				
+					break;
+
+				case 'textarea':
+					return '<textarea class="flex" '.$data['attributes'].' name="'.$data['name'].'">'.htmlspecialchars($this->getValue($data['name'])).'</textarea>';
+					break;
+
+				case 'kls':
+					return classif::getHtml($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								empty($data['defaultValue']['readonly'])?false:true,
+								empty($data['defaultValue']['disabled'])?false:true);
+					break;
+                case 'kls2':
+					return classif::getHtml2($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								empty($data['defaultValue']['readonly'])?false:true,
+								empty($data['defaultValue']['disabled'])?false:true);
+					break;
+                 case 'kls3':
+					return classif::getHtml3($data['defaultValue']['classifName'],
+								$data['name'],
+								$this->getValue($data['name']),
+								$data['attributes'],
+								empty($data['defaultValue']['readonly'])?false:true,
+								empty($data['defaultValue']['disabled'])?false:true);
+					break;
+				case 'select':	
+					$r='<select class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$data['attributes'].' name="'.$data['name'].'" id="'.$data['name'].'">';
+					if (is_array($data['options']))
+					{
+						foreach ($data['options'] as $i=>$v)
+						{
+							$r.='<option '.(($this->getValue($data['name'])==$i)?'selected':'').' value="'.$i.'">'.$v.'</option>';
+						}
+					}
+					$r.='</select>';
+					return $r;
+					breal;
+
+				case 'multiple_select':
+					$r='<select MULTIPLE class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$data['attributes'].' name="'.$data['name'].'[]">';
+					if (is_array($data['options']))
+					{
+						foreach ($data['options'] as $i=>$v)
+						{
+							$r.='<option '.(in_array($i,is_array($this->getValue($data['name']))?$this->getValue($data['name']):array() )?'selected':'').' value="'.$i.'">'.$v.'</option>';
+						}
+					}
+					$r.='</select>';
+					return $r;
+					breal;
+
+				case 'radio':	
+					$r='';
+					if (is_array($data['options']))
+					{
+						foreach ($data['options'] as $i=>$v)
+						{
+							$r.=' <input style="width:18px;" type="radio" name="'.$data['name'].'" '.$data['attributes'].' '.(($this->getValue($data['name'])==$i)?'checked':'').' value="'.$i.'"> '.$v;
+						}
+					}
+					$r.='';
+					return $r;
+					break;
+
+				case 'link':
+					return '<a '.$data['attributes'].' href="'.$this->getValue($data['name'],null,true).'">'.$data['label'].'</a>';
+					break;
+
+				case 'subheader':
+				case 'header':
+					if (empty($this->aAllParam[$data['name']]['defaultValue']))
+					{
+						$this->aAllParam[$data['name']]['defaultValue']=$this->aAllParam[$data['name']]['label'];
+					}
+
+				case 'label':
+					//return htmlspecialchars($this->getValue($data['name'],null,true)).
+					return htmlspecialchars($this->getValue($data['name'], $data['defaultValue'] )).
+						'<input type="hidden" name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" />'
+						;
+					break;
+
+				case 'static':
+				default:
+					return $this->getValue($data['name'],null,true);
+					//return $this->getValue($data['name']).
+					//	'<input type="hidden" name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" />'
+					break;
+			}
+		}
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return html code for hidden variables
+	// -----------------------------------------------------------------------------
+	function getHiddenVariables($aElements) 
+	{
+		$r='';
+		if ( is_array($aElements) )
+		{
+			foreach ($aElements as $data)
+			{
+				if ($data['type']=='hidden')
+				{
+					$r.=$data['html'];
+				}
+			}
+		}
+		return $r;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return html code for not hidden variables
+	// -----------------------------------------------------------------------------
+	function getNotHiddenVariables($aElements) 
+	{
+		if ( is_array($aElements) )
+		{
+			foreach ($aElements as $index=>$data)
+			{
+				if ($data['type']=='hidden')
+				{
+					unset($aElements[$index]);
+				}
+			}
+		}
+		return $aElements;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// get html type of variable
+	// -----------------------------------------------------------------------------
+	function getType($data)
+	{
+		switch($data['type'])
+		{
+			case 'kls':
+				if (!empty($data['defaultValue']['isHidden']))
+				{
+					return 'hidden';
+				}
+				if (!empty($data['defaultValue']['isReadonly']))
+				{
+					return 'label';
+				}
+
+				return $data['type'];
+				break;
+			default:
+				return $data['type'];
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return variables array for used in templates
+	// -----------------------------------------------------------------------------
+	function getVariablesArray($aPrm)
+	{
+		$aReturn=array();
+
+		if ( is_array($aPrm) )
+		{
+			foreach ($aPrm as $data)
+			{
+				if ($data['type']=='group')
+				{
+					$aReturn[$data['name']]['elements']=$this->getVariablesArray($data['defaultValue']);
+				}
+       				else
+       				{
+					$aReturn[$data['name']]['html']=$this->getHtml($data);
+					if ( $this->isDisabledType($data['type']) )
+					{
+						$aReturn[$data['name']]['html'].='<input type="hidden" value="" name="'.DISABLED_PREFIX.$data['name'].'">';
+					}
+				}
+				$aReturn[$data['name']]['type']=$this->getType($data);
+				$aReturn[$data['name']]['tInfo']=$data['tInfo'];
+				$aReturn[$data['name']]['label']=$data['label'];
+				$aReturn[$data['name']]['name']=$data['name'];
+
+			}
+		}
+		return $aReturn;
+	}
+
+	// -----------------------------------------------------------------------------
+	// get validation code
+	// -----------------------------------------------------------------------------
+	function getValidation($aValidation)
+	{
+       return jsValidation::getValidationHtml($this->aForm['name'],$aValidation['name'], $aValidation['type'], $aValidation['fieldName'], $aValidation['other']);
+        //return jsValidation::getValidationHtml($aValidation['form'],$aValidation['name'], $aValidation['type'], $aValidation['fieldName'], $aValidation['other']);
+	}
+
+	// -----------------------------------------------------------------------------
+	// get JS of rules
+	// -----------------------------------------------------------------------------
+	function getJavaScript($aRules)
+	{
+	        $r='';
+		if ( is_array($aRules) )
+		{
+			foreach ($aRules as $aRule)
+			{
+				if ( ($aRule['active']) )
+				{
+					if ($aRule['type']=='group')
+					{
+						$r.=$this->getValidation($aRule['other'])."\n".' if ('.$aRule['other']['name'].'()) {'.$this->getJavaScript($aRule['fieldName']) .'}' ;
+					}
+					else
+					{
+				        $r.=jsValidation::getRuleHtml($this->aForm['name'],$aRule['type'],$aRule['fieldName'],'',$aRule['message'],$aRule['other']);
+					}
+				}
+			}
+		}
+		return $r;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return informaction - can be disabled this field type
+	// -----------------------------------------------------------------------------
+	function isDisabledType($type)
+	{
+		$type=strtolower($type);
+		if ($type=='text' ||
+			$type=='hidden' ||
+			$type=='kls' ||
+			$type=='radio' ||
+			$type=='checkbox' ||
+			$type=='select' ||
+			$type=='textarea' ||
+			$type=='button' ||
+			$type=='reset' ||
+			$type=='submit' ||
+			$type=='date' ||
+			$type=='personalcode' ||
+			$type=='password')
+		{
+			return true;
+		}
+		return false;
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// returt JS code (make disabled field array)
+	// -----------------------------------------------------------------------------
+	function jsDisableFields($aPrm, $showFun=true)
+	{
+		ob_start();
+		if ($showFun)
+		{
+			?>
+			document.forms['<?=$this->aForm['name'];?>']['<?=$this->aForm['name'];?>disabledName'].value='';
+			function <?=$this->aForm['name'];?>saveDisableFiels(f)
+			{
+					document.forms['<?=$this->aForm['name'];?>']['<?=$this->aForm['name'];?>disabledName'].value+=','+f;
+					if (isSet('<?=DISABLED_PREFIX;?>'+f)) 
+					{
+						document.forms['<?=$this->aForm['name'];?>']['<?=DISABLED_PREFIX;?>'+f].value=getValue(f);
+					}
+					else
+					{
+						document.forms['<?=$this->aForm['name'];?>'][f].disabled=false;
+					}
+			}
+			<?
+		}
+		if ( is_array($aPrm) )
+		{
+			foreach ($aPrm as $data)
+			{
+				if ($data['type']=='group')
+				{
+					echo $this->jsDisableFields($data['defaultValue'],false);
+				}
+       				else
+       				{
+
+       					if ($this->isDisabledType($data['type']))
+       					{
+						?>
+						if (document.forms['<?=$this->aForm['name'];?>']['<?=$data['name'];?>'].disabled) <?=$this->aForm['name'];?>saveDisableFiels('<?=$data['name'];?>');
+						<?
+					}
+				}
+			}
+
+		}
+		
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+    // -----------------------------------------------------------------------------
+	// disabled field
+	// -----------------------------------------------------------------------------
+	function setDeisabled($fieldName, $disabled)
+	{
+        ob_start();
+        ?>
+
+			document.forms['<?=$this->aForm['name'];?>']['<?=$fieldName;?>'].disabled = <?=$disabled;?>
+
+		<?
+        $output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+    
+
+	// -----------------------------------------------------------------------------
+	// new value
+	// -----------------------------------------------------------------------------
+	function setNewValue($fieldName,$value)
+	{
+        //---------- set value for field names like name[1] ----------
+		$openBracketPos = strpos($fieldName, '[');
+		if ($openBracketPos !== false)
+		{
+			$closeBracketPos = strpos($fieldName, ']');
+
+			// if value won't be splited to array by php
+			if ($closeBracketPos === false)
+			{
+				return $this->setNewValue($fieldName);
+			}
+
+			$tmpName = substr($fieldName, 0, $openBracketPos);// array name
+			$index = substr($fieldName, $openBracketPos + 1, $closeBracketPos - $openBracketPos -1 );
+
+			$this->aSubmitValues[$tmpName][$index] = $value;
+		}
+		//--------------------
+		else
+		{
+			$this->aSubmitValues[$fieldName]=$value;
+			$this->aAllParam[$fieldName]['defaultValue']=$value;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// javascript validation function name
+	// public
+	// -----------------------------------------------------------------------------
+	function jsValidateFunction($comma=true)
+	{
+		if ($comma===true)
+		{
+			$c=';';
+		}
+		else
+		{
+			$c='';
+		}
+		return jsValidation::getValidationFunctionName($this->aForm['name']).'()'.$c;
+	}
+
+	function getError()
+	{
+        	$aGlobalErrors=session::get('glb_form_errors');
+		if (is_array($aGlobalErrors)) $this->aErrors=$aGlobalErrors;
+		session::del('glb_form_errors');
+
+		$r='';
+		if (is_array($this->aErrors) && count($this->aErrors)>0 )
+		{
+			$r='<table border=0 class="errmsg"><tr valign=top><td><img src="/img/ico_error.gif" alt="'.text::get('ERROR').'" width="16" height="22"></th><td class="error">';
+			foreach ($this->aErrors as $error)
+			{
+				$r.=(strlen($error)?$error.'<br>':'');
+			}
+			$r.='</td></tr></table>';
+		}
+		return $r;
+	}
+
+	function getSuccessHtml()
+	{
+        $aGlobalSuccess=session::get('glb_form_success');
+		if (is_array($aGlobalSuccess)) $this->aSuccess=$aGlobalSuccess;
+		session::del('glb_form_success');
+
+		$r='';
+		if (is_array($this->aSuccess) && count($this->aSuccess)>0 )
+		{
+			$r='<table border=0  class="sucmsg"><tr valign=top><td><img src="/img/ico_success.gif" alt="'.text::get('SUCCESS').'" width="16" height="22"></td><td class="success">';
+			foreach ($this->aSuccess as $success)
+			{
+				$r.=$success.'<br>';
+			}
+			$r.='</td></tr></table>';
+		}
+		return $r;
+	}
+
+    function getFormClearJavascript()
+	{
+		$r='<script> function '.$this->aForm['name'].'_clear() {';
+		if ( is_array($this->aParam) )
+		{
+			foreach ($this->aParam as $data)
+			{
+				if ($data['type']!='group' && $data['name']!=$this->getIsSubmitVariable())
+				{      
+					$r.='setFormValue("'.$this->aForm['name'].'","'.$data['name'].'",""); disableFormField("'.$this->aForm['name'].'","'.$data['name'].'",false);';
+				}
+			}
+		}
+		$r.='} </script>';
+		return $r;
+	}
+
+	
+	// -----------------------------------------------------------------------------
+	// get forms array for template
+	// -----------------------------------------------------------------------------
+	function toArray()
+	{
+
+		$aReturn=array();
+		$aReturn['attributes']=' encType="multipart/form-data" onsubmit="return '.jsValidation::getValidationFunctionName($this->aForm['name']).'();" action="'.$this->aForm['action'].'" name="'.$this->aForm['name'].'" method="'.$this->aForm['method'].'" '.$this->aForm['attributes'].' ';
+		$aReturn['javascript']=jsValidation::getStartHtml($this->aForm['name']).$this->getJavaScript($this->aRules).jsValidation::getFinishHtml($this->aForm['name'],$this->jsDisableFields($this->aParam)).$this->getFormClearJavascript();
+		$aElements=$this->getVariablesArray($this->aParam);;
+		$aReturn['elements']=$this->getNotHiddenVariables($aElements);
+		$aReturn['hidden']=$this->getHiddenVariables($aElements);
+		$aReturn['errors']=$this->getError();
+		$aReturn['success']=$this->getSuccessHtml();
+		return $aReturn;
+	}
+
+
+	function makeHtml()
+	{
+		$this->aHtml=$this->toArray();
+		if (is_array($this->aHtml))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+    function hasFieldInRule($fieldName, $aRule)
+	{
+		if (is_array($aRule))
+		{
+			if (is_array($aRule['fieldName']))
+			{
+				foreach($aRule['fieldName'] as $f)
+				{
+					if ($this->hasFieldInRule($fieldName, $f))
+					{
+						return true;
+					}
+				}
+			}
+			else if ($aRule['fieldName'] == $fieldName)
+			{
+				return true;
+			}
+		}
+		else if ($aRule == $fieldName)
+		{
+			return true;
+		}
+
+		return false;
+
+	}
+
+
+	/**
+	 * Get rules for certain elements
+	 *
+	 * @param array $elementNames
+	 * @return array of rules passed by reference
+	 */
+	function &getRulesForElements($elementNames)
+	{
+
+		$ret = array();
+		if (is_array($elementNames))
+		{
+			foreach ($this->aRules as $aRule)
+			{
+				foreach ($elementNames as $name)
+				{
+					if ($this->hasFieldInRule($name, $aRule))
+					{
+						$ret[] = $aRule;
+						break;
+					}
+				}
+			}
+
+			/*
+			foreach ($elementNames as $name)
+			{
+				foreach ($this->aRules as $aRule)
+				{
+					if ($this->hasFieldInRule($name, $aRule))
+					{
+						$ret[] = $aRule;
+					}
+				}
+			}
+			*/
+		}
+		return $ret;
+	}
+
+	function getFormHeader()
+	{
+        $buf = '';// buffer
+
+		//---------- generate script for dynamic row handling ----------
+		if (!empty($this->aDynamicRows))
+		{
+			$buf .= '<script>';
+			ob_start();
+			?>
+			var isFirstDynamicRow = true;
+			$(
+				function()
+				{
+			<? foreach ($this->aDynamicRows as $buttonId => $data) { ?>
+			$('#<?=$buttonId?>').click(
+				function()
+				{
+					// create function call counter
+					if (typeof(this.counter) === 'undefined')
+					{
+						this.counter = <?=$data['nextIndex']?>;
+					}
+					else
+					{
+						++this.counter;
+					}
+
+
+
+					// new row html template
+					var newRowHtml = '<tr>';
+					<?
+					foreach ($data['fields'] as $fieldName)
+					{
+						if ($this->aAllParam[$fieldName]['type']!='hidden')
+						{
+							?>
+							newRowHtml += '<td>';
+							<?
+						}
+						?>
+
+						newRowHtml += '<?= addcslashes(str_replace("\r\n", '', $this->getElementHtml($fieldName)), '\''); ?>';
+
+						<?
+						if ($this->aAllParam[$fieldName]['type']!='hidden')
+						{
+							?>
+							newRowHtml += '</td>';
+							<?
+						}
+
+					}
+					?>
+					newRowHtml +=  '</tr>';
+
+					// change name indexes to current row index
+					newRowHtml = newRowHtml.replace(/\[[0-9]+\]/g, '[' + this.counter + ']');
+
+					// clear values
+					newRowHtml = newRowHtml.replace(/(<input[^>]+)value="[^"]+"/g, '$1');
+					newRowHtml = newRowHtml.replace(/ checked(="checked")?/g, '');
+					newRowHtml = newRowHtml.replace(/selected(="selected")?/g, '');
+					newRowHtml = newRowHtml.replace(/ disabled(="disabled")?/g, ' ');
+					newRowHtml = newRowHtml.replace(/readonly(="readonly")?/g, ' ');
+
+					// change row index in url and function params
+					newRowHtml = newRowHtml.replace(/(deleteId=)[0-9]+/g, '_$1');
+					newRowHtml = newRowHtml.replace(/(var index=)[0-9]+/g, '$1' + this.counter);
+					newRowHtml = newRowHtml.replace(/(pindex=)[0-9]+/g, '$1' + this.counter);
+					newRowHtml = newRowHtml.replace(/(taskStore\.change\(this\.value,)[0-9]+(\);)/g, '$1' + this.counter + '$2');
+					newRowHtml = newRowHtml.replace(/(single\_nwt\_change\()[0-9]+/g, '$1' + this.counter);
+					newRowHtml = newRowHtml.replace(/(\&duzdId=)[0-9]+/g, '$1');
+
+
+					// prepend row to container
+					$('#<?=$data['containerId']?>').prepend(newRowHtml);
+
+					// new row javascript template
+					var jsCode =
+						'var validate=true;' +
+						'var good_fields=false;' +
+						'var isMoveCursor=true;' +
+						'var msg;' +
+						'var errFlag = new Array();';
+
+					// override <form name>ValidationScript() validation results
+					if (isFirstDynamicRow && this.counter == 0)
+					{
+						jsCode += 'removeErrSpans();';
+						isFirstDynamicRow = false;
+					}
+
+					jsCode += '<?=addcslashes(str_replace("\r", '', str_replace("\n", '', $this->getJavaScript($this->getRulesForElements($data['fields'])))), "'")?>';
+
+					// change name indexes to current row index
+					jsCode = jsCode.replace(/\[[0-9]+\]/g, '[' + this.counter + ']');
+
+					// prevent submit if validation failed
+					jsCode += 'return validate;';
+
+					// improve event handler robustness
+					jsCode = 'try { ' + jsCode + ' } catch (ex) { return false; }';
+
+					// add submit event listener that will validate row with current index
+					$('form[@name="<?=$this->aForm['name']?>"]').submit(new Function(jsCode));
+
+				}
+			)
+			<? } ?>
+				}
+			);
+			<?
+			$buf .= ob_get_clean() . '</script>';
+		}
+		//--------------------
+
+		if ($this->aHtml!==false)
+		{
+			$buf .= $this->aHtml['javascript'].'
+
+			<script>
+			if (!isCalendar)
+			{
+				document.write(\'<iframe width=132 height=142 name="gToday:contrast:agenda.js" id="gToday:contrast:agenda.js" src="js/calendar/ipopeng.htm" scrolling="no" frameborder="0" style="visibility:visible; z-index:999; position:absolute; left:-500px; top:0px;"></iframe>\');
+			}
+			var isCalendar=true;
+			</script>
+
+			<form '. $this->aHtml['attributes'] .'>'. $this->aHtml['hidden'];
+		}
+		else
+		{
+			return false;
+		}
+		return $buf;
+	}
+
+	function getFormBottom()
+	{
+       	$cPerElemErrors='<script>';
+		$aFormElemError=session::get('form_elem_error');
+
+		if (isset($aFormElemError[$this->aForm['name']])&&
+			is_array($aFormElemError[$this->aForm['name']]))
+		{
+			foreach ($aFormElemError[$this->aForm['name']] as $aErr)
+			{
+				$cPerElemErrors.='showError("'.$aErr['elem'].'","'.$aErr['msg'].'");';
+			}
+			unset($aFormElemError[$this->aForm['name']]);
+			session::set('form_elem_error',$aFormElemError);
+		}
+
+		$aFormElemSuccess=session::get('form_elem_success');
+		if (isset($aFormElemSuccess[$this->aForm['name']])&&
+			is_array($aFormElemSuccess[$this->aForm['name']]))
+		{
+			foreach ($aFormElemSuccess[$this->aForm['name']] as $aErr)
+			{
+				$cPerElemErrors.='showError("'.$aErr['elem'].'","_SUCCESS_FLAG_'.$aErr['msg'].'");';
+			}
+			unset($aFormElemSuccess[$this->aForm['name']]);
+			session::set('form_elem_success',$aFormElemSuccess);
+		}
+
+		$cPerElemErrors.='</script>';
+
+		if ($this->aHtml!==false)
+		{
+			return $cPerElemErrors.'</form>';
+		}
+		else
+		{
+			return false;
+		}
+
+
+	}
+
+	function getErrors()
+	{
+		if ($this->aHtml!==false)
+		{
+			return $this->aHtml['errors'];
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+
+	function getSuccess()
+	{
+		if ($this->aHtml!==false)
+		{
+			return $this->aHtml['success'];
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+
+	function getMessage()
+	{
+		return $this->getErrors().$this->getSuccess();
+	}
+
+	function getElementHtml($name)
+	{
+		if ($this->aHtml!==false && isset($this->aHtml['elements'][$name]['html']))
+		{
+			return $this->aHtml['elements'][$name]['html'];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	function getElementLabel($name)
+	{
+		if ($this->aHtml!==false && isset($this->aHtml['elements'][$name]['label']))
+		{
+			return $this->aHtml['elements'][$name]['label'];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	function getElementAttributes($name)
+	{
+		if ($this->aHtml!==false && isset($this->aHtml['elements'][$name]))
+		{
+			return $this->aHtml['elements'][$name];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	function isFrozen()
+	{
+		return $this->frozen;
+	}
+
+    function isValid()
+	{
+		$aGlobalErrors=session::get('glb_form_errors');
+		$aFormElemErrors=session::get('form_elem_error');
+		return (!(
+				(is_array($aGlobalErrors)&&count($aGlobalErrors))
+				||(is_array($this->aErrors)&&count($this->aErrors))
+				||(isset($aFormElemErrors[$this->aForm['name']])
+					&&count($aFormElemErrors[$this->aForm['name']]))
+				));
+	}
+
+	function addErrorPerElem($cElementName,$cErrorMessage)
+	{
+		$aErrorTest=session::get('form_elem_error');
+		if (!isset($aErrorTest[$this->aForm['name']])||
+			!is_array($aErrorTest[$this->aForm['name']])||
+			!in_array(array('elem'=>$cElementName,'msg'=>$cErrorMessage),$aErrorTest[$this->aForm['name']]))
+		{
+			$aErrorTest[$this->aForm['name']][]=array('elem'=>$cElementName,'msg'=>$cErrorMessage);
+		}
+		session::set('form_elem_error',$aErrorTest);
+	}
+
+
+	function addSuccessPerElem($cElementName,$cErrorMessage)
+	{
+		$aSuccessTest=session::get('form_elem_success');
+		if (!isset($aSuccessTest[$this->aForm['name']])||
+			!is_array($aSuccessTest[$this->aForm['name']])||
+			!in_array(array('elem'=>$cElementName,'msg'=>$cErrorMessage),$aSuccessTest[$this->aForm['name']]))
+		{
+			$aSuccessTest[$this->aForm['name']][]=array('elem'=>$cElementName,'msg'=>$cErrorMessage);
+		}
+		session::set('form_elem_success',$aSuccessTest);
+	}
+
+
+	/**
+	 * Initialize dynamic row
+	 *
+	 * Row will be prepended to the specified container node after triggering specified button Click event
+	 *
+	 * @param string $buttonId button DOM node id
+	 * @param string $containerId container DOM node id
+	 * @param integer $nextIndex index that will be used in next row field names. Ex: name="somename[$nextIndex]"
+	 * @param array $fields fields to be included in dynamic row
+	 * @return boolean operation status
+	 */
+	function addDynamicRowButton($buttonId, $containerId, $nextIndex, $fields)
+	{
+		if (is_array($fields) && !empty($fields))
+		{
+			$this->aDynamicRows[$buttonId] = array(
+				'containerId' => $containerId,
+				'nextIndex' => $nextIndex,
+				'fields' => $fields
+			);
+			return true;
+		}
+		return false;
+	}
+
+
+
+}
+?>

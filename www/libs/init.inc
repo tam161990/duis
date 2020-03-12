@@ -1,0 +1,28 @@
+<?
+	require_once(dirname(__FILE__).'/../config/main.conf');
+  
+	require_once(ZR_LIBS_DIR.'/functions.inc');
+	require_once(ZR_LIBS_DIR.'/dbLayer/dbLayer.class');
+	require_once(ZR_LIBS_DIR.'/dbProc/dbProc.class');
+	require_once(ZR_LIBS_DIR.'/requestHandler/requestHandler.class');
+	require_once(ZR_LIBS_DIR.'/urlQuery/urlquery.class');
+	require_once(ZR_LIBS_DIR.'/form/form.class');
+    require_once(ZR_LIBS_DIR.'/jsValidation/jsValidation.class');
+	require_once(ZR_LIBS_DIR.'/userAuthorization/userauthorization.class');
+	require_once(ZR_LIBS_DIR.'/reqVar/reqVar.class');
+	require_once(ZR_LIBS_DIR.'/session/session.class');
+    require_once(ZR_LIBS_DIR.'/files/files.class');
+	//require_once(ZR_LIBS_DIR.'/auth/auth.class');
+	require_once(ZR_LIBS_DIR.'/text/text.class');
+    require_once(ZR_LIBS_DIR.'/listing/listing.class');
+	require_once(ZR_LIBS_DIR.'/classif/classif.class');
+	require_once(ZR_LIBS_DIR.'/email/email.class');
+	require_once(ZR_LIBS_DIR.'/datetime/dtime.class');
+    require_once(ZR_LIBS_DIR.'/excel/PHPExcel/IOFactory.php');
+    require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/PDF.php');
+    require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/Excel5.php');
+    require_once(ZR_LIBS_DIR.'/tab/tabs.php');
+    require_once(ZR_LIBS_DIR.'/fpdf/fpdf.php');
+    require_once(ZR_LIBS_DIR.'/progress/PogProgressBar.php');
+    require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
+?>

@@ -1,0 +1,131 @@
+<?
+
+define('LISTING_PAGE_NUMBER_VAR','p');
+define('LISTING_AMOUNT_ON_PAGE_VAR','amount_on_page');
+define('LISTING_AMOUNT_ON_PAGE',20);
+
+class listing
+{
+
+	var $amount;
+
+	function listing()
+	{
+		$this->amount=0;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// set records amount
+	// -----------------------------------------------------------------------------
+	function setAmount($a)
+	{
+		$this->amount=$a;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return record amount on one page
+	// -----------------------------------------------------------------------------
+	function getAmountOnPage()
+	{
+		if (is_numeric(reqVar::get(LISTING_AMOUNT_ON_PAGE_VAR)) && reqVar::get(LISTING_AMOUNT_ON_PAGE_VAR) >0 )
+		{
+			$this->setAmountOnPage(reqVar::get(LISTING_AMOUNT_ON_PAGE_VAR));
+			return reqVar::get(LISTING_AMOUNT_ON_PAGE_VAR);
+		}
+
+		if (is_numeric(session::get(LISTING_AMOUNT_ON_PAGE_VAR)))
+		{
+			return session::get(LISTING_AMOUNT_ON_PAGE_VAR);
+		}
+
+		return LISTING_AMOUNT_ON_PAGE;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return start record position (for MySQL limit)
+	// -----------------------------------------------------------------------------
+	function getStartPosition()
+	{
+		return ($this->getCurrentPageNumber()-1) * $this->getAmountOnPage();
+	}
+
+	// -----------------------------------------------------------------------------
+	// return html
+	// -----------------------------------------------------------------------------
+	function getHtml($url)
+	{   
+		ob_start();
+		include('listing.tpl');
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return last record position
+	// -----------------------------------------------------------------------------
+	function getLastPosition()
+	{
+		$a=($this->getCurrentPageNumber()) * $this->getAmountOnPage();
+		if ($a>$this->getAmount())
+		{
+			$a=$this->getAmount();
+		}
+		return $a-1;
+	}
+
+	// -----------------------------------------------------------------------------
+	// return last page number
+	// -----------------------------------------------------------------------------
+	function getLastPageNumber()
+	{
+		return ceil($this->getAmount() / $this->getAmountOnPage());
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// return current page number
+	// -----------------------------------------------------------------------------
+	function getCurrentPageNumber()
+	{
+		if (is_numeric(reqVar::get(LISTING_PAGE_NUMBER_VAR)) && reqVar::get(LISTING_PAGE_NUMBER_VAR)>0)
+		{
+			if (reqVar::get(LISTING_PAGE_NUMBER_VAR) >  $this->getLastPageNumber())
+			{
+				return $this->getLastPageNumber();
+			}
+			else
+			{
+				return reqVar::get(LISTING_PAGE_NUMBER_VAR);
+			}
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return records amount
+	// -----------------------------------------------------------------------------
+	function getAmount()
+	{
+		return $this->amount;
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// set record amount on one page
+	// -----------------------------------------------------------------------------
+	function setAmountOnPage($a)
+	{
+		session::set(LISTING_AMOUNT_ON_PAGE_VAR,$a);
+	}
+
+
+}
+
+
+?>

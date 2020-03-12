@@ -1,0 +1,163 @@
+<?
+
+class text
+{
+	// -----------------------------------------------------------------------------
+	// return TEXT LABEL by CODE
+	// public
+	// -----------------------------------------------------------------------------
+	function get($code)
+	{
+		if (!isset($GLOBALS['fmk_text']))
+		{
+			text::getDataFromMySQL();
+		}
+		return text::getFromArray($code);
+	}
+
+    // -----------------------------------------------------------------------------
+	// return TEXT LABEL by CODE
+	// public
+	// -----------------------------------------------------------------------------
+	function getAndReplace($code, $replacement)
+	{
+		if (!isset($GLOBALS['fmk_text']))
+		{
+			text::getDataFromMySQL();
+		}
+		return sprintf(text::getFromArray($code), $replacement);
+	}
+	// -----------------------------------------------------------------------------
+	// save to global array TEXT LABEL from DB
+	// public / private
+	// -----------------------------------------------------------------------------
+	function getDataFromMySQL()
+	{
+		$res=dbProc::getFMKText();	
+		if (is_array($res))
+		{
+			$GLOBALS['fmk_text']=array();
+			foreach ($res as $row)
+			{
+				$GLOBALS['fmk_text'][$row['code']]=$row['text'];
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+	// return TEXT LABEL by CODE from Array
+	// private
+	// -----------------------------------------------------------------------------
+	function getFromArray($code)
+	{
+		return (isset($GLOBALS['fmk_text'][$code])?$GLOBALS['fmk_text'][$code]:false);
+	}
+
+	// -----------------------------------------------------------------------------
+	// return text in upper case
+	// public
+	// -----------------------------------------------------------------------------
+	function toUpper($s)
+	{
+		return text::latvianUtf8Uppercase($s);
+	}
+
+	// -----------------------------------------------------------------------------
+	// return latvian text in upper case (utf8)
+	// private
+	// -----------------------------------------------------------------------------
+	function latvianUtf8Uppercase($string)
+	{
+		$tran = Array(
+			chr(196).chr(129) => chr(196).chr(128), 
+			chr(196).chr(141) => chr(196).chr(140), 
+			chr(196).chr(147) => chr(196).chr(146), 
+			chr(196).chr(163) => chr(196).chr(162), 
+			chr(196).chr(171) => chr(196).chr(170), 
+			chr(196).chr(183) => chr(196).chr(182), 
+			chr(196).chr(188) => chr(196).chr(187), 
+			chr(197).chr(134) => chr(197).chr(133), 
+			chr(197).chr(141) => chr(197).chr(140), 
+			chr(197).chr(151) => chr(197).chr(150), 
+			chr(197).chr(161) => chr(197).chr(160), 
+			chr(197).chr(171) => chr(197).chr(170), 
+			chr(197).chr(190) => chr(197).chr(189), 
+			 ); 
+		return strtoupper(strtr($string, $tran)); 
+	}
+
+	// -----------------------------------------------------------------------------
+	// return latin text without latvian letters
+	// private
+	// -----------------------------------------------------------------------------
+	function latvianToLatin($string)
+	{
+		
+		$tran = Array(
+			chr(196).chr(129) => chr(97).chr(97), 
+			chr(196).chr(141) => chr(99).chr(99), 
+			chr(196).chr(147) => chr(101).chr(101), 
+			chr(196).chr(163) => chr(103).chr(103), 
+			chr(196).chr(171) => chr(105).chr(105), 
+			chr(196).chr(183) => chr(107).chr(107), 
+			chr(196).chr(188) => chr(108).chr(108), 
+			chr(197).chr(134) => chr(110).chr(110), 
+			chr(197).chr(141) => chr(111).chr(111), 
+			chr(197).chr(151) => chr(114).chr(114), 
+			chr(197).chr(161) => chr(115).chr(115), 
+			chr(197).chr(171) => chr(117).chr(117), 
+			chr(197).chr(190) => chr(122).chr(122), 
+
+			chr(196).chr(128) => strtoupper(chr(97).chr(97)), 
+			chr(196).chr(140) => strtoupper(chr(99).chr(99)), 
+			chr(196).chr(146) => strtoupper(chr(101).chr(101)), 
+			chr(196).chr(162) => strtoupper(chr(103).chr(103)), 
+			chr(196).chr(170) => strtoupper(chr(105).chr(105)), 
+			chr(196).chr(182) => strtoupper(chr(107).chr(107)), 
+			chr(196).chr(187) => strtoupper(chr(108).chr(108)), 
+			chr(197).chr(133) => strtoupper(chr(110).chr(110)), 
+			chr(197).chr(140) => strtoupper(chr(111).chr(111)), 
+			chr(197).chr(150) => strtoupper(chr(114).chr(114)), 
+			chr(197).chr(160) => strtoupper(chr(115).chr(115)), 
+			chr(197).chr(170) => strtoupper(chr(117).chr(117)), 
+			chr(197).chr(189) => strtoupper(chr(122).chr(122)) 
+			 ); 
+		
+		return strtr($string, $tran); 
+	}
+
+	// -----------------------------------------------------------------------------
+	// check that sting contains only letters and simbol "_"
+	// public
+	// -----------------------------------------------------------------------------
+	function cleanText($s)
+	{
+		return preg_match("/^(â|Â|ç|Ç|î|Î|ô|Ô|ð|Ð|ì|Ì|í|Í|ï|Ï|þ|Þ|è|È|ò|Ò|û|Û|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
+	}
+
+    function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false)
+    {
+      $strlength = strlen($str);
+      if($strlength > $maxStrLen)
+      {
+        $wrappoint = floor($strlength/($lines));
+
+        $newstring = array_chunk(explode($delimiter, wordwrap($str, $wrappoint, $delimiter)), $lines);
+        //print "$strlength\n$wrappoint\n"; print_r($newstring);
+        if (isset($newstring[1]))
+        {
+          for ($i=1; $i<=count($newstring); $i++)
+          {
+             $newstring[0][$lines-1] .= ' ' . implode(' ', $newstring[$i]);
+             unset($newstring[$i]);
+          }
+        }
+        return ($array)? $newstring[0] : implode($delimiter, $newstring[0]);
+      }
+      return $str;
+    }
+
+
+}
+
+?>
