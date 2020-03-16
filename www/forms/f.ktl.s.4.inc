@@ -131,11 +131,25 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		if($usrId != false)
 		{
 			// get info about user
-            $userInfo = dbProc::getHarmonizedList($usrId);
-			//print_r($userInfo);
-            if(count($userInfo)>0)
+            $userInf = dbProc::getHarmonizedList($usrId);
+			//print_r($userInf);
+            if(count($userInf)>0)
 			{
-				$user = $userInfo[0];
+				$user = $userInf[0];
+			}
+
+			// get user info
+			$creator = '';
+			$editor = '';
+			$userInfo = dbProc::getUserInfo($user['SLTT_CREATOR']);
+			if(count($userInfo) >0 )
+			{
+				$creator = $userInfo[0]['RLTT_VARDS']. ' ' .$userInfo[0]['RLTT_UZVARDS'];
+			}
+			$userInfo1 = dbProc::getUserInfo($user['SLTT_CREATOR']);
+			if(count($userInfo1) >0 )
+			{
+				$editor = $userInfo1[0]['RLTT_VARDS']. ' ' .$userInfo1[0]['RLTT_UZVARDS'];
 			}
 		}
 
@@ -174,6 +188,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('kls', 'edArea',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA,'value'=>isset($user['SLTT_KEDI_ID'])?$user['SLTT_KEDI_ID']:'','readonly'=>false), 'tabindex=6 maxlength="2000" '.(( $isEdUser)? ' disabled ': ''));
 
 		$oForm -> addElement('checkbox', 'isActive',  text::get('STATUS_ACTIVE_INACTIVE'), isset($user['SLTT_IR_AKTIVS'])?$user['SLTT_IR_AKTIVS']:1, 'tabindex=7 onClick="if(!this.checked){alert(\''.text::get('WARNING_USER_NOT_ACTIVE').'\');}" '.(($isEdUser)?' disabled' : ''));
+
+		// importa dati
+		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($user['SLTT_CREATED'])?$user['SLTT_CREATED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'creator',  text::get('CREATOR'), isset($creator)?$creator:'', 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'edited',  text::get('EDITED'), isset($user['SLTT_EDITED'])?$user['SLTT_EDITED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'editor',  text::get('EDITOR'), isset($editor)?$editor:'', 'tabindex=21 maxlength="20" disabled');
+
 
 		// form buttons
         if(!$isEdUser)
@@ -236,7 +257,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('region'),
                         $oForm->getValue('position'),
                         $oForm->getValue('department'),
-                        $oForm->getValue('section')
+						$oForm->getValue('section'),
+						$userId
 						);
 
 						if (!$r)

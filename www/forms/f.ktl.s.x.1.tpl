@@ -77,12 +77,16 @@
 		?>
 			<tr id="recordRow<?=$i;?>" class="table_cell_3"  onClick="makeActiveRow(this, '<?=$row['URL'];?>');">
 				<td><?=$number;?></td>
-                <?
-                if (is_array($columns))
+              <?
+              if (is_array($columns))
 	            {
 		            foreach ($columns as $col)
 		            {
-		              if((substr($col['kolonna'], -9) == 'IR_AKTIVS') || substr($col['kolonna'], -9) == 'IR_ADMINS' || substr($col['kolonna'], -8) == 'IR_PLANS' || substr($col['kolonna'], -11) == 'IR_PABEIGTS' || substr($col['kolonna'], -10) == 'PRIORITATE' ||  substr($col['kolonna'], -8) == 'IR_TRASE' ||  substr($col['kolonna'], -10) == 'KMSD_TRASE' || substr($col['kolonna'], -9) == 'IR_LIGUMS')
+                  if((substr($col['kolonna'], -9) == 'IR_AKTIVS') || substr($col['kolonna'], -9) == 'IR_ADMINS' || 
+                  substr($col['kolonna'], -8) == 'IR_PLANS' || substr($col['kolonna'], -11) == 'IR_PABEIGTS' || 
+                  substr($col['kolonna'], -10) == 'PRIORITATE' ||  substr($col['kolonna'], -8) == 'IR_TRASE' ||  
+                  substr($col['kolonna'], -9) == 'IR_LIGUMS' ||
+                  substr($col['kolonna'], -7) == 'IR_EPLA' || substr($col['kolonna'], -7) == 'IR_AUTO' )
                       {
                         if((substr($col['kolonna'], -9) == 'IR_AKTIVS') && ($row[$col['kolonna']] == 0))
                         {
@@ -99,7 +103,7 @@
                       else
                       {
                         ?>
-				        <td><?=$row[$col['kolonna']];?></td>
+				                  <td><?=$row[$col['kolonna']];?></td>
                         <?
                        }
                     }

@@ -148,9 +148,14 @@ function fRepaint() {
 function fUpdSelect(y,m,d,bDoNotReformat) {
 	gdSelect[0]=y; gdSelect[1]=m; gdSelect[2]=d;
 	if (!bDoNotReformat) gdCtrl.value=d==0?"":fFormatInput(y,m,d); //
-	gdCtrl.fireEvent("onchange");
-	gdCtrl.fireEvent("onblur");
-//	gdCtrl.fireEvent("onclick");
+	if ("createEvent" in document) {
+		gdCtrl.dispatchEvent(new Event('input'));
+		gdCtrl.dispatchEvent(new Event('blur'));
+	} else {
+		gdCtrl.fireEvent("oninput");
+		gdCtrl.fireEvent("onblur");
+	//	gdCtrl.fireEvent("onclick");
+	}
 }
 
 function fPopCalendar(dateCtrl,range,posLayerId,posCtrl,posOffset) {
@@ -174,7 +179,7 @@ function fPopCalendar(dateCtrl,range,posLayerId,posCtrl,posOffset) {
 	} else fUpdSelect(s[0],s[1],s[2],true);
 	fInitRange(range);
 	//changed
-	//Ja ir korekts, datums, bet aarpus robezhaam, tad ejam uz tekoðâs dienas datumu
+	//Ja ir korekts, datums, bet aarpus robezhaam, tad ejam uz tekoï¿½ï¿½s dienas datumu
 	if (gRange[2]&&fIsOutRange(s[0],s[1])) {
 		if (__gdos[2]==0) {
 			s=eval(gTheme[0]);

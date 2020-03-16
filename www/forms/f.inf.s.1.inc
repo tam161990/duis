@@ -39,7 +39,7 @@ else
 }
 
 
-// jalietotajam nav lomas sistçmâ, tad vinam nav tiesibas redzet si formu
+// jalietotajam nav lomas sistï¿½mï¿½, tad vinam nav tiesibas redzet si formu
 if ( $isAdmin || $isSystemUser)
 {
 
@@ -285,6 +285,32 @@ if ( $isAdmin || $isSystemUser)
 	$oLink->addPrm(FORM_ID, 'f.ktl.s.14');
 	$oLink->addPrm('editMode', '1');
 	$editMMSLink = $oLink->getQuery();
+	unset($oLink);
+
+	// list of mms-calculation
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.20');
+	$mmsCalculationListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit mms-calculation form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.20');
+	$oLink->addPrm('editMode', '1');
+	$editMmsCalculationLink = $oLink->getQuery();
+	unset($oLink);
+
+	// list of Ñalculation-material
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.21');
+	$calculationMaterialListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit Ñalculation-material form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.21');
+	$oLink->addPrm('editMode', '1');
+	$editCalculationMaterialLink = $oLink->getQuery();
 	unset($oLink);
 
     // calalog imports

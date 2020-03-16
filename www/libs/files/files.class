@@ -30,19 +30,34 @@ class files
 	}
 
 	// -----------------------------------------------------------------------------
-	// nodzes failu no diska
+	// Ja fails ir ar pareiza paplasinajumu - atgriezh true
 	// -----------------------------------------------------------------------------
-	function eraseFileFromStore($idFile)
+	function isUploadFileOfExt($fieldName, $ext)
 	{
-		return @unlink(FILES_STORE_PATH.'/'.$idFile);
+		$filename = explode(".", $_FILES[$fieldName]['name']);
+  		
+		if ($filename[1] == $ext)
+		{
+			return true;
+		}
+		return false;
+
 	}
 
-    // -----------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------
 	// nodzes failu no diska
 	// -----------------------------------------------------------------------------
-	function eraseFileFromGpsStore($idFile)
+	function eraseFileFromStore($idFile, $type = 'PDF')
 	{
-		return @unlink(GPS_FILES_STORE_PATH.'/'.$idFile);
+
+        if($type == "PDF")
+        {
+             return @unlink(FILES_STORE_PATH.'/'.$idFile);
+        }
+        else
+        {
+             return @unlink(WRITEOF_FILES_STORE_PATH.'/'.$idFile);
+        }
 	}
 
     // -----------------------------------------------------------------------------
@@ -56,32 +71,16 @@ class files
 	// -----------------------------------------------------------------------------
 	// nodzes failu no MySQL tabulu un no diska
 	// -----------------------------------------------------------------------------
-	function deleteFile($idFile)
+	function deleteFile($idFile, $type = 'PDF')
 	{
 		$res=false;
+        //echo  $idFile;
 		if (is_numeric($idFile))
 		{
-			$res=dbProc::deleteFile($idFile);
+			$res=dbProc::deleteFile($idFile, $type);
 			if ($res)
 			{
-				$res=files::eraseFileFromStore($idFile);
-			}
-		}
-		return $res;
-	}
-
-    // -----------------------------------------------------------------------------
-	// nodzes GPS failu no MySQL tabulu un no diska
-	// -----------------------------------------------------------------------------
-	function deleteGpsFile($idFile)
-	{
-		$res=false;
-		if (is_numeric($idFile))
-		{
-			$res=dbProc::deleteGpsFile($idFile);
-			if ($res)
-			{
-				$res=files::eraseFileFromGpsStore($idFile);
+				$res=files::eraseFileFromStore($idFile, $type);
 			}
 		}
 		return $res;
@@ -134,52 +133,7 @@ class files
 	}
 
     // -----------------------------------------------------------------------------
-	// saglaba GPS failu
-	// -----------------------------------------------------------------------------
-	function saveGpsFile($fieldName,$region="-1",$idFile=false)
-	{
-	        if (files::isUploadFile($fieldName))
-	        {
-	        	if (!empty($idFile))
-	        	{
-		        	$res=dbProc::replaceGpsFile($_FILES[$fieldName]['name'], $region, $_FILES[$fieldName]['type'],$idFile);
-		        	if (!$res)
-		        	{
-		        		return false;
-		        	}
-		        	files::eraseFileFromGpsStore($idFile);
-	        	}
-	        	else
-	        	{
-		        	$res=dbProc::replaceGpsFile($_FILES[$fieldName]['name'], $region, $_FILES[$fieldName]['type']);
-		        	if ($res)
-		        	{
-		        		$idFile=dbLayer::getInsertId();
-		        	}
-		        	else
-		        	{
-		        		return false;
-		        	}
-		        	if ($idFile==false)
-		        	{
-		        		return false;
-		        	}
-	        	}
-	        	$res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],GPS_FILES_STORE_PATH.'/'.$idFile);
-	        	if ($res)
-	        	{
-	        		return $idFile;
-	        	}
-	        	else
-	        	{
-	        		dbProc::deleteGpsFile($idFile);
-	        	}
-	        }
-	        return false;
-	}
-
-    // -----------------------------------------------------------------------------
-	// saglabât failu diskâ
+	// saglabï¿½t failu diskï¿½
 	// -----------------------------------------------------------------------------
 	function saveFileToStore($fieldName)
 	{
@@ -199,33 +153,33 @@ class files
 	// -----------------------------------------------------------------------------
 	// atgriezh informaciju par failu
 	// -----------------------------------------------------------------------------
-	function getFileInfo($idFile)
+	function getFileInfo($idFile, $type)
 	{
-	        return dbProc::getFileInfo($idFile);
+	        return dbProc::getFileInfo($idFile, $type);
 	}
 
-    // -----------------------------------------------------------------------------
-	// atgriezh informaciju par GPS failu
-	// -----------------------------------------------------------------------------
-	function getGpsFileInfo($idFile)
-	{
-	        return dbProc::getGpsFileInfo($idFile);
-	}
 
 	// -----------------------------------------------------------------------------
 	// suta failu klientam
 	// -----------------------------------------------------------------------------
-	function sendFile($idFile,$isExit=true)
+	function sendFile($idFile, $isExit=true, $type = 'PDF')
 	{
-		$info=files::getFileInfo($idFile);
+		$info=files::getFileInfo($idFile, $type);
 		if ($info)
 		{
-			$c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
+		    if($type == "PDF")
+            {
+                 $c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
+            }
+            else
+            {
+                 $c=@file_get_contents(WRITEOF_FILES_STORE_PATH.'/'.$idFile);
+            }
+
 			if ($c)
 			{
-
-				header('Content-type: '.$info['RFLS_META_INFO']."\n");
-				header('Content-Disposition: attachment; filename="'.$info['RFLS_NOSAUKUMS'].'"'."\n");
+				header('Content-type: '.$info['META_INFO']."\n");
+				header('Content-Disposition: attachment; filename="'.$info['NOSAUKUMS'].'"'."\n");
                 echo $c;
 				if ($isExit)
 				{
@@ -236,29 +190,9 @@ class files
 		return false;
 	}
 
-    // -----------------------------------------------------------------------------
-	// suta GPS failu klientam
-	// -----------------------------------------------------------------------------
-	function sendGpsFile($idFile,$isExit=true)
-	{
-		$info=files::getGpsFileInfo($idFile);
-		if ($info)
-		{
-			$c=@file_get_contents(GPS_FILES_STORE_PATH.'/'.$idFile);
-			if ($c)
-			{
 
-				header('Content-type: '.$info['GFLS_META_INFO']."\n");
-				header('Content-Disposition: attachment; filename="'.$info['GFLS_NOSAUKUMS'].'"'."\n");
-                echo $c;
-				if ($isExit)
-				{
-					exit();
-				}
-			}
-		}
-		return false;
-	}
+
+
 
 }
 

@@ -264,6 +264,10 @@ class form
 					{
 						return is_array($defaultValue)?$defaultValue:trim($defaultValue);		
 					}
+					else if ( isSet($this->aAllParam[$name]['type']) && strtolower($this->aAllParam[$name]['type'])=='checkbox' && $this->aSubmitValues[$name]=='on')
+					{
+							return 1;
+					}
 					else
 					{
 						return is_array($this->aSubmitValues[$name])?$this->aSubmitValues[$name]:trim($this->aSubmitValues[$name]);		
@@ -471,7 +475,7 @@ class form
 					break;
 				case 'checkbox':
 					$value=$this->getValue($data['name']);
-					return '<input class="checkbox" DISABLED type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="1" '.( empty( $value ) ? '' : 'checked' ).' />';				
+					return '<input class="checkbox" DISABLED type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'"  '.( empty( $value ) ? '' : 'checked' ).' />';				
 					break;
 				case 'kls':
 					return classif::getHtml($data['defaultValue']['classifName'],
@@ -569,7 +573,7 @@ class form
 					break;
 
 				case 'date':
-					return '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width=100%><input class="flex" onBlur="if (!isDate(document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'].value)) {this.focus();}"  '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').'  type="'.$data['type'].'" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" /></td><td>'.$this->getHtmlFeatures($data).'</td></tr></table>';
+					return '<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td width=100%><input class="flex" onBlur="if (!isDate(document.forms[\''.$this->aForm['name'].'\'][\''.$data['name'].'\'].value)) {this.focus();}"  '.(empty($data['isSubmitByEnter'])?'onKeyPress="return !isEnterPress(event);"':'').'  type="text" '.$data['attributes'].' name="'.$data['name'].'" value="'.htmlspecialchars($this->getValue($data['name'])).'" /></td><td>'.$this->getHtmlFeatures($data).'</td></tr></table>';
 					break;
 
 				case 'personalcode':
@@ -1026,9 +1030,14 @@ class form
 		{
 			foreach ($this->aParam as $data)
 			{
-				if ($data['type']!='group' && $data['name']!=$this->getIsSubmitVariable())
-				{      
-					$r.='setFormValue("'.$this->aForm['name'].'","'.$data['name'].'",""); disableFormField("'.$this->aForm['name'].'","'.$data['name'].'",false);';
+				if ($data['type']!='group' && $data['name']!=$this->getIsSubmitVariable() )
+				{   
+					if(strtolower($data['type'])=='checkbox')   {
+						$r.='setFormValue("'.$this->aForm['name'].'","'.$data['name'].'","0");';
+					} else {
+						$r.='setFormValue("'.$this->aForm['name'].'","'.$data['name'].'","");';
+					}
+					$r.='disableFormField("'.$this->aForm['name'].'","'.$data['name'].'",false);';
 				}
 			}
 		}
@@ -1286,7 +1295,7 @@ class form
 		{
 			foreach ($aFormElemError[$this->aForm['name']] as $aErr)
 			{
-				$cPerElemErrors.='showError("'.$aErr['elem'].'","'.$aErr['msg'].'");';
+				$cPerElemErrors.='showError("'.$aErr['elem'].'","'.$aErr['msg'].'","'.$this->aForm['name'].'");';
 			}
 			unset($aFormElemError[$this->aForm['name']]);
 			session::set('form_elem_error',$aFormElemError);
@@ -1298,7 +1307,7 @@ class form
 		{
 			foreach ($aFormElemSuccess[$this->aForm['name']] as $aErr)
 			{
-				$cPerElemErrors.='showError("'.$aErr['elem'].'","_SUCCESS_FLAG_'.$aErr['msg'].'");';
+				$cPerElemErrors.='showError("'.$aErr['elem'].'","_SUCCESS_FLAG_'.$aErr['msg'].'","'.$this->aForm['name'].'");';
 			}
 			unset($aFormElemSuccess[$this->aForm['name']]);
 			session::set('form_elem_success',$aFormElemSuccess);

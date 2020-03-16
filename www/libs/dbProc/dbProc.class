@@ -432,7 +432,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh informaciju par lietotaju/lietotajiem   konkreta DV iecirkòa ietvaros
+	// Atgriezh informaciju par lietotaju/lietotajiem   konkreta DV iecirkï¿½a ietvaros
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getUserDVAreaList($area, $isActive = true)
@@ -509,7 +509,7 @@ class dbProc extends dbLayer
 		return false;
 	}
     // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajs ar tadu lietotajam vardu un parole ir loma sistçmâ
+	// Parbauda - vai lieotajs ar tadu lietotajam vardu un parole ir loma sistï¿½mï¿½
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -532,7 +532,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajam ir piesaistîta loma sistçmâ
+	// Parbauda - vai lieotajam ir piesaistï¿½ta loma sistï¿½mï¿½
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -554,7 +554,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajam ir piesaistîta loma
+	// Parbauda - vai lieotajam ir piesaistï¿½ta loma
 	// Ja jaa - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -609,7 +609,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh regiona sarakstu konkrçnam lietotâjam
+	// Atgriezh regiona sarakstu konkrï¿½nam lietotï¿½jam
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getRegionForUser($userId)
@@ -656,7 +656,9 @@ class dbProc extends dbLayer
 	    $oSQL=new dbLayer();
       	if ($ID)
 		{
-			$sql = 'select *, k.KEDI_NOSAUKUMS as `AREA`, l.KRFK_NOZIME as `POSITION`
+            $sql = 'select *, k.KEDI_NOSAUKUMS as `AREA`, l.KRFK_NOZIME as `POSITION`,
+                    ' .dbLayer::sqlParseDateTime('SLTT_CREATED') .',  
+                    ' .dbLayer::sqlParseDateTime('SLTT_EDITED') .'
     				from`KL_SASKANOTAJI`
                   LEFT JOIN `KL_ED_IECIRKNI` k ON (SLTT_KEDI_ID  = k.KEDI_ID)
                   LEFT JOIN `KL_REF_KODI` l ON (SLTT_POSITION = l.KRFK_VERTIBA AND l.KRFK_NOSAUKUMS = "'.KRFK_POSITION.'" )
@@ -692,7 +694,9 @@ class dbProc extends dbLayer
           {
             $searchString = '1 ';
           }
-    		$sql = 'select *, k.KEDI_NOSAUKUMS as `AREA`, l.KRFK_NOZIME as `POSITION`
+            $sql = 'select *, k.KEDI_NOSAUKUMS as `AREA`, l.KRFK_NOZIME as `POSITION`,
+                ' .dbLayer::sqlParseDateTime('SLTT_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('SLTT_EDITED') .'
     				from `KL_SASKANOTAJI`
                   LEFT JOIN `KL_ED_IECIRKNI` k ON (SLTT_KEDI_ID = k.KEDI_ID)
                   LEFT JOIN `KL_REF_KODI` l ON (SLTT_POSITION = l.KRFK_VERTIBA AND l.KRFK_NOSAUKUMS = "'.KRFK_POSITION.'"  )
@@ -777,13 +781,22 @@ class dbProc extends dbLayer
 	// saglaba saskanotaja datus
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveHarmonized($userId, $name,$surname, $dvArea, $isActive,$region,$position,$edArea,$section = '')
+	function saveHarmonized($userId, $name,$surname, $dvArea, $isActive,$region,$position,$edArea,$section = '', $user)
 	{
 		$oSQL=new dbLayer();
 		if ($userId==false)
 		{
 			$sql = 'insert into `KL_SASKANOTAJI`
-						(`SLTT_VARDS`,`SLTT_UZVARDS`,`SLTT_KEDI_ID`,`SLTT_IR_AKTIVS`, `SLTT_REGIONS`, `SLTT_POSITION`,`SLTT_ED_IECIKNIS`, `SLTT_KEDI_SECTION`) values
+                            (`SLTT_VARDS`,
+                            `SLTT_UZVARDS`,
+                            `SLTT_KEDI_ID`,
+                            `SLTT_IR_AKTIVS`, 
+                            `SLTT_REGIONS`, 
+                            `SLTT_POSITION`,
+                            `SLTT_ED_IECIKNIS`, 
+                            `SLTT_KEDI_SECTION`,
+                            `SLTT_EDITOR`) 
+                        values
 						( "'.dbLayer::quote_smart($name).'",
 						 "'.dbLayer::quote_smart($surname).'",
 						 "'.dbLayer::quote_smart($dvArea).'",
@@ -791,7 +804,8 @@ class dbProc extends dbLayer
 						 "'.dbLayer::quote_smart($region).'",
                          "'.dbLayer::quote_smart($position).'",
                          "'.dbLayer::quote_smart($edArea).'",
-                         "'.dbLayer::quote_smart($section).'")';
+                         "'.dbLayer::quote_smart($section).'",
+                         "'.dbLayer::quote_smart($user).'")';
 
 		}
 		else
@@ -804,7 +818,9 @@ class dbProc extends dbLayer
 						`SLTT_REGIONS`="'.dbLayer::quote_smart($region).'",
                         `SLTT_POSITION`="'.dbLayer::quote_smart($position).'",
                         `SLTT_ED_IECIKNIS`="'.dbLayer::quote_smart($edArea).'",
-                        `SLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'"
+                        `SLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'",
+                        `SLTT_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                        `SLTT_EDITED` = now()
                         where SLTT_ID="'.dbLayer::quote_smart($userId).'"';
 
 		}
@@ -907,7 +923,7 @@ class dbProc extends dbLayer
 		return '';
     }
 
-     // dabonam strukurvienîbas nosaukumu
+     // dabonam strukurvienï¿½bas nosaukumu
     function GetDepartmentName($edRegionId)
     {
 
@@ -948,127 +964,87 @@ class dbProc extends dbLayer
 
 
 
-     // -----------------------------------------------------------------------------
-	// saglaba saskanotaja temp datus
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function saveHarmonized2($name,$surname, $dvArea, $position, $edArea)
-	{
+    
+    function saveHarmonizedFromCsv($data, $user){
 
 
-       $isActive = 1;
-       $ed_id = '';
-       $region = 'AA';
-       $section = 'qqq';
-       $pos = ' ';
-
-       if(strlen($dvArea) == 5)
-       {
-         $sql1 = 'select `KEDI_ID` as `KODS`, `KEDI_REGIONS`,`KEDI_SECTION` as `SECTION`
-                  from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` = "'.dbLayer::quote_smart($dvArea).'"';
-
-       }
-       else if(strlen($dvArea) == 4)
-       {
-         $sql1 = 'select DISTINCT "" as `KODS`, `KEDI_REGIONS`,`KEDI_SECTION` as `SECTION`
-                  from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` LIKE "'.dbLayer::quote_smart($dvArea).'%"';
-
-       }
-       else
-       {
-             $sql1 = 'select DISTINCT "" as `KODS`, `KEDI_REGIONS`,"'.text::get('OPERATING_PART').'" as `SECTION`
-                  from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` LIKE "'.dbLayer::quote_smart($dvArea).'%"';
-       }
-
+        $isActive = 1;
+        $ed_id = '';
+        $region = 'AA';
+        $section = 'qqq';
+        $pos = ' ';
+        
         $oSQL=new dbLayer();
-        $result = $oSQL -> makeQuery($sql1);
-		if (isset($result[0]))
-		{
-			$ed_id = $result[0]['KODS'];
-            $region = $result[0]['KEDI_REGIONS'];
-            $section = $result[0]['SECTION'];
-		}
 
-        // position
+        if(strlen($data[0]) == 5)
+        {
+          $sql1 = 'select `KEDI_ID` as `KODS`, `KEDI_REGIONS`,`KEDI_SECTION` as `SECTION`
+                   from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` = "'.dbLayer::quote_smart($data[0]).'"';
+ 
+        }
+        else if(strlen($data[0]) == 4)
+        {
+          $sql1 = 'select DISTINCT "" as `KODS`, `KEDI_REGIONS`,`KEDI_SECTION` as `SECTION`
+                   from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` LIKE "'.dbLayer::quote_smart($data[0]).'%"';
+ 
+        }
+        else
+        {
+              $sql1 = 'select DISTINCT "" as `KODS`, `KEDI_REGIONS`,"'.text::get('OPERATING_PART').'" as `SECTION`
+                   from `KL_ED_IECIRKNI` WHERE `KEDI_KODS` LIKE "'.dbLayer::quote_smart($data[0]).'%"';
+        } 
+         
+         $result = $oSQL -> makeQuery($sql1);
+         if (isset($result[0]))
+         {
+             $ed_id = $result[0]['KODS'];
+             $region = $result[0]['KEDI_REGIONS'];
+             $section = $result[0]['SECTION'];
+         }
 
+         // position
         $sql2 = 'select `KRFK_VERTIBA` from `KL_REF_KODI` WHERE `KRFK_NOSAUKUMS` = "POSITION" AND
-                `KRFK_NOZIME` LIKE "'.dbLayer::quote_smart(trim($position)).'"';
-
-       $oSQL=new dbLayer();
+        `KRFK_NOZIME` LIKE "'.dbLayer::quote_smart(trim($data[3])).'"';
+        
         $result = $oSQL -> makeQuery($sql2);
-		if (isset($result[0]))
-		{
-			$pos = $result[0]['KRFK_VERTIBA'];
+        if (isset($result[0]))
+        {
+            $pos = $result[0]['KRFK_VERTIBA'];
 
-		}
+        }
 
-       $sql = 'insert into `KL_SASKANOTAJI_TEMP`
-						(`SLTT_VARDS`,`SLTT_UZVARDS`,`SLTT_KEDI_ID`,`SLTT_IR_AKTIVS`, `SLTT_REGIONS`, `SLTT_POSITION`,`SLTT_ED_IECIKNIS`, `SLTT_KEDI_SECTION`) values
-						( "'.dbLayer::quote_smart($name).'",
-						 "'.dbLayer::quote_smart($surname).'",
+        $sql = 'INSERT into `KL_SASKANOTAJI`
+                        (`SLTT_VARDS`,
+                        `SLTT_UZVARDS`,
+                        `SLTT_KEDI_ID`,
+                        `SLTT_REGIONS`, 
+                        `SLTT_POSITION`,
+                        `SLTT_ED_IECIKNIS`, 
+                        `SLTT_KEDI_SECTION`,
+                        `SLTT_CREATOR` )
+                SELECT
+                        "'.dbLayer::quote_smart($data[1]).'",
+						 "'.dbLayer::quote_smart($data[2]).'",
 						 "'.dbLayer::quote_smart($ed_id).'",
-						 "'.dbLayer::quote_smart($isActive).'",
 						 "'.dbLayer::quote_smart($region).'",
                          "'.dbLayer::quote_smart($pos).'",
-                         "'.dbLayer::quote_smart($edArea).'",
-                         "'.dbLayer::quote_smart($section).'")'  ;
+                         "'.dbLayer::quote_smart($data[4]).'",
+                         "'.dbLayer::quote_smart($section).'",
+                         "'.dbLayer::quote_smart($user).'" FROM DUAL
+                         WHERE NOT EXISTS(SELECT 1 FROM `KL_SASKANOTAJI` 
+                         WHERE `SLTT_VARDS` = "'.dbLayer::quote_smart($data[1]).'"
+                         AND `SLTT_UZVARDS` = "'.dbLayer::quote_smart($data[2]).'") 
+                LIMIT 1';
 
-        $oSQL=new dbLayer();
 		$res=$oSQL->makeQuery($sql);
         if ($res!==false)
 		{
 			return true;
 		}
 		return false;
-	}
+    }
 
-    // -----------------------------------------------------------------------------
-	// nodzes saskaòotâji sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function deleteHarmonizedTable($isMain = true)
-	{
-		$oSQL=new dbLayer();
-        $tableName  = (($isMain)? 'KL_SASKANOTAJI' : 'KL_SASKANOTAJI_TEMP');
-		return $oSQL->makeQuery('DROP TABLE IF EXISTS `'.$tableName.'`');
-	}
-
-    // -----------------------------------------------------------------------------
-	// izveidot tmp saskaòotâji sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function createHarmonizedTempTable()
-	{
-		$oSQL=new dbLayer();
-        $sql =   'DROP TABLE IF EXISTS `KL_SASKANOTAJI_TEMP`';
-        $oSQL->makeQuery($sql);
-        $sql =   'CREATE TABLE IF NOT EXISTS `KL_SASKANOTAJI_TEMP` (
-        `SLTT_ID` int(11) NOT NULL auto_increment,
-        `SLTT_VARDS` varchar(30) collate utf8_latvian_ci NOT NULL default \'\',
-        `SLTT_UZVARDS` varchar(30) collate utf8_latvian_ci NOT NULL default \'\',
-        `SLTT_IR_AKTIVS` tinyint(1) NOT NULL default 1,
-        `SLTT_KEDI_ID` int(11) default NULL,
-        `SLTT_POSITION` varchar(100) collate utf8_latvian_ci NOT NULL,
-        `SLTT_REGIONS` char(3) collate utf8_latvian_ci NOT NULL,
-        `SLTT_KEDI_SECTION` varchar(250) collate utf8_latvian_ci NOT NULL,
-        `SLTT_ED_IECIKNIS` varchar(250) collate utf8_latvian_ci NOT NULL default \'\',
-        PRIMARY KEY  (`SLTT_ID`)
-      ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_latvian_ci AUTO_INCREMENT=1 ;';
-
-		return $oSQL->makeQuery($sql);
-	}
-
-    // -----------------------------------------------------------------------------
-	// parsaukt saskaòotâji temp sql tabulu uz  KL_SASKANOTAJI
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function renameHarmonizedTable()
-	{
-		$oSQL=new dbLayer();
-		return $oSQL->makeQuery('ALTER TABLE `KL_SASKANOTAJI_TEMP` RENAME `KL_SASKANOTAJI`');
-	}
-
-
+    
 // =============================================================================
 // FMK_MESSAGES
 // =============================================================================
@@ -1243,7 +1219,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Saglabaa ED iecirkòu. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa ED iecirkï¿½u. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -1278,7 +1254,7 @@ class dbProc extends dbLayer
 
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo ED iecirkòu skaitu.
+	// Atgriezh kopeejo ED iecirkï¿½u skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getRegionCount($search = false, $column = false, $showOnlyActiv = false)
@@ -1329,7 +1305,7 @@ class dbProc extends dbLayer
 
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh ED iecikòu(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Atgriezh ED iecikï¿½u(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -1342,7 +1318,8 @@ class dbProc extends dbLayer
 	{
 		if ($ID)
 		{
-			$query = 'select *
+			$query = 'select *,  ' .dbLayer::sqlParseDateTime('KEDI_CREATED') .',  
+            ' .dbLayer::sqlParseDateTime('KEDI_EDITED') .'
 				from `KL_ED_IECIRKNI`
 				where `KEDI_ID` = "'.dbLayer::quote_smart($ID).'"';
 		}
@@ -1365,7 +1342,9 @@ class dbProc extends dbLayer
             {
                 $searchString .= ' and `KEDI_IR_AKTIVS` =1 ';
             }
-			$query = 'select * from `KL_ED_IECIRKNI`
+            $query = 'select * ,  ' .dbLayer::sqlParseDateTime('KEDI_CREATED') .',  
+                    ' .dbLayer::sqlParseDateTime('KEDI_EDITED') .'
+            from `KL_ED_IECIRKNI`
             where '.$searchString.'
             order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
@@ -1381,7 +1360,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus ED iecikòus.
+	// Atgriezh aktivus vai neaktivus ED iecikï¿½us.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaActivList($activ = true)
@@ -1396,7 +1375,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus stihijas ED iecikòus .
+	// Atgriezh aktivus vai neaktivus stihijas ED iecikï¿½us .
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
     function getEDElementSectionList($activ = true)
@@ -1423,7 +1402,7 @@ class dbProc extends dbLayer
     }
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus NE stihijas ED iecikòus .
+	// Atgriezh aktivus vai neaktivus NE stihijas ED iecikï¿½us .
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaNotElementActivList($activ = true, $trase = 0)
@@ -1443,7 +1422,7 @@ class dbProc extends dbLayer
 
 
     // -----------------------------------------------------------------------------
-	// Atgriezh ED nodaïas.
+	// Atgriezh ED nodaï¿½as.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaSectionList()
@@ -1458,7 +1437,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED iecikòa datus pçc iecirkòa ID.
+	// Atgriezh aktivus  ED iecikï¿½a datus pï¿½c iecirkï¿½a ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaById($ID)
@@ -1472,7 +1451,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED iecikòus konkrçta reìionâ.
+	// Atgriezh aktivus  ED iecikï¿½us konkrï¿½ta reï¿½ionï¿½.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaListForRegion($region)
@@ -1488,7 +1467,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED nodalas konkrçta reìionâ.
+	// Atgriezh aktivus  ED nodalas konkrï¿½ta reï¿½ionï¿½.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDSectionListForRegion($region)
@@ -1504,7 +1483,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED nodalas konkrçta reìionâ.
+	// Atgriezh aktivus  ED nodalas konkrï¿½ta reï¿½ionï¿½.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDSectionListForWorker($worker, $contract, $trase = 0)
@@ -1522,10 +1501,10 @@ class dbProc extends dbLayer
 	}
 
      // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED nodalas konkrçta reìionâ.
+	// Atgriezh aktivus  ED nodalas konkrï¿½ta reï¿½ionï¿½.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getMMSEDListByWorker($worker, $contract = false, $trase = 0)
+	/*function getMMSEDListByWorker($worker, $contract = false, $trase = 0)
 	{
 
 			$query = 'select * from `KL_ED_IECIRKNI`   e
@@ -1540,13 +1519,13 @@ class dbProc extends dbLayer
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
+	}*/
 
      // -----------------------------------------------------------------------------
-	// Atgriezh aktivus  ED nodalas konkrçta mms darbâ.
+	// Atgriezh aktivus  ED nodalas konkrï¿½ta mms darbï¿½.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getEDSectionForMMS($mms, $contract = false, $trase = 0)
+	/*function getEDSectionForMMS($mms, $contract = false, $trase = 0)
 	{
 
 			$query = 'select * from `KL_ED_IECIRKNI`   e
@@ -1558,10 +1537,10 @@ class dbProc extends dbLayer
 //        echo $query;
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
+	}*/
 
      // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus ED iecikòus.
+	// Atgriezh aktivus vai neaktivus ED iecikï¿½us.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDRegionList()
@@ -1575,7 +1554,7 @@ class dbProc extends dbLayer
 	}
 
      // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus ED iecikòus.
+	// Atgriezh aktivus vai neaktivus ED iecikï¿½us.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDRegionBySection($section)
@@ -1597,34 +1576,44 @@ class dbProc extends dbLayer
 
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa ED iecirkòu. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa ED iecirkï¿½u. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveEDArea($ID, $region, $code, $title, $isActive, $section, $element, $isMain = true)
+	function saveEDArea($ID, $region, $code, $title, $isActive, $section, $element, $user )
 	{
-	    $tableName  = (($isMain)? 'KL_ED_IECIRKNI' : 'KL_ED_IECIRKNI_TEMP');
+	   
 		if ($ID)
 		{
-			$query = 'update `'.$tableName.'`
+			$query = 'update `KL_ED_IECIRKNI`
 				set `KEDI_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
                     `KEDI_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
                     `KEDI_SECTION` = "'.dbLayer::quote_smart($section).'" ,
-                    `KEDI_IS_ELEMENT` = "'.dbLayer::quote_smart($element).'"
+                    `KEDI_IS_ELEMENT` = "'.dbLayer::quote_smart($element).'",
+                    `KEDI_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                    `KEDI_EDITED` = now()
 				where `KEDI_ID` = "'.dbLayer::quote_smart($ID).'"';
 
 		}
 		elseif ($title)
 		{
-			$query = 'insert into  `'.$tableName.'`
-                (`KEDI_REGIONS`, `KEDI_KODS`, `KEDI_NOSAUKUMS`, `KEDI_IR_AKTIVS`, `KEDI_SECTION`, `KEDI_IS_ELEMENT`)
+			$query = 'insert into  `KL_ED_IECIRKNI`
+                        (`KEDI_REGIONS`, 
+                        `KEDI_KODS`, 
+                        `KEDI_NOSAUKUMS`, 
+                        `KEDI_IR_AKTIVS`, 
+                        `KEDI_SECTION`, 
+                        `KEDI_IS_ELEMENT`,
+                        `KEDI_EDITOR`)
 			values
                 ("'.dbLayer::quote_smart($region).'",
                 "'.dbLayer::quote_smart($code).'",
                 "'.dbLayer::quote_smart($title).'",
                 "'.dbLayer::quote_smart($isActive).'",
                 "'.dbLayer::quote_smart($section).'",
-                "'.dbLayer::quote_smart($element).'")';
+                "'.dbLayer::quote_smart($element).'",
+                "'.dbLayer::quote_smart($user).'"
+                )';
 		}
 
 		$oDB = new dbLayer;
@@ -1636,8 +1625,8 @@ class dbProc extends dbLayer
 
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai DV iecirkòis ar doto reìionu un kodu
-	// eksistee. Ja dots ED iecirkòa ID, shii organizaacija netiek iekljauta
+	// Atgriezh bool veertiibu, kas noraada, vai DV iecirkï¿½is ar doto reï¿½ionu un kodu
+	// eksistee. Ja dots ED iecirkï¿½a ID, shii organizaacija netiek iekljauta
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -1659,7 +1648,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo ED iecirkòu skaitu.
+	// Atgriezh kopeejo ED iecirkï¿½u skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getEDAreaCount($search = false, $column = false, $showOnlyActiv = false)
@@ -1685,50 +1674,40 @@ class dbProc extends dbLayer
 		return isset($result[0]['EDA_COUNT']) ? $result[0]['EDA_COUNT'] : false;
 	}
 
-     // -----------------------------------------------------------------------------
-	// izveidot tmp ED sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function createEDAreaTempTable()
-	{
-		$oSQL=new dbLayer();
-        $sql =   'DROP TABLE IF EXISTS `KL_ED_IECIRKNI_TEMP`';
-        $oSQL->makeQuery($sql);
-        $sql =   'CREATE TABLE `KL_ED_IECIRKNI_TEMP` (
-        `KEDI_ID` int(11) NOT NULL auto_increment,
-        `KEDI_REGIONS` char(3) collate utf8_latvian_ci NOT NULL,
-        `KEDI_KODS` char(5) collate utf8_latvian_ci NOT NULL,
-        `KEDI_NOSAUKUMS` varchar(30) collate utf8_latvian_ci NOT NULL,
-        `KEDI_IR_AKTIVS` tinyint(1) default 1,
-        `KEDI_SECTION` varchar(250) collate utf8_latvian_ci default NULL,
-        `KEDI_IS_ELEMENT` TINYINT( 1 ) default 0,
-         PRIMARY KEY ( `KEDI_ID` )
-      )  TYPE = MYISAM CHARACTER SET utf8 COLLATE utf8_latvian_ci;';
+    function saveEDAreaFromCsv($data, $user){
+        
+        $query = 'INSERT INTO `KL_ED_IECIRKNI` 
+                    (
+                            `KEDI_KODS`, 
+                            `KEDI_REGIONS`, 
+                            `KEDI_NOSAUKUMS`, 
+                            `KEDI_SECTION`, 
+                            `KEDI_IS_ELEMENT`,
+                            `KEDI_CREATOR`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
+                            "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE
+                            `KEDI_REGIONS` = "'.dbLayer::quote_smart($data[1]).'",
+                            `KEDI_NOSAUKUMS` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KEDI_SECTION` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KEDI_IS_ELEMENT` = "'.dbLayer::quote_smart($data[4]).'",         
+                            `KEDI_CREATOR` = "'.dbLayer::quote_smart($user).'"
+                    ';
 
-		return $oSQL->makeQuery($sql);
-	}
-
-    // -----------------------------------------------------------------------------
-	// nodzes ED sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function deleteEDAreaTable($isMain = true)
-	{
-		$oSQL=new dbLayer();
-        $tableName  = (($isMain)? 'KL_ED_IECIRKNI' : 'KL_ED_IECIRKNI_TEMP');
-		return $oSQL->makeQuery('DROP TABLE IF EXISTS `'.$tableName.'`');
-	}
-
-     // -----------------------------------------------------------------------------
-	// parsaukt ED temp sql tabulu uz  KL_ED_IECIRKNI
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function renameEDAreaTable()
-	{
-		$oSQL=new dbLayer();
-		return $oSQL->makeQuery('ALTER TABLE `KL_ED_IECIRKNI_TEMP` RENAME `KL_ED_IECIRKNI`');
-	}
-
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
+    
 
 // =============================================================================
 // KL_SPRIEGUMS
@@ -2259,24 +2238,26 @@ class dbProc extends dbLayer
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveObject($ID, $title, $isActive, $trase)
+	function saveObject($ID, $title, $isActive, $trase, $code)
 	{
 		if ($ID)
 		{
 			$query = 'update `KL_OBJEKTI`
 				set `KOBJ_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
                     `KOBJ_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
-                    `KOBJ_TRASE` = "'.dbLayer::quote_smart($trase).'"
+                    `KOBJ_TRASE` = "'.dbLayer::quote_smart($trase).'",
+                    `KOBJ_KODS` = "'.dbLayer::quote_smart($code).'"
 				where `KOBJ_ID` = "'.dbLayer::quote_smart($ID).'"';
 
 		}
 		elseif ($title)
 		{
 			$query = 'insert into `KL_OBJEKTI`
-                (`KOBJ_NOSAUKUMS`, `KOBJ_IR_AKTIVS`, `KOBJ_TRASE`)
-			values
+                (`KOBJ_NOSAUKUMS`, `KOBJ_IR_AKTIVS`, `KOBJ_KODS`, `KOBJ_TRASE`)
+			    values
                 ("'.dbLayer::quote_smart($title).'",
                 "'.dbLayer::quote_smart($isActive).'",
+                "'.dbLayer::quote_smart($code).'",
                 "'.dbLayer::quote_smart($trase).'")';
 		}
 
@@ -2310,6 +2291,27 @@ class dbProc extends dbLayer
 		return isset($result[0]['KOBJ_ID']);
 	}
 
+    // -----------------------------------------------------------------------------
+	// Atgriezh bool veertiibu, kas noraada, vai objekts ar doto  nosaukumu
+	// eksistee. Ja dots objekts ID, shiim objektam netiek iekljauta
+	// paarbaudee
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function objectWithCodeExists($code, $ID = false)
+	{
+		$query = 'select `KOBJ_ID` from `KL_OBJEKTI`
+            where `KOBJ_KODS` = "'.dbLayer::quote_smart($code).'"';
+		if ($ID)
+		{
+			$query .= ' and `KOBJ_ID` != "'.dbLayer::quote_smart($ID).'"';
+		}
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['KOBJ_ID']);
+    }
+    
 	// -----------------------------------------------------------------------------
 	// Atgriezh kopeejo objekta skaitu.
 	// Author: Tatjana Fedorkova
@@ -2355,7 +2357,7 @@ class dbProc extends dbLayer
 // KL_WORK_OUNERS
 // =============================================================================
     // -----------------------------------------------------------------------------
-	// Atgriezh darba uznemçja nosaukumu
+	// Atgriezh darba uznemï¿½ja nosaukumu
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerName($Id)
@@ -2374,7 +2376,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh darba uznemçja nosaukumu
+	// Atgriezh darba uznemï¿½ja nosaukumu
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerNameByCode($Code)
@@ -2393,7 +2395,7 @@ class dbProc extends dbLayer
 	}
 
  // -----------------------------------------------------------------------------
-	// Atgriezh darba uznemçja vispariga vienoðanas numuru
+	// Atgriezh darba uznemï¿½ja vispariga vienoï¿½anas numuru
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerNumberByCode($Code)
@@ -2478,7 +2480,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus darba uzòçmçjus.
+	// Atgriezh aktivus vai neaktivus darba uzï¿½ï¿½mï¿½jus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerActivList($activ = true)
@@ -2493,7 +2495,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa darba uzòçmeju. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa darba uzï¿½ï¿½meju. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -2531,7 +2533,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo darba uznçmçju skaitu.
+	// Atgriezh kopeejo darba uznï¿½mï¿½ju skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerCount($search = false, $column = false)
@@ -2560,7 +2562,7 @@ class dbProc extends dbLayer
 // =============================================================================
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kalkulâcijas grupa(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Atgriezh kalkulï¿½cijas grupa(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -2607,7 +2609,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus kalkulâcijas grupas.
+	// Atgriezh aktivus vai neaktivus kalkulï¿½cijas grupas.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationGroupActivList($activ = true)
@@ -2639,7 +2641,7 @@ class dbProc extends dbLayer
 
 
     // -----------------------------------------------------------------------------
-	// Atgriezh konkretas kalkulâcijas grupas informaaciju pçc gruppas koda.
+	// Atgriezh konkretas kalkulï¿½cijas grupas informaaciju pï¿½c gruppas koda.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationGroupInfo($code)
@@ -2652,7 +2654,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa Kalkulâcijas grupu. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa Kalkulï¿½cijas grupu. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -2686,8 +2688,8 @@ class dbProc extends dbLayer
 
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai kaklkulâcijas grupa ar doto  kodu
-	// eksistee. Ja dota kalkulâcijas grupas ID, shii kalkulâcijas grupai netiek iekljauta
+	// Atgriezh bool veertiibu, kas noraada, vai kaklkulï¿½cijas grupa ar doto  kodu
+	// eksistee. Ja dota kalkulï¿½cijas grupas ID, shii kalkulï¿½cijas grupai netiek iekljauta
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -2707,7 +2709,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo kalkulâcijas grupas skaitu.
+	// Atgriezh kopeejo kalkulï¿½cijas grupas skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationGroupCount($search = false, $column = false)
@@ -2734,7 +2736,7 @@ class dbProc extends dbLayer
 // =============================================================================
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kalkulâcija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Atgriezh kalkulï¿½cija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -2746,7 +2748,9 @@ class dbProc extends dbLayer
 	{
 		if ($ID)
 		{
-			$query = 'select *, g.KKLG_NOSAUKUMS as `GROUP` , w.KWOI_NOSAUKUMS as `WORKER`
+            $query = 'select *, g.KKLG_NOSAUKUMS as `GROUP` , w.KWOI_NOSAUKUMS as `WORKER`,
+                ' .dbLayer::sqlParseDateTime('KKAL_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('KKAL_EDITED') .'
 				from `KL_KALKULACIJA`
                 LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KKAL_KWOI_KODS)
                 LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
@@ -2783,7 +2787,9 @@ class dbProc extends dbLayer
             {
                 $searchString = '1 ';
             }
-			$query = 'select *, g.KKLG_NOSAUKUMS as `GROUP`, w.KWOI_NOSAUKUMS as `WORKER`
+            $query = 'select *, g.KKLG_NOSAUKUMS as `GROUP`, w.KWOI_NOSAUKUMS as `WORKER`,
+                ' .dbLayer::sqlParseDateTime('KKAL_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('KKAL_EDITED') .'
             from `KL_KALKULACIJA`
             LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KKAL_KWOI_KODS)
             LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
@@ -2813,7 +2819,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus kalkulâcijas.
+	// Atgriezh aktivus vai neaktivus kalkulï¿½cijas.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationActivList($activ = true)
@@ -2828,130 +2834,103 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa kalkulâcijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa kalkulï¿½cijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    	function saveCalculation($ID, $chipher, $code, $title, $description,
-        $measure, $isActive, $fizRadijums = '', $koeficent = 1, $worker, $edArea,
-        $planPrice, $notPlanPrice, $element, $contract, $isMain = true)
-	{
-        $tableName  = (($isMain)? 'KL_KALKULACIJA' : 'KL_KALKULACIJA_TEMP');
+    function saveCalculation($ID, $chipher, $code, $title, $description, $standart, $standart_np,
+    $measure, $isActive, $trase, $fizRadijums = '', $koeficent = 1, $edArea, $worker, $contract, $element, $user)
+    {
+    
         if ($ID)
-		{
-			$query = 'update `'.$tableName.'`
-				set `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($code).'",
+        {
+            $query = 'UPDATE `KL_KALKULACIJA`
+                SET `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($code).'",
+                    `KKAL_SHIFRS` = "'.dbLayer::quote_smart($chipher).'",
                     `KKAL_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
-                    `KKAL_APRAKSTS` = "'.dbLayer::quote_smart($description).'",
-
                     `KKAL_MERVIENIBA` = "'.dbLayer::quote_smart($measure).'",
-                    `KKAL_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
+                    `KKAL_APRAKSTS` = "'.dbLayer::quote_smart($description).'",
                     `KKAL_FIZ_RADIJUMS` = "'.dbLayer::quote_smart($fizRadijums).'",
-                    `KKAL_KOEFICENT` = "'.dbLayer::quote_smart($koeficent).'",
+                    `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'",
                     `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'",
                     `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($edArea).'",
-                    `KKAL_PLAN_PRICE` = "'.dbLayer::quote_smart($planPrice).'",
-                    `KKAL_NOT_PLAN_PRICE` = "'.dbLayer::quote_smart($notPlanPrice).'",
+                    `KKAL_PLANA` = "'.dbLayer::quote_smart($standart).'",
+                    `KKAL_NEPLANA` = "'.dbLayer::quote_smart($standart_np).'",
+                    `KKAL_KOEFICENT` = "'.dbLayer::quote_smart($koeficent).'",
+                    `KKAL_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
                     `KKAL_IS_ELEMENT` = "'.dbLayer::quote_smart($element).'",
-                    `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"
-				where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'"';
+                    `KKAL_TRASE` = "'.dbLayer::quote_smart($trase).'",
+                    `KKAL_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                    `KKAL_EDITED` = now()
+                where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'"';
 
-		}
-		elseif ($title)
-		{
-			$query = 'insert into `'.$tableName.'`
-                (`KKAL_GRUPAS_KODS`, `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_APRAKSTS`,
-                 `KKAL_MERVIENIBA`, `KKAL_IR_AKTIVS`, `KKAL_FIZ_RADIJUMS`, `KKAL_KOEFICENT`,
-                 `KKAL_KWOI_KODS`, `KKAL_KEDI_SECTION`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`,
-                 `KKAL_IS_ELEMENT`,`KKAL_VV_NUMBER`)
-			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($chipher).'",
-                "'.dbLayer::quote_smart($title).'",
-                "'.dbLayer::quote_smart($description).'",
-                "'.dbLayer::quote_smart($measure).'",
-                "'.dbLayer::quote_smart($isActive).'",
-                "'.dbLayer::quote_smart($fizRadijums).'",
-                "'.dbLayer::quote_smart($koeficent).'",
-                "'.dbLayer::quote_smart($worker).'",
-                "'.dbLayer::quote_smart($edArea).'",
-                "'.dbLayer::quote_smart($planPrice).'",
-                "'.dbLayer::quote_smart($notPlanPrice).'",
-                "'.dbLayer::quote_smart($element).'",
-                "'.dbLayer::quote_smart($contract).'")';
-		}
-        //    echo $query;
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
+        }
+        elseif ($title)
+        {
+            $query = 'INSERT INTO `KL_KALKULACIJA` 
+            (                       
+                `KKAL_GRUPAS_KODS`,
+                `KKAL_SHIFRS`,
+                `KKAL_NOSAUKUMS`,
+                `KKAL_MERVIENIBA`,
+                `KKAL_APRAKSTS`,
+                `KKAL_FIZ_RADIJUMS`,
+                `KKAL_KWOI_KODS`,
+                `KKAL_VV_NUMBER`,
+                `KKAL_KEDI_SECTION`,
+                `KKAL_PLANA`,
+                `KKAL_NEPLANA`,
+                `KKAL_KOEFICENT`,
+                `KKAL_IS_ELEMENT`,
+                `KKAL_TRASE`,
+                `KKAL_IR_AKTIVS`,
+                `KKAL_EDITOR`
+            )
+            VALUES
+            (
+                    "'.dbLayer::quote_smart($code).'",
+                    "'.dbLayer::quote_smart($chipher).'",
+                    "'.dbLayer::quote_smart($title).'",
+                    "'.dbLayer::quote_smart($measure).'",
+                    "'.dbLayer::quote_smart($description).'",
+                    "'.dbLayer::quote_smart($fizRadijums).'",
+                    "'.dbLayer::quote_smart($worker).'",
+                    "'.dbLayer::quote_smart($contract).'",
+                    "'.dbLayer::quote_smart($edArea).'",
+                    "'.dbLayer::quote_smart($standart).'",
+                    "'.dbLayer::quote_smart($standart_np).'",
+                    "'.dbLayer::quote_smart($koeficent).'",
+                    "'.dbLayer::quote_smart($element).'",
+                    "'.dbLayer::quote_smart($trase).'",
+                    "'.dbLayer::quote_smart($isActive).'",
+                    "'.dbLayer::quote_smart( $user).'"
+            )';
+        }
+        //echo $query;
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
 
-		return ($result !== false);
-	}
+        return ($result !== false);
+    }
 
-    // -----------------------------------------------------------------------------
-	// Saglabaa kalkulâcijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
-	// izveido jaunu.
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function saveCalculation2($chipher, $code, $title, $description, $measure, $isActive, $fizRadijums, $koeficent, $worker, $edArea, $planPrice, $notPlanPrice, $element, $contract, $isMain = true,
-            $cl1, $cl2, $cl3, $cl4, $cl5, $cl6, $cl7, $cl8, $cl9, $cl10)
-	{
-        $tableName  = (($isMain)? 'KL_KALKULACIJA' : 'KL_KALKULACIJA_TEMP');
-
-		$query = 'insert into `'.$tableName.'`
-                (`KKAL_GRUPAS_KODS`, `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_APRAKSTS`,
-                 `KKAL_MERVIENIBA`, `KKAL_IR_AKTIVS`,   `KKAL_FIZ_RADIJUMS`, `KKAL_KOEFICENT`, `KKAL_KWOI_KODS`, `KKAL_KEDI_SECTION`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`,
- `KKAL_IS_ELEMENT`, `KKAL_VV_NUMBER`,
- `KKAL_1`,`KKAL_2`,`KKAL_3`,`KKAL_4`,`KKAL_5`,`KKAL_6`,`KKAL_7`,`KKAL_8`,`KKAL_9`,`KKAL_10`)
-			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($chipher).'",
-                "'.dbLayer::quote_smart($title).'",
-                "'.dbLayer::quote_smart($description).'",
-
-                "'.dbLayer::quote_smart($measure).'",
-                "'.dbLayer::quote_smart($isActive).'",
-                "'.dbLayer::quote_smart($fizRadijums).'",
-                "'.dbLayer::quote_smart($koeficent).'",
-
-                "'.dbLayer::quote_smart($worker).'",
-                "'.dbLayer::quote_smart($edArea).'",
-                "'.dbLayer::quote_smart($planPrice).'",
-                "'.dbLayer::quote_smart($notPlanPrice).'",
-                "'.dbLayer::quote_smart($element).'",
-                "'.dbLayer::quote_smart($contract).'",
-                "'.dbLayer::quote_smart($cl1).'",
-                "'.dbLayer::quote_smart($cl2).'",
-                "'.dbLayer::quote_smart($cl3).'",
-                "'.dbLayer::quote_smart($cl4).'",
-                "'.dbLayer::quote_smart($cl5).'",
-                "'.dbLayer::quote_smart($cl6).'",
-                "'.dbLayer::quote_smart($cl7).'",
-                "'.dbLayer::quote_smart($cl8).'",
-                "'.dbLayer::quote_smart($cl9).'",
-                "'.dbLayer::quote_smart($cl10).'"
-
-                )';
-
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-		return ($result !== false);
-	}
+    
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai kaklkulâcijas doto  ðifru
-	// eksistee. Ja dota kalkulâcija ID, shii kalkulâcija netiek iekljauta
+	// Atgriezh bool veertiibu, kas noraada, vai kaklkulï¿½cijas doto  ï¿½ifru
+	// eksistee. Ja dota kalkulï¿½cija ID, shii kalkulï¿½cija netiek iekljauta
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function calculationWithChipherExists($code, $ID = false)
+	function calculationWithChipherExists($code,  $trase = 0, $ID = false)
 	{
 		$query = 'select `KKAL_ID` from `KL_KALKULACIJA`
-            where `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"';
+            where `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+            AND `KKAL_TRASE` = "'.dbLayer::quote_smart($trase).'"';
 		if ($ID)
 		{
 			$query .= ' and `KKAL_ID` != "'.dbLayer::quote_smart($ID).'"';
 		}
-
+        //echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -2959,7 +2938,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo kalkulâcijas skaitu.
+	// Atgriezh kopeejo kalkulï¿½cijas skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationCount($search = false, $column = false)
@@ -2983,84 +2962,85 @@ class dbProc extends dbLayer
             $searchString = '1 ';
         }
         $query =  'SELECT count(a.KKAL_ID) as `RECORDCOUNT` FROM (
- select `KKAL_ID` from `KL_KALKULACIJA`
-        LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KKAL_KWOI_KODS)
-        LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
-        where '.$searchString.' GROUP BY `KKAL_ID`)a';
+                    select `KKAL_ID` from `KL_KALKULACIJA`
+                    LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KKAL_KWOI_KODS)
+                    LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
+                    where '.$searchString.' GROUP BY `KKAL_ID`)a';
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
 	}
 
-     // -----------------------------------------------------------------------------
-	// nodzes kaklkulâcijas sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function deleteCalculationTable($isMain = true)
-	{
-		$oSQL=new dbLayer();
-        $tableName  = (($isMain)? 'KL_KALKULACIJA' : 'KL_KALKULACIJA_TEMP');
-		return $oSQL->makeQuery('DROP TABLE IF EXISTS `'.$tableName.'`');
-	}
-
-    // -----------------------------------------------------------------------------
-	// izveidot tmp kalkulâcijas sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function createCalculationTempTable()
-	{
-		$oSQL=new dbLayer();
-        $sql =   'DROP TABLE IF EXISTS `KL_KALKULACIJA_TEMP`';
-        $oSQL->makeQuery($sql);
-        $sql =   'CREATE TABLE `KL_KALKULACIJA_TEMP` (
-          `KKAL_ID` INT( 11 ) NOT NULL AUTO_INCREMENT ,
-          `KKAL_GRUPAS_KODS` CHAR( 5 ) NOT NULL ,
-          `KKAL_SHIFRS` CHAR( 5 ) NOT NULL ,
-          `KKAL_NOSAUKUMS` VARCHAR( 150 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL ,
-          `KKAL_APRAKSTS` TEXT CHARACTER SET utf8 COLLATE utf8_latvian_ci NULL ,
-          `KKAL_MERVIENIBA` VARCHAR( 15 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL ,
-          `KKAL_IR_AKTIVS` TINYINT( 1 ) DEFAULT 1 NOT NULL ,
-          `KKAL_FIZ_RADIJUMS` VARCHAR( 4 ) NULL,
-          `KKAL_KEDI_SECTION` VARCHAR( 250 ) NULL,
-          `KKAL_KWOI_KODS` VARCHAR( 13 )  NULL,
-          `KKAL_PLAN_PRICE` FLOAT( 7, 2 )  NULL,
-          `KKAL_NOT_PLAN_PRICE` FLOAT( 7, 2 )  NULL,
-          `KKAL_1` FLOAT(7,2) NULL ,
-          `KKAL_2` FLOAT(7,2) NULL ,
-          `KKAL_3` FLOAT(7,2) NULL ,
-          `KKAL_4` FLOAT(7,2) NULL ,
-          `KKAL_5` FLOAT(7,2) NULL ,
-          `KKAL_6` FLOAT(7,2) NULL ,
-          `KKAL_7` FLOAT(7,2) NULL ,
-          `KKAL_8` FLOAT(7,2) NULL ,
-          `KKAL_9` FLOAT(7,2) NULL ,
-          `KKAL_10` FLOAT(7,2) NULL ,
-          `KKAL_IS_ELEMENT`  tinyint(1) DEFAULT 0 NOT NULL ,
-          `KKAL_KOEFICENT`   float(5,2) DEFAULT 1 NOT NULL ,
-          `KKAL_VV_NUMBER` VARCHAR( 20 )  NOT NULL,
-          PRIMARY KEY ( `KKAL_ID` ) ,
-          INDEX ( `KKAL_GRUPAS_KODS` ) 
-          ) TYPE = MYISAM CHARACTER SET utf8 COLLATE utf8_latvian_ci;';
-
-		return $oSQL->makeQuery($sql);
-	}
-
-    // -----------------------------------------------------------------------------
-	// parsaukt kalkulâcijas temp sql tabulu uz  KL_KALKULACIJA
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function renameCalculationTable()
-	{
-		$oSQL=new dbLayer();
-		return $oSQL->makeQuery('ALTER TABLE `KL_KALKULACIJA_TEMP` RENAME `KL_KALKULACIJA`');
-	}
+    function saveCalculationFromCsv($data, $user){
+        $query = 'INSERT INTO `KL_KALKULACIJA` 
+                    (                       
+                        `KKAL_GRUPAS_KODS`,
+                        `KKAL_SHIFRS`,
+                        `KKAL_NOSAUKUMS`,
+                        `KKAL_MERVIENIBA`,
+                        `KKAL_APRAKSTS`,
+                        `KKAL_FIZ_RADIJUMS`,
+                        `KKAL_KWOI_KODS`,
+                        `KKAL_VV_NUMBER`,
+                        `KKAL_KEDI_SECTION`,
+                        `KKAL_PLANA`,
+                        `KKAL_NEPLANA`,
+                        `KKAL_KOEFICENT`,
+                        `KKAL_IS_ELEMENT`,
+                        `KKAL_TRASE`,
+                        `KKAL_IR_AKTIVS`,
+                        `KKAL_CREATOR`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
+                            "'.dbLayer::quote_smart($data[5]).'",
+                            "'.dbLayer::quote_smart($data[6]).'",
+                            "'.dbLayer::quote_smart($data[7]).'",
+                            "'.dbLayer::quote_smart($data[8]).'",
+                            "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart($data[10]).'",
+                            "'.dbLayer::quote_smart($data[11]).'",
+                            "'.dbLayer::quote_smart($data[12]).'",
+                            "'.dbLayer::quote_smart($data[13]).'",
+                            "'.dbLayer::quote_smart($data[14]).'",
+                            "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE
+                            `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($data[0]).'",
+                            `KKAL_NOSAUKUMS` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KKAL_MERVIENIBA` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KKAL_APRAKSTS` = "'.dbLayer::quote_smart($data[4]).'",
+                            `KKAL_FIZ_RADIJUMS` = "'.dbLayer::quote_smart($data[5]).'",
+                            `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($data[6]).'",
+                            `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($data[7]).'",
+                            `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KKAL_PLANA` = "'.dbLayer::quote_smart($data[9]).'",
+                            `KKAL_NEPLANA` = "'.dbLayer::quote_smart($data[10]).'",
+                            `KKAL_KOEFICENT` = "'.dbLayer::quote_smart($data[11]).'",
+                            `KKAL_IS_ELEMENT` = "'.dbLayer::quote_smart($data[12]).'",
+                            `KKAL_TRASE` = "'.dbLayer::quote_smart($data[13]).'",
+                            `KKAL_IR_AKTIVS` = "'.dbLayer::quote_smart($data[14]).'",
+                            `KKAL_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                            `KKAL_EDITED` = now()
+                    ';
+                    //echo $query;
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
 
 // =============================================================================
 // KL_KALKULACIJA_TRASE
 // =============================================================================
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kalkulâcija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Atgriezh kalkulï¿½cija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3128,7 +3108,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus kalkulâcijas.
+	// Atgriezh aktivus vai neaktivus kalkulï¿½cijas.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationTrActivList($activ = true)
@@ -3143,7 +3123,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa kalkulâcijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa kalkulï¿½cijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3203,7 +3183,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Saglabaa kalkulâcijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa kalkulï¿½cijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3240,8 +3220,8 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai kaklkulâcijas doto  ðifru
-	// eksistee. Ja dota kalkulâcija ID, shii kalkulâcija netiek iekljauta
+	// Atgriezh bool veertiibu, kas noraada, vai kaklkulï¿½cijas doto  ï¿½ifru
+	// eksistee. Ja dota kalkulï¿½cija ID, shii kalkulï¿½cija netiek iekljauta
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3261,7 +3241,7 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo kalkulâcijas skaitu.
+	// Atgriezh kopeejo kalkulï¿½cijas skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getCalculationTrCount($search = false, $column = false)
@@ -3295,7 +3275,7 @@ class dbProc extends dbLayer
 	}
 
      // -----------------------------------------------------------------------------
-	// nodzes kaklkulâcijas sql tabulu
+	// nodzes kaklkulï¿½cijas sql tabulu
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function deleteCalculationTrTable($isMain = true)
@@ -3306,7 +3286,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// izveidot tmp kalkulâcijas sql tabulu
+	// izveidot tmp kalkulï¿½cijas sql tabulu
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function createCalculationTrTempTable()
@@ -3339,7 +3319,7 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// parsaukt kalkulâcijas temp sql tabulu uz  KL_KALKULACIJA
+	// parsaukt kalkulï¿½cijas temp sql tabulu uz  KL_KALKULACIJA
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function renameCalculationTrTable()
@@ -3353,7 +3333,7 @@ class dbProc extends dbLayer
 // =============================================================================
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh materiâla(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Atgriezh materiï¿½la(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3361,13 +3341,13 @@ class dbProc extends dbLayer
                             $search =  false,
                             $column = false,
                             $order =  'ASC',
-                            $orderColumn = false,
-                            $showOnlyActiv = false
+                            $orderColumn = false
                             )
 	{
 		if ($ID)
 		{
-			$query = 'select *
+            $query = 'select *,  ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',  
+            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
 				from `KL_MATERIALI`
                 where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'"';
 		}
@@ -3387,12 +3367,10 @@ class dbProc extends dbLayer
             {
                 $searchString = '1 ';
             }
-            if($showOnlyActiv !== false)
-            {
-                $searchString .= ' and `KMAT_IR_AKTIVS` =1 ';
-            }
+            
             //, SUBSTRING(`KMAT_NOSAUKUMS`, 1, 25) as `KMAT_NOSAUKUMS`
-			$query = 'select *
+            $query = 'select *, ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',
+            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
             from `KL_MATERIALI`
             where '.$searchString.'
             order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
@@ -3406,10 +3384,10 @@ class dbProc extends dbLayer
 
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
-
+    }
+    
     // -----------------------------------------------------------------------------
-	// Atgriezh aktivus vai neaktivus materiâlus.
+	// Atgriezh aktivus vai neaktivus materiï¿½lus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getMaterialActivList($activ = true)
@@ -3425,77 +3403,87 @@ class dbProc extends dbLayer
 	}
 
 	// -----------------------------------------------------------------------------
-	// Saglabaa materiâlu. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// Saglabaa materiï¿½lu. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveMaterial($ID, $code, $title, $price, $amount, $measure, $isActive, $isMain = true)
+	function saveMaterial($ID, $category, $code, $title, $measure, $amount, $price, $kalase, $category_measure,
+        $category_descr, $is_default, $user  )
 	{
-	    $tableName  = (($isMain)? 'KL_MATERIALI' : 'KL_MATERIALI_TEMP');
+        
+        $query = 'SELECT `KMAT_KATEGORIJAS_NOSAUKUNS` FROM 
+        `KL_MATERIALI` WHERE `KMAT_KATEGORIJAS_KODS` = "'.dbLayer::quote_smart($category).'"
+        GROUP BY `KMAT_KATEGORIJAS_KODS`';
+		
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+        $category_title = isset($result[0]['KMAT_KATEGORIJAS_NOSAUKUNS']);
+        
 		if ($ID)
 		{
-			$query = 'update `'.$tableName.'`
-				set `KMAT_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
-                    `KMAT_CENA` = "'.dbLayer::quote_smart($price).'",
-                    `KMAT_DAUDZUMS` = "'.dbLayer::quote_smart($amount).'",
+			$query = 'update `KL_MATERIALI` 
+				set `KMAT_KATEGORIJAS_KODS` =  "'.dbLayer::quote_smart($category).'",
+                    `KMAT_KATEGORIJAS_NOSAUKUNS` = '.$category_title.',
+                    `KMAT_KODS` = "'.dbLayer::quote_smart($code).'",
+                    `KMAT_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
                     `KMAT_MERVIENIBA` = "'.dbLayer::quote_smart($measure).'",
-                    `KMAT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'"
+                    `KMAT_DAUDZUMS` = "'.dbLayer::quote_smart($amount).'",
+                    `KMAT_CENA` = "'.dbLayer::quote_smart($price).'",
+                    `KMAT_KATEGORIJAS_KLASE` = "'.dbLayer::quote_smart($kalase).'",
+                    `KMAT_KATEGORIJAS_MERVIENIBA` = "'.dbLayer::quote_smart($category_measure).'",
+                    `KMAT_PRECIZEJUMS` = "'.dbLayer::quote_smart($category_descr).'",
+                    `KMAT_NOKLUSETAIS` = "'.dbLayer::quote_smart($is_default).'",
+                    `KMAT_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                    `KMAT_EDITED` = now()
 				where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'"';
 
 		}
 		elseif ($title)
 		{
-			$query = 'insert into `'.$tableName.'`
-                (`KMAT_KODS`, `KMAT_NOSAUKUMS`, `KMAT_CENA`, `KMAT_DAUDZUMS`, `KMAT_MERVIENIBA`, `KMAT_IR_AKTIVS`)
-			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($title).'",
-                "'.dbLayer::quote_smart($price).'",
-                "'.dbLayer::quote_smart($amount).'",
-                "'.dbLayer::quote_smart($measure).'",
-                "'.dbLayer::quote_smart($isActive).'")';
+			$query = 'INSERT INTO `KL_MATERIALI` 
+                    (   
+                            `KMAT_GRUPAS_KODS`,
+                            `KMAT_GRUPAS_NOSAUKUNS`,
+                            `KMAT_APAKSGRUPAS_KODS`,
+                            `KMAT_APAKSGRUPAS_NOSAUKUNS`,             
+                            `KMAT_KATEGORIJAS_KODS`,
+                            `KMAT_KATEGORIJAS_NOSAUKUNS`,
+                            `KMAT_KODS`,
+                            `KMAT_NOSAUKUMS`,
+                            `KMAT_MERVIENIBA`,
+                            `KMAT_DAUDZUMS`,
+                            `KMAT_CENA`,
+                            `KMAT_KATEGORIJAS_KLASE`,
+                            `KMAT_KATEGORIJAS_MERVIENIBA`,
+                            `KMAT_PRECIZEJUMS`,
+                            `KMAT_NOKLUSETAIS`,
+                            `KMAT_EDITOR`
+                    )
+                    VALUES
+                    (       NULL, NULL, NULL, NULL,
+                            "'.dbLayer::quote_smart($category).'",
+                            '.$category_title.',
+                            "'.dbLayer::quote_smart($code).'",
+                            "'.dbLayer::quote_smart($title).'",
+                            "'.dbLayer::quote_smart($measure).'",
+                            "'.dbLayer::quote_smart($amount).'",
+                            "'.dbLayer::quote_smart($price).'",
+                            "'.dbLayer::quote_smart($kalase).'",
+                            "'.dbLayer::quote_smart($category_measure).'",
+                            "'.dbLayer::quote_smart($category_descr).'",
+                            "'.dbLayer::quote_smart($is_default).'",
+                            "'.dbLayer::quote_smart($user).'"
+                        )';
 		}
-
+        echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
 	}
-
-    // -----------------------------------------------------------------------------
-	// Saglabaa materiâlu.
-	// ja ieraksts jau eksistee, jaizmaina tekosho ierakstu, citadi jaizveido jaunu
-	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function replaceMaterial($code, $title, $price, $measure, $isActive, $isMain = true)
-	{
-	    $tableName  = (($isMain)? 'KL_MATERIALI' : 'KL_MATERIALI_TEMP');
-
-			$query = 'insert into `'.$tableName.'`
-                (`KMAT_KODS`, `KMAT_NOSAUKUMS`, `KMAT_CENA`, `KMAT_MERVIENIBA`, `KMAT_IR_AKTIVS`)
-			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($title).'",
-                "'.dbLayer::quote_smart($price).'",
-                "'.dbLayer::quote_smart($measure).'",
-                "'.dbLayer::quote_smart($isActive).'")
-                ON DUPLICATE KEY UPDATE
-                `KMAT_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
-                    `KMAT_CENA` = "'.dbLayer::quote_smart($price).'",
-                    `KMAT_MERVIENIBA` = "'.dbLayer::quote_smart($measure).'",
-                    `KMAT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'"';
-
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return ($result !== false);
-	}
-
-
-
-	// -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai materiâls doto kodu
-	// eksistee. Ja dota materiâla ID, shii materiâlam netiek iekljauta
+	// Atgriezh bool veertiibu, kas noraada, vai materiï¿½ls doto kodu
+	// eksistee. Ja dota materiï¿½la ID, shii materiï¿½lam netiek iekljauta
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
@@ -3512,10 +3500,20 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['KMAT_ID']);
-	}
+    }
+    
+    function getMaterialCategory(){
+        
+        $query = 'select `KMAT_KATEGORIJAS_KODS`, `KMAT_KATEGORIJAS_NOSAUKUNS` from `KL_MATERIALI`
+        order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
 
 	// -----------------------------------------------------------------------------
-	// Atgriezh kopeejo materiâla skaitu.
+	// Atgriezh kopeejo materiï¿½la skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getMaterialCount($search = false, $column = false, $showOnlyActiv = false)
@@ -3542,52 +3540,68 @@ class dbProc extends dbLayer
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
 	}
 
-    // -----------------------------------------------------------------------------
-	// nodzes materiâla sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function deleteMaterialTable($isMain = true)
-	{
-		$oSQL=new dbLayer();
-        $tableName  = (($isMain)? 'KL_MATERIALI' : 'KL_MATERIALI_TEMP');
-		return $oSQL->makeQuery('DROP TABLE IF EXISTS `'.$tableName.'`');
-	}
+    function saveMaterialFromCsv($data, $user){
+        $material_kagegory = explode('.', $data[4]);      
+        $query = 'INSERT INTO `KL_MATERIALI` 
+                    (
+                            `KMAT_GRUPAS_KODS`,
+                            `KMAT_GRUPAS_NOSAUKUNS`,
+                            `KMAT_APAKSGRUPAS_KODS`,
+                            `KMAT_APAKSGRUPAS_NOSAUKUNS`,
+                            `KMAT_KATEGORIJAS_KODS`,
+                            `KMAT_KATEGORIJAS_NOSAUKUNS`,
+                            `KMAT_KODS`,
+                            `KMAT_NOSAUKUMS`,
+                            `KMAT_MERVIENIBA`,
+                            `KMAT_DAUDZUMS`,
+                            `KMAT_CENA`,
+                            `KMAT_KATEGORIJAS_KLASE`,
+                            `KMAT_KATEGORIJAS_MERVIENIBA`,
+                            `KMAT_PRECIZEJUMS`,
+                            `KMAT_NOKLUSETAIS`,
+                            `KMAT_CREATOR`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($material_kagegory[0]).'",
+                            "'.dbLayer::quote_smart($data[5]).'",
+                            "'.dbLayer::quote_smart($data[6]).'",
+                            "'.dbLayer::quote_smart($data[7]).'",
+                            "'.dbLayer::quote_smart($data[8]).'",
+                            "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart($data[10]).'",
+                            "'.dbLayer::quote_smart($data[11]).'",
+                            "'.dbLayer::quote_smart($data[12]).'",
+                            "'.dbLayer::quote_smart($data[13]).'",
+                            "'.dbLayer::quote_smart($data[14]).'",
+                            "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE
+                            `KMAT_GRUPAS_KODS` = "'.dbLayer::quote_smart($data[0]).'",
+                            `KMAT_GRUPAS_NOSAUKUNS` = "'.dbLayer::quote_smart($data[1]).'",
+                            `KMAT_APAKSGRUPAS_KODS` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KMAT_APAKSGRUPAS_NOSAUKUNS` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KMAT_KATEGORIJAS_KODS` = "'.dbLayer::quote_smart($data[4]).'",
+                            `KMAT_KATEGORIJAS_NOSAUKUNS` = "'.dbLayer::quote_smart($data[5]).'",
+                            `KMAT_NOSAUKUMS` = "'.dbLayer::quote_smart($data[7]).'",
+                            `KMAT_MERVIENIBA` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KMAT_DAUDZUMS` = "'.dbLayer::quote_smart($data[9]).'",
+                            `KMAT_CENA` = "'.dbLayer::quote_smart($data[10]).'",
+                            `KMAT_KATEGORIJAS_KLASE` = "'.dbLayer::quote_smart($data[11]).'",
+                            `KMAT_KATEGORIJAS_MERVIENIBA` = "'.dbLayer::quote_smart($data[12]).'",
+                            `KMAT_PRECIZEJUMS` = "'.dbLayer::quote_smart($data[13]).'",                            
+                            `KMAT_CREATOR` = "'.dbLayer::quote_smart($user).'"
+                    ';
 
-    // -----------------------------------------------------------------------------
-	// izveidot tmp materiâla sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function createMaterialTempTable()
-	{
-		$oSQL=new dbLayer();
-        $sql =   'DROP TABLE IF EXISTS `KL_MATERIALI_TEMP`';
-        $oSQL->makeQuery($sql);
-        $sql =   'CREATE TABLE `KL_MATERIALI_TEMP` (
-            `KMAT_ID` INT( 11 ) NOT NULL AUTO_INCREMENT ,
-            `KMAT_KODS` CHAR( 7 ) NOT NULL ,
-            `KMAT_NOSAUKUMS` VARCHAR( 160 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL ,
-            `KMAT_MERVIENIBA` VARCHAR( 15 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL ,
-            `KMAT_CENA` FLOAT(7,2) NOT NULL ,
-            `KMAT_DAUDZUMS` FLOAT(7,2) NULL ,
-            `KMAT_IR_AKTIVS` TINYINT( 1 ) DEFAULT 1 NOT NULL ,
-            PRIMARY KEY ( `KMAT_ID` ) ,
-            INDEX ( `KMAT_NOSAUKUMS` ) ,
-            UNIQUE `KMAT_KODS` ( `KMAT_KODS` )
-            ) TYPE = MYISAM CHARACTER SET utf8 COLLATE utf8_latvian_ci;';
-
-		return $oSQL->makeQuery($sql);
-	}
-
-    // -----------------------------------------------------------------------------
-	// parsaukt materiâla temp sql tabulu uz  KL_MATERIALI
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function renameMaterialTable()
-	{
-		$oSQL=new dbLayer();
-		return $oSQL->makeQuery('ALTER TABLE `KL_MATERIALI_TEMP` RENAME `KL_MATERIALI`');
-	}
-
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
 
 
 
@@ -3604,14 +3618,20 @@ class dbProc extends dbLayer
                             $search =  false,
                             $column = false,
                             $order =  'ASC',
-                            $orderColumn = false,
-                            $showOnlyActiv = false)
+                            $orderColumn = false)
 	{
 		if ($ID)
 		{
-			$query = 'select *, w.KWOI_NOSAUKUMS as `WORKER`
-				from `KL_MMS_DARBI`
-                LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_KWOI_KODS)
+            $query = 'select *, '.dbLayer::sqlParseDate('KMSD_IZPILDES_DATUMS').', 
+            ' .dbLayer::sqlParseDateTime('KMSD_EXPORT_DATUMS') .',
+            ' .dbLayer::sqlParseDateTime('KMSD_CREATED') .',
+            ' .dbLayer::sqlParseDateTime('KMSD_EDITED') .',
+            w.KWOI_NOSAUKUMS as `WORKER`,
+            (SELECT COUNT(*) FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = `KMSD_KODS` AND `RAKT_STATUS` NOT IN ("'.STAT_AUTO.'")) as `IS_ACT`,
+            (SELECT COUNT(*) FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = `KMSD_KODS` 
+                    AND `RAKT_STATUS` NOT IN ("'.STAT_AUTO.'", "'.STAT_INSERT.'", "'.STAT_RETURN.'")) as `IS_APPROVED_ACT`
+                from `KL_MMS_DARBI`
+                LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_IZPILDITAJA_KODS)
 				where `KMSD_ID` = "'.dbLayer::quote_smart($ID).'"';
 		}
 		else
@@ -3619,6 +3639,10 @@ class dbProc extends dbLayer
 		    if($column === false)
             {
                   $column = dbProc::getKlklDefaultColumn(KL_MMS_WORKS);
+            }
+            if($orderColumn === false)
+            {
+                  $orderColumn = dbProc::getKlklDefaultColumn(KL_MMS_WORKS);
             }
             if($column == 'WORKER')
             {
@@ -3631,20 +3655,29 @@ class dbProc extends dbLayer
             if($orderColumn == 'WORKER')
             {
                 $orderColumn = 'w.KWOI_NOSAUKUMS';
+            }         
+            
+            // date
+            if($column == 'KMSD_IZPILDES_DATUMS')
+            {
+                $searchString = " `KMSD_IZPILDES_DATUMS` = '" .  dbLayer::parseDate($search) . "' ";
             }
-            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            else {
+                $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            }
             if($search === false || $search == '')
             {
                 $searchString = '1 ';
             }
-            if($showOnlyActiv !== false)
-            {
-                $searchString .= ' and `KMSD_IR_PABEIGTS` =0 ';
-            }
-			$query = 'select *, w.KWOI_NOSAUKUMS as `WORKER`  from `KL_MMS_DARBI`
-            LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_KWOI_KODS)
+            $query = 'select *, '.dbLayer::sqlParseDate('KMSD_IZPILDES_DATUMS').', 
+            ' .dbLayer::sqlParseDateTime('KMSD_EXPORT_DATUMS') .',
+            ' .dbLayer::sqlParseDateTime('KMSD_CREATED') .',
+            ' .dbLayer::sqlParseDateTime('KMSD_EDITED') .',
+            w.KWOI_NOSAUKUMS as `WORKER`
+            from `KL_MMS_DARBI`
+            LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_IZPILDITAJA_KODS)
             where '.$searchString.'
-            order by `'.dbLayer::quote_smart($orderColumn).'` '.dbLayer::quote_smart($order).'';
+            order by  KMSD_IZPILDES_DATUMS DESC, `'.dbLayer::quote_smart($orderColumn).'` '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
 			{
 				$query .= ' limit '.
@@ -3652,7 +3685,7 @@ class dbProc extends dbLayer
 					(int)$limit;
 			}
 		}
-
+        //echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
@@ -3673,10 +3706,10 @@ class dbProc extends dbLayer
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkrçtaja struktûrvienîba.
+	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkrï¿½taja struktï¿½rvienï¿½ba.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function getMMSWorkListByEd($edId, $trase = 0, $contract = false, $activ = true)
+    /*function getMMSWorkListByEd($edId, $trase = 0, $contract = false, $activ = true)
 	{ 
             $column = dbProc::getKlklDefaultColumn(KL_MMS_WORKS);
 			$query = 'select * from `KL_MMS_DARBI` d
@@ -3691,13 +3724,13 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
 
 
-	}
+	}*/
 
     // -----------------------------------------------------------------------------
-	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkrçtaja struktûrvienîba.
+	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkrï¿½taja struktï¿½rvienï¿½ba.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function getMMSWorkListByWorker($worker, $trase = 0, $contract = false, $activ = true)
+    /*function getMMSWorkListByWorker($worker, $trase = 0, $contract = false, $activ = true)
 	{
             $column = dbProc::getKlklDefaultColumn(KL_MMS_WORKS);
 			$query = 'select * from `KL_MMS_DARBI` d
@@ -3709,30 +3742,10 @@ class dbProc extends dbLayer
          //echo $query;
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
+	}*/
 
 
-    // -----------------------------------------------------------------------------
-	// Atgriezh bool veertiibu, kas noraada, vai mms ar doto kodu
-	// eksistee. Ja dota mms ID, shii mms netiek iekljauta
-	// paarbaudee
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function mmsWithCodeExists($code, $ID = false)
-	{
-		$query = 'select `KMSD_ID` from `KL_MMS_DARBI`
-            where `KMSD_KODS` = "'.dbLayer::quote_smart($code).'"';
-		if ($ID)
-		{
-			$query .= ' and `KMSD_ID` != "'.dbLayer::quote_smart($ID).'"';
-		}
-
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return isset($result[0]['KMSD_ID']);
-	}
-
+    
     // -----------------------------------------------------------------------------
 	// Atgriezh pabeigtus vai nepabeigtus MMS darbus.
 	// Author: Tatjana Fedorkova
@@ -3747,33 +3760,72 @@ class dbProc extends dbLayer
         return isset($result[0]['KMSD_KODS']) ? $result[0]['KMSD_KODS'] : false;
 	}
 
-     // -----------------------------------------------------------------------------
-	// Atgriezh pabeigtus vai nepabeigtus MMS darbus.
+    
+    // -----------------------------------------------------------------------------
+	// DzÄ“st MMS darbus un saistÄ«tos tamme un aktu, kas nav uzsÄkts.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function updateMMSWorkActive($ID, $isFinish)
+    function deleteMMSWork($code)
 	{
-           $query = 'UPDATE `KL_MMS_DARBI` SET `KMSD_IR_PABEIGTS` = '.dbLayer::quote_smart($isFinish) .'
-            where `KMSD_ID` = '.dbLayer::quote_smart($ID);
+        $query = 'DELETE FROM `KL_MMS_DARBI` where `KMSD_KODS` = "'.dbLayer::quote_smart($code) .'"';
 
         $oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
+        $r = $oDB -> makeQuery($query);
 
-		return ($result !== false);
-	}
+        $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($code).'"  
+                    AND `RAKT_STATUS` IN ("'.STAT_AUTO.'")';
+        $result = $oDB -> makeQuery($query);
+        $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
 
- // -----------------------------------------------------------------------------
-	// Dzçst MMS darbus.
+        if($actId !== false) {
+           // $result = dbProc::deleteAutoActWorks($actId);
+            if($result !== false) { 
+           //    $result= dbProc::deleteAutoActMaterial($actId);
+            }            
+            
+            $query = 'UPDATE `AKTI` SET `RAKT_STATUS` = "'.STAT_DELETE.'" WHERE `RAKT_ID` = '.$actId.'';  
+            $result = $oDB -> makeQuery($query);
+
+            return ($result !== false);
+        }       
+        
+        return ($r !== false);
+
+    }
+
+    // -----------------------------------------------------------------------------
+	// DzÄ“st MMS darbas rindu un atjauno saistÄ«tos tamme ja akts nav apstiprinÄts.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function deleteMMSWork($ID)
+	function deleteMMSWorkRow($id, $code, $trase)
 	{
-           $query = 'DELETE FROM `KL_MMS_DARBI` where `KMSD_ID` = '.dbLayer::quote_smart($ID);
+        $query = 'DELETE FROM `KL_MMS_DARBI` where `KMSD_ID` = "'.dbLayer::quote_smart($id) .'"';
 
         $oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
+        $r = $oDB -> makeQuery($query);
 
-		return ($result !== false);
+        $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($code).'"  
+                    AND `RAKT_STATUS` IN ("'.STAT_AUTO.'")';
+        $result = $oDB -> makeQuery($query);
+        $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+
+        if($actId !== false) {
+
+            //$result = dbProc::deleteAutoActWorks($actId);
+            if($result !== false) { 
+              //  $result = dbProc::deleteAutoActMaterial($actId);
+            }
+            if($result !== false) { 
+               // $result = dbProc::processAutoActWorks($actId, $code, $trase);
+            }
+            if($result !== false) { 
+               // $result = dbProc::processAutoActMaterial($actId, $code, $trase);
+            }
+            return ($result !== false);
+        }       
+        
+        return ($r !== false);
+
 	}
 
 
@@ -3781,272 +3833,182 @@ class dbProc extends dbLayer
 	// Saglabaa MMS darbu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function saveMMSWork($ID, $code, $workTime, $materialPrice, $quarter, $year, $priority, $edAreaCode, $isActive, $finalize, $worker, $contract, $trase, $isMain = true,
-	       $designation, $workTitle, $toidn, $toid,
-                        $z1,$z2,$z3,$z4,$z5,$z6,$z7,$z8,$z9,
-                        $v1,$v2,$v3,$v4,$v5,$v6,$v7,$v8,$v9,$v10,$v11)
+    function saveMMSWork($ID, $kods,
+                                $designation,
+                                $worktitle,						
+                                $proces_date,
+                                $requirement_code,
+                                $requirement,
+                                $edAreaCode,
+                                $worker,
+                                $contract,
+                                $priority,
+                                $isEpla,
+                                $toid,
+                                $technic_object,
+                                $network_element,
+                                $network_element_code,
+                                $quantity,
+                                $line_count,
+                                $mms_x,
+                                $mms_y,
+                                $voltage,
+                                $object,
+                                $sourceOfFounds,
+                                $export_date,
+                                $user)
 	{
-	    $tableName  = (($isMain)? 'KL_MMS_DARBI' : 'KL_MMS_DARBI_TEMP');
+        $oDB = new dbLayer;
+        $updateNeaded = false;
+        
 		if ($ID)
 		{
-			$query = 'update `'.$tableName.'`
-				set `KMSD_CILVEKSTUNDAS` = "'.dbLayer::quote_smart($workTime).'",
-                    `KMSD_MATR_IZMAKSAS` = "'.dbLayer::quote_smart($materialPrice).'",
-                    `KMSD_CETUKSNIS` = "'.dbLayer::quote_smart($quarter).'",
-                    `KMSD_GADS` = "'.dbLayer::quote_smart($year).'",
-                    `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($priority).'",
+            $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($kods).'"  
+                    AND `RAKT_STATUS`  IN ("'.STAT_AUTO.'", "'.STAT_INSERT.'", "'.STAT_RETURN.'")';
+            $result = $oDB -> makeQuery($query);
+
+            $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+
+            // ja akts eksistÄ“, pÄrbaudam vai nevajag atjaunot tammes, un ja vajag, tad atjaunojam            
+            if($actId !== false) {
+                $query = 'SELECT `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS` FROM `KL_MMS_DARBI` WHERE `KMSD_ID` = "'.dbLayer::quote_smart($ID).'"';
+                $result = $oDB -> makeQuery($query);
+
+                if(isset($result[0]['KMSD_DAUDZUMS']) && isset($result[0]['KMSD_VADU_SKAITS']) &&
+                   ($result[0]['KMSD_DAUDZUMS'] != $quantity || $result[0]['KMSD_VADU_SKAITS'] != $line_count)) 
+                {
+                    // update tammes
+                    $updateNeaded = true;
+                }
+            }
+
+
+			$query = 'UPDATE  `KL_MMS_DARBI` SET 
+                    `KMSD_KODS` = "'.dbLayer::quote_smart($kods).'",
+                    `KMSD_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'",
+                    `KMSD_WORK_TITLE` = "'.dbLayer::quote_smart($worktitle).'",
+                    `KMSD_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'",
+                    `KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement_code).'",
+                    `KMSD_NOSACIJUMS` = "'.dbLayer::quote_smart($requirement).'",
                     `KMSD_KEDI_KODS` = "'.dbLayer::quote_smart($edAreaCode).'",
-                    `KMSD_IR_PABEIGTS` = "'.dbLayer::quote_smart($isActive).'",
-		         `KMSD_NOSLEGUMA_AKTS` = "'.dbLayer::quote_smart($finalize).'",
-                    `KMSD_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'",
-                    `KMSD_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'",
-                    `KMSD_TRASE` = "'.dbLayer::quote_smart($trase).'",
-                     `KMSD_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'",
-	    `KMSD_WORK_TITLE` = "'.dbLayer::quote_smart($workTitle).'",  
-		`KMSD_TO_IDN` = "'.dbLayer::quote_smart($toidn).'",
-		`KMSD_TO_ID` = "'.dbLayer::quote_smart($toid).'",
-                    `KMSD_1Z` = "'.dbLayer::quote_smart($z1).'",
-                    `KMSD_2Z` = "'.dbLayer::quote_smart($z2).'",
-                    `KMSD_3Z` = "'.dbLayer::quote_smart($z3).'",
-                    `KMSD_4Z` = "'.dbLayer::quote_smart($z4).'",
-                    `KMSD_5Z` = "'.dbLayer::quote_smart($z5).'",
-                    `KMSD_6Z` = "'.dbLayer::quote_smart($z6).'",
-                    `KMSD_7Z` = "'.dbLayer::quote_smart($z7).'",
-                    `KMSD_8Z` = "'.dbLayer::quote_smart($z8).'",
-                    `KMSD_9Z` = "'.dbLayer::quote_smart($z9).'",
-                    `KMSD_1V` = "'.dbLayer::quote_smart($v1).'",
-                    `KMSD_2V` = "'.dbLayer::quote_smart($v2).'",
-                    `KMSD_3V` = "'.dbLayer::quote_smart($v3).'",
-                    `KMSD_4V` = "'.dbLayer::quote_smart($v4).'",
-                    `KMSD_5V` = "'.dbLayer::quote_smart($v5).'",
-                    `KMSD_6V` = "'.dbLayer::quote_smart($v6).'",
-                    `KMSD_7V` = "'.dbLayer::quote_smart($v7).'",
-                    `KMSD_8V` = "'.dbLayer::quote_smart($v8).'",
-                    `KMSD_9V` = "'.dbLayer::quote_smart($v9).'",
-                    `KMSD_10V` = "'.dbLayer::quote_smart($v10).'",
-                    `KMSD_11V` = "'.dbLayer::quote_smart($v11).'"
-
-				where `KMSD_ID` = "'.dbLayer::quote_smart($ID).'"';
+                    `KMSD_IZPILDITAJA_KODS` = "'.dbLayer::quote_smart($worker).'",
+                    `KMSD_VV_NUMURS` = "'.dbLayer::quote_smart($contract).'",
+                    `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($priority).'",
+                    `KMSD_IR_EPLA` = "'.dbLayer::quote_smart($isEpla).'",
+                    `KMSD_TO_ID` = "'.dbLayer::quote_smart($toid).'",
+                    `KMSD_TEH_OBJEKTS` = "'.dbLayer::quote_smart($technic_object).'",
+                    `KMSD_TIKLA_ELEMENTS` = "'.dbLayer::quote_smart($network_element).'",
+                    `KMSD_TIKLA_ELEMENTA_KLASE` = "'.dbLayer::quote_smart($network_element_code).'",
+                    `KMSD_DAUDZUMS` = "'.dbLayer::quote_smart($quantity).'",
+                    `KMSD_VADU_SKAITS` = "'.dbLayer::quote_smart($line_count).'",
+                    `KMSD_X` = "'.dbLayer::quote_smart($mms_x).'",
+                    `KMSD_Y` = "'.dbLayer::quote_smart($mms_y).'",
+                    `KMSD_KSRG_KODS` = "'.dbLayer::quote_smart($voltage).'",
+                    `KMSD_KOBJ_KODS` = "'.dbLayer::quote_smart($object).'",
+                    `KMSD_KFNA_KODS` = "'.dbLayer::quote_smart($sourceOfFounds).'",
+                    `KMSD_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                    `KMSD_EDITED` = now()
+                    where `KMSD_ID` = "'.dbLayer::quote_smart($ID).'"';
 
 		}
-		elseif ($code)
+		elseif ($kods)
 		{
-			$query = 'insert into `'.$tableName.'`
-                (`KMSD_KODS`,
-                    `KMSD_CILVEKSTUNDAS`,
-                    `KMSD_MATR_IZMAKSAS`,
-                    `KMSD_CETUKSNIS`,
-                    `KMSD_GADS`,
-                    `KMSD_PRIORITATE`,
-                    `KMSD_KEDI_KODS`,
-                    `KMSD_IR_PABEIGTS`,
-		        `KMSD_NOSLEGUMA_AKTS`,
-                    `KMSD_KWOI_KODS`,
-                    `KMSD_VV_NUMBER`,
-                    `KMSD_TRASE`,
-                     `KMSD_OPERATIVAS_APZIM`,
-                     `KMSD_WORK_TITLE` ,
-			`KMSD_TO_IDN`,
-			`KMSD_TO_ID`,
-                    `KMSD_1Z`,`KMSD_2Z`,`KMSD_3Z`,`KMSD_4Z`,`KMSD_5Z`,`KMSD_6Z`,`KMSD_7Z`,`KMSD_8Z`,`KMSD_9Z`,
-                    `KMSD_1V`,`KMSD_2V`,`KMSD_3V`,`KMSD_4V`,`KMSD_5V`,`KMSD_6V`,`KMSD_7V`,`KMSD_8V`,`KMSD_9V`,`KMSD_10V`,`KMSD_11V`)
-			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($workTime).'",
-                "'.dbLayer::quote_smart($materialPrice).'",
-                "'.dbLayer::quote_smart($quarter).'",
-                "'.dbLayer::quote_smart($year).'",
-                "'.dbLayer::quote_smart($priority).'",
-                "'.dbLayer::quote_smart($edAreaCode).'",
-                "'.dbLayer::quote_smart($isActive).'",
-		"'.dbLayer::quote_smart($finalize).'",
-                "'.dbLayer::quote_smart($worker).'",
-                "'.dbLayer::quote_smart($contract).'",
-                "'.dbLayer::quote_smart($trase).'",
-               "'.dbLayer::quote_smart($designation).'",
-                "'.dbLayer::quote_smart($workTitle).'" ,
-		"'.dbLayer::quote_smart($toidn).'" ,
-		"'.dbLayer::quote_smart($toid).'" ,
-                "'.dbLayer::quote_smart($z1).'",
-                "'.dbLayer::quote_smart($z2).'",
-                "'.dbLayer::quote_smart($z3).'",
-                "'.dbLayer::quote_smart($z4).'",
-                "'.dbLayer::quote_smart($z5).'",
-                "'.dbLayer::quote_smart($z6).'",
-                "'.dbLayer::quote_smart($z7).'",
-                "'.dbLayer::quote_smart($z8).'",
-                "'.dbLayer::quote_smart($z9).'",
-                "'.dbLayer::quote_smart($v1).'",
-                "'.dbLayer::quote_smart($v2).'",
-                "'.dbLayer::quote_smart($v3).'",
-                "'.dbLayer::quote_smart($v4).'",
-                "'.dbLayer::quote_smart($v5).'",
-                "'.dbLayer::quote_smart($v6).'",
-                "'.dbLayer::quote_smart($v7).'",
-                "'.dbLayer::quote_smart($v8).'",
-                "'.dbLayer::quote_smart($v9).'",
-                "'.dbLayer::quote_smart($v10).'",
-                "'.dbLayer::quote_smart($v11).'"
-                )';
-		}
-
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return ($result !== false);
-	}
-
-    // -----------------------------------------------------------------------------
-	// Saglabaa transportu.
-    // ja ieraksts jau eksistee, jaizmaina tekosho ierakstu, citadi jaizveido jaunu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function replaceMMSWork($code, $workTime, $materialPrice, $quarter, $year, $priority, $edAreaCode, $isActive, $worker, $contract, $trase, $isMain = true,
-            $cl1z, $cl2z, $cl3z, $cl4z, $cl5z, $cl6z, $cl7z, $cl8z, $cl9z,
-            $cl1v, $cl2v, $cl3v, $cl4v, $cl5v, $cl6v, $cl7v, $cl8v, $cl9v, $cl10v, $cl11v, $designation, $workTitle, $toidn, $toid)
-	{
-        $tableName  = (($isMain)? 'KL_MMS_DARBI' : 'KL_MMS_DARBI_TEMP');
-
-			$query = 'insert into '.$tableName.'
+			$query = 'INSERT into `KL_MMS_DARBI`
                     (`KMSD_KODS`,
-                    `KMSD_CILVEKSTUNDAS`,
-                    `KMSD_MATR_IZMAKSAS`,
-                    `KMSD_CETUKSNIS`,
-                    `KMSD_GADS`,
-                    `KMSD_PRIORITATE`,
+                    `KMSD_OPERATIVAS_APZIM`,
+                    `KMSD_WORK_TITLE`,
+                    `KMSD_IZPILDES_DATUMS`,
+                    `KMSD_NOSACIJUMA_KODS`,
+                    `KMSD_NOSACIJUMS`,
+                    `KMSD_IZPILDITAJA_KODS`,
+                    `KMSD_VV_NUMURS`,
                     `KMSD_KEDI_KODS`,
-                    `KMSD_IR_PABEIGTS`,
-                    `KMSD_KWOI_KODS`,
-                    `KMSD_VV_NUMBER`,
-                    `KMSD_TRASE`,
-                    `KMSD_1Z`,
-                    `KMSD_2Z`,
-                    `KMSD_3Z`,
-                    `KMSD_4Z`,
-                    `KMSD_5Z`,
-                    `KMSD_6Z`,
-                    `KMSD_7Z`,
-                    `KMSD_8Z`,
-                    `KMSD_9Z`,
-                    `KMSD_1V`,
-                    `KMSD_2V`,
-                    `KMSD_3V`,
-                    `KMSD_4V`,
-                    `KMSD_5V`,
-                    `KMSD_6V`,
-                    `KMSD_7V`,
-                    `KMSD_8V`,
-                    `KMSD_9V`,
-                    `KMSD_10V`,
-                    `KMSD_11V`,
-	 `KMSD_OPERATIVAS_APZIM`,
-	   `KMSD_TO_IDN`,
-	   `KMSD_TO_ID`,
-                     `KMSD_WORK_TITLE` )
+                    `KMSD_PRIORITATE`,
+                    `KMSD_IR_EPLA`,
+                    `KMSD_TO_ID`,
+                    `KMSD_TEH_OBJEKTS`,
+                    `KMSD_TIKLA_ELEMENTS`,
+                    `KMSD_TIKLA_ELEMENTA_KLASE`,
+                    `KMSD_DAUDZUMS`,
+                    `KMSD_VADU_SKAITS`,
+                    `KMSD_X`,
+                    `KMSD_Y`,
+                    `KMSD_KSRG_KODS`,
+                    `KMSD_KOBJ_KODS`,
+                    `KMSD_KFNA_KODS`,
+                    `KMSD_EDITOR` )
 			values
-                ("'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($workTime).'",
-                "'.dbLayer::quote_smart($materialPrice).'",
-                "'.dbLayer::quote_smart($quarter).'",
-                "'.dbLayer::quote_smart($year).'",
-                "'.dbLayer::quote_smart($priority).'",
-                "'.dbLayer::quote_smart($edAreaCode).'",
-                "'.dbLayer::quote_smart($isActive).'",
+                ("'.dbLayer::quote_smart($kods).'",
+                "'.dbLayer::quote_smart($designation).'",
+                "'.dbLayer::quote_smart($worktitle).'",
+                "'.dbLayer::parseDate($proces_date).'",
+                "'.dbLayer::quote_smart($requirement_code).'",
+                "'.dbLayer::quote_smart($requirement).'",
                 "'.dbLayer::quote_smart($worker).'",
                 "'.dbLayer::quote_smart($contract).'",
-                "'.dbLayer::quote_smart($trase).'",
-                "'.dbLayer::quote_smart($cl1z).'",
-                "'.dbLayer::quote_smart($cl2z).'",
-                "'.dbLayer::quote_smart($cl3z).'",
-                "'.dbLayer::quote_smart($cl4z).'",
-                "'.dbLayer::quote_smart($cl5z).'",
-                "'.dbLayer::quote_smart($cl6z).'",
-                "'.dbLayer::quote_smart($cl7z).'",
-                "'.dbLayer::quote_smart($cl8z).'",
-                "'.dbLayer::quote_smart($cl9z).'",
-                "'.dbLayer::quote_smart($cl1v).'",
-                "'.dbLayer::quote_smart($cl2v).'",
-                "'.dbLayer::quote_smart($cl3v).'",
-                "'.dbLayer::quote_smart($cl4v).'",
-                "'.dbLayer::quote_smart($cl5v).'",
-                "'.dbLayer::quote_smart($cl6v).'",
-                "'.dbLayer::quote_smart($cl7v).'",
-                "'.dbLayer::quote_smart($cl8v).'",
-                "'.dbLayer::quote_smart($cl9v).'",
-                "'.dbLayer::quote_smart($cl10v).'",
-                "'.dbLayer::quote_smart($cl11v).'",
-	"'.dbLayer::quote_smart($designation).'",
-	"'.dbLayer::quote_smart($toidn).'",
-	"'.dbLayer::quote_smart($toid).'",
-	"'.dbLayer::quote_smart($workTitle).'")
-            ON DUPLICATE KEY UPDATE
-                `KMSD_CILVEKSTUNDAS` = "'.dbLayer::quote_smart($workTime).'",
-                `KMSD_MATR_IZMAKSAS` = "'.dbLayer::quote_smart($materialPrice).'",
-                `KMSD_CETUKSNIS` = "'.dbLayer::quote_smart($quarter).'",
-                `KMSD_GADS` = "'.dbLayer::quote_smart($year).'",
-                `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($priority).'",
-                `KMSD_KEDI_KODS` = "'.dbLayer::quote_smart($edAreaCode).'",
-                `KMSD_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'",
-                `KMSD_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'",
-                `KMSD_TRASE` = "'.dbLayer::quote_smart($trase).'",
-                `KMSD_1Z` = "'.dbLayer::quote_smart($cl1z).'",
-                `KMSD_2Z` = "'.dbLayer::quote_smart($cl2z).'",
-                `KMSD_3Z` = "'.dbLayer::quote_smart($cl3z).'",
-                `KMSD_4Z` = "'.dbLayer::quote_smart($cl4z).'",
-                `KMSD_5Z` = "'.dbLayer::quote_smart($cl5z).'",
-                `KMSD_6Z` = "'.dbLayer::quote_smart($cl6z).'",
-                `KMSD_7Z` = "'.dbLayer::quote_smart($cl7z).'",
-                `KMSD_8Z` = "'.dbLayer::quote_smart($cl8z).'",
-                `KMSD_9Z` = "'.dbLayer::quote_smart($cl9z).'",
-                `KMSD_1V` = "'.dbLayer::quote_smart($cl1v).'",
-                `KMSD_2V` = "'.dbLayer::quote_smart($cl2v).'",
-                `KMSD_3V` = "'.dbLayer::quote_smart($cl3v).'",
-                `KMSD_4V` = "'.dbLayer::quote_smart($cl4v).'",
-                `KMSD_5V` = "'.dbLayer::quote_smart($cl5v).'",
-                `KMSD_6V` = "'.dbLayer::quote_smart($cl6v).'",
-                `KMSD_7V` = "'.dbLayer::quote_smart($cl7v).'",
-                `KMSD_8V` = "'.dbLayer::quote_smart($cl8v).'",
-                `KMSD_9V` = "'.dbLayer::quote_smart($cl9v).'",
-                `KMSD_10V` = "'.dbLayer::quote_smart($cl10v).'",
-                `KMSD_11V` = "'.dbLayer::quote_smart($cl11v).'",
-	`KMSD_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'",
-	`KMSD_TO_IDN` = "'.dbLayer::quote_smart($toidn).'",
-	`KMSD_TO_ID` = "'.dbLayer::quote_smart($toid).'",
-                `KMSD_WORK_TITLE`  = "'.dbLayer::quote_smart($workTitle).' " ';
+                "'.dbLayer::quote_smart($edAreaCode).'",
+                "'.dbLayer::quote_smart($priority).'",
+                "'.dbLayer::quote_smart($isEpla).'",
+                "'.dbLayer::quote_smart($toid).'",
+                "'.dbLayer::quote_smart($technic_object).'",
+                "'.dbLayer::quote_smart($network_element).'",
+                "'.dbLayer::quote_smart($network_element_code).'",
+                "'.dbLayer::quote_smart($quantity).'",
+                "'.dbLayer::quote_smart($line_count).'",
+                "'.dbLayer::quote_smart($mms_x).'",
+                "'.dbLayer::quote_smart($mms_y).'",
+                "'.dbLayer::quote_smart($voltage).'",
+                "'.dbLayer::quote_smart($object).'",
+                "'.dbLayer::quote_smart($sourceOfFounds).'",
+                "'.dbLayer::quote_smart($user).'")';
+		}
+        //echo $query;
+		
+        $r = $oDB -> makeQuery($query);
+        
+        if ($ID)
+		{
+			$query = 'UPDATE  `KL_MMS_DARBI` SET       
+                    `KMSD_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'",              
+                    `KMSD_WORK_TITLE` = "'.dbLayer::quote_smart($worktitle).'",
+                    `KMSD_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'",                   
+                    `KMSD_KEDI_KODS` = "'.dbLayer::quote_smart($edAreaCode).'",
+                    `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($priority).'",
+                    `KMSD_IR_EPLA` = "'.dbLayer::quote_smart($isEpla).'",    
+                    `KMSD_TO_ID` = "'.dbLayer::quote_smart($toid).'",
+                    `KMSD_TEH_OBJEKTS` = "'.dbLayer::quote_smart($technic_object).'",   
+                    `KMSD_KSRG_KODS` = "'.dbLayer::quote_smart($voltage).'",
+                    `KMSD_KOBJ_KODS` = "'.dbLayer::quote_smart($object).'",             
+                    `KMSD_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                    `KMSD_EDITED` = now()                    
+                    where `KMSD_KODS` = "'.dbLayer::quote_smart($kods).'"';
+        }
+        
+        $oDB = new dbLayer;
+        $r = $oDB -> makeQuery($query);
 
-               // echo $query;
+        // update tammes
+        if($updateNeaded) {
+            if($actId !== false) {
 
-    	$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
+                //$result = dbProc::deleteAutoActWorks($actId);
+                if($result !== false) { 
+                    //$result = dbProc::deleteAutoActMaterial($actId);
+                }
+                if($result !== false) { 
+                    //$result = dbProc::processAutoActWorks($actId, $kods, $isEpla);
+                }
+                if($result !== false) { 
+                    //$result = dbProc::processAutoActMaterial($actId, $kods, $isEpla);
+                }
+                return ($result !== false);
+            }       
+        }
 
 		return ($result !== false);
-	}
-
-    function getMmsVZSum($mms)
-    {
-        $query = 'select
-        (`KMSD_1Z`+`KMSD_2Z`+`KMSD_3Z`+`KMSD_4Z`+`KMSD_5Z`+`KMSD_6Z`+`KMSD_7Z`+`KMSD_8Z`+`KMSD_9Z`) as SUM_Z,
-        (`KMSD_1V`+`KMSD_2V`+`KMSD_3V`+`KMSD_4V`+`KMSD_5V`+`KMSD_6V`+`KMSD_7V`+`KMSD_8V`+`KMSD_9V`+`KMSD_10V`+`KMSD_11V`) as SUM_V
-            from `KL_MMS_DARBI`
-            where `KMSD_TRASE` = 1 AND `KMSD_ID` = '.dbLayer::quote_smart($mms) ;
-       // echo $query;
-        $oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return $result;
     }
 
-    function getMmsData($mms)
-     {
-        $query = 'select KMSD_CILVEKSTUNDAS,  KMSD_MATR_IZMAKSAS
-            from `KL_MMS_DARBI`
-            where `KMSD_TRASE` = 1 AND `KMSD_ID` = '.dbLayer::quote_smart($mms);
-//        echo $query;
-        $oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return $result;
-    }
+    
 	// -----------------------------------------------------------------------------
 	// Atgriezh kopeejo MMS darbu skaitu.
 	// Author: Tatjana Fedorkova
@@ -4072,59 +4034,95 @@ class dbProc extends dbLayer
            $searchString .= ' and `KMSD_IR_PABEIGTS` =0 ';
         }
         $query =  'select count(`KMSD_ID`) as `RECORDCOUNT` from `KL_MMS_DARBI`
-        LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_KWOI_KODS)
+        LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KMSD_IZPILDITAJA_KODS)
         where '.$searchString;
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
 	}
 
-    // -----------------------------------------------------------------------------
-	// nodzes mms darbi sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function deleteMMSWorkTable($isMain = true)
+    function is_mms_exists()
+    {
+        $query = 'SELECT * FROM `KL_MMS_DARBI`';
+        
+        $oDB = new dbLayer;
+        $res = $oDB -> makeQuery($query);
+
+        $mms_exists = false;
+        if (is_array($res) && count($res)>0)
+		{
+			$mms_exists = true;
+        }
+        return $mms_exists;
+    }
+
+    // save MMS from CSV import    
+    function saveMmsFromCsv($data, $user, $mms_exists = false)
 	{
-		$oSQL=new dbLayer();
-        $tableName  = (($isMain)? 'KL_MMS_DARBI' : 'KL_MMS_DARBI_TEMP');
-		return $oSQL->makeQuery('DROP TABLE IF EXISTS `'.$tableName.'`');
+       
+        $export_date = explode(' ', $data[22]);
+        $query = 'INSERT into `KL_MMS_DARBI`
+                    (`KMSD_KODS`,
+                    `KMSD_OPERATIVAS_APZIM`,
+                    `KMSD_WORK_TITLE`,
+                    `KMSD_IZPILDES_DATUMS`,
+                    `KMSD_NOSACIJUMA_KODS`,
+                    `KMSD_NOSACIJUMS`,
+                    `KMSD_IZPILDITAJA_KODS`,
+                    `KMSD_VV_NUMURS`,
+                    `KMSD_KEDI_KODS`,
+                    `KMSD_PRIORITATE`,
+                    `KMSD_IR_EPLA`,
+                    `KMSD_TO_ID`,
+                    `KMSD_TEH_OBJEKTS`,
+                    `KMSD_TIKLA_ELEMENTS`,
+                    `KMSD_TIKLA_ELEMENTA_KLASE`,
+                    `KMSD_DAUDZUMS`,
+                    `KMSD_VADU_SKAITS`,
+                    `KMSD_X`,
+                    `KMSD_Y`,
+                    `KMSD_KSRG_KODS`,
+                    `KMSD_KOBJ_KODS`,
+                    `KMSD_KFNA_KODS`,
+                    `KMSD_EXPORT_DATUMS`,
+                    `KMSD_CREATOR` )
+                SELECT
+                 "'.dbLayer::quote_smart($data[0]).'",
+                "'.dbLayer::quote_smart($data[1]).'",
+                "'.dbLayer::quote_smart($data[2]).'",
+                "'.dbLayer::quote_smart($data[3]).'",
+                "'.dbLayer::quote_smart($data[4]).'",
+                "'.dbLayer::quote_smart($data[5]).'",
+                "'.dbLayer::quote_smart($data[6]).'",
+                "'.dbLayer::quote_smart($data[7]).'",
+                "'.dbLayer::quote_smart($data[8]).'",
+                "'.dbLayer::quote_smart($data[9]).'",
+                "'.dbLayer::quote_smart($data[10]).'",
+                "'.dbLayer::quote_smart($data[11]).'",
+                "'.dbLayer::quote_smart($data[12]).'",
+                "'.dbLayer::quote_smart($data[13]).'",
+                "'.dbLayer::quote_smart($data[14]).'",
+                "'.dbLayer::quote_smart($data[15]).'",
+                "'.dbLayer::quote_smart($data[16]).'",
+                "'.dbLayer::quote_smart($data[17]).'",
+                "'.dbLayer::quote_smart($data[18]).'",
+                "'.dbLayer::quote_smart($data[19]).'",
+                "'.dbLayer::quote_smart($data[20]).'",
+                "'.dbLayer::quote_smart($data[21]).'",
+                "'.dbLayer::quote_smart($data[22]).'",
+                "'.dbLayer::quote_smart($user).'" FROM DUAL
+                '.(($mms_exists ) ?  
+                ' WHERE NOT EXISTS(SELECT 1 FROM `KL_MMS_DARBI` WHERE `KMSD_KODS` = "'.dbLayer::quote_smart($data[0]).'")' :
+                '' ) . '
+                LIMIT 1';
+
+                //echo $query;
+
+    	$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
 	}
-
-    // -----------------------------------------------------------------------------
-	// izveidot tmp mms darbi sql tabulu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function createMMSWorkTempTable()
-	{
-		$oSQL=new dbLayer();
-        $sql =   'DROP TABLE IF EXISTS `KL_MMS_DARBI_TEMP`;';
-        $oSQL->makeQuery($sql);
-        $sql =   'CREATE TABLE `KL_MMS_DARBI_TEMP` (
-        `KMSD_ID` INT( 11 ) NOT NULL AUTO_INCREMENT ,
-        `KMSD_KODS` VARCHAR( 150 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL  ,
-        `KMSD_NOSAUKUMS` VARCHAR( 150 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL ,
-        `KMSD_IR_PABEIGTS` TINYINT( 1 ) DEFAULT 0 NOT NULL ,
-        `KMSD_IR_PABEIGTS` TINYINT( 1 ) DEFAULT 0 NOT NULL ,
-        `KMSD_KWOI_KODS`  VARCHAR( 13 ),
-        `KMSD_VV_NUMBER`  VARCHAR( 20 ),
-        PRIMARY KEY ( `KMSD_ID` ) ,
-        INDEX ( `KMSD_NOSAUKUMS` )
-        ) TYPE = MYISAM CHARACTER SET utf8 COLLATE utf8_latvian_ci;';
-
-		return $oSQL->makeQuery($sql);
-	}
-
-    // -----------------------------------------------------------------------------
-	// parsaukt mms darbi temp sql tabulu uz  KL_MMS_DARBI
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function renameMMSWorkTable()
-	{
-		$oSQL=new dbLayer();
-		return $oSQL->makeQuery('ALTER TABLE `KL_MMS_DARBI_TEMP` RENAME `KL_MMS_DARBI`');
-	}
-
-
 
     // AKTI
     // -----------------------------------------------------------------------------
@@ -5455,7 +5453,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh  akta nakoðo numuru ED iecirkòa ietvaros.
+	// Atgriezh  akta nakoï¿½o numuru ED iecirkï¿½a ietvaros.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getNextActNumber($EDarea, $trase = 0)
@@ -5469,7 +5467,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh  objekta nakoðo numuru acta ietvaros.
+	// Atgriezh  objekta nakoï¿½o numuru acta ietvaros.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getNextObjNumber($actId)
@@ -5484,7 +5482,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
 // DARBI
     // -----------------------------------------------------------------------------
-	// Atgriezh akta darbus. atgriezh visas pçc akta ID.
+	// Atgriezh akta darbus. atgriezh visas pï¿½c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActWorkList($ID, $trase = 0)
@@ -5531,7 +5529,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Izdzçst konkrçtu darba ierakstu pçc ieraksta ID.
+	// Izdzï¿½st konkrï¿½tu darba ierakstu pï¿½c ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function deleteActWorkRecord($ID)
@@ -5548,7 +5546,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Izdzçst konkreta akta darba ierakstu pçc akta ID.
+	// Izdzï¿½st konkreta akta darba ierakstu pï¿½c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function deleteActWorks($ID)
@@ -5565,8 +5563,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh kalkulâcijas ierakstus konkrçta kalkulâcija gruppâ,
-    // kurie nav piesaistîti akta darbam.
+	// Atgriezh kalkulï¿½cijas ierakstus konkrï¿½ta kalkulï¿½cija gruppï¿½,
+    // kurie nav piesaistï¿½ti akta darbam.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getFreeCalculationList($calcGroup, $actId, $trase = 0, $searchText = '')
@@ -5688,8 +5686,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh kalkulâcijas ierakstus konkrçta kalkulâcija gruppâ,
-    // kurie nav piesaistîti akta darbam.
+	// Atgriezh kalkulï¿½cijas ierakstus konkrï¿½ta kalkulï¿½cija gruppï¿½,
+    // kurie nav piesaistï¿½ti akta darbam.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getAllCalculationList( $actId, $trase = 0, $searchText = '')
@@ -5808,7 +5806,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
-    // Vçrtibas tiek nemtas no kalkulâcijas tabula pçc kalkulâcijas ðifra
+    // Vï¿½rtibas tiek nemtas no kalkulï¿½cijas tabula pï¿½c kalkulï¿½cijas ï¿½ifra
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function saveActWorkRecord($actId, $ID, $trase = 0)
@@ -5919,7 +5917,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
-    // Vçrtibas tiek nemtas no kalkulâcijas tabula pçc kalkulâcijas ðifra
+    // Vï¿½rtibas tiek nemtas no kalkulï¿½cijas tabula pï¿½c kalkulï¿½cijas ï¿½ifra
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function writeActWork($actId, $kid, $chipher, $title, $standart, $amount, $total, $measure)
@@ -5944,7 +5942,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh akta cilvekstundas kopçjo summu.
+	// Atgriezh akta cilvekstundas kopï¿½jo summu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActTotalWorkTime($ID)
@@ -5972,7 +5970,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh akta cilvekstundas kopçjo summu.
+	// Atgriezh akta cilvekstundas kopï¿½jo summu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActPersonalProportion($ID)
@@ -5988,7 +5986,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
 // MATERIALI
     // -----------------------------------------------------------------------------
-	// Atgriezh akta materialus. atgriezh visas pçc akta ID.
+	// Atgriezh akta materialus. atgriezh visas pï¿½c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActMaterialList($ID)
@@ -6006,7 +6004,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Izdzçst konkrçtu materiala ierakstu pçc ieraksta ID.
+	// Izdzï¿½st konkrï¿½tu materiala ierakstu pï¿½c ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function deleteActMaterialRecord($ID)
@@ -6023,7 +6021,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Izdzçst konkreta akta materiala ierakstu pçc akta ID.
+	// Izdzï¿½st konkreta akta materiala ierakstu pï¿½c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function deleteActMaterials($ID)
@@ -6040,8 +6038,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh favorita ierakstus konkrçta lietotâja favorîta,
-    // kurie nav piesaistîti akta materiâlam.
+	// Atgriezh favorita ierakstus konkrï¿½ta lietotï¿½ja favorï¿½ta,
+    // kurie nav piesaistï¿½ti akta materiï¿½lam.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getFreeMatFavoritList($favoritId, $actId)
@@ -6058,8 +6056,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh atrasto materiâla ierakslu
-    // kura nav piesaistîti akta materiâlam.
+	// Atgriezh atrasto materiï¿½la ierakslu
+    // kura nav piesaistï¿½ti akta materiï¿½lam.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getFreeMatByCode($code = '', $actId, $title = '')
@@ -6080,8 +6078,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Saglabaa akta materiâla ierakstu.
-    // Vçrtibas tiek nemtas no kl_materiali tabula pçc materiâla koda
+	// Saglabaa akta materiï¿½la ierakstu.
+    // Vï¿½rtibas tiek nemtas no kl_materiali tabula pï¿½c materiï¿½la koda
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function saveActMaterialRecord($actId, $ID, $amount = false, $price = false, $st = 0, $title = '', $mervieniba = '')
@@ -6158,7 +6156,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Atgriezh akta materialus. atgriezh visas pçc akta ID.
+	// Atgriezh akta materialus. atgriezh visas pï¿½c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActsFreeMaterialList($acts)
@@ -6191,7 +6189,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Norakstît materialus, pçc akta pilna numura
+	// Norakstï¿½t materialus, pï¿½c akta pilna numura
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
     function writeOffActsMaterial($acts)
@@ -6611,7 +6609,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 // SYSTEM INFO
 
     // -----------------------------------------------------------------------------
-	// atgriezh sistçmas informâciju
+	// atgriezh sistï¿½mas informï¿½ciju
 	// author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getSystemInfo()
@@ -6622,7 +6620,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
     // -----------------------------------------------------------------------------
-	// Saglabaa sistçmas informâciju.
+	// Saglabaa sistï¿½mas informï¿½ciju.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function saveSystemInfo($warning = '', $link_tmpl = '')
@@ -6803,7 +6801,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
     }
 
     // -----------------------------------------------------------------------------
-	// Atgriezh darba uznemçja vispariga vienoðanas numuru
+	// Atgriezh darba uznemï¿½ja vispariga vienoï¿½anas numuru
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getWorkOwnerNumber($Code, $section)
@@ -6822,9 +6820,9 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 		return false;
 	}
 
-	// Saskaòoðanas statusâ: 
-	// Poga Saskaòots 
- 	// ja Starpakts checkbox = false, tad pogai saglabâjas funkcionalitâte un tabulâ KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS vçrtîba ierakstâs =true attiecîgajam MMS darbam 
+	// Saskaï¿½oï¿½anas statusï¿½: 
+	// Poga Saskaï¿½ots 
+ 	// ja Starpakts checkbox = false, tad pogai saglabï¿½jas funkcionalitï¿½te un tabulï¿½ KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS vï¿½rtï¿½ba ierakstï¿½s =true attiecï¿½gajam MMS darbam 
 
 	function finalizeMMS($actId, $finalize = 0)
 	{
@@ -6865,6 +6863,517 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	}
 
 
+    /////////////////////////
+    // MMS KALKULACIJAS
+    /////////////////////////
+
+    // save MMS from CSV import    
+    function saveMmsCalculationFromCsv($data, $user)
+	{       
+        $query = 'INSERT INTO `KL_MMS_KALKULACIJA` 
+                    (                       
+                        `KMKL_KMSD_NOSACIJUMA_KODS`,
+                        `KMKL_KKAL_SHIFRS`,
+                        `KMKL_NOKL_SPRIEGUMS_10`,
+                        `KMKL_NOKL_SPRIEGUMS_NE_10`,
+                        `KMKL_DAUDZUMS`,
+                        `KMKL_IZMANTOT_LINIJU`,
+                        `KMKL_KOEFICENTS`,
+                        `KMKL_IZMANTOT_VADU`,
+                        `KMKL_IR_AKTIVS`,
+                        `KMKL_TRASE`,
+                        `KMKL_CREATOR`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
+                            "'.dbLayer::quote_smart($data[5]).'",
+                            "'.dbLayer::quote_smart($data[6]).'",
+                            "'.dbLayer::quote_smart($data[7]).'",
+                            "'.dbLayer::quote_smart($data[8]).'",
+                            "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE
+                            `KMKL_NOKL_SPRIEGUMS_10` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KMKL_NOKL_SPRIEGUMS_10` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KMKL_DAUDZUMS` = "'.dbLayer::quote_smart($data[4]).'",
+                            `KMKL_IZMANTOT_LINIJU` = "'.dbLayer::quote_smart($data[5]).'",
+                            `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($data[6]).'",
+                            `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[7]).'",
+                            `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                            `KMKL_EDITED` = now()
+                    ';
+                    //echo $query;
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Atgriezh kopeejo mms-kalkulï¿½cijas skaitu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getMmsCalculationCount($search = false, $column = false)
+	{
+		$oDB = new dbLayer;
+        if($column === false)
+        {
+           $column = dbProc::getKlklDefaultColumn(KL_MMS_WORK_CALCULALATION);
+        }
+        
+        $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+        if($search === false || $search == '')
+        {
+            $searchString = '1 ';
+        }
+        $query =  'select count(`KMKL_ID`) as `RECORDCOUNT` from `KL_MMS_KALKULACIJA`
+        where '.$searchString;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Atgriezh kalkulï¿½cija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Ja doti, njem veeraa nobiidi un daudzumu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getMmsCalculationList($ID = false, $offset = false, $limit = false,
+                                    $search =  false,
+                                    $column = false,
+                                    $order =  'ASC',
+                                    $orderColumn = false)
+    {
+        if ($ID)
+        {
+            $query = 'select *, ' .dbLayer::sqlParseDateTime('KMKL_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('KMKL_EDITED') .', `KKAL_NOSAUKUMS`
+                from `KL_MMS_KALKULACIJA`
+                LEFT JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = 	`KMKL_KKAL_SHIFRS`
+                where `KMKL_ID` = "'.dbLayer::quote_smart($ID).'"';
+        }
+        else
+        {
+            if($column === false)
+            {
+                $column = dbProc::getKlklDefaultColumn(KL_MMS_WORK_CALCULALATION);
+            }
+           
+            if($orderColumn === false)
+            {
+                $orderColumn = dbProc::getKlklDefaultColumn(KL_MMS_WORK_CALCULALATION);
+            }
+            
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+
+           
+            $query = 'select *, ' .dbLayer::sqlParseDateTime('KMKL_CREATED') .',
+                    ' .dbLayer::sqlParseDateTime('KMKL_EDITED') .', 
+                    (SELECT DISTINCT `KKAL_NOSAUKUMS` FROM `kl_kalkulacija` WHERE `KKAL_SHIFRS` = 	`KMKL_KKAL_SHIFRS` LIMIT 1) as `KKAL_NOSAUKUMS`
+                    from `KL_MMS_KALKULACIJA`
+                    where '.$searchString.'
+                    order by  '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
+            if (($offset !== false) && $limit)
+            {
+                $query .= ' limit '.
+                ($offset ? (int)$offset.', ' : '').
+                (int)$limit;
+            }
+        }
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+        //echo $query;
+    }
+
+    // -----------------------------------------------------------------------------
+	// Atgriezh bool veertiibu, kas noraada, vai mms-kaklkulÄcijas doto  nosacÄ«jumu, Å¡ifru un trases pazÄ«mi
+	// eksistee. Ja dota mms-kalkulÄcija ID, shÄ« kalkulÄcija netiek iekljauta
+	// paarbaudee
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function mmsCalculationWithChipherExists($requirement, $code, $is_epla, $ID = false)
+	{
+		$query = 'select `KMKL_ID` from `KL_MMS_KALKULACIJA`
+            where `KMKL_KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement).'"
+            AND `KMKL_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'';
+		if ($ID)
+		{
+			$query .= ' and `KMKL_ID` != "'.dbLayer::quote_smart($ID).'"';
+		}
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['KMKL_ID']);
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Saglabaa mms-kalkulÄcijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// izveido jaunu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+    function saveMmsCalculation($ID, 
+                                $requirement,
+                                $chipher,
+                                $isDefault10=1,
+                                $isDefaultNot10=1,
+                                $amount=1,
+                                $useLine=0,
+                                $koeficent=1,
+                                $useCord=0,
+                                $isActive=1,
+                                $isEpla=0,
+                                $user)
+    {
+        
+            if ($ID)
+            {
+                $query = 'UPDATE `KL_MMS_KALKULACIJA`
+                    SET `KMKL_KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement).'",
+                        `KMKL_KKAL_SHIFRS` = "'.dbLayer::quote_smart($chipher).'",
+                        `KMKL_NOKL_SPRIEGUMS_10` = "'.dbLayer::quote_smart($isDefault10).'",
+                        `KMKL_NOKL_SPRIEGUMS_NE_10` = "'.dbLayer::quote_smart($isDefaultNot10).'",
+                        `KMKL_DAUDZUMS` = "'.dbLayer::quote_smart($amount).'",
+                        `KMKL_IZMANTOT_LINIJU` = "'.dbLayer::quote_smart($useLine).'",
+                        `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($koeficent).'",
+                        `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
+                        `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
+                        `KMKL_TRASE` = "'.dbLayer::quote_smart($isEpla).'",
+                        `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                        `KMKL_EDITED` = now()
+                    where `KMKL_ID` = "'.dbLayer::quote_smart($ID).'"';
+
+            }
+            elseif ($requirement)
+            {
+                $query = 'INSERT INTO `KL_MMS_KALKULACIJA` 
+                (                       
+                    `KMKL_KMSD_NOSACIJUMA_KODS`,
+                    `KMKL_KKAL_SHIFRS`,
+                    `KMKL_NOKL_SPRIEGUMS_10`,
+                    `KMKL_NOKL_SPRIEGUMS_NE_10`,
+                    `KMKL_DAUDZUMS`,
+                    `KMKL_IZMANTOT_LINIJU`,
+                    `KMKL_KOEFICENTS`,
+                    `KMKL_IZMANTOT_VADU`,
+                    `KMKL_IR_AKTIVS`,
+                    `KMKL_TRASE`,
+                    `KMKL_CREATOR`
+                )
+                VALUES
+                (
+                        "'.dbLayer::quote_smart($requirement).'",
+                        "'.dbLayer::quote_smart($chipher).'",
+                        "'.dbLayer::quote_smart($isDefault10).'",
+                        "'.dbLayer::quote_smart($isDefaultNot10).'",
+                        "'.dbLayer::quote_smart($amount).'",
+                        "'.dbLayer::quote_smart($useLine).'",
+                        "'.dbLayer::quote_smart($koeficent).'",
+                        "'.dbLayer::quote_smart($useCord).'",
+                        "'.dbLayer::quote_smart($isActive).'",
+                        "'.dbLayer::quote_smart($isEpla).'",
+                        "'.dbLayer::quote_smart( $user).'"
+                    )';
+            }
+            //echo $query;
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+
+            return ($result !== false);
+        }
+
+    /////////////////////////
+    // KALKULACIJAS - MATERIALI
+    /////////////////////////
+
+    // save from CSV import    
+    function saveCalculationMaterialFromCsv($data, $user)
+	{ 
+        $material_kagegory = explode('.', $data[1]);      
+        $query = 'INSERT INTO `KL_KALKULACIJA_MATERIALI` 
+                    (                       
+                        `KKMT_KKAL_SHIFRS`,
+                        `KKMT_KMAT_GRUPA`,
+                        `KKMT_KMAT_APAKSGRUPA`,
+                        `KKMT_KMAT_KODS`,
+                        `KKMT_IZMANTOT_NOMENKLATURU`,
+                        `KKMT_NOKLUSETAIS`,
+                        `KKMT_DAUDZUMS`,
+                        `KKMT_IZMANTOT_LINIJU`,
+                        `KKMT_KOEFICENTS`,
+                        `KKMT_IZMANTOT_VADU`,
+                        `KKMT_IR_AKTIVS`,
+                        `KKMT_CREATOR`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($material_kagegory[0]).'",
+                            "'.dbLayer::quote_smart($material_kagegory[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
+                            "'.dbLayer::quote_smart($data[5]).'",
+                            "'.dbLayer::quote_smart($data[6]).'",
+                            "'.dbLayer::quote_smart($data[7]).'",
+                            "'.dbLayer::quote_smart($data[8]).'",
+                            "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE
+                            `KKMT_IZMANTOT_NOMENKLATURU` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KKMT_NOKLUSETAIS` = "'.dbLayer::quote_smart($data[4]).'",
+                            `KKMT_DAUDZUMS` = "'.dbLayer::quote_smart($data[5]).'",
+                            `KKMT_IZMANTOT_LINIJU` = "'.dbLayer::quote_smart($data[6]).'",
+                            `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($data[7]).'",
+                            `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($data[9]).'",
+                            `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                            `KKMT_EDITED` = now()
+                    ';
+                    //echo $query;
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+	// Atgriezh kopeejo mms-kalkulï¿½cijas skaitu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getCalculationMaterialCount($search = false, $column = false)
+	{
+		$oDB = new dbLayer;
+        if($column === false)
+        {
+           $column = dbProc::getKlklDefaultColumn(KL_CALCULALATION_MATERIAL);
+        }
+        if($column == 'KMAT_GRUPA' && !($search === false || $search == '')) 
+        {
+                $cat = explode(".", $search);
+                if (count($cat) == 1) {
+                    $searchString = '(`KKMT_KMAT_GRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%" OR 
+                                `KKMT_KMAT_APAKSGRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%") ';
+                }
+                else {
+                    $searchString = '(`KKMT_KMAT_GRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%" AND 
+                                `KKMT_KMAT_APAKSGRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[1])).'%") ';
+                }
+        }
+        else {
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+        }
+        if($search === false || $search == '')
+        {
+            $searchString = '1 ';
+        }
+        $query =  'select count(`KKMT_ID`) as `RECORDCOUNT` from `KL_KALKULACIJA_MATERIALI`
+        where '.$searchString;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Atgriezh kalkulï¿½cija(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Ja doti, njem veeraa nobiidi un daudzumu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getCalculationMaterialList($ID = false, $offset = false, $limit = false,
+                                    $search =  false,
+                                    $column = false,
+                                    $order =  'ASC',
+                                    $orderColumn = false)
+    {
+        if ($ID)
+        {
+            $query = 'select *,  CONCAT(`KKMT_KMAT_GRUPA`, ".", `KKMT_KMAT_APAKSGRUPA`) as `KMAT_GRUPA`, 
+                ' .dbLayer::sqlParseDateTime('KKMT_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('KKMT_EDITED') .', `KKAL_NOSAUKUMS`, `KMAT_KATEGORIJAS_NOSAUKUNS`
+                from `KL_KALKULACIJA_MATERIALI`
+                LEFT JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = 	`KKMT_KKAL_SHIFRS`
+                LEFT JOIN `kl_materiali` ON KMAT_KATEGORIJAS_KODS = `KKMT_KMAT_GRUPA`
+                where `KKMT_ID` = "'.dbLayer::quote_smart($ID).'"';
+
+                
+                
+        }
+        else
+        {
+            if($column === false)
+            {
+                $column = dbProc::getKlklDefaultColumn(KL_CALCULALATION_MATERIAL);
+            }
+           
+            if($orderColumn === false)
+            {
+                $orderColumn = dbProc::getKlklDefaultColumn(KL_CALCULALATION_MATERIAL);
+            }
+            if($orderColumn == 'KMAT_GRUPA')
+            {
+                $orderColumn = 'KKMT_KMAT_GRUPA';
+            }
+            
+            
+            if($column == 'KMAT_GRUPA' && !($search === false || $search == '')) 
+            {
+                $cat = explode(".", $search);
+                if (count($cat) == 1) {
+                    $searchString = '(`KKMT_KMAT_GRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%" OR 
+                                `KKMT_KMAT_APAKSGRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%") ';
+                }
+                else {
+                    $searchString = '(`KKMT_KMAT_GRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[0])).'%" AND 
+                                `KKMT_KMAT_APAKSGRUPA` LIKE "%'.dbLayer::quote_smart(text::toUpper($cat[1])).'%") ';
+                }
+            }
+            else {
+                $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            }
+
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+
+           
+            $query = 'select DISTINCT *,  CONCAT(`KKMT_KMAT_GRUPA`, ".", `KKMT_KMAT_APAKSGRUPA`) as `KMAT_GRUPA`, 
+                ' .dbLayer::sqlParseDateTime('KKMT_CREATED') .',  
+                ' .dbLayer::sqlParseDateTime('KKMT_EDITED') .', 
+                (SELECT DISTINCT `KKAL_NOSAUKUMS` FROM `kl_kalkulacija` WHERE `KKAL_SHIFRS` = `KKMT_KKAL_SHIFRS` LIMIT 1) as `KKAL_NOSAUKUMS`, 
+                (SELECT DISTINCT `KMAT_KATEGORIJAS_NOSAUKUNS` FROM `kl_materiali` WHERE KMAT_KATEGORIJAS_KODS = `KKMT_KMAT_GRUPA` LIMIT 1) as `KMAT_KATEGORIJAS_NOSAUKUNS`
+                    from `KL_KALKULACIJA_MATERIALI`
+                    where '.$searchString.'
+                    order by  '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
+            if (($offset !== false) && $limit)
+            {
+                $query .= ' limit '.
+                ($offset ? (int)$offset.', ' : '').
+                (int)$limit;
+            }
+        }
+        //echo $query;
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+        
+    }
+
+    // -----------------------------------------------------------------------------
+	// Atgriezh bool veertiibu, kas noraada, vai kaklkulÄcijas-materiÄls ar doto  grupu, Å¡ifru un materiÄla kodu
+	// eksistee. Ja dota kaklkulÄcijas-materiÄla ID, shÄ« kaklkulÄcijas-materiÄls netiek iekljauta
+	// paarbaudee
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function calcMaterialWithChipherExists($group, $subgroup, $code, $mater_code, $ID = false)
+	{
+		$query = 'select `KKMT_ID` from `KL_KALKULACIJA_MATERIALI`
+            where `KKMT_KMAT_GRUPA` = "'.dbLayer::quote_smart($group).'"
+            AND `KKMT_KMAT_APAKSGRUPA` = "'.dbLayer::quote_smart($subgroup).'"
+            AND `KKMT_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+            AND `KKMT_KMAT_KODS` = "'.dbLayer::quote_smart($mater_code).'"';
+		if ($ID)
+		{
+			$query .= ' and `KKMT_ID` != "'.dbLayer::quote_smart($ID).'"';
+		}
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['KKMT_ID']);
+    }
+
+    // -----------------------------------------------------------------------------
+	// Saglabaa kaklkulÄcijas-materiÄls. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// izveido jaunu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+    function saveCalcMaterial($ID, 
+                                $chipher,
+                                $group,
+                                $subgroup,
+                                $matr_code,
+                                $useMaterial=1,
+                                $isDefault=1,
+                                $amount=1,
+                                $useLine=0,
+                                $koeficent=1,
+                                $useCord=0,
+                                $isActive=1,
+                                $user)
+    {
+        
+            if ($ID)
+            {
+                $query = 'UPDATE `KL_KALKULACIJA_MATERIALI`
+                    SET `KKMT_KKAL_SHIFRS` = "'.dbLayer::quote_smart($chipher).'",
+                        `KKMT_KMAT_GRUPA` = "'.dbLayer::quote_smart($group).'",
+                        `KKMT_KMAT_APAKSGRUPA` = "'.dbLayer::quote_smart($subgroup).'",
+                        `KKMT_KMAT_KODS` = "'.dbLayer::quote_smart($matr_code).'",
+                        `KKMT_IZMANTOT_NOMENKLATURU` = "'.dbLayer::quote_smart($useMaterial).'",
+                        `KKMT_NOKLUSETAIS` = "'.dbLayer::quote_smart($isDefault).'",
+                        `KKMT_DAUDZUMS` = "'.dbLayer::quote_smart($amount).'",
+                        `KKMT_IZMANTOT_LINIJU` = "'.dbLayer::quote_smart($useLine).'",
+                        `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($koeficent).'",
+                        `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
+                        `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
+                        `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                        `KKMT_EDITED` = now()
+                    where `KKMT_ID` = "'.dbLayer::quote_smart($ID).'"';
+
+            }
+            elseif ($chipher)
+            {
+                $query = 'INSERT INTO `KL_KALKULACIJA_MATERIALI` 
+                (                       
+                    `KKMT_KKAL_SHIFRS`,
+                    `KKMT_KMAT_GRUPA`,
+                    `KKMT_KMAT_APAKSGRUPA`,
+                    `KKMT_KMAT_KODS`,
+                    `KKMT_IZMANTOT_NOMENKLATURU`,
+                    `KKMT_NOKLUSETAIS`,
+                    `KKMT_DAUDZUMS`,
+                    `KKMT_IZMANTOT_LINIJU`,
+                    `KKMT_KOEFICENTS`,
+                    `KKMT_IZMANTOT_VADU`,
+                    `KKMT_IR_AKTIVS`,
+                    `KKMT_CREATOR`
+                )
+                VALUES
+                (
+                        "'.dbLayer::quote_smart($chipher).'",
+                        "'.dbLayer::quote_smart($group).'",
+                        "'.dbLayer::quote_smart($subgroup).'",
+                        "'.dbLayer::quote_smart($matr_code).'",
+                        "'.dbLayer::quote_smart($useMaterial).'",
+                        "'.dbLayer::quote_smart($isDefault).'",
+                        "'.dbLayer::quote_smart($amount).'",
+                        "'.dbLayer::quote_smart($useLine).'",
+                        "'.dbLayer::quote_smart($koeficent).'",
+                        "'.dbLayer::quote_smart($useCord).'",
+                        "'.dbLayer::quote_smart($isActive).'",
+                        "'.dbLayer::quote_smart( $user).'"
+                    )';
+            }
+            //echo $query;
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+
+            return ($result !== false);
+        }
 
 
 

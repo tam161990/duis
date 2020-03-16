@@ -60,6 +60,16 @@ class classif
 					}
 				}
 				break;
+			case KL_VOLTAGE_BY_CODE:
+					$res=dbProc::getVoltageActivList();
+					if (is_array($res))
+					{
+						foreach ($res as $row)
+						{
+							$m[$row['KSRG_KODS']]=$row['KSRG_NOSAUKUMS'];
+						}
+					}
+					break;
             case KL_VOLTAGE_TRASE:
 				$res=dbProc::getTraseVoltageActivList();
 				if (is_array($res))
@@ -120,6 +130,16 @@ class classif
 					}
 				}
 				break;
+			case KL_OBJECTS_BY_CODE:
+					$res=dbProc::getObjectActivList();
+					if (is_array($res))
+					{
+						foreach ($res as $row)
+						{
+							$m[$row['KOBJ_KODS']]=$row['KOBJ_NOSAUKUMS'];
+						}
+					}
+					break;
             case KL_OBJECTS_TRASE:
 				$res=dbProc::getTraseObjectActivList();
 				if (is_array($res))

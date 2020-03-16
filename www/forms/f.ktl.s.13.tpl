@@ -12,9 +12,11 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='block';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-              document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 	}
@@ -24,9 +26,11 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-             document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 	}
@@ -37,11 +41,13 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='block';
        document.all['KALKULATION_TR'].style.display='none';
-              document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
-       document.all['options'].disabled=false;
-       document.all['options'].selectedIndex=2;
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
+       document.all['options'].disabled=true;
+       document.all['options'].selectedIndex=0;
 
 	}
      else if (selectedReport=='KALKULATION_TR')
@@ -50,9 +56,11 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='block';
-              document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=false;
        document.all['options'].selectedIndex=2;
 
@@ -63,11 +71,13 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-              document.all['KALKULATION_STATUSS'].style.display='block';
+       document.all['KALKULATION_STATUSS'].style.display='block';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=true;
-              document.all['options'].selectedIndex=0;
+       document.all['options'].selectedIndex=0;
 
 	}
 
@@ -77,9 +87,11 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-              document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='block';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 	}
@@ -89,9 +101,39 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-             document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='block';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
+       document.all['options'].disabled=true;
+       document.all['options'].selectedIndex=0;
+       }
+       else if (selectedReport=='MMS_KALKULATION')
+	{
+       document.all['MATERIALS'].style.display='none';
+       document.all['EDAREA'].style.display='none';
+       document.all['KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_TR'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['MMS_WORKS'].style.display='none';
+       document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='block';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
+       document.all['options'].disabled=true;
+       document.all['options'].selectedIndex=0;
+    }
+    else if (selectedReport=='KALKULATION_MATERIAL')
+	{
+       document.all['MATERIALS'].style.display='none';
+       document.all['EDAREA'].style.display='none';
+       document.all['KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_TR'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['MMS_WORKS'].style.display='none';
+       document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='block';
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 	}
@@ -101,9 +143,11 @@ function setImportColumnVisibility()
        document.all['EDAREA'].style.display='none';
        document.all['KALKULATIONS'].style.display='none';
        document.all['KALKULATION_TR'].style.display='none';
-              document.all['KALKULATION_STATUSS'].style.display='none';
+       document.all['KALKULATION_STATUSS'].style.display='none';
        document.all['MMS_WORKS'].style.display='none';
        document.all['HARMONIZED'].style.display='none';
+       document.all['MMS_KALKULATIONS'].style.display='none';
+       document.all['KALKULATION_MATERIAL'].style.display='none';
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 	}
@@ -146,9 +190,11 @@ add2onload('setImportColumnVisibility()');
        <div id="EDAREA" style="display:none"><?=text::get('REQUIREMENTS_EDAREA');?></div>
        <div id="KALKULATIONS" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION');?></div>
        <div id="KALKULATION_TR" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_TR');?></div>
-              <div id="KALKULATION_STATUSS" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_STATUSS');?></div>
+       <div id="KALKULATION_STATUSS" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_STATUSS');?></div>
        <div id="MMS_WORKS" style="display:none"><?=text::get('REQUIREMENTS_MMS_WORKS');?></div>
        <div id="HARMONIZED" style="display:none"><?=text::get('REQUIREMENTS_HARMONIZED');?></div>
+       <div id="MMS_KALKULATIONS" style="display:none"><?=text::get('REQUIREMENTS_MMS_CALCULATION');?></div>
+       <div id="KALKULATION_MATERIAL" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_MATERIAL');?></div>
        </td>
     </tr>
 </table>

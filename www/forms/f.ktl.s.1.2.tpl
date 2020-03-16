@@ -11,21 +11,45 @@
 		<td colspan="6" class="table_separator">&nbsp;</td>
 	</tr>
 	<tr>
-     	<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('kods'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('kods'); ?></td>
-        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('nosaukums'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('nosaukums'); ?></td>
-         <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('measure'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('measure'); ?></td>
-	</tr>
-    <tr>
-     	<td class="table_cell_c"><?= $oForm -> getElementLabel('price'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('price'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('amount'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('amount'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('isActive'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('isActive'); ?></td>
-	</tr>
+		<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('kods'); ?>:<font color="red">*</font></td>
+	   <td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('kods'); ?></td>
+	   <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('nosaukums'); ?>:<font color="red">*</font></td>
+	   <td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('nosaukums'); ?></td>
+		<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('measure'); ?>:<font color="red">*</font></td>
+	   <td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('measure'); ?></td>
+   </tr>
+   <tr>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('price'); ?>:<font color="red">*</font></td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('price'); ?></td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('amount'); ?>:</td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('amount'); ?></td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('category'); ?>:<font color="red">*</font></td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('category'); ?></td>
+   </tr>
+   <tr>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('kalase'); ?>:</td>
+	  <td class="table_cell_2"><?= $oForm -> getElementHtml('kalase'); ?></td>
+	  <td class="table_cell_c"><?= $oForm -> getElementLabel('category_measure'); ?>:<font color="red">*</font></td>
+	  <td class="table_cell_2"><?= $oForm -> getElementHtml('category_measure'); ?></td>
+	  <td class="table_cell_c"><?= $oForm -> getElementLabel('category_descr'); ?>:<font color="red">*</font></td>
+	  <td class="table_cell_2"><?= $oForm -> getElementHtml('category_descr'); ?></td>
+  </tr>
+  <tr>        
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('isDefault'); ?></td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('isDefault'); ?></td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('created'); ?>:</td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('created'); ?></td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('creator'); ?>:</td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('creator'); ?></td>
+   </tr>
+   <tr>
+	   <td class="table_cell_c">&nbsp;</td>
+	   <td class="table_cell_2">&nbsp;</td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('edited'); ?>:</td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('edited'); ?></td>
+	   <td class="table_cell_c"><?= $oForm -> getElementLabel('editor'); ?>:</td>
+	   <td class="table_cell_2"><?= $oForm -> getElementHtml('editor'); ?></td>
+   </tr>
     
 </table>
 

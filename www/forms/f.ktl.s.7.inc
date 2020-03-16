@@ -50,6 +50,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
         $oForm -> addElement('checkbox', 'trase',  text::get('TRASE'), isset($object['KOBJ_TRASE'])?$object['KOBJ_TRASE']:0, ' tabindex=5 '.(($isEdUser)?' disabled' : ''));
 
+		$oForm -> addElement('text', 'kods',  text::get('CODE'), isset($object['KOBJ_KODS'])?$object['KOBJ_KODS']:'', 'maxlength="5"' . (( $isEdUser)?' disabled' : ''));
 		// form buttons
         if(!$isEdUser)
         {
@@ -82,7 +83,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-			if ($oForm -> getValue('nosaukums') )
+			if ($oForm -> getValue('nosaukums') && $oForm -> getValue('kods') )
 			{
 				$checkRequiredFields = true;
 			}
@@ -101,13 +102,24 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$check = false;
 					}
 
+					// chech that object with same code not set
+					if (dbProc::objectWithCodeExists(
+						$oForm->getValue('kods'),
+						($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('objectId'):false)
+						)
+					{
+						$oForm->addError(text::get('ERROR_EXISTS_OBJECT_CODE'));
+						$check = false;
+					}
+
 					// if all is ok, do operation
 					if($check)
 					{
 						$r=dbProc::saveObject(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('objectId'):false),
 					   	$oForm->getValue('nosaukums'),
 						$oForm->getValue('isActive',0),
-                        $oForm->getValue('trase',0)
+						$oForm->getValue('trase',0),
+						$oForm->getValue('kods')
 						);
 
 						if (!$r)

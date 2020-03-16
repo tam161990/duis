@@ -37,34 +37,58 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			{
 				$material = $materialInfo[0];
 			}
-        }
+
+			// get user info
+			$creator = '';
+			$editor = '';
+			$userInfo = dbProc::getUserInfo($material['KMAT_CREATOR']);
+			if(count($userInfo) >0 )
+			{
+				$creator = $userInfo[0]['RLTT_VARDS']. ' ' .$userInfo[0]['RLTT_UZVARDS'];
+			}
+			$userInfo1 = dbProc::getUserInfo($material['KMAT_EDITOR']);
+			if(count($userInfo1) >0 )
+			{
+				$editor = $userInfo1[0]['RLTT_VARDS']. ' ' .$userInfo1[0]['RLTT_UZVARDS'];
+			}
+		}
+		
+		$category = array();
+		$res=dbProc::getMaterialCategory();
+		if (is_array($res))
+		{
+			$category['']=text::get('ALL');
+			foreach ($res as $row)
+			{
+				$category[$row['KMAT_KATEGORIJAS_KODS']]=$row['KMAT_KATEGORIJAS_KODS'].' '.$row['KMAT_KATEGORIJAS_NOSAUKUNS'];
+			}
+		}
+		unset($res);
 
 		// form elements
 		$oForm -> addElement('hidden', 'action', '');
 		$oForm -> addElement('hidden', 'matId', null, isset($material['KMAT_ID'])? $material['KMAT_ID']:'');
 
-        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($material['KMAT_KODS'])?$material['KMAT_KODS']:'', 'tabindex=1 maxlength="7"' . (($matId || $isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($material['KMAT_KODS'])?$material['KMAT_KODS']:'', 'tabindex=1 maxlength="7"' . (($matId || $isEdUser )?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
         $oForm -> addRule('kods', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
 
-        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($material['KMAT_NOSAUKUMS'])?$material['KMAT_NOSAUKUMS']:'', ' tabindex=3 maxlength="160"'.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($material['KMAT_NOSAUKUMS'])?$material['KMAT_NOSAUKUMS']:'', ' tabindex=2 maxlength="160"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
+        $oForm -> addElement('text', 'measure',  text::get('UNIT_OF_MEASURE'), isset($material['KMAT_MERVIENIBA'])?$material['KMAT_MERVIENIBA']:'', ' tabindex=3 maxlength="15"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('measure', text::get('ERROR_REQUIRED_FIELD'), 'required');       
 
-
-        $oForm -> addElement('text', 'measure',  text::get('UNIT_OF_MEASURE'), isset($material['KMAT_MERVIENIBA'])?$material['KMAT_MERVIENIBA']:'', ' tabindex=5 maxlength="15"'.(($isEdUser)?' disabled' : ''));
-		$oForm -> addRule('measure', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
-        $oForm -> addElement('text', 'amount',  text::get('AMOUNT'), isset($material['KMAT_DAUDZUMS'])?$material['KMAT_DAUDZUMS']:'', ' tabindex=4 maxlength="8"'.(($isEdUser)?' disabled' : ''));
-		$oForm -> addRule('amount', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
+		$oForm -> addElement('text', 'amount',  text::get('AMOUNT'), isset($material['KMAT_DAUDZUMS'])?$material['KMAT_DAUDZUMS']:'', ' tabindex=5 maxlength="12"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('amount', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
         // check Amount field
-        $oForm->addElement('hidden','maxAmount','','100000.00');
+        $oForm->addElement('hidden','maxAmount','','100000.000');
         $v1=&$oForm->createValidation('amountValidation', array('amount'), 'ifonefilled');
         // ja mērvienība ir definēts un > 1000
         $r1=&$oForm->createRule(array('amount', 'maxAmount'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
         $oForm->addRule(array($r1), 'groupRuleAmount', 'group', $v1);
 
-        $oForm -> addElement('text', 'price',  text::get('PRICE'), isset($material['KMAT_CENA'])?$material['KMAT_CENA']:'', ' tabindex=2  maxlength="8"'.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'price',  text::get('PRICE'), isset($material['KMAT_CENA'])?$material['KMAT_CENA']:'', ' tabindex=4  maxlength="10"'.(($isEdUser)?' disabled' : ''));
         $oForm -> addRule('price', text::get('ERROR_REQUIRED_FIELD'), 'required');
         $oForm -> addRule('price', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
         // check Price field
@@ -72,11 +96,30 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $oForm->addElement('hidden','maxPrice','','100000.00');
         $v2=&$oForm->createValidation('priceValidation', array('price'), 'ifonefilled');
         // ja cena ir definēta un > 1000
-        $r1=&$oForm->createRule(array('price', 'minPrice'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','>');
-        $r2=&$oForm->createRule(array('price', 'maxPrice'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
-        $oForm->addRule(array($r1, $r2), 'groupRulePrice', 'group', $v2);
+        $r2=&$oForm->createRule(array('price', 'minPrice'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','>');
+        $r3=&$oForm->createRule(array('price', 'maxPrice'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
+		$oForm->addRule(array($r2, $r3), 'groupRulePrice', 'group', $v2);
+		
 
-		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($material['KMAT_IR_AKTIVS'])?$material['KMAT_IR_AKTIVS']:1, ' tabindex=6 '.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('select', 'category',  text::get('MATERIAL_CATEGORY'), isset($material['KMAT_KATEGORIJAS_KODS'])?$material['KMAT_KATEGORIJAS_KODS']:'', ' tabindex=6 maxlength="8"'.(($isEdUser)?' disabled' : ''), '', '', $category);
+		$oForm -> addRule('category', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	  
+		$oForm -> addElement('text', 'kalase',  text::get('MATERIAL_CATEGORY_CLAS'), isset($material['KMAT_KATEGORIJAS_KLASE'])?$material['KMAT_KATEGORIJAS_KLASE']:'', ' tabindex=7 maxlength="255"'.(($isEdUser)?' disabled' : ''));
+		
+		$oForm -> addElement('text', 'category_measure',  text::get('MATERIAL_CATEGORY_MEASURE'), isset($material['KMAT_KATEGORIJAS_MERVIENIBA'])?$material['KMAT_KATEGORIJAS_MERVIENIBA']:'', ' tabindex=9 maxlength="15"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('category_measure', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
+		$oForm -> addElement('text', 'category_descr',  text::get('MATERIAL_CATEGORY_DESCR'), isset($material['KMAT_PRECIZEJUMS'])?$material['KMAT_PRECIZEJUMS']:'', ' tabindex=10 maxlength="3"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('category_descr', text::get('ERROR_REQUIRED_FIELD'), 'required');
+		$oForm -> addRule('category_descr', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
+
+		$oForm -> addElement('checkbox', 'isDefault',  text::get('MATERIAL_BY_DEFAULT'), (isset($material['KMAT_NOKLUSETAIS'] )?$material['KMAT_NOKLUSETAIS']:'0'), ' tabindex=11 maxlength="3"'.(($isEdUser)?' disabled' : ''));
+
+		// importa dati
+		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($material['KMAT_CREATED'])?$material['KMAT_CREATED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'creator',  text::get('CREATOR'), isset($creator)?$creator:'', 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'edited',  text::get('EDITED'), isset($material['KMAT_EDITED'])?$material['KMAT_EDITED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'editor',  text::get('EDITOR'), isset($editor)?$editor:'', 'tabindex=21 maxlength="20" disabled');
 
 		// form buttons
         if(!$isEdUser)
@@ -111,20 +154,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 
-            // delete favorits
-            if ($oForm->getValue('action')== OP_DELETE )
-            {
-               $favorit = dbProc::getKrfkInfo(20);
-
-               $r = dbProc::deleteNotActivFromUserFavorit($favorit['KRFK_VERTIBA']) ;
-
-            }
             // save
-            elseif ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('matId'))))
+            if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('matId'))))
             {
     			$checkRequiredFields = false;
-    			if ($oForm -> getValue('kods') && $oForm -> getValue('nosaukums') &&
-                    $oForm -> getValue('price') && $oForm -> getValue('measure') )
+    			if (true //$oForm -> getValue('kods') && $oForm -> getValue('nosaukums') &&
+					//$oForm -> getValue('price') && $oForm -> getValue('measure') && 
+					//$oForm -> getValue('category') && $oForm -> getValue('category_measure') &&
+					//$oForm -> getValue('category_descr')
+					)
     			{
     				$checkRequiredFields = true;
     			}
@@ -143,14 +181,19 @@ if (userAuthorization::isAdmin() || $isEdUser )
   					// if all is ok, do operation
   					if($check)
   					{
-  						$r=dbProc::saveMaterial(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('matId'):false),
-  						$oForm->getValue('kods'),
-                          $oForm->getValue('nosaukums'),
-                          $oForm->getValue('price'),
-                          $oForm->getValue('amount'),
-                          $oForm->getValue('measure'),
-  						$oForm->getValue('isActive',0)
-  						);
+						$r=dbProc::saveMaterial(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('matId'):false),
+								$oForm->getValue('category'),	
+								$oForm->getValue('kods'),
+								$oForm->getValue('nosaukums'),
+								$oForm->getValue('measure'),
+								$oForm->getValue('amount'),
+								$oForm->getValue('price'),
+								$oForm->getValue('kalase'),
+								$oForm->getValue('category_measure'),
+								$oForm -> getValue('category_descr'),
+								$oForm->getValue('isDefault', 0),
+								$userId
+								);
 
   						if (!$r)
   						{
@@ -158,7 +201,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
   						}
 
     				}
-    			}
+				}
+				else
+				{
+					$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
+				}
             }
 			else
 			{

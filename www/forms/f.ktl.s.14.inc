@@ -4,8 +4,7 @@ $userId = userAuthorization::getUserId();
 $isAuditUser = dbProc::isUserInRole($userId, ROLE_AUDIT_USER);
 $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isAdmin = userAuthorization::isAdmin();
-$trase =  reqVar::get('isTrase');
-if($trase != 1) $trase = 0;
+
 
 $editMode = reqVar::get('editMode');
 $mmsId = reqVar::get('mmsId');
@@ -78,7 +77,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 			if(count($mmsInfo)>0)
 			{
 				$mms = $mmsInfo[0];
-                $res=dbProc::getDuContractNo($mms['KMSD_KWOI_KODS'], -1);
+                $res=dbProc::getDuContractNo($mms['KMSD_IZPILDITAJA_KODS'], -1);
 
                  if (is_array($res))
                  {
@@ -87,122 +86,118 @@ if ($isAdmin || $isEdUser || $isAuditUser)
                  	  $contract[$row['KCNT_VV_NUMBER']]=$row['KCNT_VV_NUMBER'];
                  	}
                  }
-                 unset($res);
+				 unset($res);
+				 
+				 // get user info
+				$userInfo = dbProc::getUserInfo($mms['KMSD_CREATOR']);
+				if(count($userInfo) >0 )
+				{
+					$creator = $userInfo[0]['RLTT_VARDS']. ' ' .$userInfo[0]['RLTT_UZVARDS'];
+				}
+
+				$userInfo1 = dbProc::getUserInfo($mms['KMSD_EDITOR']);
+				if(count($userInfo1) >0 )
+				{
+					$editor = $userInfo1[0]['RLTT_VARDS']. ' ' .$userInfo1[0]['RLTT_UZVARDS'];
+				}
 			}
         }
 
         $isDelete = false;
-        if(isset($mms['KMSD_IR_PABEIGTS']) && $mms['KMSD_IR_PABEIGTS'] == 0)
+        if(isset($mms['IS_ACT']) && $mms['IS_ACT'] == 0)
         {
            $isDelete = true;
-        }
-
+		}
+		$isEdit = false;
+		if(isset($mms['IS_APPROVED_ACT']) && $mms['IS_APPROVED_ACT'] == 0)
+        {
+           $isEdit = true;
+		}
+		
 		// form elements
 		$oForm -> addElement('hidden', 'action', '');
 		$oForm -> addElement('hidden', 'mmsId', null, isset($mms['KMSD_ID'])? $mms['KMSD_ID']:'');
 
-        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($mms['KMSD_KODS'])?$mms['KMSD_KODS']:'', 'tabindex=1 maxlength="150"' . (($mmsId || $isAuditUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($mms['KMSD_KODS'])?$mms['KMSD_KODS']:'', 'tabindex=1 maxlength="20"' . (($mmsId || $isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-        $oForm -> addElement('checkbox', 'isFinished',  text::get('MMS_WORK_FINISHED'), isset($mms['KMSD_IR_PABEIGTS'])?$mms['KMSD_IR_PABEIGTS']:0, ' tabindex=3 '.(($isAuditUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'designation',  text::get('MAIN_DESIGNATION'), isset($mms['KMSD_OPERATIVAS_APZIM'])?$mms['KMSD_OPERATIVAS_APZIM']:'', 'tabindex=2 maxlength="250"'.(($isAuditUser)?' disabled' : '') );
+        $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($mms['KMSD_WORK_TITLE'])?$mms['KMSD_WORK_TITLE']:'', 'tabindex=3 maxlength="250"'.(($isAuditUser)?' disabled' : '') );
 
-        $oForm -> addElement('text', 'edAreaCode',  text::get('ED_AREA_CODE'), isset($mms['KMSD_KEDI_KODS'])?$mms['KMSD_KEDI_KODS']:'', 'tabindex=2 maxlength="5"' . (($isAuditUser)?' disabled' : ''));
+        //datums
+        $oForm -> addElement('date', 'proces_date',  text::get('PROCESS_DATE'), isset($mms['KMSD_IZPILDES_DATUMS'])?$mms['KMSD_IZPILDES_DATUMS']:dtime::now(), 'tabindex=4 maxlength="10"'.(($isAuditUser)?' disabled' : ''));
+        $oForm -> addRule('proces_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
+  
+		$oForm -> addElement('text', 'requirement_code',  text::get('REQUIREMENT_CODE'), isset($mms['KMSD_NOSACIJUMA_KODS'])?$mms['KMSD_NOSACIJUMA_KODS']:'', 'tabindex=5 maxlength="10"' . (($mmsId || $isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('requirement_code', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
+
+		$oForm -> addElement('text', 'requirement',  text::get('REQUIREMENT_TITLE'), isset($mms['KMSD_NOSACIJUMS'])?$mms['KMSD_NOSACIJUMS']:'', 'tabindex=6 maxlength="250"'.(($mmsId || $isAuditUser)?' disabled' : '') );
+
+        $oForm -> addElement('text', 'edAreaCode',  text::get('ED_AREA_CODE'), isset($mms['KMSD_KEDI_KODS'])?$mms['KMSD_KEDI_KODS']:'', 'tabindex=7 maxlength="5"' . (($isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('edAreaCode', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        $oForm -> addRule('edAreaCode', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
+		$oForm -> addRule('edAreaCode', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
+		
+		$oForm -> addElement('checkbox', 'priority',  text::get('PRIORITY'), isset($mms['KMSD_PRIORITATE'])?$mms['KMSD_PRIORITATE']:0, ' tabindex=8 '.(($isAuditUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'isEpla',  text::get('TRASE'), isset($mms['KMSD_IR_EPLA'])?$mms['KMSD_IR_EPLA']:0, ' tabindex=9 '.(($isAuditUser)?' disabled' : ''));
+        
+        $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($mms['KMSD_TO_ID'])?$mms['KMSD_TO_ID']:'', ' tabindex=10  maxlength="6"'.(($isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('toid', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
+		
+		$oForm -> addElement('text', 'technic_object',  text::get('TECHNIC_OBJECT'), isset($mms['KMSD_TEH_OBJEKTS'])?$mms['KMSD_TEH_OBJEKTS']:'', 'tabindex=11 maxlength="50"'.(($isAuditUser)?' disabled' : '') );
+		$oForm -> addElement('text', 'network_element',  text::get('NETWORK_ELEMENT'), isset($mms['KMSD_TIKLA_ELEMENTS'])?$mms['KMSD_TIKLA_ELEMENTS']:'', 'tabindex=12 maxlength="250"'.(($mmsId || $isAuditUser)?' disabled' : '') );
 
-        $oForm -> addElement('text', 'workTime',  ((isset($mms['KMSD_TRASE']) && $mms['KMSD_TRASE'] == 1) ? text::get('MMS_KOKNESE') : text::get('MAN_HOUR_STANDART_TOTAL')), isset($mms['KMSD_CILVEKSTUNDAS'])?$mms['KMSD_CILVEKSTUNDAS']:'', ' tabindex=4  maxlength="8"'.(($isAuditUser)?' disabled' : ''));
-        //$oForm -> addRule('workTime', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        $oForm -> addRule('workTime', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
-        // check Price field
-        $oForm->addElement('hidden','minTime','','0.00');
-        $oForm->addElement('hidden','maxTime','','100000.00');
-        $v1=&$oForm->createValidation('timeValidation', array('workTime'), 'ifonefilled');
-        // ja cena ir definēta un > 100000
-        $r1=&$oForm->createRule(array('workTime', 'minTime'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>=');
-        $r2=&$oForm->createRule(array('workTime', 'maxTime'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-        $oForm->addRule(array($r1, $r2), 'groupRuleTime', 'group', $v1);
+		$oForm -> addElement('text', 'network_element_code',  text::get('NETWORK_EL_CODE'), isset($mms['KMSD_TIKLA_ELEMENTA_KLASE'])?$mms['KMSD_TIKLA_ELEMENTA_KLASE']:'', 'tabindex=13 maxlength="150"'.(($mmsId || $isAuditUser)?' disabled' : '') );
+		//$oForm -> addRule('network_element_code', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
 
-        $oForm -> addElement('text', 'price',  ((isset($mms['KMSD_TRASE']) && $mms['KMSD_TRASE'] == 1) ? text::get('MMS_PLAN_PAYMENT') : text::get('MATERIAL_PRICE')), isset($mms['KMSD_MATR_IZMAKSAS'])?$mms['KMSD_MATR_IZMAKSAS']:'', ' tabindex=5  maxlength="8"'.(($isAuditUser)?' disabled' : ''));
-        //$oForm -> addRule('price', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        $oForm -> addRule('price', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
-        // check Price field
-        $oForm->addElement('hidden','minPrice','','0.00');
-        $oForm->addElement('hidden','maxPrice','','100000.00');
-        $v2=&$oForm->createValidation('priceValidation', array('price'), 'ifonefilled');
-        // ja cena ir definēta un > 100000
-        $r1=&$oForm->createRule(array('price', 'minPrice'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>=');
-        $r2=&$oForm->createRule(array('price', 'maxPrice'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-        $oForm->addRule(array($r1, $r2), 'groupRulePrice', 'group', $v2);
+        $oForm -> addElement('text', 'quantity',  text::get('MMS_QUANTITY'), isset($mms['KMSD_DAUDZUMS'])?$mms['KMSD_DAUDZUMS']:'', ' tabindex=14  maxlength="10"'.(($isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('quantity', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
+		
+		$oForm -> addElement('text', 'line_count',  text::get('MMS_LINE_COUNT'), isset($mms['KMSD_VADU_SKAITS'])?$mms['KMSD_VADU_SKAITS']:'', 'tabindex=15 maxlength="10"'.(($isAuditUser)?' disabled' : '') );
+		$oForm -> addRule('line_count', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
+		
+		$oForm -> addElement('text', 'mms_x',  text::get('MMS_X'), isset($mms['KMSD_X'])?$mms['KMSD_X']:'', ' tabindex=16  maxlength="20"'.(($mmsId || $isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('mms_x', text::get('ERROR_DOUBLE_VALUE'), 'double', 8);
 
-        $oForm -> addElement('checkbox', 'priority',  text::get('PRIORITY'), isset($mms['KMSD_PRIORITATE'])?$mms['KMSD_PRIORITATE']:0, ' tabindex=6 '.(($isAuditUser)?' disabled' : ''));
+		$oForm -> addElement('text', 'mms_y',  text::get('MMS_Y'), isset($mms['KMSD_Y'])?$mms['KMSD_Y']:'', ' tabindex=17  maxlength="20"'.(($mmsId || $isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('mms_y', text::get('ERROR_DOUBLE_VALUE'), 'double', 8);
 
-        $oForm -> addElement('select', 'year',  text::get('YEAR'), isset($mms['KMSD_GADS'])?$mms['KMSD_GADS']:dtime::getCurrentYear(), 'tabindex=7 style="width:50;"'.(($isAuditUser)?' disabled' : ''), '', '', dtime::getYearArray());
-        $oForm -> addRule('year', text::get('ERROR_REQUIRED_FIELD'), 'required');
+        $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>KL_VOLTAGE_BY_CODE,'value'=>isset($mms['KMSD_KSRG_KODS'])?$mms['KMSD_KSRG_KODS']:'','readonly'=>false), 'tabindex=18 maxlength="2000"'.(($isAuditUser)?' disabled':''));
+		$oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>KL_OBJECTS_BY_CODE,'value'=>isset($mms['KMSD_KOBJ_KODS'])?$mms['KMSD_KOBJ_KODS']:'','readonly'=>false), 'tabindex=19 maxlength="2000"'.(($isAuditUser)?' disabled':''));
+		//$oForm -> addElement('kls', 'sourceOfFounds',  text::get('SINGLE_SOURCE_OF_FOUNDS'), array('classifName'=>KL_SOURCE_OF_FOUNDS_BY_CODE,'value'=>isset($mms['KMSD_KFNA_KODS'])?$mms['KMSD_KFNA_KODS']: '','readonly'=>false), 'tabindex=20 maxlength="2000"'.(($mmsId || $isAuditUser)?' disabled':''));
 
-        $oForm -> addElement('select', 'quarter',  text::get('QUARTER'), isset($mms['KMSD_CETUKSNIS'])?$mms['KMSD_CETUKSNIS']:1, 'tabindex=8 style="width:50;"'.(($isAuditUser)?' disabled' : ''), '', '', array('1'=>1,'2'=>2,'3'=>3,'4'=>4));
-        $oForm -> addRule('quarter', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
-         $oForm -> addElement('checkbox', 'trase',  text::get('TRASE'), isset($mms['KMSD_TRASE'])?$mms['KMSD_TRASE']:0, ' tabindex=9 '.(($isAuditUser)?' disabled' : ''));
-
+		//datums
+        $oForm -> addElement('text', 'export_date',  text::get('EXPORT_DATE'), isset($mms['KMSD_EXPORT_DATUMS'])?$mms['KMSD_EXPORT_DATUMS']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		
+		// importa dati
+		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($mms['KMSD_CREATED'])?$mms['KMSD_CREATED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'creator',  text::get('CREATOR'), isset($creator)?$creator:'', 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'edited',  text::get('EDITED'), isset($mms['KMSD_EDITED'])?$mms['KMSD_EDITED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'editor',  text::get('EDITOR'), isset($mms)?$editor:'', 'tabindex=21 maxlength="20" disabled');
 
         // xmlHttp link
   		$oLink=new urlQuery();
   		$oLink->addPrm(DONT_USE_GLB_TPL, 1);
   		$oLink->addPrm(FORM_ID, 'f.ktl.s.14');
 
-        $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($mms['KMSD_KWOI_KODS'])?$mms['KMSD_KWOI_KODS']:'','readonly'=>false), 'tabindex=10 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&trase=\'+((document.all[\'trase\'].checked)?1:0)+\'&worker=\'+this.value+\'\'))" '.(($isAuditUser)?' disabled' : ''));
+        $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($mms['KMSD_IZPILDITAJA_KODS'])?$mms['KMSD_IZPILDITAJA_KODS']:'','readonly'=>false), 'tabindex=10 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&trase=\'+((document.all[\'isEpla\'].checked)?1:0)+\'&worker=\'+this.value+\'\'))" '.(($isAuditUser)?' disabled' : ''));
         unset($oLink);
 
-
-        $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($mms['KMSD_VV_NUMBER'])?$mms['KMSD_VV_NUMBER']:0, 'tabindex=11 '.(($isAuditUser)?' disabled' : ''), '', '', $contract);
-                $oForm -> addElement('checkbox', 'finalize',  text::get('NOSLEGUMA_AKTS'), isset($mms['KMSD_NOSLEGUMA_AKTS'])?$mms['KMSD_NOSLEGUMA_AKTS']:0, ' tabindex=12 '.(($isAuditUser)?' disabled' : ''));
-
-
-        $oForm -> addElement('uploadfile', 'fileName', text::get('FILE'), '','tabindex=11 class="flex" disabled');
-        //$oForm -> addRule('fileName', text::get('ERROR_REQUIRED_FIELD'), 'required');
-       $oForm -> addElement('text', 'designation',  text::get('MAIN_DESIGNATION'), isset($mms['KMSD_OPERATIVAS_APZIM'])?$mms['KMSD_OPERATIVAS_APZIM']:'', 'tabindex=15 maxlength="250"'.(($isAuditUser)?' disabled' : '') );
-       $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($mms['KMSD_WORK_TITLE'])?$mms['KMSD_WORK_TITLE']:'', 'tabindex=16 maxlength="250"'.(($isAuditUser)?' disabled' : '') );
-
-        $oForm -> addElement('text', 'toidn',  text::get('TO_IDN'), isset($mms['KMSD_TO_IDN'])?$mms['KMSD_TO_IDN']:'0', ' tabindex=13  maxlength="12"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addRule('toidn', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
-        $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($mms['KMSD_TO_ID'])?$mms['KMSD_TO_ID']:'', ' tabindex=14  maxlength="6"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addRule('toid', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
-
-        // Z
-        $oForm -> addElement('text', '1z',  '1Z', isset($mms['KMSD_1Z'])?$mms['KMSD_1Z']:'', ' style="width:55;" tabindex=12  maxlength="15"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '2z',  '2Z', isset($mms['KMSD_2Z'])?$mms['KMSD_2Z']:'', ' style="width:55;" tabindex=13  maxlength="16"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '3z',  '3Z', isset($mms['KMSD_3Z'])?$mms['KMSD_3Z']:'', ' style="width:55;" tabindex=14  maxlength="17"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '4z',  '4Z', isset($mms['KMSD_4Z'])?$mms['KMSD_4Z']:'', ' style="width:55;" tabindex=15 maxlength="18"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '5z',  '5Z', isset($mms['KMSD_5Z'])?$mms['KMSD_5Z']:'', ' style="width:55;" tabindex=16 maxlength="19"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '6z',  '6Z', isset($mms['KMSD_6Z'])?$mms['KMSD_6Z']:'', ' style="width:55;" tabindex=17 maxlength="20"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '7z',  '7Z', isset($mms['KMSD_7Z'])?$mms['KMSD_7Z']:'', ' style="width:55;" tabindex=18 maxlength="21"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '8z',  '8Z', isset($mms['KMSD_8Z'])?$mms['KMSD_8Z']:'', ' style="width:55;" tabindex=19 maxlength="22"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '9z',  '9Z', isset($mms['KMSD_9Z'])?$mms['KMSD_9Z']:'', ' style="width:55;" tabindex=20 maxlength="23"'.(($isAuditUser)?' disabled' : ''));
-
-        // V
-        $oForm -> addElement('text', '1v',  '1V', isset($mms['KMSD_1V'])?$mms['KMSD_1V']:'', ' style="width:55;" tabindex=21 maxlength="24"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '2v',  '2V', isset($mms['KMSD_2V'])?$mms['KMSD_2V']:'', ' style="width:55;" tabindex=22 maxlength="25"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '3v',  '3V', isset($mms['KMSD_3V'])?$mms['KMSD_3V']:'', ' style="width:55;" tabindex=23 maxlength="26"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '4v',  '4V', isset($mms['KMSD_4V'])?$mms['KMSD_4V']:'', ' style="width:55;" tabindex=24 maxlength="27"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '5v',  '5V', isset($mms['KMSD_5V'])?$mms['KMSD_5V']:'', ' style="width:55;" tabindex=25 maxlength="28"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '6v',  '6V', isset($mms['KMSD_6V'])?$mms['KMSD_6V']:'', ' style="width:55;" tabindex=26 maxlength="29"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '7v',  '7V', isset($mms['KMSD_7V'])?$mms['KMSD_7V']:'', ' style="width:55;" tabindex=27 maxlength="30"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '8v',  '8V', isset($mms['KMSD_8V'])?$mms['KMSD_8V']:'', ' style="width:55;" tabindex=28 maxlength="31"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '9v',  '9V', isset($mms['KMSD_9V'])?$mms['KMSD_9V']:'', ' style="width:55;" tabindex=29 maxlength="32"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '10v',  '10V', isset($mms['KMSD_10V'])?$mms['KMSD_10V']:'', ' style="width:55;" tabindex=30 maxlength="33"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addElement('text', '11v',  '11V', isset($mms['KMSD_11V'])?$mms['KMSD_11V']:'', ' style="width:55;" tabindex=31 maxlength="34"'.(($isAuditUser)?' disabled' : ''));
-
+        $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($mms['KMSD_VV_NUMURS'])?$mms['KMSD_VV_NUMURS']:0, 'tabindex=11 '.(($isAuditUser)?' disabled' : ''), '', '', $contract);
+        
 
 		// form buttons
         if($isAdmin || $isEdUser)
         {
     		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');"');
-    		$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'mmsId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+    		if($isEdit) {
+				$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'mmsId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+				$oForm -> addElement('submitImg', 'delete_row', text::get('DELETE_ROW'), 'img/btn90_delete_row.gif', 'width="90" height="20" onclick="if (!isEmptyField(\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE_ROW.'\');} else {return false;}"');
+			}
     		$oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshButton(\'mmsId\');parent.frame_1.unActiveRow();'));
-
+            
             if ($isDelete)
             {
-              $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
+			  $oForm -> addElement('submitImg', 'delete_work', text::get('DELETE_WORK'), 'img/btn90_delete_work.gif', 'width="90" height="20" onclick="if (!isEmptyField(\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
             }
          	$oForm -> addElement('static', 'jsButtonsControl', '', '
     			<script>
@@ -210,13 +205,16 @@ if ($isAdmin || $isEdUser || $isAuditUser)
     				{
     					if (!isEmptyField(name))
     					{
-    						document.all["save"].src="img/btn_saglabat.gif";
+							document.all["save"].src="img/btn_saglabat.gif";
+							document.all["delete_row"].src="img/btn90_delete_row.gif";
+							document.all["delete_work"].src="img/btn90_delete_work.gif";
 
     					}
     					else
     					{
     						document.all["save"].src="img/btn_saglabat_disabled.gif";
-
+							document.all["delete_row"].src="img/btn90_delete_row_disabled.gif";
+							document.all["delete_work"].src="img/btn90_delete_work_disabled.gif";
     					}
     				}
     				refreshButton("mmsId");
@@ -229,73 +227,57 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-            // delete favorits
-            if ($oForm->getValue('action')== OP_DELETE )
+            // delete
+            if ($oForm->getValue('action')== OP_DELETE && $oForm -> getValue('kods') )
             {
-               $r = dbProc::deleteMMSWork($oForm->getValue('mmsId')) ;
-            }
+               $r = dbProc::deleteMMSWork($oForm->getValue('kods')) ;
+			}			
+			// delete row
+            else if ($oForm->getValue('action')== OP_DELETE_ROW && $oForm -> getValue('kods') && is_numeric($oForm->getValue('mmsId')) )
+            {
+			   $r = dbProc::deleteMMSWorkRow($oForm->getValue('mmsId'),
+												$oForm->getValue('kods'),
+												$oForm->getValue('isEpla',0)
+												) ;
+			}			
             // save
-			elseif ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('mmsId'))))
+			else if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('mmsId'))))
 			{
-    			if ($oForm -> getValue('kods') && $oForm -> getValue('edAreaCode') &&
-                    ($oForm -> getValue('price', 0) >= 0) && ($oForm -> getValue('workTime', 0) >= 0) &&
-                    $oForm -> getValue('year') && $oForm -> getValue('quarter') )
+    			if ($oForm -> getValue('kods') && $oForm -> getValue('edAreaCode') )
     			{
     				$checkRequiredFields = true;
     			}
     			if ($checkRequiredFields)
     			{
-
-					// chech that ED area with same region and code not set
-					if (dbProc::mmsWithCodeExists(    $oForm->getValue('kods'),
-                                                            ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('mmsId'):false)
-                                                            )
-					{
-						$oForm->addError(text::get('ERROR_EXISTS_MMS_CODE'));
-						$check = false;
-					}
-
+					
 					// if all is ok, do operation
 					if($check)
 					{
 						$r=dbProc::saveMMSWork(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('mmsId'):false),
 						$oForm->getValue('kods'),
-                        $oForm->getValue('workTime',0),
-                        $oForm->getValue('price',0),
-                        $oForm->getValue('quarter'),
-                        $oForm->getValue('year'),
-                        $oForm->getValue('priority',0),
-                        $oForm->getValue('edAreaCode'),
-			$oForm->getValue('isFinished',0),
-			$oForm->getValue('finalize',0),      
-                        $oForm->getValue('worker'),
-                        $oForm->getValue('contract'),
-                        $oForm->getValue('trase',0),
-                        true,
-                        $oForm->getValue('designation'),
-	        	        $oForm->getValue('worktitle'),
-                        $oForm->getValue('toidn'),
-                        $oForm->getValue('toid'),
-                        $oForm->getValue('1z'),
-                        $oForm->getValue('2z'),
-                        $oForm->getValue('3z'),
-                        $oForm->getValue('4z'),
-                        $oForm->getValue('5z'),
-                        $oForm->getValue('6z'),
-                        $oForm->getValue('7z'),
-                        $oForm->getValue('8z'),
-                        $oForm->getValue('9z'),
-                        $oForm->getValue('1v'),
-                        $oForm->getValue('2v'),
-                        $oForm->getValue('3v'),
-                        $oForm->getValue('4v'),
-                        $oForm->getValue('5v'),
-                        $oForm->getValue('6v'),
-                        $oForm->getValue('7v'),
-                        $oForm->getValue('8v'),
-                        $oForm->getValue('9v'),
-                        $oForm->getValue('10v'),
-                        $oForm->getValue('11v')
+						$oForm->getValue('designation'),
+						$oForm->getValue('worktitle'),						
+                        $oForm->getValue('proces_date'),
+                        $oForm->getValue('requirement_code'),
+						$oForm->getValue('requirement'),
+						$oForm->getValue('edAreaCode'),
+						$oForm->getValue('worker'),
+						$oForm->getValue('contract'),
+						$oForm->getValue('priority',0),
+						$oForm->getValue('isEpla',0),
+						$oForm->getValue('toid'),
+                        $oForm->getValue('technic_object'),
+						$oForm->getValue('network_element'),
+                        $oForm->getValue('network_element_code'),
+                        $oForm->getValue('quantity'),
+                        $oForm->getValue('line_count'),
+                        $oForm->getValue('mms_x'),
+                        $oForm->getValue('mms_y'),
+                        $oForm->getValue('voltage'),
+                        $oForm->getValue('object'),
+                        $oForm->getValue('sourceOfFounds'),
+						$oForm->getValue('export_date'),
+						$userId
 						);
 
 						if (!$r)
@@ -303,6 +285,10 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 							$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
 						}
 					}
+				}
+				else
+				{
+					$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
 				}
 			}
 			else

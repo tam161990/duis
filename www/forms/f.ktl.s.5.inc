@@ -36,6 +36,19 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			{
 				$edArea = $edAreaInfo[0];
 			}
+			// get user info
+			$creator = '';
+			$editor = '';
+			$userInfo = dbProc::getUserInfo($edArea['KEDI_CREATOR']);
+			if(count($userInfo) >0 )
+			{
+				$creator = $userInfo[0]['RLTT_VARDS']. ' ' .$userInfo[0]['RLTT_UZVARDS'];
+			}
+			$userInfo1 = dbProc::getUserInfo($edArea['KEDI_CREATOR']);
+			if(count($userInfo1) >0 )
+			{
+				$editor = $userInfo1[0]['RLTT_VARDS']. ' ' .$userInfo1[0]['RLTT_UZVARDS'];
+			}
         }
 
 		// form elements
@@ -59,6 +72,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($edArea['KEDI_IR_AKTIVS'])?$edArea['KEDI_IR_AKTIVS']:1, 'tabindex=4'.(($isEdUser)?' disabled' : ''));
 
         $oForm -> addElement('checkbox', 'element',  text::get('ELEMENT'), isset($edArea['KEDI_IS_ELEMENT'])?$edArea['KEDI_IS_ELEMENT']:0, 'tabindex=7');
+
+		// importa dati
+		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($edArea['KEDI_CREATED'])?$edArea['KEDI_CREATED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'creator',  text::get('CREATOR'), isset($creator)?$creator:'', 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'edited',  text::get('EDITED'), isset($edArea['KEDI_EDITED'])?$edArea['KEDI_EDITED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
+		$oForm -> addElement('text', 'editor',  text::get('EDITOR'), isset($editor)?$editor:'', 'tabindex=21 maxlength="20" disabled');
+
 
 		// form buttons
         if(!$isEdUser)
@@ -131,7 +151,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('nosaukums'),
 						$oForm->getValue('isActive',0),
                         $oForm->getValue('section') ,
-                        $oForm->getValue('element', 0)
+						$oForm->getValue('element', 0),
+						$userId
 						);
 
 						if (!$r)

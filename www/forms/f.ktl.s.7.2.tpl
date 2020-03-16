@@ -18,6 +18,14 @@
         <td class="table_cell_c" width="15%"><?= $oForm -> getElementLabel('trase'); ?>:</td>
 		<td class="table_cell_2" width="10%"><?= $oForm -> getElementHtml('trase'); ?></td>
     </tr>
+	<tr>
+        <td class="table_cell_c" width="15%"><?= $oForm -> getElementLabel('kods'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2" width="35%"><?= $oForm -> getElementHtml('kods'); ?></td>
+        <td class="table_cell_c" width="15%">&nbsp;</td>
+		<td class="table_cell_2" width="10%">&nbsp;</td>
+        <td class="table_cell_c" width="15%">&nbsp;</td>
+		<td class="table_cell_2" width="10%">&nbsp;</td>
+    </tr>
 
 </table>
 

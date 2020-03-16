@@ -21,8 +21,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
        	foreach ($res as $row)
       	{
       	   if (userAuthorization::isAdmin() && $isEdUser && 
-		($row['nosaukums'] == 'MMS_WORKS' || $row['nosaukums'] == 'KALKULATION_TR' || $row['nosaukums'] == 'KALKULATION') 
-	      )
+		        ($row['nosaukums'] == 'MMS_WORKS' || $row['nosaukums'] == 'KALKULATION_TR' || $row['nosaukums'] == 'KALKULATION') 
+	        )
            {
       		   $catalog[$row['nosaukums']]=$row['nozime'];
            }
@@ -70,26 +70,197 @@ if (userAuthorization::isAdmin() || $isEdUser )
     if ($oForm -> isFormSubmitted())
     {
         $file = false;
-        $r = false;
-        $r2 = false;
-        $r3 = false;
-        $r4= false;
+        $r = true;
+        $r2 = true;
+        $mms_exists = false;
+
         $checkRequiredFields = false;
         if ($oForm -> getValue('catalog'))
         {
     	    $checkRequiredFields = true;
         }
         if ($checkRequiredFields)
-    	{
-            // save file
-    		if(files::isUploadFile('fileName'))
-    		{
-                // chek file type
-                if(files::isUploadFileOfTYpe('fileName', 'application/vnd.ms-excel'))
-        		{
+        {
+              // save file
+          if(files::isUploadFile('fileName'))
+          {
+              // chek file type
+              // chek file type
+              if(files::isUploadFileOfExt('fileName', 'csv'))
+              { 
+                  $file = files::saveFileToStore('fileName');
+                  // if operation is success
+                  if($file!=false)
+                  {                  
+                      
+                      if($oForm -> getValue('catalog') == 'MMS_WORKS')
+                      {
+                          $mms_exists = dbProc::is_mms_exists();
+                      }           
+                      if($r)
+                      {  
+                          $handle = fopen($file, "r");
+                          $r2 = true;
+                          $idx = 0;
+                          while($data = fgetcsv($handle))
+                          {
+                              $idx ++;
+                              if($idx == 1) {
+                                continue;
+                              }
+                              switch (  $oForm -> getValue('catalog'))
+                              { 
+                                
+                                // catalog Kalkulacija
+                                case 'KALKULATION':
+                                  $r2 = dbProc::saveCalculationFromCsv($data, $userId);
+                                  break;
+                                // catalog MMS-Kalkulacija
+                                case 'MMS_KALKULATION':
+                                  $r2 = dbProc::saveMmsCalculationFromCsv($data, $userId);
+                                  break;
+                                // catalok Kalkulācija - Materiāli
+                                case 'KALKULATION_MATERIAL':
+                                  $r2 = dbProc::saveCalculationMaterialFromCsv($data, $userId);
+                                  break;
+                                // catalog MMS Works
+                                case 'MMS_WORKS':
+                                  $r2 = dbProc::saveMmsFromCsv($data, $userId, $mms_exists);                                     
+                                break;                                              
+                                // catalog Materials
+                                case 'MATERIAL':
+                                  $r2 = dbProc::saveMaterialFromCsv($data, $userId);
+                                  break;  
+                                // ED  
+                                case 'EDAREA':
+                                  $r2 = dbProc::saveEDAreaFromCsv($data, $userId);
+                                  break; 
+                                // catalog saskaņotāji
+                              case 'HARMONIZED':
+                                $r2 = dbProc::saveHarmonizedFromCsv($data, $userId);
+                                break; 
+                                  
+                              }
+                              if($r2 === false )
+                              {
+                                  files::eraseFileFromStore2($file);
+                                  break ;
+                              }                                                                
+                          } 
+                          fclose($handle);   
+                      } 
+                      if($oForm -> getValue('catalog') == 'MMS_WORKS')
+                      {
+                        //$r2 = dbProc::processAutoActs($userId);
+                      }
+                  }
+                  
+                  // if operation was compleated succefully, show success mesage and redirect current frame
+                  if($r !== false && $r2 !== false)
+                  {
+                    if($oForm -> getValue('catalog') == 'MMS_WORKS' )
+                    {
+                      $oLink=new urlQuery();
+                      $oLink->addPrm('isNew', '1');
+                      $oLink->addPrm(FORM_ID, 'f.ktl.s.13');
+                      $oLink->addPrm('successMessage', text::get('IMPORT_SUCCESS'));
+                      RequestHandler::makeRedirect($oLink->getQuery());
+                    }
+                    else
+                    {
+                      // list
+                      $oLink=new urlQuery();
+                      $oLink->addPrm('isNew', '1');
+                      switch (  $oForm -> getValue('catalog'))
+                        {
+                          
+                          // catalog Materiali
+                          case 'MATERIAL':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.1');
+                              break;
+                          // catalog Kalulācija
+                          case 'KALKULATION':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.10');
+                              break;
+                          // catalog MMS-Kalulācija
+                          case 'MMS_KALKULATION':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.20');
+                              break;
+                          // catalog Kalulācija-Materiāli
+                          case 'KALKULATION_MATERIAL':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.21');
+                              break;            
+                          // ED
+                          case 'EDAREA':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.5');
+                              break; 
+                          // catalog saskaņotāji
+                          case 'HARMONIZED':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
+                            break;                            
+                          
+                      }
+                      $listLink=$oLink ->getQuery();
+                      unset($oLink);
+                      // add/edit
+                      $oLink=new urlQuery();
+                      switch (  $oForm -> getValue('catalog'))
+                       {
+                          
+                          // catalog Material
+                          case 'MATERIAL':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.1');
+                              break;
+                          // catalog Kalulācija
+                          case 'KALKULATION':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.10');
+                              break;
+                          // catalog MMS-Kalulācija
+                          case 'MMS_KALKULATION':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.20');
+                              break;
+                          // catalog Kalulācija-Materiāli
+                          case 'KALKULATION_MATERIAL':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.21');
+                              break;   
+                          // ED
+                          case 'EDAREA':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.5');
+                              break;   
+                          // catalog saskaņotāji
+                          case 'HARMONIZED':
+                            $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
+                            break;                    
+                          
+                      }
+                      $oLink->addPrm('editMode', '1');
+                      $editLink = $oLink->getQuery();
+                      unset($oLink);
+
+                      $oForm->addElement('static','jsRefresh2','','
+                      <script>
+                          parent["frameTop"].enableFrameControl();
+                          window.top.enableResize();
+                          window.top.min(0);
+                          window.top.normal();
+                          reloadFrame(1,"'.$listLink.'");
+                          reloadFrame(2,"'.$editLink.'");
+                          reloadFrame(3,"");
+                      </script>
+                      ');
+                      }
+                  }
+                  else
+                  {
+                      files::eraseFileFromStore2($file);
+                      $oForm->addError(text::get('ERROR_IMPORT_NOT_SUCCESS'));
+                  }
+                }
+               /* else if(files::isUploadFileOfTYpe('fileName', 'application/vnd.ms-excel'))
+                {
                     $file = files::saveFileToStore('fileName');
                     // if operation is success
-    				if($file!=false)
+    				        if($file!=false)
                     {
                          $objReader = PHPExcel_IOFactory::createReader('Excel5');
                          $objReader->setReadDataOnly(true);
@@ -157,15 +328,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                break;
 			        // statusa imports
                             	case 'KALKULATION_STATUSS':
-				$r2 = true;
-        				$r3 = true;
-       				 $r4= true;
-               			$j = 0;
+                            $r2 = true;
+                                    $r3 = true;
+                                  $r4= true;
+                                        $j = 0;
                        		foreach ($objWorksheet->getRowIterator() as $row)
                        		{
                        			$cellIterator = $row->getCellIterator();
                        			$cellIterator->setIterateOnlyExistingCells(true);
-					$aktivs = '';
+					                  $aktivs = '';
                        			$i = 0;
                        			foreach ($cellIterator as $cell)
                        			{
@@ -178,27 +349,27 @@ if (userAuthorization::isAdmin() || $isEdUser )
                       					if($i == 1) $id =  $cell->getValue(); // Kalk ID  
                                           		if($i == 2) $trase = $cell->getValue();// Ir trase
                       					if($i == 3) 
-							{
-								$aktivs = $cell->getValue();// Ir aktivs							
-								echo '-'.$aktivs;
-								
-							}
+                                {
+                                  $aktivs = $cell->getValue();// Ir aktivs							
+                                  echo '-'.$aktivs;
+                                  
+                                }
                       				  }
                        			}
 					
                                     	// update kalkulaciju
                                     	if($j > 1)
                                     	{
-						if( is_numeric($aktivs)  && ( $aktivs == 0 || $aktivs == 1))	
-						{ 
-							echo $aktivs;
-                                     			$r=dbProc::setCalkulationStatuss($id, $trase, $aktivs);
-                                      			if($r === false )
-                                      			{
-                                          			break 1;
-                                      			}
-                                    		}
-					}
+                                        if( is_numeric($aktivs)  && ( $aktivs == 0 || $aktivs == 1))	
+                                        { 
+                                          echo $aktivs;
+                                            $r=dbProc::setCalkulationStatuss($id, $trase, $aktivs);
+                                              if($r === false )
+                                              {
+                                                  break 1;
+                                              }
+                                          }
+                                        }
                                   }
                                   break;
 
@@ -234,7 +405,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                     $fizRadijums = ' ';
                                     $koeficent = 1;
                                     $element = 0;
-				        $is_active = 0;
+				                            $is_active = 0;
                                     foreach ($cellIterator as $cell)
                                     {
                                       if(!is_null($cell))
@@ -505,7 +676,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                       dbProc::deleteMMSWorkTable(false);
                                   }
                                   */
-                                $r = true;
+                                /*$r = true;
                                 $r3 = true;
                                 $r4 = true;
 
@@ -671,7 +842,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                   {
                                       dbProc::deleteMaterialTable(false);
                                   }*/
-                                $r = true;
+                               /* $r = true;
                                 $r3 = true;
                                 $r4 = true;
 
@@ -809,7 +980,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                        files::eraseFileFromStore2($file);
                        $oForm->addError(text::get('ERROR_IMPORT_NOT_SUCCESS'));
                     }
-           		}
+           		}*/
                 else
         	    {
         		    $oForm->addError(text::get('ERROR_NOT_CORRECT_TYPE_OF_FILE'));

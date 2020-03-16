@@ -267,8 +267,10 @@ function isDate(dtStr){
 		return false
 	}
 	if (dtStr.indexOf('.',pos2+1)!=-1 || isInteger(stripCharsInBag(dtStr, '.'))==false){
+		
 		return false
 	}
+	
 	return true
 }
 
@@ -350,13 +352,23 @@ function textDateToTimeStamp(dtStr)
 	return timestamp;
 }
 
-function showError( elementID, errorMessage )
+function showError( elementID, errorMessage, formName )
 {
+
 	if (isSet(elementID))
 	{
-		var el = document.getElementsByName( elementID );	
-	
-	        var tb = el[ 0 ].parentNode;
+		//alert(formName);
+		var	el, tb;
+		
+	    if(formName == '') {
+			el = document.getElementsByName( elementID );
+			tb = el[ 0 ].parentNode;
+		} else {
+			el = document.forms[formName][elementID];
+			tb = el.parentNode;
+		}
+		//alert(tb);
+	    
 		var span = document.createElement( 'DIV' );
 		span.style.cssText = 'color: red';
 		errSpans[ errSpans.length ] = span;
@@ -847,7 +859,7 @@ function setFormValue(formname, name,value)
 {
 	if (isSetFormField(formname,name))
 	{  //alert(typeof document.forms[formname][name]);
-        switch (typeof document.forms[formname][name])
+        switch (document.all[name].type)
 		{
 			case "checkbox":
 				if (value==1)

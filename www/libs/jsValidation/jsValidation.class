@@ -117,7 +117,7 @@ class jsValidation
 				?>                                      
 				if ( (!errFlag['<?=$fieldName;?>']) && ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -128,7 +128,7 @@ class jsValidation
 				?>                                      
 				if ( ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -140,7 +140,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -151,7 +151,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && ((!isNumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -162,7 +162,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlphanumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -178,7 +178,7 @@ class jsValidation
 						document.forms['<?=$formName;?>']['<?=$other;?>'].options[document.forms['<?=$formName;?>']['<?=$other;?>'].selectedIndex].value
 						) ) )
 			{
-				showError( '<?=$fieldName;?>', "<?=$message;?>" );
+				showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 				isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 				errFlag['<?=$fieldName;?>'] = true;
 				validate=false;
@@ -189,7 +189,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlpha(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -200,7 +200,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlphanumericOnly(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -211,7 +211,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && ((!isDouble(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value,<?=$other;?>) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -222,7 +222,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) > <?=$other;?>)  )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -234,7 +234,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) > 0 ) && (strlen(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) < <?=$other;?>)  )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -246,7 +246,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) && (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value == <?=$other;?>)  )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -312,7 +312,7 @@ class jsValidation
 
 					if ( (!errFlag[errFieldName]) && (fieldCount < <?=empty($other)?1:$other;?>) )
 					{
-						showError( errFieldName , "<?=$message;?>"  );
+						showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>',errFieldName,isMoveCursor); 
 						errFlag[errFieldName] = true;
 						validate=false;
@@ -374,7 +374,7 @@ class jsValidation
 						}
 					?>) && (!errFlag[errFieldName]) )
 					{
-						showError(errFieldName, "<?=$message;?>"  );
+						showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>',errFieldName,isMoveCursor);
 						errFlag[errFieldName] = true;
 						validate=false;
@@ -393,7 +393,7 @@ class jsValidation
 						&& (isEmptyFormField('<?=$formName;?>','<?=$fieldName[1];?>')) 
 						)
 					{
-						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
 						errFlag['<?=$fieldName[0];?>'] = true;
 						validate=false;
@@ -418,7 +418,7 @@ class jsValidation
 						) 
 					)
 					{
-						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
 						errFlag['<?=$fieldName[0];?>'] = true;
 						validate=false;
@@ -437,7 +437,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) && (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isPersCode(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -448,7 +448,7 @@ class jsValidation
 			        ?>
 				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isUrl(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -462,7 +462,7 @@ class jsValidation
 				  var res =  isKvikStep(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value, '<?=$other;?>' );
                     if( res == 'FALSE' )
                     {
-    					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+    					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
     					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
     					errFlag['<?=$fieldName;?>'] = true;
     					validate=false;
@@ -478,7 +478,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) &&  (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isTime(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -490,7 +490,7 @@ class jsValidation
 				?>
 				if ( (!errFlag['<?=$fieldName;?>']) &&  (!isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isDateTime(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
-					showError( '<?=$fieldName;?>', "<?=$message;?>" );
+					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
 					errFlag['<?=$fieldName;?>'] = true;
 					validate=false;
@@ -508,7 +508,7 @@ class jsValidation
 					?>
 					if ( (!errFlag['<?=$fieldName[0];?>']) && (!(convertStrToNum(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?> convertStrToNum(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value) )) )
 					{
-						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
 						errFlag['<?=$fieldName[0];?>'] = true;
 						validate=false;
@@ -528,7 +528,7 @@ class jsValidation
                     (!(parseFloat(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?>
                      parseFloat(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value) )) )
 					{
-						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
 						errFlag['<?=$fieldName[0];?>'] = true;
 						validate=false;
@@ -547,7 +547,7 @@ class jsValidation
 					if ( (!errFlag['<?=$fieldName[0];?>']) && ((!isDate(document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value)) || (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value)) || !(dateConvert('Y.M.D',document.forms['<?=$formName;?>']['<?=$fieldName[0];?>'].value) <?=$other;?> dateConvert('Y.M.D',document.forms['<?=$formName;?>']['<?=$fieldName[1];?>'].value))) )
 					{
 					
-						showError( '<?=$fieldName[0];?>', "<?=$message;?>" );
+						showError( '<?=$fieldName[0];?>', "<?=$message;?>", '<?=$formName;?>' );
 						isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName[0];?>',isMoveCursor);
 						errFlag['<?=$fieldName[0];?>'] = true;
 						validate=false;
