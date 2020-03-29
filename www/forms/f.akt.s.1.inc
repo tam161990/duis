@@ -1069,7 +1069,7 @@ if(true)
 	                          $oForm->getValue('middlact', 0) ,
                             $oForm->getValue('toidn') ,
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     						);
 
                 // get inserted record ID
@@ -1134,7 +1134,7 @@ if(true)
 	                        $oForm->getValue('middlact', 0),
                             $oForm->getValue('toidn') ,
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     						);
 
               if ($r )
@@ -1904,7 +1904,7 @@ if(true)
 	                        		$oForm->getValue('middlact', 0),
                             			$oForm->getValue('toidn') ,
                                   $oForm->getValue('toid'),
-                                  $oForm->getValue('sigmature')
+                                  $oForm->getValue('signature')
 
 				);
                     // save status changed time
@@ -2037,7 +2037,7 @@ if(true)
 							false,
                             $oForm->getValue('toidn') ,
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     						);
                // Ja akts tiek atgriezts nepiln�bu nov�r�anai vai dz�sts, tad PDF ar amatpersonu v�z�m j�k��st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
@@ -2146,7 +2146,7 @@ if(true)
 				            false,
                             $oForm->getValue('toidn') ,
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     						);
 
                 if($r)
@@ -2230,7 +2230,7 @@ if(true)
 							false,
                             $oForm->getValue('toidn') ,
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     						);
                 // Ja akts tiek atgriezts nepiln�bu nov�r�anai vai dz�sts, tad PDF ar amatpersonu v�z�m j�k��st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
@@ -2327,7 +2327,7 @@ if(true)
                             false,
                             $oForm->getValue('toidn'),
                             $oForm->getValue('toid'),
-                            $oForm->getValue('sigmature')
+                            $oForm->getValue('signature')
     			);
 
           // save status changed time
