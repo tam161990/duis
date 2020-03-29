@@ -1504,22 +1504,22 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus  ED nodalas konkr�ta re�ion�.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	/*function getMMSEDListByWorker($worker, $contract = false, $trase = 0)
+	function getMMSEDListByWorker($worker, $contract = false, $trase = 0)
 	{
 
 			$query = 'select * from `KL_ED_IECIRKNI`   e
             INNER JOIN KL_MMS_DARBI d ON (e.KEDI_KODS = d.KMSD_KEDI_KODS  )
-             INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
-            where d.KMSD_IR_PABEIGTS = 0  and  e.KEDI_IR_AKTIVS = 1   and k.KKAL_IR_AKTIVS = 1
-            and d.KMSD_TRASE = '.$trase.
+            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
+            where e.KEDI_IR_AKTIVS = 1   and k.KKAL_IR_AKTIVS = 1
+            and d.KMSD_IR_EPLA = '.$trase.
             (($contract == false) ? '' : ' AND `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"' )
             .' AND `KEDI_IS_ELEMENT` <> 1
-            and  d.KMSD_KWOI_KODS = "'.dbLayer::quote_smart($worker).'"
+            and  d.KMSD_IZPILDITAJA_KODS = "'.dbLayer::quote_smart($worker).'"
             group by e.KEDI_SECTION ';
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}*/
+	}
 
      // -----------------------------------------------------------------------------
 	// Atgriezh aktivus  ED nodalas konkr�ta mms darb�.
