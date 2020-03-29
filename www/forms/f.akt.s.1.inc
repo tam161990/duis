@@ -313,6 +313,9 @@ if ( $isAdmin || $isSystemUser)
   $contract = array();
   $contract['']=text::get('EMPTY_SELECT_OPTION');
 
+  $signature = array();
+  $signature['']=text::get('EMPTY_SELECT_OPTION');
+
   // if operation is success, show success message and redirect top frame
   if (reqVar::get('successMessage'))
   {
@@ -334,6 +337,16 @@ if ( $isAdmin || $isSystemUser)
   {
   	$info = $systemInfo[0];
   }
+
+  $res=dbProc::getKrfkName('SIGNATURE');
+  if (is_array($res))
+  {
+  foreach ($res as $row)
+  {
+    $signature[$row['nosaukums']]=$row['nozime'];
+  }
+  }
+  unset($res);
 
   if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && dbProc::isActTypePlan($oForm -> getValue('type')) )
   {
@@ -365,8 +378,8 @@ if ( $isAdmin || $isSystemUser)
   if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
   {
 
-        // get ED area list
-        $res=dbProc::getMMSEDListByWorker($oForm -> getValue('worker'),$oForm -> getValue('contract'), $trase);
+          // get ED area list
+          $res=dbProc::getMMSEDListByWorker($oForm -> getValue('worker'),$oForm -> getValue('contract'), $trase);
          if(($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID) || ($oForm -> getValue('type') == ACT_TYPE_DEFECT_ID ) || ($oForm -> getValue('type') == ACT_TYPE_DAMAGE_TR_ID) || (reqVar::get('type') == ACT_TYPE_DEFECT_TR_ID ))
           {
               $res=dbProc::getEDSectionListForWorker($oForm -> getValue('worker'), $oForm -> getValue('contract'), $trase);
@@ -393,9 +406,9 @@ if ( $isAdmin || $isSystemUser)
 
   }
 
-   // URL  acta help
-	$oLink = new urlQuery;
-	$oLink -> addPrm(FORM_ID, 'f.rpt.e.1');
+    // URL  acta help
+	  $oLink = new urlQuery;
+	  $oLink -> addPrm(FORM_ID, 'f.rpt.e.1');
     $oLink->addPrm('isTrase', $trase );
     $oLink->addPrm(DONT_USE_GLB_TPL, '1');
     $actHelpUrl =  $oLink ->getQuery();
@@ -408,7 +421,7 @@ if ( $isAdmin || $isSystemUser)
   	//print_r($actInfo);
   	if(count($actInfo)>0)
   	{
-  		$act = $actInfo[0];
+  		  $act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
         $statusLabel =  $act['STATUS_NAME'];
         $trase = $act['RAKT_TRASE'];
@@ -515,45 +528,45 @@ if ( $isAdmin || $isSystemUser)
     $isAllowPrintActcalc = false;
   if($actId != false)
   {
-    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ’Teko?ais lietot?js’ un lietot?ja loma ir ‘Ievad?tais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘T?me’.
+    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ï¿½Teko?ais lietot?jsï¿½ un lietot?ja loma ir ï¿½Ievad?taisï¿½ un AKTS:STATUS = ï¿½Izveideï¿½ vai ï¿½Atgrieztsï¿½ vai ï¿½T?meï¿½.
     if(($act['RAKT_RLTT_ID'] == $userId && ($isEditor || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE)) )
     {
       $isReadonly   = false;
     }
-    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = administrators un lietot?ja loma ir ‘Ievad?tais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘T?me’.
+    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = administrators un lietot?ja loma ir ï¿½Ievad?taisï¿½ un AKTS:STATUS = ï¿½Izveideï¿½ vai ï¿½Atgrieztsï¿½ vai ï¿½T?meï¿½.
     if($act['RAKT_RLTT_ID'] == $userId && $isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE))
     {
       $isReadonly1   = false;
     }
-    // Ir pieejams main??anai, ja  ’Teko?ais lietot?js’ ir Sist?mas administrators un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘T?me’.
+    // Ir pieejams main??anai, ja  ï¿½Teko?ais lietot?jsï¿½ ir Sist?mas administrators un AKTS:STATUS = ï¿½Izveideï¿½ vai ï¿½Atgrieztsï¿½ vai ï¿½T?meï¿½.
     if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE))
     {
       $isReadonlyExceptAdmin   = false;
     }
-    //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = ‘Ekonomists’  un AKTS:STATUS = ‘Saska?o?ana’.
+    //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = ï¿½Ekonomistsï¿½  un AKTS:STATUS = ï¿½Saska?o?anaï¿½.
     if($isEconomist && $status == STAT_ACCEPT )
     {
       $isReadonlyExceptEconomist   = false;
     }
 
-    //Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ’Teko?ais lietot?js’ un objekts nav pabeigts
+    //Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ï¿½Teko?ais lietot?jsï¿½ un objekts nav pabeigts
     if((($act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEdUser) && ($status == STAT_INSERT || $status == STAT_RETURN ))
     {
        $isAllowEstimate = true;
     }
 
-         // Ir pieejams, ja  lietotaja loma ir ‘ED budþeta inþenieris’ un AKTS:STATUS != ‘Izveide’ 
+         // Ir pieejams, ja  lietotaja loma ir ï¿½ED budï¿½eta inï¿½enierisï¿½ un AKTS:STATUS != ï¿½Izveideï¿½ 
          if(( $isEconomist || $isAdmin ) && ($status != STAT_INSERT ))
          {
 	$isAllowPrintActcalc = true;
          }
 
-    // atïauts labot gan autoram, gan apstiprinâtâjam, gan administratoram lîdz pilnîgai akta noslçgðanai
+    // atï¿½auts labot gan autoram, gan apstiprinï¿½tï¿½jam, gan administratoram lï¿½dz pilnï¿½gai akta noslï¿½gï¿½anai
      if((($act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist ) && ($status != STAT_WRETEDOFF ))
     {
       $isActNumPrefix   = true;
     }
-    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ’Teko?ais lietot?js’ un lietot?ja loma ir ‘Ievad?tais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘T?me’.
+    // Ir pieejams main??anai, ja  AKTS:LIETOT?JS = ï¿½Teko?ais lietot?jsï¿½ un lietot?ja loma ir ï¿½Ievad?taisï¿½ un AKTS:STATUS = ï¿½Izveideï¿½ vai ï¿½Atgrieztsï¿½ vai ï¿½T?meï¿½.
     if((($act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin) && ($status == STAT_ACCEPT || $status == STAT_CLOSE || $status == STAT_WRETEDOFF ))
     {
       $isAllowContinue   = true;
@@ -640,11 +653,14 @@ $oForm -> addElement('kls', 'type',  text::get('SINGLE_ACT_TYPE'), array('classi
 
   $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isEdDisabled || ($actId != false))?' disabled':'').'', '', '', $edarea);
 
-
+  
   if (!$isReadonly1)
   {
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
+
+  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:'', ''.(($isReadonly)?' disabled':'').'', '', '', $signature);
+  $oForm -> addRule('signature', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
    $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonly1 || $isCopy)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
  
@@ -902,10 +918,10 @@ if(true)
         ($oForm->getValue('action')==OP_ESTIMATE && is_numeric($oForm->getValue('actId'))) )
 	{
          $check = false;
-    	 $r = false;
-         $r1 = true;
-         $r2 = true;
-    	 $checkRequiredFields = false;
+    	    $r = false;
+          $r1 = true;
+          $r2 = true;
+    	    $checkRequiredFields = false;
          $actNumber = false;
          if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
             $oForm -> getValue('type') && $oForm -> getValue('contract') &&
@@ -944,10 +960,10 @@ if(true)
            if($trase == 1 || !dbProc::isActTypePlan($oForm -> getValue('type')) )
            {
       	     // check act postfix
-             // Sâkas ar angïu alfabçta lielajiem burtiem, parasti 3-4 (ne vairâk par 8)
-             // salîdzinâts ievadîtais teksta lauks ar teksta ðablonu no admin daïas
-             // - Tâlâk seko simbols „-”
-             // - Pçc tâ seko skaitïi no 1 lîdz 9999999
+             // Sï¿½kas ar angï¿½u alfabï¿½ta lielajiem burtiem, parasti 3-4 (ne vairï¿½k par 8)
+             // salï¿½dzinï¿½ts ievadï¿½tais teksta lauks ar teksta ï¿½ablonu no admin daï¿½as
+             // - Tï¿½lï¿½k seko simbols ï¿½-ï¿½
+             // - Pï¿½c tï¿½ seko skaitï¿½i no 1 lï¿½dz 9999999
              $actNumPostfix = $oForm->getValue('numPostfix');
              $defis_pos = stripos($actNumPostfix, '-');
 
@@ -992,9 +1008,9 @@ if(true)
            }
 
 		   /*
-		    ja Akta veids=Plâns un Starpakts Checkbox=false, tad MMS kods ir jâbût = ar Kvikstep kods - citâdi kïûdas paziòojums 
- ja Akta veids=Plâns un Starpakts Checkbox=true, tad MMS kods<>Kviksteps kods un neviens no viòiem nav tukðs - citâdi kïûdas paziòojums 
- ja Akta veids<>Plâns, tad papildus neko nepârbauda 
+		    ja Akta veids=Plï¿½ns un Starpakts Checkbox=false, tad MMS kods ir jï¿½bï¿½t = ar Kvikstep kods - citï¿½di kï¿½ï¿½das paziï¿½ojums 
+ ja Akta veids=Plï¿½ns un Starpakts Checkbox=true, tad MMS kods<>Kviksteps kods un neviens no viï¿½iem nav tukï¿½s - citï¿½di kï¿½ï¿½das paziï¿½ojums 
+ ja Akta veids<>Plï¿½ns, tad papildus neko nepï¿½rbauda 
 			*/
 			if(dbProc::isActTypePlan($oForm -> getValue('type')) )
 			{
@@ -1052,7 +1068,8 @@ if(true)
                             false,
 	                          $oForm->getValue('middlact', 0) ,
                             $oForm->getValue('toidn') ,
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     						);
 
                 // get inserted record ID
@@ -1116,7 +1133,8 @@ if(true)
 		                    false,
 	                        $oForm->getValue('middlact', 0),
                             $oForm->getValue('toidn') ,
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     						);
 
               if ($r )
@@ -1427,6 +1445,10 @@ if(true)
                        )
                     );
                   $pdf->FooterTablePortraitAsimetrikal($actFooter);
+                  //DUIS-291
+                  if($act['RAKT_SIGNATURE'] == 'E') {
+                    $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0, 1,'C');
+                  }
 
                 }
 
@@ -1837,7 +1859,10 @@ if(true)
 
                     );
                   $pdf->FooterTablePortraitAsimetrikal($actFooter);
-
+                  //DUIS-291
+                  if($act['RAKT_SIGNATURE'] == 'E') {
+                    $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0, 1,'C');
+                  }
                 }
                 // saglaba faila datus
 
@@ -1878,7 +1903,8 @@ if(true)
 		                   	false,
 	                        		$oForm->getValue('middlact', 0),
                             			$oForm->getValue('toidn') ,
-                            			$oForm->getValue('toid')
+                                  $oForm->getValue('toid'),
+                                  $oForm->getValue('sigmature')
 
 				);
                     // save status changed time
@@ -1971,7 +1997,7 @@ if(true)
             if($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)
             {
 
-			  //  ja Starpakts checkbox = true un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad nenotiek atgrieðana, bet parâdâs kïûdas paziòojums, ka ir pieòemts noslçguma akts un starpaktu atgriezt nevar
+			  //  ja Starpakts checkbox = true un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad nenotiek atgrieï¿½ana, bet parï¿½dï¿½s kï¿½ï¿½das paziï¿½ojums, ka ir pieï¿½emts noslï¿½guma akts un starpaktu atgriezt nevar
 			  if($oForm->getValue('action')==OP_RETURN && $oForm -> getValue('middlact', 0) == 1 && dbProc::getFinalizeMMS($actId) == 1)
 			  {
                   if($isAdmin)
@@ -2010,9 +2036,10 @@ if(true)
                             false,
 							false,
                             $oForm->getValue('toidn') ,
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     						);
-               // Ja akts tiek atgriezts nepilnîbu novçrðanai vai dzçsts, tad PDF ar amatpersonu vîzâm jâkïûst nepieejamam.
+               // Ja akts tiek atgriezts nepilnï¿½bu novï¿½rï¿½anai vai dzï¿½sts, tad PDF ar amatpersonu vï¿½zï¿½m jï¿½kï¿½ï¿½st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
                 {
                     $fileInfo=dbProc::getFilesInfo($actId, FILE_ESTIMATE);
@@ -2029,7 +2056,7 @@ if(true)
         			{
         				$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
         			}
-					// Saskaòoðanas statusâ -> Poga Saskaòots :ja Starpakts checkbox = false, tad tabulâ KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS vçrtîba ierakstâs =true attiecîgajam MMS darbam
+					// Saskaï¿½oï¿½anas statusï¿½ -> Poga Saskaï¿½ots :ja Starpakts checkbox = false, tad tabulï¿½ KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS vï¿½rtï¿½ba ierakstï¿½s =true attiecï¿½gajam MMS darbam
 					 if($oForm->getValue('action')==OP_ACCEPT)
 					 {
 						if($oForm -> getValue('middlact', 0) == 0) 
@@ -2047,7 +2074,7 @@ if(true)
         				}
 					 }
 
-					//  ja Starpakts checkbox = false un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad saglabâjas funkcionalitâte un ierakstâm KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=false
+					//  ja Starpakts checkbox = false un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad saglabï¿½jas funkcionalitï¿½te un ierakstï¿½m KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=false
 					 if($oForm->getValue('action')==OP_RETURN)
 					 {
 						if($oForm -> getValue('middlact', 0) == 0 && dbProc::getFinalizeMMS($actId) == 1)
@@ -2118,7 +2145,8 @@ if(true)
 				            false,
 				            false,
                             $oForm->getValue('toidn') ,
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     						);
 
                 if($r)
@@ -2160,7 +2188,7 @@ if(true)
     if (($oForm->getValue('action')==OP_DELETE && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_DELETE_CONFIRMED && is_numeric($oForm->getValue('actId'))))
 	{
-	    //  ja Starpakts checkbox = true un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad nenotiek atgrieðana, bet parâdâs kïûdas paziòojums, ka ir pieòemts noslçguma akts un starpaktu dzçst nevar
+	    //  ja Starpakts checkbox = true un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad nenotiek atgrieï¿½ana, bet parï¿½dï¿½s kï¿½ï¿½das paziï¿½ojums, ka ir pieï¿½emts noslï¿½guma akts un starpaktu dzï¿½st nevar
 		if($oForm -> getValue('middlact', 0) == 1  && dbProc::getFinalizeMMS($actId) == 1)
 		{
            if($isAdmin)
@@ -2201,9 +2229,10 @@ if(true)
 							false,
 							false,
                             $oForm->getValue('toidn') ,
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     						);
-                // Ja akts tiek atgriezts nepilnîbu novçrðanai vai dzçsts, tad PDF ar amatpersonu vîzâm jâkïûst nepieejamam.
+                // Ja akts tiek atgriezts nepilnï¿½bu novï¿½rï¿½anai vai dzï¿½sts, tad PDF ar amatpersonu vï¿½zï¿½m jï¿½kï¿½ï¿½st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
                 {
                     $fileInfo=dbProc::getFilesInfo($actId, FILE_ESTIMATE);
@@ -2221,7 +2250,7 @@ if(true)
         				$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
         			}
 
-					//  ja Starpakts checkbox = false un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad saglabâjas funkcionalitâte un ierakstâm KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=false
+					//  ja Starpakts checkbox = false un KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=true, tad saglabï¿½jas funkcionalitï¿½te un ierakstï¿½m KL_MMS_DARBI.KMSD_NOSLEGUMA_AKTS=false
 					if($oForm->getValue('action')==OP_DELETE && $oForm -> getValue('middlact', 0) == 0 && dbProc::getFinalizeMMS($actId) == 1)
 				    {
 						$r1 = dbProc::finalizeMMS($actId, 0);
@@ -2258,7 +2287,7 @@ if(true)
 
     if ($oForm->getValue('action')==OP_COPY && is_numeric($oForm->getValue('actId')))
 	{
-	     //aktam, kurð nav starpakts turpinâjumu izveidot nevar
+	     //aktam, kurï¿½ nav starpakts turpinï¿½jumu izveidot nevar
 		 if($oForm -> getValue('middlact', 0) == 0)
 		 {
 			if($oForm->getValue('numPostfix') != $oForm->getValue('mmsWork'))
@@ -2297,7 +2326,8 @@ if(true)
                             false,
                             false,
                             $oForm->getValue('toidn'),
-                            $oForm->getValue('toid')
+                            $oForm->getValue('toid'),
+                            $oForm->getValue('sigmature')
     			);
 
           // save status changed time

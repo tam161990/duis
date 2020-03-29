@@ -188,5 +188,10 @@
     <td width="30%"></td>
     <td width="30%">&nbsp;</td>
   </tr>
+  <tr>
+    <? if($act['RAKT_SIGNATURE'] == 'E') { ?>
+    <td  colspan="3" style="text-align: center;"><?= text::get('ELRCTRONIC_SIGNATURE'); ?></td>
+    <? } ?>
+  </tr>
 </table>
 </body>

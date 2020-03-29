@@ -217,10 +217,13 @@
     <td width="30%">&nbsp;</td>
     <td width="30%">&nbsp;</td>
   </tr>
+  
   <tr>
-    <td  colspan="2"><?= text::get('EXPORT_FOOTER'); ?></td>
-
-    <td width="30%"></td>
+    <? if($act['RAKT_SIGNATURE'] == 'P') { ?>
+    <td  colspan="3" style="text-align: center;"><?= text::get('EXPORT_FOOTER'); ?></td>
+    <? } else { ?>
+    <td  colspan="3" style="text-align: center;"><?= text::get('ELRCTRONIC_SIGNATURE'); ?></td>
+    <? } ?>
   </tr>
 </table>
 

@@ -139,8 +139,8 @@
 		<td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('year'); ?></td>
    	</tr>
     <tr>
-		<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('toidn'); ?></td>
-		<td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('toidn'); ?></td>
+		<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('signature'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('signature'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('toid'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('toid'); ?></td>
    	</tr>
