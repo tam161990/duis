@@ -6900,7 +6900,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                         )
                     ON DUPLICATE KEY UPDATE
                             `KMKL_NOKL_SPRIEGUMS_10` = "'.dbLayer::quote_smart($data[2]).'",
-                            `KMKL_NOKL_SPRIEGUMS_10` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KMKL_NOKL_SPRIEGUMS_NE_10` = "'.dbLayer::quote_smart($data[3]).'",
                             `KMKL_DAUDZUMS` = "'.dbLayer::quote_smart($data[4]).'",
                             `KMKL_IZMANTOT_LINIJU` = "'.dbLayer::quote_smart($data[5]).'",
                             `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($data[6]).'",
