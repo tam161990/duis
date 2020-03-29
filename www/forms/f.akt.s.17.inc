@@ -376,6 +376,10 @@ if ( $isAdmin || $isEconomist)
 
                     );
                    $pdf->FooterTablePortraitAsimetrikal($actFooter);
+                   //DUIS-291
+                  if($act['RAKT_SIGNATURE'] == 'E') {
+                     $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0, 1,'C');
+                   }
                   // saglaba faila datus
                    $res=dbProc::replaceFile(
                       (($trase == 1) ? 'A' : '').
