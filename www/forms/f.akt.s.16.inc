@@ -7,6 +7,8 @@ $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isTraseUser = userAuthorization::isTrase();
 // act ID
 $actId  = reqVar::get('actId');
+$trase =  reqVar::get('isTrase');
+
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser)
 {
@@ -38,7 +40,7 @@ if ( $isAdmin || $isSystemUser)
 
 
        	// get info about work
-        $aWorkDb=dbProc::getActWorkList($actId);
+        $aWorkDb=dbProc::getActWorkList($actId, false);
         $workTotal = 0;
         foreach ($aWorkDb as $i => $work)
         {

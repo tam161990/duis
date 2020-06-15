@@ -6,6 +6,8 @@ $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
+$trase =  reqVar::get('isTrase');
+
 // lietotāju lomai "ED budžeta inženieris" būtu iespēja izdrukāt nodošanas aktu kurā materiāliem ir norādītas izmaksas
 $isMaterialPrice  = reqVar::get('isMaterialPrice');
 
@@ -33,7 +35,7 @@ if ( $isAdmin || $isSystemUser)
         $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
 
        	// get info about work
-        $aWorkDb=dbProc::getActWorkList($actId);
+        $aWorkDb=dbProc::getActWorkList($actId, false);
         $workTotal = 0;
         foreach ($aWorkDb as $i => $work)
         {
@@ -47,24 +49,24 @@ if ( $isAdmin || $isSystemUser)
         // get info about material
         $aMaterialDb=dbProc::getActMaterialList($actId);
 
-//print_r($aMaterialDb);
+        //print_r($aMaterialDb);
         $materialTotal = 0;
-	$mat_cena_kopa = 0;
+	      $mat_cena_kopa = 0;
         foreach ($aMaterialDb as $i => $material)
         {
-	    if (!isset($material['MATR_CENA_KOPA']))
-                    {
-                       	$aMaterialDb[$i]['MATR_CENA_KOPA'] = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
-	       	$mat_cena_kopa  = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
-                    }
-	   else
-	   {
-		$mat_cena_kopa  = $material['MATR_CENA_KOPA'];
-                   }
- 
+            if (!isset($material['MATR_CENA_KOPA']))
+            {
+                $aMaterialDb[$i]['MATR_CENA_KOPA'] = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
+                $mat_cena_kopa  = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
+            }
+            else
+            {
+              $mat_cena_kopa  = $material['MATR_CENA_KOPA'];
+            }
+    
 
-          if($material['MATR_IS_WORKER'] != '1' || $isMaterialPrice == 1)
-              $materialTotal += $mat_cena_kopa;
+            if($material['MATR_IS_WORKER'] != '1' || $isMaterialPrice == 1)
+                  $materialTotal += $mat_cena_kopa;
         }
         $materialTotal = $materialTotal;
         $pctM =  ($materialTotal*(100+ $pvn )/ 100 ) - $materialTotal;

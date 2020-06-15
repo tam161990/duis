@@ -394,6 +394,53 @@ table.list td a:hover{
 	padding: 0px 10px 10px 10px;
 }
 
+.tab_active_alt {
+	-moz-border-radius: 5px 5px 0px 0px;
+	border-bottom: 1px solid #cbeaa0;
+    border-top: 1px solid #FFFFFF;
+    border-left: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
+	background-color: #cbeaa0;
+	color: #000;
+	float: left;
+	width: 100px;
+	cursor: default;
+	font-weight: bold;
+	padding: 2px;
+    font-family: Tahoma, Verdana;
+	font-size: 100%;
+	text-align: center;
+}
+
+.tab_inactive_alt {
+	-moz-border-radius: 5px 5px 0px 0px;
+	border-color: #fff;
+	border-style: solid;
+	border-width: 1px;
+	background-color: #cbeaa0;
+	color: #777;
+	float: left;
+    width: 100px;
+	cursor: default;
+	padding: 2px;
+    font-family: Tahoma, Verdana;
+	font-size: 100%;
+	text-align: center;
+}
+
+.tab_content_alt {
+	-moz-border-radius: 0px 10px 10px 10px;
+	width: 100%;
+	border-color: #cbeaa0;
+	border-style: solid;
+	border-width: 1px;
+	color: #000;
+	float: left;
+	text-align: left;
+	padding: 0px 10px 10px 10px;
+}
+
+
 /* Buttons */
 .btn70, .btn90, .btn110, .btn130, .btn170
 {

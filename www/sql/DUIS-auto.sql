@@ -232,7 +232,7 @@ CREATE TABLE `kl_mms_kalkulacija` (
     `KMKL_NOKL_SPRIEGUMS_NE_10` TINYINT(1) NOT NULL DEFAULT 1,
     `KMKL_DAUDZUMS` FLOAT(7,3) NOT NULL DEFAULT 1.000,
     `KMKL_IZMANTOT_LINIJU` TINYINT(1) NOT NULL DEFAULT 0,
-    `KMKL_KOEFICENTS` FLOAT(7,3) NOT NULL DEFAULT 1.000,
+    `KMKL_KOEFICENTS` FLOAT(7,5) NOT NULL DEFAULT 1.000,
     `KMKL_IZMANTOT_VADU` TINYINT(1) NOT NULL DEFAULT 0,
     `KMKL_IR_AKTIVS` TINYINT(1) NOT NULL DEFAULT 1,
     `KMKL_TRASE` TINYINT(1) NOT NULL DEFAULT 0,
@@ -281,7 +281,7 @@ VALUES ('REQUIREMENTS_MMS_CALCULATION',
         <tr><td>Noklusētā kalk. sprieguma kodam <> 10</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
         <tr><td>Daudzums</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
         <tr><td>Izmantot līnijas garumu</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
-        <tr><td>Koeficents</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Koeficents</td><td>+</td><td>Cipars formātā [xxxxx.xxxxx].</td></tr>
         <tr><td>Izmantot vadu skaitu</td><td>+</td><td>Stihijas kalkul. Cipars formātā [0/1]</td></tr>
         <tr><td>Ir aktīvs</td><td>+</td><td>Kalkulācija ir aktuāla. Cipars formātā [0/1]</td></tr>
         <tr><td>Trašu kalkulācija</td><td>+</td><td>Kalkulācija tiek izmantota trašu tīrīšanas darbiem. Cipars formātā [0/1]</td></tr>        
@@ -391,3 +391,229 @@ ALTER TABLE `kl_saskanotaji` ADD `SLTT_EDITED` DATETIME NOT NULL DEFAULT CURRENT
 ALTER TABLE `kl_materiali` CHANGE `KMAT_NOSAUKUMS` `KMAT_NOSAUKUMS` VARCHAR( 250 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL;
 ALTER TABLE `kl_materiali` CHANGE `KMAT_CENA` `KMAT_CENA` FLOAT( 8, 2 ) NOT NULL;
 ALTER TABLE `kl_materiali` CHANGE `KMAT_DAUDZUMS` `KMAT_DAUDZUMS` FLOAT( 9, 3 ) NULL DEFAULT NULL;
+
+--
+UPDATE `FMK_MESSAGES` SET TEXT = '<h3>Kalkulācijas importal lūdzam izmantot daus Excel 97-2003 formātā</h3>
+        <table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr> 
+        <tr><td>Grupas kods</td><td>+</td><td>Kalkulācijas grupas kods. Var saturēt tikai sekojošus simbolus `a`-`z`, `A`-`Z`, `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Kalkulācijas šifrs</td><td>+</td><td>Kalkulācijas šifrs. Unikāls. Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Kalkulācijas nosaukums</td><td>+</td><td>Kalkulācijas nosaukums. Maksimāli 150 simboli.</td></tr>
+        <tr><td>Mērvienība</td><td>+</td><td>Kalkulācijas mērvienība. Maksimāli 15 simboli.</td></tr>
+        <tr><td>Apraksts</td><td>+</td><td>Kalkulācijas apraksts. Maksimāli 2000 simboli.</td></tr>
+        <tr><td>Fiziskais rādītājs</td><td>+</td><td>Fiziska rādītāja pazime. Var saturēt tikai sekojošus simbolus [`2`-`9`]`z` vai [`2`-`11`]`v`. Maksimāli 3 simboli.</td></tr>
+        <tr><td>Darbuzņēmējs</td><td>+</td><td>Darbuzņēmēja identifikators. Cipars.</td></tr>
+        <tr><td>Līguma Nr.</td><td>+</td><td>Vispārīgās vienošanās nr. Maksimāli 20 simboli.</td></tr>
+        <tr><td>ED nodaļa</td><td>+</td><td>ED nodaļas nosaukums. Maksimāli 250 simboli.</td></tr>
+        <tr><td>Plāna cena</td><td>+</td><td>Cipars formātā [xxxxx.xx].</td></tr>
+        <tr><td>Neplāna cena</td><td>+</td><td>Cipars formātā [xxxxx.xx].</td></tr>
+        <tr><td>Fiz.rād. koefic.</td><td>+</td><td>Cipars formātā [xxxxx.xx].</td></tr>
+        <tr><td>Stihijas kalkul.</td><td>+</td><td>Stihijas kalkul. Cipars formātā [0/1]</td></tr>
+        <tr><td>Trašu kalkulācija</td><td>+</td><td>Kalkulācija tiek izmantota trašu tīrīšanas darbiem. Cipars formātā [0/1]</td></tr>
+        <tr><td>Ir aktīvs</td><td>+</td><td>Kalkulācija ir aktuāla. Cipars formātā [0/1]</td></tr>
+       </table>'
+WHERE code = 'REQUIREMENTS_CALCULATION';
+
+DELETE FROM `kl_ref_kodi` WHERE `KRFK_NOSAUKUMS` = 'IMPORTS'
+AND `KRFK_VERTIBA` IN ('KALKULATION_TR', 'KALKULATION_STATUSS');
+
+-- PROCESS
+CREATE TABLE `SISTEMAS_PROCESI` (
+    `PROC_KODS`  VARCHAR(50) NOT NULL COLLATE 'utf8_latvian_ci',
+    `PROC_PID` INT NULL,
+	`PROC_NOSAUKUMS` VARCHAR(150) NOT NULL COLLATE 'utf8_latvian_ci',
+    `PROC_KOMANDA` VARCHAR(150) NOT NULL COLLATE 'utf8_latvian_ci',
+	`PROC_START_DATUMS` DATETIME 	NULL,
+    `PROC_STOP_DATUMS` DATETIME NULL,
+	`PROC_IR_AKTIVS` TINYINT(1) NOT NULL DEFAULT 0,
+	PRIMARY KEY (`PROC_KODS`)
+)
+ COLLATE 'utf8_latvian_ci' ENGINE=MyISAM ROW_FORMAT=Dynamic;
+ALTER TABLE `SISTEMAS_PROCESI` ADD `PROC_INTERVAL` INT NOT NULL DEFAULT 600;
+
+ INSERT INTO SISTEMAS_PROCESI(`PROC_KODS`, `PROC_NOSAUKUMS`, `PROC_KOMANDA`)
+ VALUES('KVIKSTEP_RCDIS_STATUS','DUIS akta statusa sinhronizācija ar KVIKSTEP', 'php -f /u01/rcd-test/autoProc/updateActStatus.php');
+
+ INSERT INTO `FMK_MESSAGES` (CODE, TEXT) VALUES 
+ ('SYSTEM_PROCESS', 'Sistēmas procesi'),
+ ('SYSTEM_PROCESS_INFO', 'Sistēmas procesa informācija'),
+ ('SYSTEM_PROCESS_TITLE', 'Sistēmas procesa nosaukums'),
+ ('SYSTEM_PROCESS_COMAND', 'Sistēmas procesa komanda'),
+ ('SYSTEM_PROCESS_PID', 'PID'),
+ ('SYSTEM_PROCESS_START', 'Sākuma datums'),
+ ('SYSTEM_PROCESS_STOP', 'Beigu datums'),
+ ('SYSTEM_PROCESS_INTERVAL', 'Sistēmas procesa intervāls (sec.)'),
+ ('SYSTEM_PROCESS_RUNNING', 'Process palaists'),
+ ('SYSTEM_PROCESS_KILLED', 'Process apturēts')
+ ;
+
+ INSERT INTO `kl_ref_kolonnas`(KLKL_COLUMN,KLKL_TITLE,KLKL_CATALOG,KLKL_IS_DEFAULT) VALUES 
+('PROC_NOSAUKUMS', 'Nosaukums', 'KL_SISTEMAS_PROCESI', 1),
+('PROC_KOMANDA', 'Komanda', 'KL_SISTEMAS_PROCESI', 0),
+('PROC_PID', 'PID', 'KL_SISTEMAS_PROCESI', 0),
+('PROC_IR_AKTIVS', 'Aktīvs (1/0)', 'KL_SISTEMAS_PROCESI', 0);
+
+---
+-- auto act
+
+ALTER TABLE `AKTI` ADD `RAKT_IS_AUTO` TINYINT(1) NOT NULL DEFAULT '0';
+ALTER TABLE `AKTI` ADD `RAKT_IZPILDES_DATUMS` DATETIME ;
+ALTER TABLE `AKTI` ADD `RAKT_IR_OBJEKTS_PABEIGTS` TINYINT(1) NOT NULL DEFAULT 0 ;
+
+UPDATE `AKTI` SET `RAKT_DATUMS` = CAST(CONCAT(RAKT_GADS, "-", RAKT_MENESIS, "-", "01") AS DATE) WHERE `RAKT_DATUMS` IS NULL;
+UPDATE `AKTI` SET `RAKT_IZPILDES_DATUMS` = LAST_DAY(CAST(CONCAT(RAKT_GADS, "-", RAKT_MENESIS, "-", "01") AS DATE));
+
+ALTER TABLE `akti` CHANGE `RAKT_DATUMS` `RAKT_DATUMS` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ;
+ALTER TABLE `akti` CHANGE COLUMN `RAKT_IZPILDES_DATUMS` `RAKT_IZPILDES_DATUMS` DATETIME NOT NULL;
+
+INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`)
+VALUES ('STATUS', 'AUTO', 'Ģenerēts');
+
+ALTER TABLE `akti`	
+	DROP COLUMN `RAKT_TO_IDN`,
+    DROP COLUMN `RAKT_MMS_KODS`,
+    DROP COLUMN  `RAKT_STARPAKTS`;
+
+INSERT INTO `FMK_MESSAGES` (CODE, TEXT) VALUES ('AMOUNT_KOR', 'Korekcijas');
+CREATE TABLE `TAME_DARBI` (
+	`DRBI_ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`DRBI_KKAL_SHIFRS` CHAR(5) NOT NULL COLLATE 'utf8_latvian_ci',
+	`DRBI_KKAL_NOSAUKUMS` VARCHAR(150) NOT NULL COLLATE 'utf8_latvian_ci',
+	`DRBI_KKAL_NORMATIVS` FLOAT(5,2) NOT NULL,
+	`DRBI_RAKT_ID` INT(11) NULL DEFAULT NULL,
+	`DRBI_DAUDZUMS` FLOAT(8,3) NULL DEFAULT NULL,
+	`DRBI_CILVEKSTUNDAS` FLOAT(10,2) NULL DEFAULT NULL,
+	`DRBI_MERVIENIBA` VARCHAR(15) NOT NULL COLLATE 'utf8_latvian_ci',
+	`DRBI_KKAL_ID` INT(11) NULL DEFAULT NULL,
+	PRIMARY KEY (`DRBI_ID`),
+	INDEX `DRBI_RAKT_ID` (`DRBI_RAKT_ID`)
+)
+ COLLATE 'utf8_latvian_ci' ENGINE=MyISAM ROW_FORMAT=Dynamic AUTO_INCREMENT=1;
+ ALTER TABLE `TAME_DARBI` ADD `DRBI_DAUDZUMS_KOR` FLOAT(8,3) NULL DEFAULT NULL;
+
+CREATE TABLE `TAME_MATERIALI` (
+	`MATR_ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`MATR_RAKT_ID` INT(11) NOT NULL,
+	`MATR_KODS` CHAR(7) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	`MATR_NOSAUKUMS` VARCHAR(250) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	`MATR_MERVIENIBA` VARCHAR(15) NOT NULL COLLATE 'utf8_latvian_ci',
+	`MATR_CENA` FLOAT(8,2) NULL DEFAULT NULL,
+	`MATR_DAUDZUMS` FLOAT(8,3) NULL DEFAULT NULL,
+	`MATR_CENA_KOPA` FLOAT(13,2) NULL DEFAULT NULL,
+	`MATR_IS_WRITEDOFF` INT(1) NULL DEFAULT '0',
+	`MATR_TRANSACTION_ID` INT(11) NULL DEFAULT NULL,
+	PRIMARY KEY (`MATR_ID`),
+	INDEX `MATR_RAKT_ID` (`MATR_RAKT_ID`),
+	INDEX `MATR_ID` (`MATR_ID`)
+)
+ COLLATE 'utf8_latvian_ci' ENGINE=MyISAM ROW_FORMAT=Dynamic AUTO_INCREMENT=1;
+ ALTER TABLE `TAME_MATERIALI` ADD `MATR_DAUDZUMS_KOR` FLOAT(8,3) NULL DEFAULT NULL;
+ ALTER TABLE `TAME_MATERIALI` ADD `MATR_IS_WORKER` TINYINT(1) DEFAULT 0;
+
+ALTER TABLE `DARBI` ADD `DRBI_APPROVE_DATE` DATETIME NULL;
+ALTER TABLE `TAME_DARBI` ADD `DRBI_APPROVE_DATE` DATETIME NULL;
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('TAB_WORKS_T', 'Darbi'),
+('TAB_MATERIAL_T', 'Materiāli');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('AKT_EXPORT', 'Objekta nodošana'),
+('ACT_MIDDLE_RESULT', 'Starprezultāti');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('DETETE_WORK', 'Dzēst darbu'),
+('DETETE_ROW', 'Dzēst rindu');
+
+ALTER TABLE `kl_materiali` CHANGE `KMAT_NOSAUKUMS` `KMAT_NOSAUKUMS` VARCHAR( 250 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NOT NULL;
+ALTER TABLE `kl_materiali` CHANGE `KMAT_CENA` `KMAT_CENA` FLOAT( 8, 2 ) NOT NULL;
+ALTER TABLE `kl_materiali` CHANGE `KMAT_DAUDZUMS` `KMAT_DAUDZUMS` FLOAT( 9, 3 ) NULL DEFAULT NULL;
+
+INSERT INTO `kl_ref_kolonnas`(KLKL_COLUMN,KLKL_TITLE,KLKL_CATALOG,KLKL_IS_DEFAULT) VALUES 
+('KMAT_KATEGORIJAS_KLASE', 'Kategorijas klase', 'KL_MATERIALI', 0);
+
+UPDATE `FMK_MESSAGES` SET `TEXT` = 'Kalkulāciju-materiālu informācija' WHERE `CODE` = 'CALCULATION_MATERIAL_INFO';
+ALTER TABLE `kl_materiali` CHANGE COLUMN `KMAT_KATEGORIJAS_KODS` `KMAT_KATEGORIJAS_KODS` CHAR(4) NOT NULL DEFAULT '' ;
+
+INSERT INTO `FMK_MESSAGES` (CODE, TEXT) VALUES 
+ ('MATERIAL_KODS', 'Materiālu nomenklatūra');
+
+ALTER TABLE `DARBI` ADD `DRBI_PLAN_DATE` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `TAME_DARBI` ADD `DRBI_PLAN_DATE` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('FINISHING_DATE', 'Izpildes datums');
+--
+ALTER TABLE `DARBI` ADD `DRBI_DAY_TOTAL` FLOAT(10,2) ;
+ALTER TABLE `TAME_DARBI` ADD `DRBI_DAY_TOTAL` FLOAT(10,2) ;
+
+CREATE TABLE `auto_act_status` (
+	`AAST_ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`AAST_KODS` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci',
+    `AAST_STATUS` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	`AAST_CREATED` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,	
+    `AAST_DESCRIPTION` VARCHAR(2000) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	PRIMARY KEY (`AAST_ID`)
+)
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM
+AUTO_INCREMENT=1
+;
+
+CREATE TABLE `auto_act_status_log` (
+	`AAST_ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`AAST_KODS` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci',
+    `AAST_STATUS` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	`AAST_CREATED` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,	
+    `AAST_DESCRIPTION` VARCHAR(2000) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci',
+	PRIMARY KEY (`AAST_ID`)
+)
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM
+AUTO_INCREMENT=1
+;
+ALTER TABLE AUTO_ACT_STATUS ADD COLUMN `USER_NAME` VARCHAR(50) NULL;
+ALTER TABLE AUTO_ACT_STATUS ADD COLUMN `END_DATE` DATETIME NULL ;	
+ALTER TABLE AUTO_ACT_STATUS_LOG ADD COLUMN `USER_NAME` VARCHAR(50) NULL;
+ALTER TABLE AUTO_ACT_STATUS_LOG ADD COLUMN `END_DATE` DATETIME NULL ;
+
+ALTER TABLE `TAME_MATERIALI` ADD `MATR_IS_WORKER` TINYINT(1) DEFAULT 1;
+
+ALTER TABLE `kl_kalkulacija`
+	ALTER `KKAL_PLANA` DROP DEFAULT,
+	ALTER `KKAL_NEPLANA` DROP DEFAULT;
+ALTER TABLE `kl_kalkulacija`
+	CHANGE COLUMN `KKAL_PLANA` `KKAL_PLANA` FLOAT(7,2) NOT NULL AFTER `KKAL_KEDI_SECTION`,
+	CHANGE COLUMN `KKAL_NEPLANA` `KKAL_NEPLANA` FLOAT(7,2) NOT NULL AFTER `KKAL_PLANA`;
+
+
+ALTER TABLE `kl_kalkulacija`
+	DROP INDEX `U_KKAL_SHIFRS`,
+	ADD UNIQUE INDEX `U_KKAL_SHIFRS` (`KKAL_VV_NUMBER`, `KKAL_SHIFRS`, `KKAL_KEDI_SECTION`);
+
+ALTER TABLE `kl_mms_darbi` 	ALTER `KMSD_ID` DROP DEFAULT;
+ALTER TABLE `kl_mms_darbi` 	CHANGE COLUMN `KMSD_ID` `KMSD_ID` INT(11) NOT NULL FIRST;
+UPDATE `FMK_MESSAGES` SET TEXT = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr>  
+        <tr><td>Unikāls identifikātors</td><td>+</td><td>Cipars formatā [xxxxxxxxxxx].</td></tr>      
+        <tr><td>Darba kods</td><td>+</td><td>Maksimāli 20 simboli.</td></tr>
+        <tr><td>Operatīvais apzīmējums</td><td>-</td><td>Maksimāli 255 simboli.</td></tr>
+        <tr><td>Darba apraksts</td><td>-</td><td>Maksimāli 255 simboli.</td></tr>
+        <tr><td>Plānotais izpildes datums</td><td>-</td><td>Datums formatā [YYYY-MM-DD].</td></tr>
+        <tr><td>MMS nosacījuma kods</td><td>-</td><td>Cipars formatā [xxxxxxxxxx].</td></tr>
+        <tr><td>MMS nosacījums</td><td>-</td><td>Maksimāli 255 simboli.</td></tr>
+        <tr><td>Izpildītāja kods</td><td>-</td><td>Maksimāli 20 simboli.</td></tr>
+        <tr><td>VV.Nr.</td><td>-</td><td>Maksimāli 20 simboli.</td></tr>
+        <tr><td>Iecirkņa kods</td><td>+</td><td>Maksimāli 10 simboli.</td></tr>
+        <tr><td>Steidzamības kods</td><td>-</td><td>Atļautas vērtības: 0, 1 </td></tr>
+        <tr><td>Trašu darba pazīme</td><td>-</td><td>Atļautas vērtības: 0, 1 </td></tr>
+        <tr><td>TO_ID</td><td>-</td><td>Maksimāli 10 simboli.</td></tr>
+        <tr><td>Tehniskais objekts</td><td>-</td><td>Maksimāli 50 simboli.</td></tr>
+        <tr><td>Tīkla elementa iezīme</td><td>-</td><td>Maksimāli 255 simboli.</td></tr>
+        <tr><td>Tīkla elementa klase</td><td>-</td><td>Maksimāli 255 simboli.</td></tr>
+        <tr><td>Daudzums</td><td>-</td><td>Cipars formatā [xxxxxxx.xx].</td></tr>
+        <tr><td>vadu skaits</td><td>-</td><td>Cipars formatā [xxxxxxxxxx].</td></tr>
+        <tr><td>X</td><td>-</td><td>Cipars formatā [xxxxxx.xxxxxx].</td></tr>
+        <tr><td>Y</td><td>-</td><td>Cipars formatā [xxxxxx.xxxxxx].</td></tr>
+        <tr><td>Spriegums, kods</td><td>-</td><td>Maksimāli 10 simboli.</td></tr>        
+       </table>'
+WHERE code = 'REQUIREMENTS_MMS_WORKS';

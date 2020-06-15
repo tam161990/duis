@@ -18,6 +18,8 @@ $isSearch  = reqVar::get('isSearch');
 // search act by number
 $searchNum  = reqVar::get('searchNum');
 
+$tame  = reqVar::get('tame');
+
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser)
 {
@@ -35,11 +37,14 @@ if ( $isAdmin || $isSystemUser)
       {
       	$act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
+        $isAuto = $act['RAKT_IS_AUTO'];
       }
 
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
-      if(($act['RAKT_RLTT_ID'] == $userId && ($isEditor || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE)) )
+      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE || ($status == STAT_AUTO && $tame==1 ))
+      )
       {
         $isReadonly   = false;
       }
@@ -68,6 +73,8 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('hidden','maxAmaunt','','1000.00');
       $oFormPop->addElement('hidden','minAmaunt','','0.00');
       $oFormPop->addElement('static','jsRefresh2','','');
+      $oFormPop -> addElement('hidden', 'isAuto', '', $isAuto);
+      $oFormPop -> addElement('hidden', 'tame', '', $tame);
 
       // form buttons
       $oFormPop -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
@@ -145,6 +152,7 @@ if ( $isAdmin || $isSystemUser)
                                                 false,
                                                 $oFormPop->getValue('amount'),
                                                 $oFormPop->getValue('price'),
+                                                $oFormPop->getValue('tame'),
                                                 $oFormPop->getValue('st'),
                                                 $oFormPop->getValue('title'),
                                                 $oFormPop->getValue('mervieniba'));
@@ -160,6 +168,9 @@ if ( $isAdmin || $isSystemUser)
                 $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
                 $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
                 $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
+                $oRedirectLink->addPrm('tame', $tame);
+                $oRedirectLink->addPrm('tame_mat', $tame);
                 $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
                 $oFormPop -> setNewValue('jsRefresh2', '<script>window.opener.location.replace( "'.$oRedirectLink->getQuery().'" );</script>');
 

@@ -22,26 +22,26 @@
   <tr>
      <td><?= text::get('SUPORT_ACT_HEADER5'); ?></td>
 <?
-	if(isset($act['RAKT_STARPAKTS']) && $act['RAKT_STARPAKTS'] == 1)
+	if(isset($act['RAKT_IR_OBJEKTS_PABEIGTS']) && $act['RAKT_IR_OBJEKTS_PABEIGTS'] == 0)
 	{
 		if(isset($act['PLAN']) && $act['PLAN'] == 1)
 		{
-?>
-			<td align="right"><b><?= $act['MMS'].' / '. text::get('STARPAKTS') ; ?></b></td>
-<?
+    ?>
+          <td align="right"><b><?= $act['RAKT_NUM_POSTFIX'].' / '. text::get('STARPAKTS') ; ?></b></td>
+    <?
 		}
 		else
 		{
-?>
-			<td align="right"><b><?= text::get('STARPAKTS') ; ?></b></td>
-<?
+    ?>
+          <td align="right"><b><?= text::get('STARPAKTS') ; ?></b></td>
+    <?
 		}
 	}
 	else
 	{
-?>
-	<td>&nbsp;</td>
-<?	
+  ?>
+    <td>&nbsp;</td>
+  <?	
 	}
 ?>
           
@@ -123,7 +123,8 @@
 
 		<tr>
             <td width="12%" class="print_table_header"><?= text::get('CHIPHER'); ?></td>
-			<td width="50%" class="print_table_header"><?= text::get('EXPORT_CALCULATION_NAME'); ?></td>
+            <td width="12%" class="print_table_header"><?= text::get('FINISHING_DATE'); ?></td>
+			      <td width="50%" class="print_table_header"><?= text::get('EXPORT_CALCULATION_NAME'); ?></td>
             <td width="12%" class="print_table_header"><?=text::get('UNIT_OF_MEASURE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('PRICE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('AMOUNT');?></td>
@@ -138,6 +139,7 @@
 ?>
 			<tr >
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_SHIFRS']; ?></td>
+                <td align="left" class="print_table_data">&nbsp;<?= $work['DRBI_PLAN_DATE']; ?></td>
                 <td align="left" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_NOSAUKUMS']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_MERVIENIBA']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_NORMATIVS']; ?></td>
@@ -146,7 +148,7 @@
 			</tr>
 <?
 		}
-    }
+  }
 ?>
         <tr>
              <td align="right" class="print_table_total" colspan="5"><?=text::get('STARPTOTAL');?>:</td>

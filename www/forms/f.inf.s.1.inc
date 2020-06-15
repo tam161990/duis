@@ -354,7 +354,18 @@ if ( $isAdmin || $isSystemUser)
 	$kvikStepLink=$oLink ->getQuery();
 	unset($oLink);
 
-
+	// list of jobs
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.adm.s.4');
+	$jobListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit job
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.adm.s.4');
+	$oLink->addPrm('editMode', '1');
+	$editJobLink = $oLink->getQuery();
+	unset($oLink);
 }
 else
 {

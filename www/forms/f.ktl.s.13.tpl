@@ -201,7 +201,11 @@ add2onload('setImportColumnVisibility()');
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">
 	<tr>
-		<td><?= $oForm -> getElementHtml('submit'); ?></td>
+		<td>
+                     <span id="loading" style="position:absolute; width:32; height:32; margin-left:30px; display: none; ">
+                         <img src="./img/loading.gif" widht="32" height="32" border="0" />
+                         </span><?= $oForm -> getElementHtml('submit'); ?>
+              </td>
 	</tr>
 </table>
 <?= $oForm -> getFormBottom(); ?>

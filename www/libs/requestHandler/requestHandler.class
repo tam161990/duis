@@ -344,6 +344,76 @@ class RequestHandler
 		}
 
 	}
+
+	/*
+	Request:
+
+	{
+			issue_key: "REM-XXXX"
+			issue_status: "Kāds no statusiem"
+	}
+
+	Status saraskts (Ja protams tie nav tūlkojumi kautkādiem statusu key, ja ir tad būtu labi iedot sarakstu, kas kuram atbilst - PROCES etc):
+	Reģistrēts
+	Ievads
+	Saskaņošana
+	Atgriezts
+	Slēgts
+	Norakstīts
+
+	Response - success (200):
+	{
+			status: "S"
+	}
+
+	Response - error (500)
+	{
+			status: "E",
+			code: "ORA-XXXX",
+			details: "error string"
+	}
+	*/
+	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+	function sentDataToCvikStep ($mms_kods, $workTotal, $materialTotal ) {
+		
+		// The data to send to the API
+		$postData = [
+			"issue_key" => $mms_kods,
+			"issue_status" => "AUTO",
+			"issue_hour_sum" => $workTotal,
+			"issue_material_sum" => $materialTotal
+		];
+
+		// Setup cURL
+		$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
+		
+		curl_setopt($ch, CURLOPT_POST, 1);
+ 
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+		 
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);
+		echo $response;
+
+		// Check for errors
+		/*if($response === FALSE){
+			die(curl_error($ch));
+		}*/
+
+		/*
+		// Decode the response
+		$responseData = json_decode($response, TRUE);
+
+		// Print the date from the response
+		dbProc::saveKvikStepActStatus(strval(mt_rand()), '', addslashes(print_r($responseData)));
+
+		return ($responseData['status'] == 'S') ? true : $responseData['code'] .' ' . $responseData['details'];
+		*/
+	}
 }
 
 ?>

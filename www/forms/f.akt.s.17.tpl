@@ -8,10 +8,6 @@
 		<td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('master'); ?></td>
 </tr>
 <tr>
-       <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('chif'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('chif'); ?></td>
-</tr>
-<tr>
        <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('engineer'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('engineer'); ?></td>
 </tr>

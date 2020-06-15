@@ -1394,8 +1394,8 @@ class dbProc extends dbLayer
              where   e.KEDI_IR_AKTIVS = 1
             AND `KEDI_IS_ELEMENT` = 1
             group by e.KEDI_KODS
-            order by `KEDI_REGIONS`, `KEDI_KODS` asc';
-
+            order by `KEDI_REGIONS`, `KEDI_KODS`';
+			//echo $query;
 
            $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
@@ -1414,8 +1414,8 @@ class dbProc extends dbLayer
             where k.KKAL_IR_AKTIVS = 1  and  e.KEDI_IR_AKTIVS = 1
             AND `KEDI_IS_ELEMENT` <> 1
             group by e.KEDI_KODS
-            order by `KEDI_REGIONS`, `KEDI_KODS` asc';
-
+            order by `KEDI_REGIONS`, e.KEDI_KODS';
+		//echo $query;
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
@@ -1519,8 +1519,8 @@ class dbProc extends dbLayer
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
-
+    }
+   
      // -----------------------------------------------------------------------------
 	// Atgriezh aktivus  ED nodalas konkr�ta mms darb�.
 	// Author: Tatjana Fedorkova
@@ -3538,7 +3538,9 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
-	}
+    }
+    
+    
 
     function saveMaterialFromCsv($data, $user){
         $material_kagegory = explode('.', $data[4]);      
@@ -3705,26 +3707,24 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
 	}
 
-    // -----------------------------------------------------------------------------
+   // -----------------------------------------------------------------------------
 	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkr�taja strukt�rvien�ba.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    /*function getMMSWorkListByEd($edId, $trase = 0, $contract = false, $activ = true)
+    function getMMSWorkListByEd($edId, $trase = 0, $contract = false, $activ = true)
 	{ 
             $column = dbProc::getKlklDefaultColumn(KL_MMS_WORKS);
 			$query = 'select * from `KL_MMS_DARBI` d
             INNER JOIN `KL_ED_IECIRKNI` ed ON (d.KMSD_KEDI_KODS = ed.KEDI_KODS
                 and ed.KEDI_ID = '.dbLayer::quote_smart($edId).')
-            where d.KMSD_TRASE = '.$trase.
-            (($contract == false)?'' : ' AND `KMSD_VV_NUMBER`="'.dbLayer::quote_smart($contract).'"'). '
+            where d.KMSD_IR_EPLA = '.$trase.
+            (($contract == false)?'' : ' AND `KMSD_VV_NUMURS`="'.dbLayer::quote_smart($contract).'"'). '
             order by `'.$column.'` asc';
 
 	   	$oSQL = new dbLayer;
-//echo $query;
+        //echo $query;
 		return $oSQL -> makeQuery($query);
-
-
-	}*/
+	}
 
     // -----------------------------------------------------------------------------
 	// Atgriezh pabeigtus vai nepabeigtus MMS darbus konkr�taja strukt�rvien�ba.
@@ -3811,15 +3811,15 @@ class dbProc extends dbLayer
 
         if($actId !== false) {
 
-            //$result = dbProc::deleteAutoActWorks($actId);
+            $result = dbProc::deleteAutoActWorks($actId);
             if($result !== false) { 
-              //  $result = dbProc::deleteAutoActMaterial($actId);
+                $result = dbProc::deleteAutoActMaterial($actId);
             }
             if($result !== false) { 
-               // $result = dbProc::processAutoActWorks($actId, $code, $trase);
+                $result = dbProc::processAutoActWorks($actId, $code, $trase);
             }
             if($result !== false) { 
-               // $result = dbProc::processAutoActMaterial($actId, $code, $trase);
+                $result = dbProc::processAutoActMaterial($actId, $code, $trase);
             }
             return ($result !== false);
         }       
@@ -3860,6 +3860,7 @@ class dbProc extends dbLayer
 	{
         $oDB = new dbLayer;
         $updateNeaded = false;
+		$insertneeded = false;
         
 		if ($ID)
 		{
@@ -3881,6 +3882,9 @@ class dbProc extends dbLayer
                     $updateNeaded = true;
                 }
             }
+			else {
+				$insertneeded = true;
+			}
 
 
 			$query = 'UPDATE  `KL_MMS_DARBI` SET 
@@ -3973,6 +3977,8 @@ class dbProc extends dbLayer
                     `KMSD_WORK_TITLE` = "'.dbLayer::quote_smart($worktitle).'",
                     `KMSD_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'",                   
                     `KMSD_KEDI_KODS` = "'.dbLayer::quote_smart($edAreaCode).'",
+                    `KMSD_IZPILDITAJA_KODS` = "'.dbLayer::quote_smart($worker).'",
+                    `KMSD_VV_NUMURS` = "'.dbLayer::quote_smart($contract).'",
                     `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($priority).'",
                     `KMSD_IR_EPLA` = "'.dbLayer::quote_smart($isEpla).'",    
                     `KMSD_TO_ID` = "'.dbLayer::quote_smart($toid).'",
@@ -3991,19 +3997,22 @@ class dbProc extends dbLayer
         if($updateNeaded) {
             if($actId !== false) {
 
-                //$result = dbProc::deleteAutoActWorks($actId);
+                $result = dbProc::deleteAutoActWorks($actId);
                 if($result !== false) { 
-                    //$result = dbProc::deleteAutoActMaterial($actId);
+                    $result = dbProc::deleteAutoActMaterial($actId);
                 }
                 if($result !== false) { 
-                    //$result = dbProc::processAutoActWorks($actId, $kods, $isEpla);
+                    $result = dbProc::processAutoActWorks($actId, $kods, $isEpla);
                 }
                 if($result !== false) { 
-                    //$result = dbProc::processAutoActMaterial($actId, $kods, $isEpla);
+                    $result = dbProc::processAutoActMaterial($actId, $kods, $isEpla);
                 }
                 return ($result !== false);
             }       
         }
+		if(insertneeded) {
+			$result = dbProc::processAutoActs($user);
+		}
 
 		return ($result !== false);
     }
@@ -4056,73 +4065,95 @@ class dbProc extends dbLayer
         return $mms_exists;
     }
 
-    // save MMS from CSV import    
-    function saveMmsFromCsv($data, $user, $mms_exists = false)
-	{
-       
-        $export_date = explode(' ', $data[22]);
+    
+    function saveMmsFromCsv($data, $user){
+        
         $query = 'INSERT into `KL_MMS_DARBI`
-                    (`KMSD_KODS`,
-                    `KMSD_OPERATIVAS_APZIM`,
-                    `KMSD_WORK_TITLE`,
-                    `KMSD_IZPILDES_DATUMS`,
-                    `KMSD_NOSACIJUMA_KODS`,
-                    `KMSD_NOSACIJUMS`,
-                    `KMSD_IZPILDITAJA_KODS`,
-                    `KMSD_VV_NUMURS`,
-                    `KMSD_KEDI_KODS`,
-                    `KMSD_PRIORITATE`,
-                    `KMSD_IR_EPLA`,
-                    `KMSD_TO_ID`,
-                    `KMSD_TEH_OBJEKTS`,
-                    `KMSD_TIKLA_ELEMENTS`,
-                    `KMSD_TIKLA_ELEMENTA_KLASE`,
-                    `KMSD_DAUDZUMS`,
-                    `KMSD_VADU_SKAITS`,
-                    `KMSD_X`,
-                    `KMSD_Y`,
-                    `KMSD_KSRG_KODS`,
-                    `KMSD_KOBJ_KODS`,
-                    `KMSD_KFNA_KODS`,
-                    `KMSD_EXPORT_DATUMS`,
-                    `KMSD_CREATOR` )
-                SELECT
-                 "'.dbLayer::quote_smart($data[0]).'",
-                "'.dbLayer::quote_smart($data[1]).'",
-                "'.dbLayer::quote_smart($data[2]).'",
-                "'.dbLayer::quote_smart($data[3]).'",
-                "'.dbLayer::quote_smart($data[4]).'",
-                "'.dbLayer::quote_smart($data[5]).'",
-                "'.dbLayer::quote_smart($data[6]).'",
-                "'.dbLayer::quote_smart($data[7]).'",
-                "'.dbLayer::quote_smart($data[8]).'",
-                "'.dbLayer::quote_smart($data[9]).'",
-                "'.dbLayer::quote_smart($data[10]).'",
-                "'.dbLayer::quote_smart($data[11]).'",
-                "'.dbLayer::quote_smart($data[12]).'",
-                "'.dbLayer::quote_smart($data[13]).'",
-                "'.dbLayer::quote_smart($data[14]).'",
-                "'.dbLayer::quote_smart($data[15]).'",
-                "'.dbLayer::quote_smart($data[16]).'",
-                "'.dbLayer::quote_smart($data[17]).'",
-                "'.dbLayer::quote_smart($data[18]).'",
-                "'.dbLayer::quote_smart($data[19]).'",
-                "'.dbLayer::quote_smart($data[20]).'",
-                "'.dbLayer::quote_smart($data[21]).'",
-                "'.dbLayer::quote_smart($data[22]).'",
-                "'.dbLayer::quote_smart($user).'" FROM DUAL
-                '.(($mms_exists ) ?  
-                ' WHERE NOT EXISTS(SELECT 1 FROM `KL_MMS_DARBI` WHERE `KMSD_KODS` = "'.dbLayer::quote_smart($data[0]).'")' :
-                '' ) . '
-                LIMIT 1';
+                        (`KMSD_ID`,
+                        `KMSD_KODS`,
+                        `KMSD_OPERATIVAS_APZIM`,
+                        `KMSD_WORK_TITLE`,
+                        `KMSD_IZPILDES_DATUMS`,
+                        `KMSD_NOSACIJUMA_KODS`,
+                        `KMSD_NOSACIJUMS`,
+                        `KMSD_IZPILDITAJA_KODS`,
+                        `KMSD_VV_NUMURS`,
+                        `KMSD_KEDI_KODS`,
+                        `KMSD_PRIORITATE`,
+                        `KMSD_IR_EPLA`,
+                        `KMSD_TO_ID`,
+                        `KMSD_TEH_OBJEKTS`,
+                        `KMSD_TIKLA_ELEMENTS`,
+                        `KMSD_TIKLA_ELEMENTA_KLASE`,
+                        `KMSD_DAUDZUMS`,
+                        `KMSD_VADU_SKAITS`,
+                        `KMSD_X`,
+                        `KMSD_Y`,
+                        `KMSD_KSRG_KODS`,
+                        `KMSD_KOBJ_KODS`,
+                        `KMSD_KFNA_KODS`,
+                        `KMSD_EXPORT_DATUMS`,
+                        `KMSD_CREATOR` )
+                    VALUES
+                    (
+                        "'.dbLayer::quote_smart($data[0]).'",
+                        "'.dbLayer::quote_smart($data[1]).'",
+                        "'.dbLayer::quote_smart($data[2]).'",
+                        "'.dbLayer::quote_smart($data[3]).'",
+                        "'.dbLayer::quote_smart($data[4]).'",
+                        "'.dbLayer::quote_smart($data[5]).'",
+                        "'.dbLayer::quote_smart($data[6]).'",
+                        "'.dbLayer::quote_smart($data[7]).'",
+                        "'.dbLayer::quote_smart($data[8]).'",
+                        "'.dbLayer::quote_smart($data[9]).'",
+                        "'.dbLayer::quote_smart($data[10]).'",
+                        "'.dbLayer::quote_smart($data[11]).'",
+                        "'.dbLayer::quote_smart($data[12]).'",
+                        "'.dbLayer::quote_smart($data[13]).'",
+                        "'.dbLayer::quote_smart($data[14]).'",
+                        "'.dbLayer::quote_smart($data[15]).'",
+                        "'.dbLayer::quote_smart($data[16]).'",
+                        "'.dbLayer::quote_smart($data[17]).'",
+                        "'.dbLayer::quote_smart($data[18]).'",
+                        "'.dbLayer::quote_smart($data[19]).'",
+                        "'.dbLayer::quote_smart($data[20]).'",
+                        "'.dbLayer::quote_smart($data[21]).'",
+                        "'.dbLayer::quote_smart($data[22]).'",
+                        "'.dbLayer::quote_smart($data[23]).'",
+                        "'.dbLayer::quote_smart( $user).'"
+                        )
+                    ON DUPLICATE KEY UPDATE                            
+                            `KMSD_KODS` = "'.dbLayer::quote_smart($data[1]).'",
+                            `KMSD_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KMSD_WORK_TITLE` = "'.dbLayer::quote_smart($data[3]).'",
+                            `KMSD_IZPILDES_DATUMS` = "'.dbLayer::quote_smart($data[4]).'",
+                            `KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($data[5]).'",
+                            `KMSD_NOSACIJUMS` = "'.dbLayer::quote_smart($data[6]).'",
+                            `KMSD_IZPILDITAJA_KODS` = "'.dbLayer::quote_smart($data[7]).'",
+                            `KMSD_VV_NUMURS` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KMSD_KEDI_KODS` = "'.dbLayer::quote_smart($data[9]).'",
+                            `KMSD_PRIORITATE` = "'.dbLayer::quote_smart($data[10]).'",
+                            `KMSD_IR_EPLA` = "'.dbLayer::quote_smart($data[11]).'",
+                            `KMSD_TO_ID` = "'.dbLayer::quote_smart($data[12]).'",
+                            `KMSD_TEH_OBJEKTS` = "'.dbLayer::quote_smart($data[13]).'",
+                            `KMSD_TIKLA_ELEMENTS` = "'.dbLayer::quote_smart($data[14]).'",
+                            `KMSD_TIKLA_ELEMENTA_KLASE` = "'.dbLayer::quote_smart($data[15]).'",
+                            `KMSD_DAUDZUMS` = "'.dbLayer::quote_smart($data[16]).'",
+                            `KMSD_VADU_SKAITS` = "'.dbLayer::quote_smart($data[17]).'",
+                            `KMSD_X` = "'.dbLayer::quote_smart($data[18]).'",
+                            `KMSD_Y` = "'.dbLayer::quote_smart($data[19]).'",
+                            `KMSD_KSRG_KODS` = "'.dbLayer::quote_smart($data[20]).'",
+                            `KMSD_KOBJ_KODS` = "'.dbLayer::quote_smart($data[21]).'",
+                            `KMSD_KFNA_KODS` = "'.dbLayer::quote_smart($data[22]).'",
+                            `KMSD_CREATOR` = "'.dbLayer::quote_smart($user).'"
+                    ';
 
-                //echo $query;
+                    $oDB = new dbLayer;
+                    $result = $oDB -> makeQuery($query);
+            
+                    return ($result !== false);
+    }
 
-    	$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return ($result !== false);
-	}
 
     // AKTI
     // -----------------------------------------------------------------------------
@@ -4133,10 +4164,9 @@ class dbProc extends dbLayer
     function saveAct($ID = false,
                     $number = false,
                     $objNumber = false,
-                    $month  = false,
-                    $year = false,
+                    $proces_date  = false,
+                    $isObjectFinished = false,
                     $decription = false,
-                    $mmsWork = false,
                     $designation = false,
                     $date = false,
                     $status = false,
@@ -4152,10 +4182,9 @@ class dbProc extends dbLayer
                     $worktitle = false,
                     $contract = false,
                     $acceptDate = false,
-                    $middlact = false,
-                    $toidn,
-                    $toid,
-                    $signature
+                    $toid = false,
+                    $signature = false,
+                    $auto = false
                     )
 	{
 		if ($ID)
@@ -4164,26 +4193,23 @@ class dbProc extends dbLayer
           '.(($ID !==false)?'`RAKT_ID`="'.dbLayer::quote_smart($ID).'"':'').'
           '.(($number !==false)?',`RAKT_NUMURS`="'.dbLayer::quote_smart($numurs).'"':'').'
           '.(($objNumber !==false)?',`RAKT_NUMURS_OBJEKTA` = "'.dbLayer::quote_smart($objNumber).'"':'').'
-          '.(($month !==false)?',`RAKT_MENESIS` = "'.dbLayer::quote_smart($month).'"':'').'
-          '.(($year !==false)?',`RAKT_GADS` = "'.dbLayer::quote_smart($year).'"':'').'
+          '.(($proces_date !==false)?',`RAKT_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'"':'').'
+          '.(($isObjectFinished !==false)?',`RAKT_IR_OBJEKTS_PABEIGTS` = "'.dbLayer::quote_smart($isObjectFinished).'"':'').'
           '.(($decription !==false)?',`RAKT_PIEZIMES` = "'.dbLayer::quote_smart($decription).'"':'').'
-          '.(($mmsWork !==false)?',`RAKT_MMS_KODS` = "'.dbLayer::quote_smart($mmsWork).'"':'').'
           '.(($designation !==false)?',`RAKT_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'"':'').'
           '.(($worktitle !==false)?',`RAKT_WORK_TITLE` = "'.dbLayer::quote_smart($worktitle).'"':'').'
           '.(($date !==false)?',`RAKT_DATUMS` = now()':'').'
           '.(($status !==false)?',`RAKT_STATUS` = "'.dbLayer::quote_smart($status).'"':'').'
-	        '.(($status == STAT_CLOSE)?(($trase)?',`RAKT_ACCEPT_DATE` = "'.dbLayer::quote_smart($acceptDate).'"' : ',`RAKT_ACCEPT_DATE` = now()' ):', `RAKT_ACCEPT_DATE` = NULL').'  
+	      '.(($status == STAT_CLOSE)?(($trase)?',`RAKT_ACCEPT_DATE` = "'.dbLayer::quote_smart($acceptDate).'"' : ',`RAKT_ACCEPT_DATE` = now()' ):', `RAKT_ACCEPT_DATE` = NULL').'  
           '.(($user !==false)?',`RAKT_RLTT_ID` = "'.dbLayer::quote_smart($user).'"':'').'
           '.(($object !==false)?',`RAKT_KOBJ_ID` = "'.dbLayer::quote_smart($object).'"':'').'
           '.(($voltage !==false)?',`RAKT_KSRG_ID` = "'.dbLayer::quote_smart($voltage).'"':'').'
           '.(($signature !==false)?',`RAKT_SIGNATURE` = "'.dbLayer::quote_smart($signature).'"':'').'
           '.(($type !==false)?',`RAKT_KAKV_ID` = "'.dbLayer::quote_smart($type).'"':'').'
-          '.(($worker !==false)?',`RAKT_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"':'').'
-	     '.(($middlact !==false)?',`RAKT_STARPAKTS` = "'.dbLayer::quote_smart($middlact).'"':'').'
-		'.(($toidn !==false)?',`RAKT_TO_IDN` = "'.dbLayer::quote_smart($toidn).'"':'').'
-		'.(($toid !==false)?',`RAKT_TO_ID` = "'.dbLayer::quote_smart($toid).'"':'').'
+          '.(($worker !==false)?',`RAKT_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"':'').'	     
+		  '.(($toid !==false)?',`RAKT_TO_ID` = "'.dbLayer::quote_smart($toid).'"':'').'
           '.(($contract !==false)?',`RAKT_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"':'').'
-	    '.(($object !==false && $type !==false)?',`RAKT_KWRC_ID` = (SELECT `KWRC_ID` FROM `KL_WRITEOFF_CODE` WHERE
+	      '.(($object !==false && $type !==false)?',`RAKT_KWRC_ID` = (SELECT `KWRC_ID` FROM `KL_WRITEOFF_CODE` WHERE
                 `KWRC_KAKV_ID`  = "'.(($trase==1) ? 1 : dbLayer::quote_smart($type)).'"
                 AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 : dbLayer::quote_smart($object)).'") ':'').'
           '.(($EDarea !==false)?',`RAKT_KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'"':'').'
@@ -4191,8 +4217,8 @@ class dbProc extends dbLayer
           '.(($trase !==false)?',`RAKT_TRASE` = "'.dbLayer::quote_smart($trase).'"':'').'
           '.(($actNumPostfix !==false)?',`RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($actNumPostfix).'"':'').'
           '.(($EDarea !==false && $actNumPostfix !==false)?',`RAKT_FULL_NUMBER` = CONCAT('.(($trase==1)?'2':'""').',
-(SELECT `KEDI_KODS`  FROM `KL_ED_IECIRKNI` WHERE `KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'" ),
-RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )':'').'
+            (SELECT `KEDI_KODS`  FROM `KL_ED_IECIRKNI` WHERE `KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'" ),
+            RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )':'').'
           where `RAKT_ID` = "'.dbLayer::quote_smart($ID).'"';
 
 		}
@@ -4200,11 +4226,11 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 		{
           	$query = 'INSERT INTO `AKTI` (
                 `RAKT_NUMURS`,
-                `RAKT_NUMURS_OBJEKTA`,
+                `RAKT_NUMURS_OBJEKTA`,                
+                `RAKT_IZPILDES_DATUMS`,
                 `RAKT_MENESIS`,
                 `RAKT_GADS`,
                 `RAKT_PIEZIMES`,
-                `RAKT_MMS_KODS`,
                 `RAKT_OPERATIVAS_APZIM`,
                 `RAKT_STATUS`,
                 `RAKT_RLTT_ID`,
@@ -4212,9 +4238,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                 `RAKT_KSRG_ID`,
                 `RAKT_KAKV_ID`,
                 `RAKT_KWOI_KODS`,
-                `RAKT_VV_NUMBER`,
-                `RAKT_STARPAKTS`,
-                `RAKT_TO_IDN`,
+                `RAKT_VV_NUMBER`,    
                 `RAKT_TO_ID`,
                 `RAKT_KEDI_ID`,
                 `RAKT_WORK_TITLE`,
@@ -4223,32 +4247,28 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                 `RAKT_FULL_NUMBER`,
                 `RAKT_KWRC_ID`,
                 `RAKT_TRASE`,
-                `RAKT_SIGNATURE`
+                `RAKT_SIGNATURE`,
+                `RAKT_IR_OBJEKTS_PABEIGTS`,
+                `RAKT_IS_AUTO`
                 )
 			values
                 ('.(( !$number ) ? dbProc::getNextActNumber(dbLayer::quote_smart($EDarea), $trase) : dbLayer::quote_smart($number)) .',
                 "'.dbLayer::quote_smart($objNumber).'",
-                "'.dbLayer::quote_smart($month).'",
-                "'.dbLayer::quote_smart($year).'",
-
+                '.(($proces_date) ? '"'.dbLayer::parseDate($proces_date).'"' : '"NULL"').',
+                '.(($proces_date) ? ' EXTRACT(MONTH FROM RAKT_IZPILDES_DATUMS) ' : '"NULL"').',
+                '.(($proces_date) ? ' EXTRACT(YEAR FROM RAKT_IZPILDES_DATUMS) ' : '"NULL"').',    
                 "'.dbLayer::quote_smart($decription).'",
-
-                "'.dbLayer::quote_smart($mmsWork).'",
                 "'.dbLayer::quote_smart($designation).'",
                 "'.dbLayer::quote_smart($status).'",
                 "'.dbLayer::quote_smart($user).'",
-
                 "'.dbLayer::quote_smart($object).'",
                 "'.dbLayer::quote_smart($voltage).'",
                 "'.dbLayer::quote_smart($type).'",
                 "'.dbLayer::quote_smart($worker).'",
-                "'.dbLayer::quote_smart($contract).'",
-                "'.dbLayer::quote_smart($middlact).'",
-                "'.dbLayer::quote_smart($toidn).'",
+                "'.dbLayer::quote_smart($contract).'",       
                 "'.dbLayer::quote_smart($toid).'",
                 "'.dbLayer::quote_smart($EDarea).'",
                 "'.dbLayer::quote_smart($worktitle).'",
-
                 "'.dbLayer::quote_smart($koeficent).'",
                 "'.dbLayer::quote_smart($actNumPostfix).'",
                 CONCAT('.(($trase==1)?'2':'""').',
@@ -4258,7 +4278,9 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                 `KWRC_KAKV_ID`  = "'.(($trase==1) ? 1 : dbLayer::quote_smart($type)).'"
                 AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 : dbLayer::quote_smart($object)).'"),
                 '.dbLayer::quote_smart($trase).',
-                "'.dbLayer::quote_smart($signature).'"
+                "'.dbLayer::quote_smart($signature).'",                
+                '.(($isObjectFinished) ? '"'.dbLayer::quote_smart($isObjectFinished).'"' : '0').',
+                '.(($auto) ? '"'.dbLayer::quote_smart($auto).'"' : '0').'
                 )';
 		}
        //echo $query;
@@ -4283,13 +4305,13 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
             m.KMSD_KODS `MMS`, s.KSRG_NOSAUKUMS `SPRIEGUMS`, o.KOBJ_NOSAUKUMS `OBJECT`,  w.KWOI_NOSAUKUMS `WORKER`,
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS` ,
             ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
-            a.RAKT_WORK_TITLE AS `WORK_TITLE`
+            a.RAKT_WORK_TITLE AS `WORK_TITLE`, ".dbLayer::sqlParseDate('RAKT_IZPILDES_DATUMS')."
             from `AKTI` a
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
-            LEFT JOIN `KL_MMS_DARBI` m ON (a.RAKT_MMS_KODS = m.KMSD_ID)
+            LEFT JOIN `KL_MMS_DARBI` m ON (a.RAKT_NUM_POSTFIX = m.KMSD_KODS)
             LEFT JOIN `KL_SPRIEGUMS` s ON (a.RAKT_KSRG_ID = s.KSRG_ID)
             LEFT JOIN `KL_OBJEKTI` o ON (a.RAKT_KOBJ_ID = o.KOBJ_ID)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID)
@@ -4637,18 +4659,18 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
              $searcCriteria['section'] = $sCriteria[4];
 
              $colFr = 'KKAL_FIZ_RADIJUMS';
-             $colMmsId = 'RAKT_MMS_KODS';
+             $colMmsId = 'RAKT_NUM_POSTFIX';
 
 		    $query = "
             select mms.KMSD_KODS, a.RAKT_OPERATIVAS_APZIM,
             d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS,  d.DRBI_MERVIENIBA,
             d.DRBI_KKAL_NOSAUKUMS,  k.KKAL_FIZ_RADIJUMS,  k.KKAL_PLAN_PRICE,
-            a.RAKT_MMS_KODS, 0 as planAmount, 0 as planPrice
+            a.RAKT_NUM_POSTFIX, 0 as planAmount, 0 as planPrice
             from `AKTI` a
             INNER JOIN `DARBI` d  ON (a.RAKT_ID = d.DRBI_RAKT_ID  )
             INNER JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             INNER JOIN `KL_KALKULACIJA_TRASE` k ON ( d.DRBI_KKAL_ID = k.KKAL_ID)
-            INNER JOIN `KL_MMS_DARBI` mms ON (a.RAKT_MMS_KODS = mms.KMSD_ID)
+            INNER JOIN `KL_MMS_DARBI` mms ON (a.RAKT_NUM_POSTFIX = mms.KMSD_KODS)
             where 1 ";
             $query .= " and a.RAKT_GADS = '".$searcCriteria['year']."' ";
             $query .= " and a.RAKT_MENESIS = '".$searcCriteria['month']."' ";
@@ -4658,7 +4680,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
             $query .= " AND a.RAKT_TRASE = ".$trase;
 
-            $query .= " GROUP BY a.RAKT_MMS_KODS, d.DRBI_ID  ";
+            $query .= " GROUP BY a.RAKT_NUM_POSTFIX, d.DRBI_ID  ";
 
 
         //echo $query;
@@ -4909,7 +4931,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
             $joinSection = " LEFT JOIN `AKTI` a ON (a.RAKT_ID = dr.DRBI_RAKT_ID)
                     LEFT JOIN `AKTA_STATUSA_MAINA` sm ON (a.RAKT_ID = sm.AAUD_RAKT_ID)
                     LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
-                    LEFT JOIN `KL_MMS_DARBI` mms ON (a.RAKT_MMS_KODS = mms.KMSD_ID)
+                    LEFT JOIN `KL_MMS_DARBI` mms ON (a.RAKT_NUM_POSTFIX = mms.KMSD_KODS)
                     LEFT JOIN `KL_KALKULACIJA` k ON (dr.DRBI_KKAL_SHIFRS = k.KKAL_SHIFRS)
                     LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
                     LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID AND v.KAKV_TRASE = ".$trase.")  ";
@@ -5486,58 +5508,45 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
     // -----------------------------------------------------------------------------
 	// Atgriezh akta darbus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function getActWorkList($ID, $trase = 0)
+    // -----------------------------------------------------------------------------
+    function getActWorkList($ID, $tame = false, $onlyNotApproved = false)
 	{
-        if($trase == 1)
-        {
-          /*  $query = "select * from `DARBI`
-                LEFT JOIN `KL_KALKULACIJA_TRASE` k ON (k.KKAL_ID  = DRBI_KKAL_ID )
+            $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
+            $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
+            $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
+                    ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .",
+                    (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
+                    AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
+                    AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
+                from " . $table_name . "
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
-                AND `DRBI_DAUDZUMS` IS NOT NULL
+                " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ."
+                AND ".$column_name." IS NOT NULL
                 union
-                select * from `DARBI`
-                LEFT JOIN `KL_KALKULACIJA_TRASE` k ON (k.KKAL_ID  = DRBI_KKAL_ID )
+                select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
+                ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .",
+                (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
+                AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
+                AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
+                from " . $table_name . "
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
-                AND `DRBI_DAUDZUMS` IS NULL    ORDER BY `DRBI_KKAL_SHIFRS` "; */
+                " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ."
+                AND ".$column_name." IS NULL
+                ORDER BY  11, 2  ";
 
-	$query = "select *, (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA_TRASE` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
-	AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
-		from `DARBI` WHERE `DRBI_RAKT_ID` =  ".dbLayer::quote_smart($ID)."
-		ORDER BY `DRBI_KKAL_SHIFRS` ";
-
-        }
-        else
-        {
-	/*	    $query = "select * from `DARBI`
-                LEFT JOIN `KL_KALKULACIJA` k ON (k.KKAL_ID  = DRBI_KKAL_ID )
-                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
-                AND `DRBI_DAUDZUMS` IS NOT NULL
-                union
-                select * from `DARBI`
-                LEFT JOIN `KL_KALKULACIJA` k ON (k.KKAL_ID  = DRBI_KKAL_ID )
-                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
-                AND `DRBI_DAUDZUMS` IS NULL    ORDER BY `DRBI_KKAL_SHIFRS` ";*/
-	
-	$query = "select *, (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
-	AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
-		from `DARBI` WHERE `DRBI_RAKT_ID` =  ".dbLayer::quote_smart($ID)."
-		ORDER BY `DRBI_KKAL_SHIFRS` ";
-        }
-
-		//echo  $query;
+        //echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
-
+	
     // -----------------------------------------------------------------------------
 	// Izdz�st konkr�tu darba ierakstu p�c ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function deleteActWorkRecord($ID)
+	function deleteActWorkRecord($ID, $tame = 0)
 	{
-
-	    $query = "delete from `DARBI`
+        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
+	    $query = "delete from ".$table_name."
                 WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
 
 
@@ -5551,11 +5560,11 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	// Izdz�st konkreta akta darba ierakstu p�c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function deleteActWorks($ID)
-	{
+	function deleteActWorks($ID, $tame = false)
+    {
+        $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
 
-	    $query = "delete from `DARBI`
-                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID);
+	    $query = "delete from ".$table_name." WHERE  `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID);
 
 
         $oDB = new dbLayer;
@@ -5591,13 +5600,15 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
         if($plan == 1)
         {
 
-            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, 
+            `KKAL_PLANA` as `KKAL_NORMATIVS`,  `KKAL_NEPLANA` AS `KKAL_NORMATIVS_NP` from `KL_KALKULACIJA`
             where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
             and `KKAL_KWOI_KODS` =  "'.$worker.'"
             and `KKAL_VV_NUMBER` =  "'.$contract.'"
             and `KKAL_KEDI_SECTION` =  "'.$section.'"
-            and  `KKAL_PLAN_PRICE` IS NOT NULL
-            and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
+            and  `KKAL_PLANA` IS NOT NULL
+            and KKAL_TRASE = '.$trase.' 
+            and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'             
             order by `KKAL_SHIFRS` asc';
 
         }
@@ -5607,12 +5618,15 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
           {
             if($trase==1)
             {
-                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NOT_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, 
+                 `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                 from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
-              and  `KKAL_NOT_PLAN_PRICE` IS NOT NULL
+              and  `KKAL_NEPLANA` IS NOT NULL
+              and `KKAL_TRASE`  = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1
               AND  KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
               order by `KKAL_SHIFRS` asc';
@@ -5622,7 +5636,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,
 
                  IFNULL(
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
+                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 FROM `KL_KALKULACIJA` kk
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
                  AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
@@ -5631,8 +5646,10 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
                  and kk.KKAL_KEDI_SECTION =  "'.$section.'"
                   AND  kk.KKAL_IS_ELEMENT = 1
+                  and kk.KKAL_TRASE  = '.$trase.'
                  ),
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
+                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 FROM `KL_KALKULACIJA` kk
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
                  AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
@@ -5640,15 +5657,17 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                  AND kk.KKAL_KWOI_KODS = "'.$worker.'"
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
                  AND  kk.KKAL_IS_ELEMENT = 1
+                 and kk.KKAL_TRASE  = '.$trase.'
                  ) )  as `KKAL_NORMATIVS`
 
-            from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'  k
+            from `KL_KALKULACIJA`  k
             where k.KKAL_GRUPAS_KODS = "'.dbLayer::quote_smart($calcGroup).'"
             and k.KKAL_KWOI_KODS = "'.$worker.'"
             and k.KKAL_VV_NUMBER =  "'.$contract.'"
-            and k.KKAL_NOT_PLAN_PRICE IS NOT NULL
+            and k.KKAL_NEPLANA IS NOT NULL
             and k.KKAL_IR_AKTIVS = 1
-             AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
+            and k,KKAL_TRASE = '.$trase.'
+            AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
             GROUP BY `KKAL_SHIFRS`            
             order by `KKAL_SHIFRS` asc';           // and k.KKAL_KEDI_SECTION =  "'.$section.'"
            }
@@ -5657,23 +5676,27 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLAN_PRICE` as `KKAL_NORMATIVS` from'.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
-              and  `KKAL_PLAN_PRICE` IS NOT NULL
+              and  `KKAL_PLANA` IS NOT NULL
+              and KKAL_TRASE = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
               order by `KKAL_SHIFRS` asc';
             }
             else     // defects
             {
-                  $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NOT_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+                  $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                  from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
-              and  `KKAL_NOT_PLAN_PRICE` IS NOT NULL
+              and  `KKAL_NEPLANA` IS NOT NULL
+              and KKAL_TRASE = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
               order by `KKAL_SHIFRS` asc';
             }
@@ -5685,7 +5708,28 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Atgriezh kalkulācijas ierakstus no akta tames,
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getEstimatedCalculation($actId, $searchText = '')
+	{
+
+            $oDB = new dbLayer;
+            
+            $query = 'select `DRBI_KKAL_ID` as `KKAL_ID`,`DRBI_KKAL_SHIFRS` as `KKAL_SHIFRS`, 
+            `DRBI_KKAL_NOSAUKUMS` as `KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS` as `KKAL_NORMATIVS`
+            from `tame_darbi`
+            where `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+            ' . (($searchText == '')? '' : ' AND `DRBI_KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'             
+            order by `DRBI_KKAL_SHIFRS` asc';
+
+            
+	   	$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+    }
 
     // -----------------------------------------------------------------------------
 	// Atgriezh kalkul�cijas ierakstus konkr�ta kalkul�cija grupp�,
@@ -5715,14 +5759,17 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
         if($plan == 1)
         {
 
-            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+            from `KL_KALKULACIJA`
             where `KKAL_KWOI_KODS` = "'.$worker.'"
             and `KKAL_VV_NUMBER` =  "'.$contract.'"
             and `KKAL_KEDI_SECTION` =  "'.$section.'"
-            and  `KKAL_PLAN_PRICE` IS NOT NULL 
+            and  `KKAL_PLANA` IS NOT NULL 
+            and KKAL_TRASE = '.$trase.'
             and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                         order by `KKAL_SHIFRS` asc';
 
+            
         }
         else
         {
@@ -5730,12 +5777,14 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
           {
             if($trase == 1)
             {
-              $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NOT_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+              $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_NOT_PLAN_PRICE` IS NOT NULL
+                and  `KKAL_NEPLANA` IS NOT NULL
                 and `KKAL_IR_AKTIVS` = 1
+                and KKAL_TRASE = '.$trase.'
                 AND  KKAL_IS_ELEMENT = 1   ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
             }
@@ -5743,17 +5792,20 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
             {
                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,
                  IFNULL(
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
+                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 FROM `KL_KALKULACIJA` kk
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
                  AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
                  AND kk.KKAL_NOSAUKUMS =  k.KKAL_NOSAUKUMS
                  AND kk.KKAL_KWOI_KODS = "'.$worker.'"
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
-                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
+                 and kk.KKAL_KEDI_SECTION =  "'.$section.'"
                   AND  kk.KKAL_IS_ELEMENT = 1
+                  and kk.KKAL_TRASE  = '.$trase.'
                  ),
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
+                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 FROM `KL_KALKULACIJA`
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
                  AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
@@ -5761,13 +5813,15 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
                  AND kk.KKAL_KWOI_KODS = "'.$worker.'"
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
                   AND  kk.KKAL_IS_ELEMENT = 1 
+                  and kk.KKAL_TRASE  = '.$trase.'
                  ) )  as `KKAL_NORMATIVS`
 
-                 from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'  k
+                 from `KL_KALKULACIJA` k
             where k.KKAL_KWOI_KODS = "'.$worker.'"
             and k.KKAL_VV_NUMBER =  "'.$contract.'"
-            and  k.KKAL_NOT_PLAN_PRICE IS NOT NULL
+            and  k.KKAL_NEPLANA IS NOT NULL
             and k.KKAL_IR_AKTIVS = 1
+            and k.KKAL_TRASE  = '.$trase.'
             AND  k.KKAL_IS_ELEMENT = 1 ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
             GROUP BY `KKAL_SHIFRS`
             order by `KKAL_SHIFRS` asc';    // and k.KKAL_KEDI_SECTION =  "'.$section.'"
@@ -5777,21 +5831,25 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
           {
             if($defect)
             {
-                       $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,      `KKAL_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_PLAN_PRICE` IS NOT NULL
+                and  `KKAL_PLANA` IS NOT NULL
+                and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
             }
             else    // bojajums
             {
-                     $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NOT_PLAN_PRICE` as `KKAL_NORMATIVS` from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_NOT_PLAN_PRICE` IS NOT NULL
+                and  `KKAL_NEPLANA` IS NOT NULL
+                and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
             }
@@ -5800,7 +5858,7 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
         }
 
-
+        //echo $query;
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
@@ -5811,7 +5869,8 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
     // V�rtibas tiek nemtas no kalkul�cijas tabula p�c kalkul�cijas �ifra
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveActWorkRecord($actId, $ID, $trase = 0)
+    
+    function saveActWorkRecord($actId, $ID, $trase = 0, $tame = false, $plan_date)
 	{
         $query = 'select e.KEDI_SECTION as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
           RAKT_KWOI_KODS as `WORKER`, RAKT_VV_NUMBER as `CONTRACT`
@@ -5820,6 +5879,10 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
           LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
           WHERE a.RAKT_ID = ' . $actId;
 
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+
+        $table_name = ($tame) ? '`TAME_DARBI`' : '`DARBI`';         
 
         $oSQL = new dbLayer;
         $result = $oSQL -> makeQuery($query);
@@ -5832,80 +5895,53 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 
          if($plan == 1)
          {
-             $query = 'insert into `DARBI`
-                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_MERVIENIBA`)
-			select '.dbLayer::quote_smart($actId).',
+            $query = 'insert into '.$table_name.'
+                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
+                `DRBI_MERVIENIBA`, DRBI_PLAN_DATE)
+			    select '.dbLayer::quote_smart($actId).',
                 `KKAL_ID`, `KKAL_SHIFRS`,`KKAL_NOSAUKUMS`,
-                `KKAL_PLAN_PRICE`,
-                 `KKAL_MERVIENIBA`
-                    from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
-                    where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" ';
+                `KKAL_PLANA`, `KKAL_MERVIENIBA`, "'.dbLayer::parseDate($plan_date).'"
+                from `KL_KALKULACIJA`
+                where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" AND `KKAL_TRASE` = '. $trase;
          }
          else
          {
            if($stihija)
           {
-             /*   $query = 'insert into `DARBI`
-                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_MERVIENIBA`)
-	select '.dbLayer::quote_smart($actId).',
-                k.KKAL_ID,k.KKAL_SHIFRS,k.KKAL_NOSAUKUMS,
-                IFNULL(
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
-                 WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
-                 AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
-                 AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
-                 AND kk.KKAL_NOSAUKUMS =  k.KKAL_NOSAUKUMS
-                 AND kk.KKAL_KWOI_KODS = "'.$worker.'"
-                and kk.KKAL_VV_NUMBER =  "'.$contract.'"
-                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                   AND  kk.KKAL_IS_ELEMENT = 1
-                 ),
-                 (SELECT MAX(kk.KKAL_NOT_PLAN_PRICE) FROM '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' kk
-                 WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
-                 AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
-                 AND kk.KKAL_FIZ_RADIJUMS =  k.KKAL_FIZ_RADIJUMS
-                 AND kk.KKAL_NOSAUKUMS =  k.KKAL_NOSAUKUMS
-                 AND kk.KKAL_KWOI_KODS = "'.$worker.'"
-                 and kk.KKAL_VV_NUMBER =  "'.$contract.'"
-                  AND  kk.KKAL_IS_ELEMENT = 1
-                 ) ),
-                 `KKAL_MERVIENIBA`
-                    from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').' k
-                    where k.KKAL_ID = "'.dbLayer::quote_smart($ID).'" AND  k.KKAL_IS_ELEMENT = 1 ';
-            echo $query;*/
-  $query = 'insert into `DARBI`
-                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_MERVIENIBA`)
-			select '.dbLayer::quote_smart($actId).',
+             
+                $query = 'insert into '.$table_name.'
+                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`,
+                 `DRBI_MERVIENIBA`, DRBI_PLAN_DATE)
+			    select '.dbLayer::quote_smart($actId).',
                 `KKAL_ID`,`KKAL_SHIFRS`,`KKAL_NOSAUKUMS`,
-                `KKAL_NOT_PLAN_PRICE`,
-                 `KKAL_MERVIENIBA`
-                    from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
-                    where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" ';
+                `KKAL_NEPLANA`, `KKAL_MERVIENIBA`, "'.dbLayer::parseDate($plan_date).'"
+                from `KL_KALKULACIJA`
+                where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" AND `KKAL_TRASE` = '. $trase;
 
           }
           else
           {
             if($defect)
             {
-                  $query = 'insert into `DARBI`
-                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_MERVIENIBA`)
+                  $query = 'insert into '.$table_name.'
+                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
+                `DRBI_MERVIENIBA`, DRBI_PLAN_DATE)
 			select '.dbLayer::quote_smart($actId).',
                 `KKAL_ID`,`KKAL_SHIFRS`,`KKAL_NOSAUKUMS`,
-                `KKAL_PLAN_PRICE`,
-                 `KKAL_MERVIENIBA`
-                    from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
-                    where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" ';
+                `KKAL_PLANA`, `KKAL_MERVIENIBA`, "'.dbLayer::parseDate($plan_date).'"
+                 from `KL_KALKULACIJA`
+                 where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" AND `KKAL_TRASE` = '. $trase;
             } // bojajums
             else
             {
-                 $query = 'insert into `DARBI`
-                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_MERVIENIBA`)
+                 $query = 'insert into '.$table_name.'
+                (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
+                `DRBI_MERVIENIBA`, DRBI_PLAN_DATE)
 			select '.dbLayer::quote_smart($actId).',
                 `KKAL_ID`,`KKAL_SHIFRS`,`KKAL_NOSAUKUMS`,
-                `KKAL_NOT_PLAN_PRICE`,
-                 `KKAL_MERVIENIBA`
-                    from '.(($trase==1)?'`KL_KALKULACIJA_TRASE`':'`KL_KALKULACIJA`').'
-                    where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" ';
+                `KKAL_NEPLANA`, `KKAL_MERVIENIBA`, "'.dbLayer::parseDate($plan_date).'"
+                 from `KL_KALKULACIJA`
+                    where `KKAL_ID` = "'.dbLayer::quote_smart($ID).'" AND `KKAL_TRASE` = '. $trase;
             }
 
           }
@@ -5922,26 +5958,79 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
     // V�rtibas tiek nemtas no kalkul�cijas tabula p�c kalkul�cijas �ifra
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function writeActWork($actId, $kid, $chipher, $title, $standart, $amount, $total, $measure)
+	function writeActWork($actId, $kid, $chipher, $title, $standart, $amount, 
+                            $total, $measure, $amount_kor = false, $edited = false, 
+                            $plan_date = false, $day_total)
 	{
-	   	$query = 'insert into `DARBI`
+	    if($amount_kor !== false) {
+	   	    $query = 'insert into `TAME_DARBI`
                 (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`,
-                `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`)
+                `DRBI_DAUDZUMS`, `DRBI_DAUDZUMS_KOR`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
+                `DRBI_APPROVE_DATE`, 
+                `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`)
                 values ( '.dbLayer::quote_smart($actId).',
-                "'.dbLayer::quote_smart($kid).'",
+				"'.dbLayer::quote_smart($kid).'",
                 "'.dbLayer::quote_smart($chipher).'",
                 "'.dbLayer::quote_smart($title).'",
                 "'.dbLayer::quote_smart($standart).'",
                 "'.dbLayer::quote_smart($amount).'",
+                "'.dbLayer::quote_smart($amount_kor).'",
                 "'.dbLayer::quote_smart($total).'",
-                "'.dbLayer::quote_smart($measure).'"
+                "'.dbLayer::quote_smart($measure).'",
+                '.((!$edited) ? '"NULL",' : '"'.dbLayer::parseDate($edited).'",').'
+                "'.DEFAULT_DATE.'",
+                "'.dbLayer::quote_smart($day_total).'"
                 )';
-
+        } else {
+            $query = 'insert into `DARBI`
+                            (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, 
+                            `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
+                            `DRBI_APPROVE_DATE`, 
+                            `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`)
+                            values ( '.dbLayer::quote_smart($actId).',
+            				"'.dbLayer::quote_smart($kid).'",
+                            "'.dbLayer::quote_smart($chipher).'",
+                            "'.dbLayer::quote_smart($title).'",
+                            "'.dbLayer::quote_smart($standart).'",
+                            "'.dbLayer::quote_smart($amount).'",
+                            "'.dbLayer::quote_smart($total).'",
+                            "'.dbLayer::quote_smart($measure).'",
+                            '.((!$edited) ? '"NULL",' : '"'.dbLayer::parseDate($edited).'",').'
+                            "'.dbLayer::parseDate($plan_date).'",
+                            "'.dbLayer::quote_smart($day_total).'"
+                            )';
+        }
+        //echo ($query);
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
+        return ($result !== false);
+    }
+    
+    function updateWorkSumms($actId, $tame = false){
 
-		return ($result !== false);
-	}
+        $table_name = ($tame) ? '`TAME_DARBI`' : '`DARBI`';
+
+        $query = "SELECT SUM(DRBI_CILVEKSTUNDAS) as CILVEKSTUNDAS, `DRBI_PLAN_DATE`
+                    FROM ".$table_name." 
+                    WHERE `DRBI_RAKT_ID` = " . dbLayer::quote_smart($actId) . "
+                    GROUP BY `DRBI_PLAN_DATE`";
+
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+
+        if ($result !== false)
+        {
+            foreach($result as $i => $row)
+            {
+                $query = 'UPDATE ' . $table_name .' SET `DRBI_DAY_TOTAL` = '.$row['CILVEKSTUNDAS'].'
+                        WHERE `DRBI_RAKT_ID` = ' . dbLayer::quote_smart($actId) . '
+                        AND  `DRBI_PLAN_DATE` = "' . $row['DRBI_PLAN_DATE']. '"';
+                
+                $result = $oDB -> makeQuery($query);
+            }
+        }
+
+    }
 
     // -----------------------------------------------------------------------------
 	// Atgriezh akta cilvekstundas kop�jo summu.
@@ -5950,12 +6039,19 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	function getActTotalWorkTime($ID)
 	{
 
-		    $query = "select SUM(DRBI_CILVEKSTUNDAS) as `cvs` from `DARBI`
-                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."";
+        $query = "select SUM(DRBI_CILVEKSTUNDAS) as `cvs` ,
+        ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') ."
+        from `DARBI`
+        WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
+        GROUP BY DRBI_PLAN_DATE";
 
-		$oSQL = new dbLayer;
+        $oSQL = new dbLayer;
         $result = $oSQL -> makeQuery($query);
-		return isset($result[0]['cvs']) ? $result[0]['cvs'] : 0;
+        foreach ($result as $row)
+        {
+        $cvs[$row['DRBI_PLAN_DATE']] = array('cvs' => $row['cvs']);          
+        }
+        return isset($cvs) ? $cvs : array('cvs' => 0);
 	}
 
     function isTotalWorkTimeEqualPersonalTime($ID)
@@ -5986,33 +6082,38 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 		return isset($result[0]['proportion']) ? $result[0]['proportion'] : 0;
 	}
 
-// MATERIALI
+    // MATERIALI
     // -----------------------------------------------------------------------------
 	// Atgriezh akta materialus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getActMaterialList($ID)
-	{
-            // , SUBSTRING(`MATR_NOSAUKUMS`, 1, 25) as `MATR_NOSAUKUMS`
-		    $query = "select *
-                from `MATERIALI`
-                WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($ID)."
+	function getActMaterialList($ID, $tame = false)
+    {
+        $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
 
+		$query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA
+                from " . $table_name . "
+                WHERE `MATR_RAKT_ID` = ".$ID."
+                AND ".$column_name." IS NOT NULL
+                union
+                select *, FORMAT(0, 2) AS `MATR_CENA_KOPA`
+                from " . $table_name . "
+                WHERE `MATR_RAKT_ID` = ".$ID."
+                AND ".$column_name." IS NULL 
                 ORDER BY `MATR_IS_WORKER` DESC";
-
-
+        
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
-
     // -----------------------------------------------------------------------------
 	// Izdz�st konkr�tu materiala ierakstu p�c ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function deleteActMaterialRecord($ID)
-	{
-
-	    $query = "delete from `MATERIALI`
+	function deleteActMaterialRecord($ID, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "delete from ".$table_name."
                 WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
 
 
@@ -6020,16 +6121,17 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
-	}
+    }
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta materiala ierakstu p�c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function deleteActMaterials($ID)
-	{
+	function deleteActMaterials($ID, $tame = false)
+    {
+         $table_name = ($tame) ? 'TAME_MATERIALI' : 'MATERIALI';
 
-	    $query = "delete from `MATERIALI`
+         $query = "delete from ".$table_name."
                 WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($ID);
 
 
@@ -6084,24 +6186,28 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
     // V�rtibas tiek nemtas no kl_materiali tabula p�c materi�la koda
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveActMaterialRecord($actId, $ID, $amount = false, $price = false, $st = 0, $title = '', $mervieniba = '')
+	function saveActMaterialRecord($actId, $ID, $amount = false, $price = false, $tame = false, $st = 0, $title = '', $mervieniba = '')
 	{
+        $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+
         if($ID === false)
         {
-            $query = 'insert into `MATERIALI`
-                (`MATR_RAKT_ID`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,`MATR_CENA`, `MATR_DAUDZUMS`, `MATR_IS_WORKER`)
-            values ('.dbLayer::quote_smart($actId).',
+            $query = 'insert into '.$table_name.'
+                (`MATR_RAKT_ID`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,`MATR_CENA`, `MATR_DAUDZUMS`, 
+                `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).')
+                values ('.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($title).'",
                     "'.dbLayer::quote_smart($mervieniba).'",
                     '.dbLayer::quote_smart($price).' ,
                     '.dbLayer::quote_smart($amount).',
                     '.dbLayer::quote_smart($st).'
-                    )' ;
+                    '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
+                    ' )' ;
 
         }
         elseif($amount === false && $price === false)
         {
-            $query = 'insert into `MATERIALI`
+            $query = 'insert into '.$table_name.'
                 (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, `MATR_IS_WORKER`)
 			select '.dbLayer::quote_smart($actId).',
                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`,'.dbLayer::quote_smart($st).'
@@ -6110,22 +6216,32 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
         }
         elseif($price === false || $st == 1)
         {
-           $query = 'insert into `MATERIALI`
-                (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_IS_WORKER`)
+           $query = 'insert into '.$table_name.'
+                (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, 
+                `MATR_DAUDZUMS`,
+                 `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).')
 			select '.dbLayer::quote_smart($actId).',
-                `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, '.dbLayer::quote_smart($amount).', '.dbLayer::quote_smart($st).'
-                    from `KL_MATERIALI`
+                `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
+                '.dbLayer::quote_smart($amount).', 
+                '.dbLayer::quote_smart($st).' 
+                '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
+                ' from `KL_MATERIALI`
                     where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
         }
         else
         {
-           $query = 'insert into `MATERIALI`
-                (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_IS_WORKER`)
+           $query = 'insert into '.$table_name.'
+                (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, `MATR_DAUDZUMS`, 
+                `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).')
 			select '.dbLayer::quote_smart($actId).',
-                `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, '.dbLayer::quote_smart($price).' , '.dbLayer::quote_smart($amount).', '.dbLayer::quote_smart($st).'
-                    from `KL_MATERIALI`
+                `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, '.dbLayer::quote_smart($price).' , 
+                '.dbLayer::quote_smart($amount).', 
+                '.dbLayer::quote_smart($st).' 
+                 '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
+                ' from `KL_MATERIALI`
                     where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
         }
+        
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -6136,20 +6252,36 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	// Saglabaa akta materiala ierakstu.
     // Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function writeActMaterial($actId, $code, $title, $unit, $price, $amount, $total, $st = 0)
+	function writeActMaterial($actId, $code, $title, $unit, $price, $amount, $total, $st = 0, $amount_kor = false)
 	{
-	   	$query = 'insert into `MATERIALI`
-                (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
-                `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`)
-                values ( '.dbLayer::quote_smart($actId).',
-                "'.dbLayer::quote_smart($code).'",
-                "'.dbLayer::quote_smart($title).'",
-                "'.dbLayer::quote_smart($unit).'",
-                "'.dbLayer::quote_smart($price).'",
-                "'.dbLayer::quote_smart($amount).'",
-                "'.dbLayer::quote_smart($total).'",
-                "'.dbLayer::quote_smart($st).'"
+        if($amount_kor !== false) {
+            $query = 'insert into `TAME_MATERIALI`
+                            (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+                            `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`)                           
+                            values ( '.dbLayer::quote_smart($actId).',
+                            "'.dbLayer::quote_smart($code).'",
+                            "'.dbLayer::quote_smart($title).'",
+                            "'.dbLayer::quote_smart($unit).'",
+                            "'.dbLayer::quote_smart($price).'",
+                            "'.dbLayer::quote_smart($amount).'",
+                            "'.dbLayer::quote_smart($amount_kor).'",
+                            "'.dbLayer::quote_smart($total).'",
+                            "'.dbLayer::quote_smart($st).'"
+                            )';
+        } else {
+            $query = 'insert into `MATERIALI`
+                    (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+                    `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`)
+                    values ( '.dbLayer::quote_smart($actId).',
+                    "'.dbLayer::quote_smart($code).'",
+                    "'.dbLayer::quote_smart($title).'",
+                    "'.dbLayer::quote_smart($unit).'",
+                    "'.dbLayer::quote_smart($price).'",
+                    "'.dbLayer::quote_smart($amount).'",
+                    "'.dbLayer::quote_smart($total).'",
+                    "'.dbLayer::quote_smart($st).'"
                 )';
+        }
 
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
@@ -6410,16 +6542,42 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 	// Atgriezh infomaciju par failu
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getFileInfo($id)
+	function getFileInfo($id, $type = 'PDF' )
 	{
 		$oSQL=new dbLayer();
-		$res=$oSQL->makeQuery('select * from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
+        if($type == "PDF")
+        {
+              $res=$oSQL->makeQuery('select RFLS_NOSAUKUMS AS NOSAUKUMS, RFLS_META_INFO AS META_INFO
+               from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
+        }
+        else
+        {
+          $res=$oSQL->makeQuery('select EFLS_NOSAUKUMS  AS NOSAUKUMS, EFLS_META_INFO AS META_INFO
+               from `EXCEL_FAILI` where EFLS_ID="'.dbLayer::quote_smart($id).'"');
+        }
+
 		if (isset($res[0]))
 		{
 			return $res[0];
 		}
 		return false;
-	}
+    }
+    
+    // funkcija kas dzēš visi akta pielikumi izņemot pēdējo
+    function deleteFilesFromAct($actId, $fileId){
+        $oSQL=new dbLayer();
+        $ok = true;
+        $res=$oSQL->makeQuery('select RFLS_ID from `FAILI` 
+                                where RFLS_RAKT_ID = '.dbLayer::quote_smart($actId).' 
+                                and RFLS_ID <>'.dbLayer::quote_smart($fileId).'');
+        if(isset($res) && is_array($res)) {
+            foreach($res as $r){
+                $ok = files::deleteFile($r['RFLS_ID']);                
+            }
+        }
+        return true;
+        
+    }
 
 	// -----------------------------------------------------------------------------
 	// atgriezh failes datus peec acta ID
@@ -6818,34 +6976,6 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
 		if (isset($result[0]['NUMBER']))
 		{
 			return $result[0]['NUMBER'];
-		}
-		return false;
-	}
-
-	// Saska�o�anas status�: 
-	// Poga Saska�ots 
- 	// ja Starpakts checkbox = false, tad pogai saglab�jas funkcionalit�te un tabul� KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS v�rt�ba ierakst�s =true attiec�gajam MMS darbam 
-
-	function finalizeMMS($actId, $finalize = 0)
-	{
-		$query = "UPDATE `KL_MMS_DARBI` SET `KMSD_NOSLEGUMA_AKTS` = ".dbLayer::quote_smart($finalize)." WHERE `KMSD_ID` = (SELECT `RAKT_MMS_KODS` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId)." )";
-		$oSQL = new dbLayer;
-//echo $query;
-		$result = $oSQL -> makeQuery($query);
-
-		return ($result !== false); 	
-	}
-
-	function getFinalizeMMS($actId)
-	{
-		$query = "SELECT `KMSD_NOSLEGUMA_AKTS` FROM `KL_MMS_DARBI` WHERE `KMSD_ID` = (SELECT `RAKT_MMS_KODS` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId)." )";
-		$oSQL = new dbLayer;
-//echo $query;
-		$result = $oSQL -> makeQuery($query);
-
-		if (isset($result[0]['KMSD_NOSLEGUMA_AKTS']))
-		{
-			return $result[0]['KMSD_NOSLEGUMA_AKTS'];
 		}
 		return false;
 	}
@@ -7375,6 +7505,672 @@ RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" )'
             $result = $oDB -> makeQuery($query);
 
             return ($result !== false);
+        }
+
+        //////////////////////////
+        // AUTO ACT//////////////
+        // -----------------------------------------------------------------------------
+        // Saglabaa akta statusu, saņemtu no KWIKSEP
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function saveKvikStepActStatus($code, 
+                                        $status = false, 
+                                        $user_name = false, 
+                                        $end_date = false
+                                        )
+        { 
+            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date;
+           
+            $oDB = new dbLayer;
+            $query = 'insert into `AUTO_ACT_STATUS`
+                        (
+                            `AAST_KODS`,                            
+                            `AAST_DESCRIPTION`,
+							`AAST_STATUS`,
+                            `user_name`,
+                            `END_DATE`
+                        )
+                        values ( "'.$code.'",
+                        "'.$descr.'",
+                        '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
+						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
+						  '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .'
+                        ) ';
+                            
+				//echo $query;
+                $result = $oDB -> makeQuery($query);
+
+                $query = 'insert into `AUTO_ACT_STATUS_LOG`
+                        (
+                            `AAST_KODS`,                            
+                            `AAST_DESCRIPTION`,
+							`AAST_STATUS`,
+                            `user_name`,
+                            `END_DATE`
+                        )
+                        values ( "'.$code.'",
+                        "'.$descr.'",
+                        '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
+						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
+						  '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .'
+                        ) ';
+                            
+				//echo $query;
+                $result = $oDB -> makeQuery($query);
+
+
+                return ($result !== false);
+        }
+
+function updateActStatusFromKvikStep()
+        { 
+            
+            $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`,
+                                `RAKT_STATUS`, AAST_ID
+                                FROM `AUTO_ACT_STATUS` 
+                                INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
+                                WHERE  `AAST_KODS` IS NOT NULL 
+                                AND `AAST_STATUS` IS NOT NULL
+                                AND `RAKT_IS_AUTO` = 1
+                                AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'" )
+								ORDER BY AAST_CREATED';
+            $oDB = new dbLayer;
+            $res = $oDB -> makeQuery($query);
+            $r= false;
+			$r1= false;
+			$r2= false;
+            if ($res!==false)
+            {
+              $status = '';
+              foreach ($res as $i => $act)
+              {	                    
+
+                switch ($act['AAST_STATUS']) {
+                    case 'INSERT':
+                        $status = STAT_INSERT;
+                        break;
+                    case 'RETURN':
+                        $status = STAT_RETURN;
+                        break;                   
+                    case 'CLOSE':
+                        $status = STAT_CLOSE;
+                        break;       
+                    case 'AUTO':
+                        $status = STAT_AUTO;
+                        break;                               
+                }
+
+                $user_id = false;
+                $place = false;
+                $end_date = false;
+				$actId = $act['RAKT_ID'];
+
+                if(isset($act['USER_NAME'])){
+                    $userInfo = dbProc::getUserInfo('', $act['USER_NAME']);
+                    if(count($userInfo) >0 )
+                    {
+                        $user_id = $userInfo[0]['RLTT_ID'];
+						if(isset($userInfo[0]['RLTT_MSTK_ID']))
+							$place = $userInfo[0]['RLTT_MSTK_ID'];		
+						
+                    }
+                }
+                if(isset($act['END_DATE']))
+                {
+                    $end_date = $act['END_DATE'];
+                }
+
+                files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
+									'AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
+									'RAKT_STATUS: '.$status.PHP_EOL.
+									'RAKT_RLTT_ID: '.$user_id.PHP_EOL.
+									'RAKT_MSTK_ID: '.$place.PHP_EOL.
+									'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL
+							);						
+
+                				
+                $query = 'UPDATE `AKTI` SET `RAKT_STATUS`  = "' .$status .'" 
+						'.(($user_id !== false ) ? ',`RAKT_RLTT_ID`  = ' .$user_id : '' ) .'						
+                        '.(($place !== false ) ? ',`RAKT_MSTK_ID`  = ' .$place : '' ) .'
+						'.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
+                        WHERE `RAKT_ID` = '.$actId;  
+				
+				//echo $query;
+                $r1 = $oDB -> makeQuery($query);
+				//if (!$r1) return false;
+
+               // ar pirmo INSERT jāielada materiālus
+               if($status == STAT_INSERT) {
+                    $r2 = dbProc::addAutoMaterialToAct($actId, $act['AAST_KODS']);
+					//if (!$r2) return false;
+               }
+                /*if($act['AAST_STATUS'] == STAT_RETURN) {
+                    dbProc::setUnsetActItemsDate($act['RAKT_ID'], false);
+                }*/
+				
+                $query = 'UPDATE `AUTO_ACT_STATUS`   SET 
+                `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL"
+                WHERE `AAST_ID` = ' . $act['AAST_ID'];
+			   //echo $query;
+               $r = $oDB -> makeQuery($query);
+				// if (!$r) return false;
+               
+              }
+            }
+			return true;
+            
+        }
+
+
+
+
+        function processAutoActs($user) {
+
+            $query = 'SELECT `KMSD_ID`,
+							`KMSD_KODS`,
+							`KMSD_OPERATIVAS_APZIM`,
+                            `KMSD_WORK_TITLE`, 
+                            '. dbLayer::sqlParseDate('KMSD_IZPILDES_DATUMS') .',                        
+                            `KEDI_ID`,
+                            `KMSD_VV_NUMURS`,
+							`KMSD_IR_EPLA`,
+							`KMSD_TO_ID`,                      
+							`KSRG_ID`,
+							`KOBJ_ID`,
+                            `KMSD_IZPILDITAJA_KODS`
+					FROM (
+							SELECT MAX(`KMSD_ID`) as KMSD_ID,
+							`KMSD_KODS`,
+							MAX(`KMSD_OPERATIVAS_APZIM`) as KMSD_OPERATIVAS_APZIM,
+							MAX(`KMSD_WORK_TITLE`) as KMSD_WORK_TITLE,
+							MAX(`KMSD_IZPILDES_DATUMS`) as `KMSD_IZPILDES_DATUMS`,                        
+                            MAX(IFNULL(`KEDI_ID`, 0)) as `KEDI_ID`,
+                            MAX(`KMSD_VV_NUMURS`) as `KMSD_VV_NUMURS`,
+							MAX(`KMSD_IR_EPLA`) as KMSD_IR_EPLA,
+							MAX(`KMSD_TO_ID`) as KMSD_TO_ID,                      
+							MAX(IFNULL(`KSRG_ID`, false)) as `KSRG_ID`,
+                            MAX(IFNULL(`KOBJ_ID`, false)) as `KOBJ_ID`,
+                            MAX(`KMSD_IZPILDITAJA_KODS`) as `KMSD_IZPILDITAJA_KODS`
+						FROM  `KL_MMS_DARBI`
+						LEFT JOIN `kl_ed_iecirkni` ON `KEDI_KODS` = `KMSD_KEDI_KODS`
+						LEFT JOIN  `kl_objekti` ON `KOBJ_KODS`= `KMSD_KOBJ_KODS`
+						LEFT JOIN  `kl_spriegums` ON `KSRG_KODS` = `KMSD_KSRG_KODS`
+						WHERE NOT EXISTS (SELECT 1 FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = `KMSD_KODS`)
+						GROUP BY `KMSD_KODS`
+					) y ';
+            //AND `KMSD_KODS` = "REM-100004"
+
+            $oDB = new dbLayer;
+            $res = $oDB -> makeQuery($query);
+
+            if ($res!==false)
+            {
+              foreach ($res as $i => $mms)
+              {	
+                  if($mms['KEDI_ID'] == 0) continue;
+                  $r = false;
+                  $r1 = false;
+                 
+                  $r = dbProc::saveAct(false,
+                                       false,
+                                       0,
+                                       $mms['KMSD_IZPILDES_DATUMS'],
+                                       false,
+                                       false,
+                                       $mms['KMSD_OPERATIVAS_APZIM'],
+                                       false,
+                                       STAT_AUTO,
+                                       $user,                                      
+                                       $mms['KOBJ_ID'],
+                                       $mms['KSRG_ID'],
+                                       (($mms['KMSD_IR_EPLA'] == 1) ? ACT_TYPE_PLAN_TR_ID: ACT_TYPE_PLAN_ID),
+                                       $mms['KMSD_IZPILDITAJA_KODS'],
+                                        $mms['KEDI_ID'],
+                                        1,
+                                        $mms['KMSD_IR_EPLA'], 
+                                        $mms['KMSD_KODS'],
+                                        $mms['KMSD_WORK_TITLE'],
+                                        $mms['KMSD_VV_NUMURS'],
+                                        false,
+                                        $mms['KMSD_TO_ID'],
+                                        'P',                                        
+                                        1
+                                );
+                    
+                    if($r) {
+                        $actId=dbLayer::getInsertId();
+                        
+                        if(isset($actId)) {
+                            $r1 = dbProc::processAutoActWorks($actId, $mms['KMSD_KODS'], $mms['KMSD_IR_EPLA']);
+                        }
+
+                        if($r1) {
+                            $r1 = dbProc::processAutoActMaterial($actId, $mms['KMSD_KODS'], $mms['KMSD_IR_EPLA']);
+                        }
+
+                        if($r1) {
+                            // sūta statusu uz KvikStep                            
+                            $r1 = dbProc::sentDataToCvikStep($actId, $mms['KMSD_KODS']);
+                        }
+                    }  
+              }
+          }
+          return true;
+          
+        }
+
+        function sentDataToCvikStep($actId, $mms_kods) {
+            $oDB = new dbLayer;
+
+            $query = 'SELECT SUM(DRBI_CILVEKSTUNDAS) as CILVEKSTUNDAS FROM 
+             `TAME_DARBI` WHERE `DRBI_RAKT_ID` = ' .dbLayer::quote_smart($actId);
+            $result = $oDB -> makeQuery($query);
+            $workTotal = isset($result[0]['CILVEKSTUNDAS']) ? $result[0]['CILVEKSTUNDAS'] : 0;
+
+            $query = 'SELECT SUM(MATR_CENA_KOPA) as TOTAL FROM 
+             `TAME_MATERIALI` WHERE `MATR_RAKT_ID` = ' .dbLayer::quote_smart($actId);
+            $result = $oDB -> makeQuery($query);
+			
+            $materialTotal = isset($result[0]['TOTAL']) ? $result[0]['TOTAL'] : 0;
+			//echo $mms_kods.' '.$workTotal.' '.$materialTotal;
+            RequestHandler::sentDataToCvikStep ($mms_kods, $workTotal, $materialTotal );
+
+        }
+
+        // -----------------------------------------------------------------------------
+        // Atgriezh kalkulacijas pēc nomenklatūras koda
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function getCalcByMmsCodeList($mms_code, $trase)
+        {
+                
+            $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`
+                from `kl_mms_darbi`
+                INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`                
+                where `KMSD_KODS` = "'.dbLayer::quote_smart($mms_code).'"
+                AND EXISTS (SELECT 1 FROM  `kl_kalkulacija_materiali` WHERE `KKMT_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`)
+				AND (
+                                (`KMSD_KSRG_KODS` = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
+                                (`KMSD_KSRG_KODS` <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
+                 )
+                AND `KMKL_TRASE` = '.dbLayer::quote_smart($trase).'
+                AND `KMKL_IR_AKTIVS` = 1';
+            
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+        }
+
+        // -----------------------------------------------------------------------------
+        // Atgriezh mms darbus pēc noteikta koda
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function getMmsWorksByCodeList($code)
+        {
+                
+            $query = 'select `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`,  `KMSD_KSRG_KODS`, `KMSD_NOSACIJUMA_KODS`
+                from `KL_MMS_DARBI`
+                where `KMSD_KODS` = "'.dbLayer::quote_smart($code).'"';
+
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+        }
+
+        function deleteAutoActWorks($actId) {
+            $query = 'DELETE FROM `TAME_DARBI` WHERE `DRBI_RAKT_ID` = ' .dbLayer::quote_smart($actId);
+            $oDB = new dbLayer;
+            return  $oDB -> makeQuery($query);
+        }
+
+        function deleteAutoActMaterial($actId) {
+            $query = 'DELETE FROM `TAME_MATERIALI` WHERE `MATR_RAKT_ID` = ' .dbLayer::quote_smart($actId);
+            $oDB = new dbLayer;
+            return  $oDB -> makeQuery($query);
+        }
+
+        function processAutoActWorks($actId, $mms_code, $trase) {
+
+            $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
+            if ($mmsList!==false)
+            {
+                $oDB = new dbLayer;
+                $aWorks = array();
+                foreach ($mmsList as $i => $mms)
+                {	
+                    $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KKAL_ID`, `KKAL_SHIFRS`, 
+                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, 
+                            CASE WHEN `KMKL_IZMANTOT_LINIJU` = 1 
+                                THEN 
+                                    CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
+                                        THEN '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                    ELSE  
+                                        '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` 
+                                    END 
+                            ELSE
+                                CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
+                                    THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                                ELSE
+                                    `KMKL_DAUDZUMS` 
+                                END 
+                            END  AS `DAUDZUMS`
+                            FROM `kl_mms_kalkulacija` 
+                            INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
+                            WHERE `KMKL_IR_AKTIVS` = 1 
+                            AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
+                            AND (
+                                ('.$mms['KMSD_KSRG_KODS'].' = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
+                                ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
+                            )
+                            AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"';
+                    //echo $query;    
+                    $res = $oDB -> makeQuery($query);
+                    
+                    foreach ($res as $i => $work)
+                    {
+                        if(isset($aWorks[$work['KKAL_SHIFRS']]) && is_array($aWorks[$work['KKAL_SHIFRS']])){
+                            $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
+                            $aWorks[$work['KKAL_SHIFRS']]['CILVEKSTUNDAS'] += $work['DAUDZUMS'] * $work['KKAL_PLANA'];
+                        } else {
+                           $aWorks[$work['KKAL_SHIFRS']]  = array (
+                               'AKT_ID' => $work['AKT_ID'],
+                               'KKAL_ID' => $work['KKAL_ID'],
+                               'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
+                               'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
+                               'KKAL_PLANA' => $work['KKAL_PLANA'],
+                               'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
+                               'DAUDZUMS' => $work['DAUDZUMS'],
+                               'CILVEKSTUNDAS' => $work['DAUDZUMS'] * $work['KKAL_PLANA']
+                            );
+                        }  
+                    }
+                }
+
+                foreach ($aWorks as $row)
+                {
+                        $query = 'INSERT into `TAME_DARBI`
+                            (`DRBI_RAKT_ID`, 
+                            `DRBI_KKAL_ID`, 
+                            `DRBI_KKAL_SHIFRS`, 
+                            `DRBI_KKAL_NOSAUKUMS`,
+                            `DRBI_KKAL_NORMATIVS`, 
+                            `DRBI_MERVIENIBA`, 
+                            `DRBI_DAUDZUMS`, 
+                            `DRBI_DAUDZUMS_KOR`,
+                            `DRBI_CILVEKSTUNDAS`,
+                            `DRBI_PLAN_DATE` )
+                         VALUES ('.$row['AKT_ID'].','.
+                               $row['KKAL_ID'].',"'.
+                               $row['KKAL_SHIFRS'].'","'.
+                               $row['KKAL_NOSAUKUMS'].'",'.
+                               $row['KKAL_PLANA'].',"'.
+                               $row['KKAL_MERVIENIBA'].'",'.
+                               $row['DAUDZUMS'].','.
+                               $row['DAUDZUMS'].','.
+                               $row['CILVEKSTUNDAS'].',"'.
+                               DEFAULT_DATE.'"
+                        )';                    
+                    $res = $oDB -> makeQuery($query);
+                }
+
+                dbProc::updateWorkSumms($actId, true);
+            }
+            return true;
+        }
+  
+        function processAutoActMaterial($actId, $mms_code, $trase) {
+           
+            $calcList = dbProc::getCalcByMmsCodeList($mms_code, $trase);
+            
+            if ($calcList!==false)
+            {
+                $oDB = new dbLayer;
+                $aMaterials = array();
+                foreach ($calcList as $i => $mms)
+                {	
+                    $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KMAT_KODS`,
+                                    `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
+                                CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
+                                    THEN 
+                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
+                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                        ELSE 
+                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
+                                        END 
+                                ELSE
+                                    CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
+                                        THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                                    ELSE 
+                                        `KKMT_DAUDZUMS`                                     
+                                    END 
+                                END  AS `DAUDZUMS`
+                                FROM `kl_kalkulacija_materiali` 
+                                INNER JOIN `kl_materiali`  ON `KMAT_KODS` = `KKMT_KMAT_KODS`
+                                WHERE `KKMT_IR_AKTIVS` = 1 
+                                AND `KMAT_IR_AKTIVS` = 1
+                                AND `KKMT_IZMANTOT_NOMENKLATURU` = 1
+                                AND `KKMT_NOKLUSETAIS` = 1
+                                AND `KKMT_KKAL_SHIFRS` = "'.$mms['KMKL_KKAL_SHIFRS'].'"
+                            UNION
+                            SELECT y.* FROM (
+                                SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KMAT_KODS`,
+                                    `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
+                                    CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
+                                    THEN 
+                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
+                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                        ELSE 
+                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
+                                        END
+                                    ELSE
+                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
+                                            THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                                        ELSE 
+                                            `KKMT_DAUDZUMS`                                     
+                                        END 
+                                    END AS `DAUDZUMS`
+                                    FROM `kl_kalkulacija_materiali` 
+                                    INNER JOIN `kl_materiali`  ON `KMAT_KATEGORIJAS_KODS` = `KKMT_KMAT_APAKSGRUPA`
+                                    WHERE `KKMT_IR_AKTIVS` = 1 
+                                    AND `KMAT_IR_AKTIVS` = 1
+                                    AND `KKMT_IZMANTOT_NOMENKLATURU` = 0
+                                    AND `KMAT_NOKLUSETAIS` = 1
+                                    AND `KKMT_KKAL_SHIFRS` = "'.$mms['KMKL_KKAL_SHIFRS'].'"
+                                    LIMIT 1 
+                                    ) y';
+                                    //echo $query;  
+                    $res = $oDB -> makeQuery($query);
+
+                    foreach ($res as $i => $mat)
+                    {
+                        if(isset($aMaterials[$mat['KMAT_KODS']]) && is_array($aMaterials[$mat['KMAT_KODS']])){
+                            $aMaterials[$mat['KMAT_KODS']]['DAUDZUMS'] += $mat['DAUDZUMS'];
+                            $aMaterials[$mat['KMAT_KODS']]['TOTAL'] += $mat['DAUDZUMS'] * $mat['KMAT_CENA'];
+                        } else {
+                           $aMaterials[$mat['KMAT_KODS']]  = array (
+                               'AKT_ID' => $mat['AKT_ID'],
+                               'KMAT_KODS' => $mat['KMAT_KODS'],
+                               'KMAT_NOSAUKUMS' => $mat['KMAT_NOSAUKUMS'],
+                               'KMAT_CENA' => $mat['KMAT_CENA'],
+                               'KMAT_MERVIENIBA' => $mat['KMAT_MERVIENIBA'],
+                               'DAUDZUMS' => $mat['DAUDZUMS'],
+                               'TOTAL' => $mat['DAUDZUMS'] * $mat['KMAT_CENA']
+                            );
+                        }  
+                    }
+                }
+                
+                foreach ($aMaterials as $row)
+                {
+                        $query = 'INSERT into `TAME_MATERIALI`
+                                (`MATR_RAKT_ID`, 
+                                `MATR_KODS`, 
+                                `MATR_NOSAUKUMS`, 
+                                `MATR_MERVIENIBA`, 
+                                `MATR_CENA`, 
+                                `MATR_DAUDZUMS`, 
+                                `MATR_DAUDZUMS_KOR`, 
+                                `MATR_CENA_KOPA`)
+                         VALUES ('.$row['AKT_ID'].',"'.
+                               $row['KMAT_KODS'].'","'.
+                               $row['KMAT_NOSAUKUMS'].'","'.
+                               $row['KMAT_MERVIENIBA'].'",'.
+                               $row['KMAT_CENA'].','.
+                               $row['DAUDZUMS'].','.
+                               $row['DAUDZUMS'].','.
+                               $row['TOTAL'].
+                        ')';                    
+                    $res = $oDB -> makeQuery($query);
+                }
+            }
+            return true;
+        }
+
+        function setUnsetActItemsDate($actId, $set = false)
+        {
+            $oDB = new dbLayer;
+            if($set) {
+                $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = now() 
+                        WHERE `DRBI_RAKT_ID` = ' .$actId. '
+                        AND `DRBI_APPROVE_DATE` IS NULL';
+                $oDB -> makeQuery($query);
+                $query = 'UPDATE `TRANSPORTS` SET `TRNS_APPROVE_DATE` = now() 
+                        WHERE `TRNS_RAKT_ID` = ' .$actId. '
+                        AND `TRNS_APPROVE_DATE` IS NULL';
+                $oDB -> makeQuery($query);
+                $query = 'UPDATE `PERSONALS` SET `PRSN_APPROVE_DATE` = now() 
+                        WHERE `PRSN_RAKT_ID` = ' .$actId. '
+                        AND `PRSN_APPROVE_DATE` IS NULL';
+                $oDB -> makeQuery($query);
+            } else {
+                $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = "NULL"
+                        WHERE `DRBI_RAKT_ID` = ' .$actId. '
+                        AND `DRBI_APPROVE_DATE` IS NOT NULL
+                        AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
+                                                                WHERE d.DRBI_RAKT_ID ='. $actId.')';
+                $oDB -> makeQuery($query);
+                $query = 'UPDATE `TRANSPORTS` SET `TRNS_APPROVE_DATE` = "NULL"
+                        WHERE `TRNS_RAKT_ID` = ' .$actId. '
+                        AND `TRNS_APPROVE_DATE` IS NOT NULL
+                        AND `TRNS_APPROVE_DATE` = (SELECT MAX(d.TRNS_APPROVE_DATE) FROM transports d 
+                                                                WHERE d.TRNS_RAKT_ID ='. $actId.')';
+                $oDB -> makeQuery($query);
+                $query = 'UPDATE `PERSONALS` SET `PRSN_APPROVE_DATE` = "NULL"
+                        WHERE `PRSN_RAKT_ID` = ' .$actId. '
+                        AND `PRSN_APPROVE_DATE` IS NOT NULL
+                        AND `PRSN_APPROVE_DATE` = (SELECT MAX(d.PRSN_APPROVE_DATE) FROM personals d 
+                                                                WHERE d.PRSN_RAKT_ID ='. $actId .')';
+                $oDB -> makeQuery($query);
+            }
+        }
+
+        //////////////////////////////
+        // JOBI
+        /////////////////////////////
+
+        // -----------------------------------------------------------------------------
+        // Atgriezh kopeejo procesus skaitu.
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function getJobCount($search = false, $column = false)
+        {
+            $oDB = new dbLayer;
+            if($column === false)
+            {
+            $column = dbProc::getKlklDefaultColumn(KL_SYSTEM_PROCESS);
+            }
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+            $query =  'select count(`PROC_KODS`) as `RECORDCOUNT` from `SISTEMAS_PROCESI`
+            where '.$searchString;
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
+        }
+
+        // -----------------------------------------------------------------------------
+        // Atgriezh finans��anas avota(-as). Ja dots ID, atdod to, ja ne - atgriezh visas.
+        // Ja doti, njem veeraa nobiidi un daudzumu.
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function getJobList($ID = false, $offset = false, $limit = false,
+                                        $search =  false,
+                                        $column = false,
+                                        $order =  'ASC',
+                                        $orderColumn = false)
+        {
+            if ($ID)
+            {
+                $query = 'select *, ' .dbLayer::sqlParseDateTime('PROC_START_DATUMS') .',
+                  ' .dbLayer::sqlParseDateTime('PROC_STOP_DATUMS') .'
+                    from `SISTEMAS_PROCESI`
+                    where `PROC_KODS` = "'.$ID.'"';
+            }
+            else
+            {
+                if($column === false)
+                {
+                    $column = dbProc::getKlklDefaultColumn(KL_SYSTEM_PROCESS);
+                }
+                if($orderColumn === false)
+                {
+                    $orderColumn = dbProc::getKlklDefaultColumn(KL_SYSTEM_PROCESS);
+                }
+                $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+                if($search === false || $search == '')
+                {
+                    $searchString = '1 ';
+                }
+                $query = 'select *, ' .dbLayer::sqlParseDateTime('PROC_START_DATUMS') .',
+                    ' .dbLayer::sqlParseDateTime('PROC_STOP_DATUMS') .'
+                    from `SISTEMAS_PROCESI`
+                    where '.$searchString.'
+                    order by `'.dbLayer::quote_smart($orderColumn).'` '.dbLayer::quote_smart($order).'';
+                if (($offset !== false) && $limit)
+                {
+                    $query .= ' limit '.
+                    ($offset ? (int)$offset.', ' : '').
+                    (int)$limit;
+                }
+            }
+
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+        }
+
+        function saveJob($code, $pid, $isActive, $interval = 60) {
+
+            $query = 'UPDATE `SISTEMAS_PROCESI`
+                      SET `PROC_IR_AKTIVS` = '.$isActive.',
+                        ' .(($pid == false) ? ' `PROC_PID` = null ' :'`PROC_PID` = '.$pid ).' ,   
+                        `PROC_INTERVAL` = '.$interval.',
+                        '.(($isActive==1)? '`PROC_START_DATUMS` = now(), `PROC_STOP_DATUMS` = "NULL" ' : '`PROC_STOP_DATUMS` = now()').' 
+                      WHERE `PROC_KODS` = "'.$code.'"';
+            
+            $oSQL = new dbLayer;
+            $result = $oSQL -> makeQuery($query);
+
+            return ($result !== false);
+
+        }
+
+        function getJobInterval($code)
+        {
+            $oDB = new dbLayer;
+            $query =  'SELECT `PROC_INTERVAL`  FROM `SISTEMAS_PROCESI` WHERE `PROC_KODS` = "'.$code.'"';
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['PROC_INTERVAL']) ? $result[0]['PROC_INTERVAL'] : 600;
+        }
+
+        function isJobStoped($code)
+        {
+            $oDB = new dbLayer;
+            $query =  'SELECT `PROC_IR_AKTIVS`  FROM `SISTEMAS_PROCESI` WHERE `PROC_KODS` = "'.$code.'"';
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['PROC_IR_AKTIVS']) ? (($result[0]['PROC_IR_AKTIVS'] == 0) ? true  : false ) : true;
         }
 
 

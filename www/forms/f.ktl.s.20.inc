@@ -74,15 +74,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		$oForm -> addElement('checkbox', 'useLine',  text::get('USE_LINE'), isset($mmsCalc['KMKL_IZMANTOT_LINIJU'])?$mmsCalc['KMKL_IZMANTOT_LINIJU']:0, 'tabindex=6'.(($isEdUser)?' disabled' : ''));
        
-        $oForm -> addElement('text', 'koeficent',  text::get('KOEFICENT'), isset($mmsCalc['KMKL_KOEFICENTS'])?$mmsCalc['KMKL_KOEFICENTS']:'1.000', 'tabindex=7 maxlength="6"'.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'koeficent',  text::get('KOEFICENT'), isset($mmsCalc['KMKL_KOEFICENTS'])?$mmsCalc['KMKL_KOEFICENTS']:'1.00000', 'tabindex=7 maxlength="8"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('koeficent', text::get('ERROR_REQUIRED_FIELD'), 'required');
-		$oForm -> addRule('koeficent', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+		$oForm -> addRule('koeficent', text::get('ERROR_DOUBLE_VALUE'), 'double', 5);
 
 		$oForm -> addElement('checkbox', 'useCord',  text::get('USE_CORD'), isset($mmsCalc['KMKL_IZMANTOT_VADU'])?$mmsCalc['KMKL_IZMANTOT_VADU']:0, 'tabindex=8'.(($isEdUser)?' disabled' : ''));
 
         $oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($mmsCalc['KMKL_IR_AKTIVS'])?$mmsCalc['KMKL_IR_AKTIVS']:1, 'tabindex=9'.(($isEdUser)?' disabled' : ''));
 
-		$oForm -> addElement('checkbox', 'isEpla',  text::get('IS_EPLA'), isset($mmsCalc['KMKL_TRASE'])?$mmsCalc['KMKL_TRASE']:0, 'tabindex=10'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'isEpla',  text::get('TRASE'), isset($mmsCalc['KMKL_TRASE'])?$mmsCalc['KMKL_TRASE']:0, 'tabindex=10'.(($isEdUser)?' disabled' : ''));
 		
 		// importa dati
 		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($mmsCalc['KMKL_CREATED'])?$mmsCalc['KMKL_CREATED']:dtime::now(), 'tabindex=11 maxlength="20" disabled');

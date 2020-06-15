@@ -201,8 +201,15 @@ if (reqVar::get('xmlHttp') == 1)
            $cr = '';
            foreach($searcCriteria as $s)
            {
-             $cr .= $s.'^';
-           }   
+            
+                if(is_array($s)){
+                    $cr .= implode('^', $s).'^';
+                    
+                }
+                else {
+                    $cr .= $s.'^';
+                }
+           }
            $cr = substr($cr, 0, -1);
            $oListLink->addPrm('search', $cr);
            $actListLink=$oListLink ->getQuery();

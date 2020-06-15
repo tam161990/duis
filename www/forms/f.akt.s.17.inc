@@ -6,10 +6,6 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 
 // act ID
 $actId  = reqVar::get('actId');
-// month
-$month  = reqVar::get('month');
-// year
-$year  = reqVar::get('year');
 // numPostfix
 $numPostfix  = reqVar::get('numPostfix');
 // TRASE act
@@ -33,7 +29,9 @@ if ( $isAdmin || $isEconomist)
       if(count($actInfo)>0)
       {
       	$act = $actInfo[0];
-
+         $proces_date = $act['RAKT_IZPILDES_DATUMS'];
+         $month = $act['RAKT_MENESIS'];
+         $year = $act['RAKT_GADS'];
       }
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
@@ -42,8 +40,7 @@ if ( $isAdmin || $isEconomist)
         $isReadonly   = false;
       }
 
-      $masterName = dbProc::GetMasterName($act['RAKT_KEDI_ID'], 'MASTER');
-      $chifName = dbProc::GetChifName($act['RAKT_KEDI_ID'], 'GROUP_CHIF');
+      $masterName = dbProc::GetMasterName($act['RAKT_KEDI_ID'], 'MASTER');      
       $engeneerName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'ENGINEER');
       $depChifName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'DEPARTMENT_CHIF');
       $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
@@ -60,16 +57,12 @@ if ( $isAdmin || $isEconomist)
       // form elements
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
       $oFormPop -> addElement('hidden', 'isTrase', '', $trase);
-      $oFormPop -> addElement('hidden', 'year', '', $year);
-      $oFormPop -> addElement('hidden', 'month', '', $month);
+      $oFormPop -> addElement('hidden', 'proces_date', '', $proces_date);
       $oFormPop -> addElement('hidden', 'numPostfix', '', $numPostfix);
       $oFormPop -> addElement('hidden', 'toid', '', $toid);
 
-     $oFormPop -> addElement('text', 'master',  text::get('SIGN_MASTER'), $masterName, 'maxlength="300"'.(($isReadonly)?' disabled':''));
-     $oFormPop -> addRule('master', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
-      $oFormPop -> addElement('text', 'chif',  text::get('SIGN_CHIF'), $chifName, 'maxlength="300"'.(($isReadonly)?' disabled':''));
-      $oFormPop -> addRule('chif', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      $oFormPop -> addElement('text', 'master',  text::get('SIGN_MASTER'), $masterName, 'maxlength="300"'.(($isReadonly)?' disabled':''));
+      $oFormPop -> addRule('master', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
       $oFormPop -> addElement('text', 'engineer',  text::get('SIGN_ENGENEER'), $engeneerName, 'maxlength="300"'.(($isReadonly)?' disabled':''));
       $oFormPop -> addRule('engineer', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -92,7 +85,7 @@ if ( $isAdmin || $isEconomist)
             $checkRequiredFields = false;
             $r = true;
 
-            if($oFormPop -> getValue('master') && $oFormPop -> getValue('chif') && $oFormPop -> getValue('engineer'))
+            if($oFormPop -> getValue('master') &&  $oFormPop -> getValue('engineer'))
             {
                 $checkRequiredFields = true;
             }
@@ -106,9 +99,8 @@ if ( $isAdmin || $isEconomist)
                   $r=dbProc::saveAct($oFormPop->getValue('actId'),
     		    			false,
                             false,
-                            $oFormPop->getValue('month'),
-                            $oFormPop->getValue('year'),
-                            false,
+                            $oFormPop->getValue('proces_date'),
+                            false,                    
                             false,
                             false,
                             false,
@@ -124,9 +116,7 @@ if ( $isAdmin || $isEconomist)
                             $oFormPop->getValue('numPostfix'),
                             false,
                             false,
-                            $oFormPop->getValue('start_date'),
-                            0,
-                           false, 
+                            $oFormPop->getValue('start_date'),                            
                            $oFormPop->getValue('toid')
     					);
                 if($r)
@@ -242,7 +232,7 @@ if ( $isAdmin || $isEconomist)
                       iconv('UTF-8', 'windows-1257',text::get('EXPORT_MAIN_DESIGNATION')).':',
                       iconv('UTF-8', 'windows-1257',$act['RAKT_OPERATIVAS_APZIM'])
                           ),
-	      array(
+	                  array(
                       iconv('UTF-8', 'windows-1257',text::get('COMMENT')).':',
                       iconv('UTF-8', 'windows-1257',$act['RAKT_PIEZIMES']),
                       iconv('UTF-8', 'windows-1257',text::get('TO_ID')).':',
@@ -252,47 +242,37 @@ if ( $isAdmin || $isEconomist)
 
                       );
                   $pdf->DescriptionTableTrase($actDescription);
-	/*
-                  $actDetales= array(
-
-
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('COMMENT')).':',  'L', 'B', 8),
-                       array(iconv('UTF-8', 'windows-1257',$act['RAKT_PIEZIMES']), 'L', '', 8)
-                          ),
-                  );
-                  $pdf->DescriptionAsimetricalTable($actDetales);
-	*/
+	
                   // darbi
                   $pdf->SetFont('Arial','BI',10);
                   $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_WORKS)), 0,1);
 
-                  $width=array(20,80,20,20,20,20);
-                  $alignHeader=array('R','C','R','R','R','R');
-                  $align=array('R','L','R','R','R','R');
+                  $width=array(15,15,75,15,20,20,20);
+                  $alignHeader=array('C','C','C','C','R','R','R');
+                  $align=array('C','C','L','C','R','R','R');
 
                   $headers = array(
                       'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
+                      'DRBI_PLAN_DATE' => iconv('UTF-8', 'windows-1257',text::get('FINISHING_DATE')),
                       'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
                       'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
                       'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
                       'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
-
                       'DRBI_CILVEKSTUNDAS' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
                       );
 
-                  $aWorkDb=dbProc::getActWorkList($actId);
+                  $aWorkDb=dbProc::getActWorkList($actId, false, false);
                   $data = array();
                   $totalD = 0;
                   foreach ($aWorkDb as $i => $work)
                   {
                     $data[$i] = array(
                       'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+                      'DRBI_PLAN_DATE'  => $work['DRBI_PLAN_DATE'],
                       'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
                       'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
                       'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
                       'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-
                       'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
                       );
 
@@ -326,7 +306,7 @@ if ( $isAdmin || $isEconomist)
                        ),
                     array(
                     iconv('UTF-8', 'windows-1257',''),
-                    iconv('UTF-8', 'windows-1257', $act['KEDI_SECTION'] . ', '. text::get('EXP_OUNER_CHIF').' '.$oFormPop -> getValue('chif') )
+                    iconv('UTF-8', 'windows-1257', $act['KEDI_SECTION'] )
                         ),
                     array(
                     iconv('UTF-8', 'windows-1257',''),
@@ -393,24 +373,24 @@ if ( $isAdmin || $isEconomist)
     		        {
     		        	$oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
     		        }
-                     if ($idFile!==false)
+                  if ($idFile!==false)
 		            {
-                      $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
-                      // save status changed time
-                      $r1 = dbProc::saveAuditRecord($actId, $userId,  STAT_CLOSE);
-                      dbProc::setUserActionDate($userId,  ACT_CLOSE);
+                        $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
+                        // save status changed time
+                        $r1 = dbProc::saveAuditRecord($actId, $userId,  STAT_CLOSE);
+                        dbProc::setUserActionDate($userId,  ACT_CLOSE);
 
-            		  if (!$r1)
-            		  {
-            				$oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-            		  }
-                      // Saskaņošanas statusā -> Poga Saskaņots :ja Starpakts checkbox = false, tad tabulā KL_MMS_DARBI laukam KMSD_NOSLEGUMA_AKTS vērtība ierakstās =true attiecīgajam MMS darbam
-					 $r1 = dbProc::finalizeMMS($actId);
-					 if (!$r1)
-        			 {
-        				$oForm->addError(text::get('ERROR_IN_DB_QUERY').'!!!'.dbProc::getError());
-        			 }
+                        if (!$r1)
+                        {
+                              $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                        }
 
+                        // delete all files before
+                        $r1 = dbProc::deleteFilesFromAct($actId, $idFile);
+                        if (!$r1)
+                        {
+                              $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                        }
                     }
                 }
                 else

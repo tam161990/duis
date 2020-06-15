@@ -113,9 +113,8 @@ if($isAdmin)
 	<table cellpadding="0" cellspacing="0" border="0">
 		<tr>
            <td class="menu_cell" nowrap><a target="frame_1" href="<?=$warningLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('WARNING');?></a></td>
-           
            <td class="menu_cell_2" nowrap><a target="frame_1" href="<?=$kvikStepLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('ACT_NUMBER_TEMPLATE');?></a></td>
-
+		   <td class="menu_cell_2" ><a  target="frame_1" href="<?=$jobListLink;?>" onclick="reloadFrame(2,'<?=$editJobLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('SYSTEM_PROCESS');?></a></td>	
 		</tr>
 
 	</table>

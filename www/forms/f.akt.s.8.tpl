@@ -22,6 +22,13 @@
 </tr>
 
 </table>
+<table cellpadding="5" cellspacing="1" border="0" width="100%">
+    <tr>
+        <td class="table_cell_c" width="30%"><?= $oFormPop -> getElementLabel('plan_date'); ?></td>
+        <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('plan_date'); ?></td>
+        <td class="table_cell_2" width="40%">&nbsp;</td>
+    </tr>
+</table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">
     <tr>

@@ -18,6 +18,8 @@ $isSearch  = reqVar::get('isSearch');
 // search act by number
 $searchNum  = reqVar::get('searchNum');
 
+$tame  = reqVar::get('tame');
+
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser)
 {
@@ -35,11 +37,14 @@ if ( $isAdmin || $isSystemUser)
       {
       	$act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
+        $isAuto = $act['RAKT_IS_AUTO'];
       }
 
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
-      if(($act['RAKT_RLTT_ID'] == $userId && ($isEditor || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE)) )
+      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE || ($status == STAT_AUTO && $tame==1 ))
+      )
       {
         $isReadonly   = false;
       }
@@ -59,6 +64,8 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormPop -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormPop->addElement('static','jsRefresh2','','');
+      $oFormPop -> addElement('hidden', 'isAuto', '', $isAuto);
+      $oFormPop -> addElement('hidden', 'tame', '', $tame);
 
       $oFormPop->addElement('text', 'searchCode', text::get('CODE'), $serchText, (($isReadonly)?' disabled ':'').'maxlength="7"');
 
@@ -76,49 +83,49 @@ if ( $isAdmin || $isSystemUser)
         $r = $oFormPop->getValue('searchRow');
         $isRowValid = true;
         // validate material amount value
-  		if ($oFormPop->getValue('amount_'.$r) == '')
-		{
-    		// assign error message
-  			$oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_REQUIRED_FIELD'));
-  			$isRowValid = false;
-  		}
+        if ($oFormPop->getValue('amount_'.$r) == '')
+        {
+          // assign error message
+          $oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_REQUIRED_FIELD'));
+          $isRowValid = false;
+        }
         // validate material amount value
-  		elseif (!is_numeric($oFormPop->getValue('amount_'.$r)))
-    	{
-  			// assign error message
-  			$oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_DOUBLE_VALUE'));
-  			$isRowValid = false;
-  		}
+        elseif (!is_numeric($oFormPop->getValue('amount_'.$r)))
+        {
+          // assign error message
+          $oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_DOUBLE_VALUE'));
+          $isRowValid = false;
+        }
         // validate material amount value
-  		elseif ($oFormPop->getValue('amount_'.$r) >= 100000)
-  		{
-  			// assign error message
-  			$oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_AMOUNT_VALUE'));
-  			$isRowValid = false;
-  		}
+        elseif ($oFormPop->getValue('amount_'.$r) >= 100000)
+        {
+          // assign error message
+          $oFormPop->addErrorPerElem('amount_'.$r, text::get('ERROR_AMOUNT_VALUE'));
+          $isRowValid = false;
+        }
         if ($oFormPop->getValue('st') == '0')
         {
           // validate material price value
-    		if ($oFormPop->getValue('price_'.$r) == '')
-  		{
-      		// assign error message
-    			$oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_REQUIRED_FIELD'));
-    			$isRowValid = false;
-    		}
+          if ($oFormPop->getValue('price_'.$r) == '')
+          {
+              // assign error message
+              $oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_REQUIRED_FIELD'));
+              $isRowValid = false;
+          }
           // validate material price value
-    		elseif (!is_numeric($oFormPop->getValue('price_'.$r)))
-      	{
-    			// assign error message
-    			$oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_DOUBLE_VALUE'));
-    			$isRowValid = false;
-    		}
-          // validate material price value
-    		elseif ($oFormPop->getValue('price_'.$r) >= 100000)
-    		{
-    			// assign error message
-    			$oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_AMOUNT_VALUE'));
-    			$isRowValid = false;
-    		}
+          elseif (!is_numeric($oFormPop->getValue('price_'.$r)))
+          {
+            // assign error message
+            $oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_DOUBLE_VALUE'));
+            $isRowValid = false;
+          }
+            // validate material price value
+          elseif ($oFormPop->getValue('price_'.$r) >= 100000)
+          {
+            // assign error message
+            $oFormPop->addErrorPerElem('price_'.$r, text::get('ERROR_AMOUNT_VALUE'));
+            $isRowValid = false;
+          }
         }
         if($isRowValid === false)
         {
@@ -132,6 +139,7 @@ if ( $isAdmin || $isSystemUser)
                                                 $oFormPop->getValue('id_'.$r),
                                                 $oFormPop->getValue('amount_'.$r),
                                                 $oFormPop->getValue('price_'.$r),
+                                                $oFormPop->getValue('tame'),
                                                 $oFormPop->getValue('st'));
               if(!$r)
               {
@@ -145,7 +153,10 @@ if ( $isAdmin || $isSystemUser)
                 $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
                 $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
                 $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
                 $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
+                $oRedirectLink->addPrm('tame', $tame);
+                $oRedirectLink->addPrm('tame_mat', $tame);
                 $oFormPop -> setNewValue('jsRefresh2', '<script>window.opener.location.replace( "'.$oRedirectLink->getQuery().'" );</script>');
                 //requestHandler::makeParentReplace($oRedirectLink->getQuery().'#tab');
                 unset($oRedirectLink);
@@ -179,7 +190,6 @@ if ( $isAdmin || $isSystemUser)
          if(is_array($resMater) && count($resMater) > 0)
          {
             $showResults = true;
-
          }
          else
          {
@@ -216,6 +226,7 @@ if ( $isAdmin || $isSystemUser)
 
       if ($oFormPop -> isFormSubmitted())
       {
+        
        // if($oFormPop->getValue('action')==OP_SEARCH)
        // {
           for ($j = 0; $j < count($resMater); $j++)

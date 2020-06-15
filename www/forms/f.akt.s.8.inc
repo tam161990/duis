@@ -25,6 +25,9 @@ $searchNum  = reqVar::get('searchNum');
 $trase =  reqVar::get('isTrase');
 if($trase === false) $trase = 0;
 
+$tame  = reqVar::get('tame');
+$estimate  = reqVar::get('estimate');
+
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser)
 {
@@ -33,10 +36,11 @@ if ( $isAdmin || $isSystemUser)
     $oFormPop = new Form('frmMainTab','post',$oLink->getQuery());
     unset($oLink);
 
-    if($actId !== false && $catalog !== false &&
-       ( (($catalog == KL_CALCULALATION  && $calcGroup !== false) || $catalog == KL_CALCULALATION_TR) ||
-         ($catalog == KL_MATERIALS && $favoritId !== false)) ||
-          ($all !== false) )
+    if( $actId !== false && $catalog !== false &&
+       ( ($catalog == KL_CALCULALATION  && ($calcGroup !== false|| $trase || $estimate == 1 )) ||
+         ($catalog == KL_MATERIALS && $favoritId !== false) ||
+          ($all !== false) 
+        ))
     {
       // get info about act
       $actInfo = dbProc::getActInfo($actId);
@@ -46,35 +50,68 @@ if ( $isAdmin || $isSystemUser)
       	$act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
         $trase =  $act['RAKT_TRASE'];
+        $isAuto = $act['RAKT_IS_AUTO'];
       }
 
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
-      if(($act['RAKT_RLTT_ID'] == $userId && ($isEditor || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE)) )
+      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE || ($status == STAT_AUTO && $tame==1 ) )
+      )
       {
         $isReadonly   = false;
       }
-
+       
       $aScope=array();
       $aScope['-1']='';
       $serchText = '';
 
       if ($oFormPop -> isFormSubmitted() && $oFormPop->getValue('action')==OP_SEARCH )
       {
-	$serchText = $oFormPop->getValue('searchCode');
+	              $serchText = $oFormPop->getValue('searchCode');
                 unset($aScope);
-	$aScope=array();
-      	$aScope['-1']='';
-
+	              $aScope=array();
+      	        $aScope['-1']='';
       }
 
 
       switch ($catalog)
       {
         case  KL_CALCULALATION:
-
+          if($trase)
+          {
+          
+              // set list title
+              $title = text::toUpper(text::get('TRASE_WORK'));
+              // get calculation by calculation group code
+              $res = dbProc::getALLCalculationList($actId, 1, $serchText);
+              if (is_array($res))
+              {
+                  foreach ($res as $row)
+                {
+                      $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
+                  }
+              }
+              unset($res);
+              $oFormPop -> addElement('hidden', 'all', '', $all);
+            }
+            elseif($estimate == 1) {
+              // set list title
+              $title = strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get(TAB_WORKS_T);
+              // get calculation from estimate
+              $res = dbProc::getEstimatedCalculation($actId);
+              if (is_array($res))
+              {
+                  foreach ($res as $row)
+               	  {
+                	   $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
+                  }
+              }
+              unset($res);
+              $oFormPop -> addElement('hidden', 'estimate', '', $estimate);
+            }
             // get info about calculation group
-            if($all == 1)
+            elseif($all == 1)
             {
 
               // set list title
@@ -114,50 +151,6 @@ if ( $isAdmin || $isSystemUser)
               $oFormPop -> addElement('hidden', 'calcGroup', '', $calcGroup);
             }
             break;
-         case  KL_CALCULALATION_TR:
-
-            // get info about calculation group
-           
-            if(true/*$all == 1*/)
-            {
-            
-              // set list title
-              $title = text::toUpper(text::get('TRASE_WORK'));
-              // get calculation by calculation group code
-              $res = dbProc::getALLCalculationList($actId, 1, $serchText);
-              if (is_array($res))
-              {
-                  foreach ($res as $row)
-               	{
-                	    $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
-                  }
-              }
-              unset($res);
-              $oFormPop -> addElement('hidden', 'all', '', $all);
-            }
-            else
-            {
-              $calcGrInfo = dbProc::getCalculationGroupInfo($calcGroup);
-              if(count($calcGrInfo)>0)
-              {
-              	$group = $calcGrInfo[0];
-                $groupTitle = $group['KKLG_NOSAUKUMS'];
-              }
-              // set list title
-              $title = text::toUpper($groupTitle);
-              // get calculation by calculation group code
-              $res = dbProc::getFreeCalculationList($calcGroup, $actId, 1, $serchText);
-              if (is_array($res))
-              {
-                  foreach ($res as $row)
-               	{
-                	    $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
-                  }
-              }
-              unset($res);
-              $oFormPop -> addElement('hidden', 'calcGroup', '', $calcGroup);
-            }
-            break;
         case  KL_MATERIALS:
 
 
@@ -186,16 +179,32 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormPop -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormPop -> addElement('multiple_select', 'scope', '', '', (($isReadonly)?' disabled ':'').' size="19" ', '', '', $aScope);
-       
-       if($catalog == KL_CALCULALATION OR $catalog == KL_CALCULALATION_TR)
-       {
+      $oFormPop -> addElement('hidden', 'isAuto', '', $isAuto);
+      $oFormPop -> addElement('hidden', 'tame', '', $tame);
+
+      if($catalog == KL_CALCULALATION)
+      {
        	$oFormPop->addElement('text', 'searchCode', text::get('TITLE'), $serchText, (($isReadonly)?' disabled ':'').'maxlength="50"');
-	 // form buttons
+	      // form buttons
      	 if (!$isReadonly)
       	{
         		$oFormPop -> addElement('submitImg', 'search', text::get('SEARCH'),'img/btn_meklet.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_SEARCH.'\');"');
-                 }
+        }
       }
+      if($catalog == KL_CALCULALATION )
+      {
+        //datums
+       $oFormPop -> addElement('date', 'plan_date',  text::get('FINISHING_DATE'), dtime::now(), (($isReadonly)?' disabled ':''));
+       $oFormPop -> addRule('plan_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
+       $oFormPop -> addRule('plan_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
+
+     }
+     else {
+       $oFormPop -> addElement('select', 'plan_date',  text::get('FINISHING_DATE'), '', (($isReadonly)?' disabled ':'').' ', '','', $days);
+       $oFormPop -> addRule('plan_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
+     }
+
+
       // form buttons
       if (!$isReadonly)
       {
@@ -219,13 +228,10 @@ if ( $isAdmin || $isSystemUser)
                         switch ($catalog)
                         {
                           case  KL_CALCULALATION:
-                            $r = dbProc::saveActWorkRecord($oFormPop->getValue('actId'), $cValue, 0);
-                            break;
-                          case  KL_CALCULALATION_TR:
-                            $r = dbProc::saveActWorkRecord($oFormPop->getValue('actId'), $cValue, 1);
-                            break;
+                            $r = dbProc::saveActWorkRecord($oFormPop->getValue('actId'), $cValue, $trase, $tame, $oFormPop->getValue('plan_date'));
+                            break;                         
                           case  KL_MATERIALS:
-                            $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), $cValue);
+                            $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), $cValue, false, false, $tame);
                             break;
 
                         }
@@ -251,15 +257,18 @@ if ( $isAdmin || $isSystemUser)
                       $oRedirectLink->addPrm('isTrase', $oFormPop->getValue('isTrase'));
                       $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
                       $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
+                      $oRedirectLink->addPrm('tame', $tame);
+                      $oRedirectLink->addPrm('tame_mat', $tame);
                       switch ($catalog)
                       {
-                          case  KL_CALCULALATION:
-                          case  KL_CALCULALATION_TR:
-                            $oRedirectLink->addPrm('tab', TAB_WORKS);
-                            break;
-                          case  KL_MATERIALS:
-                            $oRedirectLink->addPrm('tab', TAB_MATERIAL);
-                            break;
+                        case  KL_CALCULALATION:
+                          $oRedirectLink->addPrm('tab', TAB_WORKS);
+                          $oRedirectLink->addPrm('tametab', strtoupper(text::get(TAB_ESTIMATE)). ' ' .TAB_WORKS_T);
+                          break;
+                        case  KL_MATERIALS:
+                          $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                          $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
+                          break;
 
                       }
 

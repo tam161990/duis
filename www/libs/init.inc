@@ -25,4 +25,5 @@
     require_once(ZR_LIBS_DIR.'/fpdf/fpdf.php');
     require_once(ZR_LIBS_DIR.'/progress/PogProgressBar.php');
     require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
+	require_once(ZR_LIBS_DIR.'/process/Process.class');  
 ?>

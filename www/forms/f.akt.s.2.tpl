@@ -82,55 +82,96 @@ document.onmousemove=positiontip
 	</tr>
     <tr>
 		<td valign="top">
+        <?
+        $x = 0;
+        foreach ($aWorks as $d => $aDayWorks)
+            {
+        ?>
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
 
-				<th width="10%"><?=text::get('CHIPHER');?></th>
+                <th width="10%"><?=text::get('CHIPHER');?></th>
+                <? if(!$tame) { ?>
+					<th  width="15%"><?=text::get('FINISHING_DATE');?></th>
+				<? } ?>
 				<th width="32%" colspan="2"><?=text::get('NAME');?></th>
 				<th  width="15%"><?=text::get('PRICE');?></th>
                 <th  width="10%"><?=text::get('UNIT_OF_MEASURE');?></th>
-				<th  width="15%"><?=text::get('AMOUNT');?></th>
+                <th  width="15%"><?=text::get('AMOUNT');?></th>
+                <? if($tame) { ?>
+                    <th  width="15%"><?=text::get('AMOUNT_KOR');?></th>
+                <? } ?>
 				<th  width="15%"><?=text::get('PRICE_TOTAL');?></th>
 			 	<th width="3%">&nbsp;</th>
 			</tr>
 
-	  <?
-	   	foreach($aWorks as $i=>$val)
-		{
-		?>
-			<tr class="table_cell_3"  id="blank_work<?= $i; ?>">
-
+            <?
+            foreach ($aDayWorks as $j => $actWork)
+            { 
+                
+                if($tame && $actWork['DRBI_DAUDZUMS'] != $actWork['DRBI_DAUDZUMS_KOR'] ) {
+                ?>
+                <tr class="table_cell_3"  style="font-weight:bold;" id="blank_work<?= $i; ?>">
+                <?
+                } else {
+                ?>
+                <tr class="table_cell_3"  id="blank_work<?= $i; ?>">
+                <?    
+                }
+                ?>
 				<td>
-                    <?= $oFormWorkTab->getElementHtml('id['.$i.']'); ?>
-                    <?= $oFormWorkTab->getElementHtml('chipher['.$i.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('id['.$x.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('chipher['.$x.']'); ?>
                 </td>
-				<td width="40%"><?= $oFormWorkTab->getElementHtml('title['.$i.']'); ?> </td>
-                <td width="20"><div onMouseover="ddrivetip('<?= $val['KKAL_APRAKSTS']; ?>', '#EFEFEF')";     onMouseout="hideddrivetip()" style="text-align:right;"><img src="img/info.PNG" alt="" width="16" height="16"></div> </td>
-				<td><?= $oFormWorkTab->getElementHtml('standart['.$i.']'); ?></td>
-                <td><?= $oFormWorkTab->getElementHtml('measure['.$i.']'); ?></td>
-				<td><?= $oFormWorkTab->getElementHtml('amount['.$i.']'); ?></td>
-				<td><?= $oFormWorkTab->getElementHtml('total['.$i.']'); ?></td>
+                <? if(!$tame) { ?>
+					<td><?= $oFormWorkTab->getElementHtml('plan_date['.$x.']'); ?></td>					
+				<? }  ?>			
+                <td width="40%"><?= $oFormWorkTab->getElementHtml('title['.$x.']'); ?> </td>
+                <? if(!$tame) { ?>
+                <td width="20"><div onMouseover="ddrivetip('<?= $actWork['KKAL_APRAKSTS']; ?>', '#EFEFEF')";     onMouseout="hideddrivetip()" style="text-align:right;"><img src="img/info.PNG" alt="" width="16" height="16"></div> </td>
+                <? } else { ?>
+                    <td></td>		
+                 <? } ?>	
+                <td><?= $oFormWorkTab->getElementHtml('standart['.$x.']'); ?></td>
+                <td><?= $oFormWorkTab->getElementHtml('measure['.$x.']'); ?></td>
+				<? if($tame) { ?>
+					<td><?= $oFormWorkTab->getElementHtml('amount_k['.$x.']'); ?></td>
+					<td><?= $oFormWorkTab->getElementHtml('amount_kor['.$x.']'); ?></td>
+				<? } else { ?>
+					<td><?= $oFormWorkTab->getElementHtml('amount['.$x.']'); ?></td>
+				<? } ?> 
+				<td><?= $oFormWorkTab->getElementHtml('total['.$x.']'); ?></td>
              	<td>
                     <? if(!$isReadonly)  {?>
-                    <?= $oFormWorkTab->getElementHtml('work_del['.$i.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
                     <? } else{ ?>
                     &nbsp;
                     <? } ?>
                 </td>
 			</tr>
 
-		<?
+        <?
+        $x++;
+        }
+        ?>
+        <tr>
+             <td align="right" colspan="7"><b><?=text::get('TOTAL');?>:</b></td>
+             <td align="center"><b><?= isset($totalTime[$d])?$totalTime[$d]:''; ?></b></td>
+        </tr>
+        <?
 		}
 		?>
-        <tr>
-             <td align="right" colspan="6"><b><?=text::get('TOTAL');?>:</b></td>
-             <td align="center"><b><?= $totalTime; ?></b></td>
-        </tr>
 	    </table>
         </td>
         <td width="20%"  valign="top">
             <table cellpadding="5" cellspacing="1" border="0" align="center" width="100%">
             <? if(!$isReadonly)  {
+                if($tame == false) {
+                    ?>
+                <tr>
+                    <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('tameLink'); ?></td>
+                </tr>
+                <? }
               foreach($calcGroups as $i=>$val){?>
              <tr>
                 <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('group['.$i.']'); ?></td>

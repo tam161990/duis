@@ -1056,7 +1056,7 @@ res = res.replace("var ___cp_connectra_prefix = \'https://portal.delta.latvenerg
  xhr.send(reqText); 
  return res;
 } 
-
+/*
 function xmlHttpGetValue1(szURL)
 {
 	var objHTTP = new ActiveXObject("Microsoft.XMLHTTP");
@@ -1073,7 +1073,7 @@ function xmlHttpGetValue1(szURL)
 	}
 	return szReply;
 }
-
+*/
 // PHP-compatible urlencode() for Javascript
 function urlencode(s) {
   s = encodeURIComponent(s);
