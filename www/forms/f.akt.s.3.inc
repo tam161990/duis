@@ -285,7 +285,6 @@ if ( $isAdmin || $isSystemUser)
           unset($delLink);
       }
       $totalPrice = number_format($totalPrice, 2, '.', '');
-
       // form buttons
       if (!$isReadonly)
       {
