@@ -121,8 +121,7 @@ if ( $isAdmin || $isSystemUser)
 		unset($oLink);
 
 		//link for redirect to act
-		$oLink=new urlQuery();
-		$oLink->addPrm(FORM_ID, 'f.akt.s.1');
+		$oLink=new urlQuery();		
         $oLink->addPrm('isSearch', ($isNumber == 0)?1:2 );
         $oLink->addPrm('searchNum', ($isNumber == 0)?false:$sCriteria );
 
@@ -144,9 +143,15 @@ if ( $isAdmin || $isSystemUser)
 		{
 			foreach ($res as $i=>$row)
 			{
+                if( $row['RAKT_PROJECT'] == 1) {
+                    $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                } else {
+                    $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                    $oLink->addPrm('isTrase', $row['RAKT_TRASE']);  
+                }
 				// add dv area Id to each link
 				$oLink->addPrm('actId', $row['RAKT_ID']);
-                $oLink->addPrm('isTrase', $row['RAKT_TRASE']);  
+                
 				$res[$i]['URL']=$oLink ->getQuery();
                 $res[$i]['selected']= ($row['RAKT_ID'] == $selectedId) ? 1 : 0;
 			}

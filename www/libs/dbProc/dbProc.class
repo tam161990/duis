@@ -292,13 +292,29 @@ class dbProc extends dbLayer
 	// saglaba lietotaja datus
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function saveUser($userId,$login,$name,$surname,$isAdmin,$dvArea,$password=false, $isActive,$region,$role, $worker = '', $section = '', $trase = 0, $contract = 0)
+    function saveUser($userId,$login,$name,$surname,$isAdmin,$dvArea,$password=false, 
+                        $isActive,$region,$role, $worker = '', $section = '', 
+                        $trase = 0, $contract = 0, $projector = 0)
 	{
 		$oSQL=new dbLayer();
 		if ($userId==false)
 		{
 			$sql = 'insert into `LIETOTAJI`
-						(`RLTT_USER_NAME`, `RLTT_PAROLE`,`RLTT_VARDS`,`RLTT_UZVARDS`,`RLTT_IR_ADMINS`,`RLTT_KEDI_ID`,`RLTT_IR_AKTIVS`, `RLTT_REGIONS`, `RLTT_ROLE`, `RLTT_KWOI_KODS`, `RLTT_KEDI_SECTION`, `RLTT_IR_TRASE`, `RLTT_IR_LIGUMS`) values
+                        (`RLTT_USER_NAME`, 
+                        `RLTT_PAROLE`,
+                        `RLTT_VARDS`,
+                        `RLTT_UZVARDS`,
+                        `RLTT_IR_ADMINS`,
+                        `RLTT_KEDI_ID`,
+                        `RLTT_IR_AKTIVS`, 
+                        `RLTT_REGIONS`, 
+                        `RLTT_ROLE`, 
+                        `RLTT_KWOI_KODS`, 
+                        `RLTT_KEDI_SECTION`, 
+                        `RLTT_IR_TRASE`, 
+                        `RLTT_IR_LIGUMS`,
+                        `RLTT_PROJECTOR`) 
+                    values
 						("'.dbLayer::quote_smart($login).'",
 						 md5("'.dbLayer::quote_smart($password).'"),
 						 "'.dbLayer::quote_smart($name).'",
@@ -311,7 +327,9 @@ class dbProc extends dbLayer
                          "'.dbLayer::quote_smart($worker).'",
                          "'.dbLayer::quote_smart($section).'",
                          "'.dbLayer::quote_smart($trase).'",
-                         "'.dbLayer::quote_smart($contract).'")';
+                         "'.dbLayer::quote_smart($contract).'",
+                         "'.dbLayer::quote_smart($projector).'"
+                         )';
 
 		}
 		else
@@ -329,7 +347,8 @@ class dbProc extends dbLayer
                         `RLTT_KWOI_KODS`="'.dbLayer::quote_smart($worker).'",
                         `RLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'",
                         `RLTT_IR_TRASE` = "'.dbLayer::quote_smart($trase).'",
-                        `RLTT_IR_LIGUMS` = "'.dbLayer::quote_smart($contract).'"
+                        `RLTT_IR_LIGUMS` = "'.dbLayer::quote_smart($contract).'",
+                        `RLTT_PROJECTOR` = "'.dbLayer::quote_smart($projector).'"
 						where RLTT_ID="'.dbLayer::quote_smart($userId).'"';
 
 		}
