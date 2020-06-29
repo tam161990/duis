@@ -1,6 +1,7 @@
 <?
    $sCriteria = reqVar::get('search');
    $trase =  reqVar::get('isTrase');
+   $sign =  reqVar::get('sign');
    $year = '';
    $month = '';
    $monthN = '';
@@ -65,7 +66,7 @@
    else
        $workerNumber = dbProc::getWorkOwnerNumberByCode($sCr[2]);*/
 
-        $res = dbProc::getActTotalReportList($sCriteria, $trase);
+        $res = dbProc::getActTotalReportList($sCriteria, $trase, $sign);
        /* echo "<pre>";
         print_r($res);
         echo "</pre>";*/
@@ -259,8 +260,9 @@
                 if($pdf->GetY() >487) $pdf->AddPage('l');
                 $pdf->FooterTable($actFooter);
 
-                //$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('EXPORT_FOOTER')), 0,1);
-
+				if($sign == 'E') {
+					$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0,1);
+				}
 
                 // redirect output to client browser
                 $pdf->Output("actreport.pdf", 'D');

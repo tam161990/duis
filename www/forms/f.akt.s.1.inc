@@ -374,7 +374,11 @@ if ( $isAdmin || $isSystemUser)
         }
     }
     unset($res);
-
+    if($trase == 1) {
+	$sign = 'E';
+    } else {
+	$sign = '';
+    } 
   }
 
  
@@ -413,7 +417,7 @@ if ( $isAdmin || $isSystemUser)
       $isReadonly   = false;
     }
     // labo autors, inženieris, administrators
-    if(($act['RAKT_RLTT_ID'] == $userId || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE ||  $status == STAT_WRETEDOFF ) )
+    if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE))
     {
       
       $isReadonly1   = false;
@@ -578,7 +582,7 @@ if ( $isAdmin || $isSystemUser)
 
   $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.(($isReadonly1 || $isCopy)?' disabled':''));
   
-  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:'', ''.(($isReadonly1 || $isCopy)?' disabled':'').'', '', '', $signature);
+  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.(($isReadonly1 || $isCopy)?' disabled':'').'', '', '', $signature);
   if (!$isReadonly1 && !$isCopy)
   {
     $oForm -> addRule('voltage', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -1541,10 +1545,13 @@ if(true)
       include('f.akt.s.2.inc');
       $tabs->end();
 
+      if($trase != 1)
+      {
 
       $tabs->start(strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get(TAB_MATERIAL_T));
       include('f.akt.s.3.inc');
       $tabs->end();
+     }
 
       //  $tabs->active = strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get($tametab);
 

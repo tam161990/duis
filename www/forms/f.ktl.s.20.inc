@@ -97,7 +97,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
     		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');"');
     		$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick=" if (!isEmptyField(\'mmsCalcId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
     		$oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshButton(\'mmsCalcId\');parent.frame_1.unActiveRow();'));
-            
+			$oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'mmsCalcId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
+			
          	$oForm -> addElement('static', 'jsButtonsControl', '', '
     			<script>
     				function refreshButton(name)
@@ -128,8 +129,19 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$r = false;
 			$checkRequiredFields = false;
 		   
+			// delete
+            if ($oForm->getValue('action')== OP_DELETE && $oForm -> getValue('mmsCalcId') )
+            {
+				$r=dbProc::mmsCalculationDelete( $oForm->getValue('mmsCalcId'));
+
+				if (!$r)
+				{
+					$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+				}
+			}			
+		   
             // save
-			if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && 
+			elseif ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && 
 															is_numeric($oForm->getValue('mmsCalcId'))))
 			{
 								
@@ -184,10 +196,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
 				}
 			}
-			else
-			{
-				$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
-			}
+			
             // if operation was compleated succefully, show success mesage and redirect current frame
     		if ($r)
     		{
@@ -203,7 +212,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
     					$oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
     					break;
                     case OP_DELETE:
-    					$oLink->addPrm('successMessage', text::get('FAVORITS_IS_CLENED'));
+    					$oLink->addPrm('successMessage', text::get('RECORD_WAS_DELETED'));
     					break;
     			}
     		   	RequestHandler::makeRedirect($oLink->getQuery());
