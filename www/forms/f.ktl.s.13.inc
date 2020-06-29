@@ -116,9 +116,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                   $r2 = dbProc::saveCalculationFromCsv($data, $userId);
                                   break;
                                 // catalog MMS-Kalkulacija
-                                /*case 'MMS_KALKULATION':
+                                case 'MMS_KALKULATION':
                                   $r2 = dbProc::saveMmsCalculationFromCsv($data, $userId);
-                                  break;*/
+                                  break;
                                 // catalok Kalkulācija - Materiāli
                                 case 'KALKULATION_MATERIAL':
                                   $r2 = dbProc::saveCalculationMaterialFromCsv($data, $userId);

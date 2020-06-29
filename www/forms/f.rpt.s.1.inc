@@ -5,6 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isSystemUser = dbProc::isExistsUserRole($userId);
 // TRASE act
 $trase =  reqVar::get('isTrase');
+$sign =  reqVar::get('sign');
 // tikai  sistçmas lietotajam vai administrâtoram ir pieeja!
 if(true/*$isEdUser || $isAdmin*/)
 {
@@ -16,6 +17,7 @@ if(true/*$isEdUser || $isAdmin*/)
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.1');
     	$oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
+		$oLink->addPrm('sign', $sign );
     	// form inicialization
     	$oForm = new Form('frmMain','post',$oLink->getQuery());
     	unset($oLink);
@@ -24,6 +26,7 @@ if(true/*$isEdUser || $isAdmin*/)
 	    $oLink->addPrm('isReturn', '1');
         $oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
+		$oLink->addPrm('sign', $sign );
 	    $oLink->addPrm(FORM_ID, 'f.rpt.s.1');
 	    $criteriaLink=$oLink ->getQuery();
 	    unset($oLink);
@@ -33,6 +36,7 @@ if(true/*$isEdUser || $isAdmin*/)
     	{
             $oListLink=new urlQuery();
             $oListLink->addPrm(FORM_ID, 'f.rpt.s.1');
+			$oListLink->addPrm('sign', $sign );
             $oListLink->addPrm('isTrase', $trase );
         }
         $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_ACT_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
@@ -66,13 +70,14 @@ if(true/*$isEdUser || $isAdmin*/)
     	$oLink = new urlQuery;
     	$oLink -> addPrm(FORM_ID, 'f.rpt.e.1');
         $oLink->addPrm('isTrase', $trase );
+		$oLink->addPrm('sign', $sign );
     	$oLink->addPrm('search', $sCriteria);
         $oLink->addPrm(DONT_USE_GLB_TPL, '1');
         $exportUrl =  $oLink ->getQuery();
         unset($oLink);
 
         // gel list of users
-		$res = dbProc::getActTotalReportList($sCriteria, $trase);
+		$res = dbProc::getActTotalReportList($sCriteria, $trase, $sign);
        /* echo "<pre>";
         print_r($res);
         echo "</pre>";*/

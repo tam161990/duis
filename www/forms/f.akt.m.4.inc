@@ -1,4 +1,5 @@
 <?
+$trase = isset($trase)? $trase : reqVar::get('isTrase');
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
 {
@@ -37,7 +38,7 @@ if (reqVar::get('xmlHttp') == 1)
 			document.all["contract"].options[i] = null;
 		}
 		<?
-		$res=dbProc::getDuContractNo(reqVar::get('worker'), 0, true);
+		$res=dbProc::getDuContractNo(reqVar::get('worker'), reqVar::get('trase'), true);
 		if (is_array($res) && count($res)>0)
 		{
 
@@ -112,6 +113,7 @@ if (reqVar::get('xmlHttp') == 1)
            }
            $cr = substr($cr, 0, -1);
            $oListLink->addPrm('search', $cr);
+		   $oListLink->addPrm('trase', $trase);
            $actListLink=$oListLink ->getQuery();
            $oForm->addElement('static','jsRefresh2','','<script>reloadFrame(2, "'.$actListLink.'");</script>');
            unset($oListLink);
@@ -223,7 +225,7 @@ if (reqVar::get('xmlHttp') == 1)
 
         // get contract list
         $contract = array();
-        $res=dbProc::getDuContractNo((($searcCriteria['worker'] == '-1')? $initWorker : $searcCriteria['worker']), 0, true);
+        $res=dbProc::getDuContractNo((($searcCriteria['worker'] == '-1')? $initWorker : $searcCriteria['worker']), $trase, true);
         if (is_array($res))
         {
          	foreach ($res as $row)
@@ -245,6 +247,7 @@ if (reqVar::get('xmlHttp') == 1)
 		$oLink=new urlQuery();
 		$oLink->addPrm(DONT_USE_GLB_TPL, 1);
 		$oLink->addPrm(FORM_ID, 'f.akt.m.4');
+		$oLink->addPrm('trase', $trase );
 
 		$oForm -> addElement('select', 'edRegion',  text::get('ED_REGION'), $searcCriteria['edRegion'], 'onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&edRegion=\'+document.all[\'edRegion\'].options[document.all[\'edRegion\'].selectedIndex].value));"', '', '', $edRegion);
 
