@@ -617,3 +617,9 @@ UPDATE `FMK_MESSAGES` SET TEXT = '<table cellpadding="3" cellspacing="0" border=
         <tr><td>Spriegums, kods</td><td>-</td><td>Maksimāli 10 simboli.</td></tr>        
        </table>'
 WHERE code = 'REQUIREMENTS_MMS_WORKS';
+
+ALTER TABLE `akta_statusa_maina` CHANGE `AAUD_DATUMS` `AAUD_DATUMS` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('REPORT_ACT_TOTAL_P', 'Darbu izpildes aktu kopsavilkums (fiziskais paraksts)'),
+('REPORT_ACT_TOTAL_E', 'Darbu izpildes aktu kopsavilkums (e-paraksts)');

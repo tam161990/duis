@@ -10,12 +10,21 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 
     if(true/*$isEdUser || $isAdmin*/)
     {
-         // Darbu izpildes aktu kopsavilkums
+         // Darbu izpildes aktu kopsavilkums (fiziskais paraksts)
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
         $oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.1');
-    	$actTotalReportLink=$oLink ->getQuery();
+    	$actTotalReportLinkP=$oLink ->getQuery();
+    	unset($oLink);
+		 // Darbu izpildes aktu kopsavilkums (e-paraksts)
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+        $oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.1');
+    	$actTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // Veiktâ darba pozîciju kopsavilkums
@@ -62,12 +71,21 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
         ///////////////////////////
         //TRASES
         //////////////////////////
-        // Darbu izpildes aktu kopsavilkums
+        // Darbu izpildes aktu kopsavilkums (fiziskais paraksts)
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
         $oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.1');
-    	$actTrTotalReportLink=$oLink ->getQuery();
+    	$actTrTotalReportLinkP=$oLink ->getQuery();
+    	unset($oLink);
+		// Darbu izpildes aktu kopsavilkums (e-paraksts)
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+        $oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.1');
+    	$actTrTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // Veiktâ darba pozîciju kopsavilkums
