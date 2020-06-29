@@ -5280,7 +5280,7 @@ class dbProc extends dbLayer
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getActTotalReportList($searchString, $trase = 0)
+	function getActTotalReportList($searchString, $trase = 0, $sign= 'P')
 	{
             $sCriteria = explode("^", $searchString);
 
@@ -5325,16 +5325,18 @@ class dbProc extends dbLayer
 
             $query .= " and a.RAKT_STATUS IN ( 'CLOSE', 'CLOSEWRITEOFF') ";
 
-            $query .= " and s.AAUD_STATUS = 'CLOSE' ";
+            $query .= " and s.AAUD_STATUS = 'CLOSE' "; 
 
             $query .= " AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'";
             $query .= " AND a.RAKT_TRASE = ".$trase;
+			$query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
             $query .= " GROUP BY  a.RAKT_ID ORDER BY ww.KWRC_ID, a.RAKT_FULL_NUMBER";
 
-        //echo $query;
+       // echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
+
 
 
 
@@ -5528,7 +5530,7 @@ class dbProc extends dbLayer
 	// Atgriezh akta darbus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
     // -----------------------------------------------------------------------------
-    function getActWorkList($ID, $tame = false, $onlyNotApproved = false)
+    	function getActWorkList($ID, $tame = false, $onlyNotApproved = false)
 	{
             $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
             $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
@@ -5553,10 +5555,34 @@ class dbProc extends dbLayer
                 AND ".$column_name." IS NULL
                 ORDER BY  11, 2  ";
 
-        //echo $query;
+        	//echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
+
+	// funkcija apre�ina akta darbu summas p�e m�rvien�bas : m3, ha, km, gab
+        function getActWorkSumms($ID, $tame = false)
+	{
+		 $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
+		
+		$query = "SELECT SUM(m3) m3, SUM(ha) ha, SUM(km) km, SUM(gab) gab 
+			FROM ( 
+				SELECT SUM(DRBI_CILVEKSTUNDAS)  m3, 0 ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'm3'
+				UNION
+				SELECT 0  m3, SUM(DRBI_CILVEKSTUNDAS) ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'ha'
+				UNION
+				SELECT 0  me3, 0 ha, SUM(DRBI_CILVEKSTUNDAS) km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'km'
+				UNION 
+				SELECT 0 m3, 0 ha, 0 km, SUM(DRBI_CILVEKSTUNDAS) gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'gab'
+			) x "; 
+
+		//echo $query;
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+
+
+	}	
+
 	
     // -----------------------------------------------------------------------------
 	// Izdz�st konkr�tu darba ierakstu p�c ieraksta ID.
@@ -5564,12 +5590,12 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	function deleteActWorkRecord($ID, $tame = 0)
 	{
-        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
-	    $query = "delete from ".$table_name."
+        	$table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
+	    	$query = "delete from ".$table_name."
                 WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
 
 
-        $oDB = new dbLayer;
+        	$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
@@ -7246,6 +7272,22 @@ class dbProc extends dbLayer
             return ($result !== false);
         }
 
+    // -----------------------------------------------------------------------------
+	// Dzēst ierakstu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function mmsCalculationDelete($ID)
+	{
+		$query = 'delete from `KL_MMS_KALKULACIJA`
+            where `KMKL_ID` = "'.dbLayer::quote_smart($ID).'"';
+		
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
     /////////////////////////
     // KALKULACIJAS - MATERIALI
     /////////////////////////
@@ -7581,7 +7623,7 @@ class dbProc extends dbLayer
                 return ($result !== false);
         }
 
-function updateActStatusFromKvikStep()
+        function updateActStatusFromKvikStep()
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`,
@@ -7593,8 +7635,8 @@ function updateActStatusFromKvikStep()
                                 AND `RAKT_IS_AUTO` = 1
                                 AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'" )
 								ORDER BY AAST_CREATED';
-            $oDB = new dbLayer;
-            $res = $oDB -> makeQuery($query);
+            $oSQL = new dbLayer;
+            $res = $oSQL -> makeQuery($query);
             $r= false;
 			$r1= false;
 			$r2= false;
@@ -7655,31 +7697,30 @@ function updateActStatusFromKvikStep()
                         WHERE `RAKT_ID` = '.$actId;  
 				
 				//echo $query;
-                $r1 = $oDB -> makeQuery($query);
-				//if (!$r1) return false;
-
-               // ar pirmo INSERT jāielada materiālus
-               if($status == STAT_INSERT) {
-                    $r2 = dbProc::addAutoMaterialToAct($actId, $act['AAST_KODS']);
-					//if (!$r2) return false;
-               }
-                /*if($act['AAST_STATUS'] == STAT_RETURN) {
-                    dbProc::setUnsetActItemsDate($act['RAKT_ID'], false);
-                }*/
+                $r1 = $oSQL -> makeQuery($query);
+				if ($r1!==false) {
 				
-                $query = 'UPDATE `AUTO_ACT_STATUS`   SET 
-                `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL"
-                WHERE `AAST_ID` = ' . $act['AAST_ID'];
-			   //echo $query;
-               $r = $oDB -> makeQuery($query);
-				// if (!$r) return false;
+                    if($status == STAT_RETURN) {
+                        dbProc::setUnsetActItemsDate($actId, false);
+                    }
+                    
+                    $query = 'UPDATE `AUTO_ACT_STATUS`   SET 
+                    `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL"
+                    WHERE `AAST_ID` = ' . $act['AAST_ID'];
+                    //echo $query;
+                    $r = $oSQL -> makeQuery($query);
+                    
+                    // save status changed time
+                    $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
+                    VALUES 	('.$actId.', MAIN_ADMIN_ID, "'.$status.'" )';				
+                    $r = $oSQL -> makeQuery($query);
+                }
                
               }
             }
 			return true;
             
         }
-
 
 
 
@@ -7846,9 +7887,28 @@ function updateActStatusFromKvikStep()
             return  $oDB -> makeQuery($query);
         }
 
+	function getActSectionName($actId) {
+		$query = 'select `KEDI_SECTION`
+                from KL_ED_IECIRKNI e
+		inner join AKTI a ON a.RAKT_KEDI_ID = e.KEDI_ID
+                where `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+		limit 1';
+
+            
+            $oSQL = new dbLayer;
+		$result = $oSQL -> makeQuery($query);
+		if (isset($result[0]['KEDI_SECTION']))
+		{
+			return $result[0]['KEDI_SECTION'];
+		}
+		return false;
+
+	}
+
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
+	    $section = dbProc::getActSectionName($actId);
             if ($mmsList!==false)
             {
                 $oDB = new dbLayer;
@@ -7856,7 +7916,7 @@ function updateActStatusFromKvikStep()
                 foreach ($mmsList as $i => $mms)
                 {	
                     $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KKAL_ID`, `KKAL_SHIFRS`, 
-                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, 
+                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, `KKAL_KWOI_KODS`, `KKAL_KEDI_SECTION`,
                             CASE WHEN `KMKL_IZMANTOT_LINIJU` = 1 
                                 THEN 
                                     CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
@@ -7880,11 +7940,14 @@ function updateActStatusFromKvikStep()
                                 ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
                             )
                             AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"';
-                    //echo $query;    
+                   // echo $query;    
                     $res = $oDB -> makeQuery($query);
                     
                     foreach ($res as $i => $work)
                     {
+  			if($work['KKAL_KEDI_SECTION'] != $section) {
+				continue;
+			}
                         if(isset($aWorks[$work['KKAL_SHIFRS']]) && is_array($aWorks[$work['KKAL_SHIFRS']])){
                             $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
                             $aWorks[$work['KKAL_SHIFRS']]['CILVEKSTUNDAS'] += $work['DAUDZUMS'] * $work['KKAL_PLANA'];
@@ -8051,14 +8114,7 @@ function updateActStatusFromKvikStep()
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NULL';
                 $oDB -> makeQuery($query);
-                $query = 'UPDATE `TRANSPORTS` SET `TRNS_APPROVE_DATE` = now() 
-                        WHERE `TRNS_RAKT_ID` = ' .$actId. '
-                        AND `TRNS_APPROVE_DATE` IS NULL';
-                $oDB -> makeQuery($query);
-                $query = 'UPDATE `PERSONALS` SET `PRSN_APPROVE_DATE` = now() 
-                        WHERE `PRSN_RAKT_ID` = ' .$actId. '
-                        AND `PRSN_APPROVE_DATE` IS NULL';
-                $oDB -> makeQuery($query);
+                
             } else {
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = "NULL"
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
@@ -8066,18 +8122,7 @@ function updateActStatusFromKvikStep()
                         AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
                                                                 WHERE d.DRBI_RAKT_ID ='. $actId.')';
                 $oDB -> makeQuery($query);
-                $query = 'UPDATE `TRANSPORTS` SET `TRNS_APPROVE_DATE` = "NULL"
-                        WHERE `TRNS_RAKT_ID` = ' .$actId. '
-                        AND `TRNS_APPROVE_DATE` IS NOT NULL
-                        AND `TRNS_APPROVE_DATE` = (SELECT MAX(d.TRNS_APPROVE_DATE) FROM transports d 
-                                                                WHERE d.TRNS_RAKT_ID ='. $actId.')';
-                $oDB -> makeQuery($query);
-                $query = 'UPDATE `PERSONALS` SET `PRSN_APPROVE_DATE` = "NULL"
-                        WHERE `PRSN_RAKT_ID` = ' .$actId. '
-                        AND `PRSN_APPROVE_DATE` IS NOT NULL
-                        AND `PRSN_APPROVE_DATE` = (SELECT MAX(d.PRSN_APPROVE_DATE) FROM personals d 
-                                                                WHERE d.PRSN_RAKT_ID ='. $actId .')';
-                $oDB -> makeQuery($query);
+                
             }
         }
 

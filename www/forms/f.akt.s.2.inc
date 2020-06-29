@@ -242,13 +242,25 @@ if ( $isAdmin || $isSystemUser)
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-  	    $aWorkDb=dbProc::getActWorkList($actId, $tameWork);
+  	$aWorkDb=dbProc::getActWorkList($actId, $tameWork);
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
           $aWorks[$work['DRBI_PLAN_DATE']][] = $work;     
           $aWorkExist = true;     
         }
+	if($trase == 1) {
+		$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+ 		foreach ($aWorkSums as $d => $aSum)
+      		{
+			$oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
+			$oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
+			$oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
+			$oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
+			break;
+      		}
+	}
+	
       }
 
      
@@ -256,6 +268,7 @@ if ( $isAdmin || $isSystemUser)
         $aWorks[0] = array();          
       }
       
+     
 
       //echo '<pre>',print_r($aWorks,true),'</pre>';
 
@@ -289,12 +302,16 @@ if ( $isAdmin || $isSystemUser)
             $oFormWorkTab->setNewValue('measure['.$i.']',$actWork['DRBI_MERVIENIBA']);        
           }
 
+	$actWork['DRBI_DAUDZUMS'] = number_format($actWork['DRBI_DAUDZUMS'], 3, '.', '');
+	$actWork['DRBI_DAUDZUMS_KOR'] = number_format($actWork['DRBI_DAUDZUMS_KOR'], 3, '.', '');
+
+
           if($tameWork || $oFormWorkTab->getValue('tame') == 1){
 
               $oFormWorkTab->addElement('label', 'amount_k['.$i.']', '', $actWork['DRBI_DAUDZUMS']);  
               
               if(empty($actWork['DRBI_APPROVE_DATE']) ) {
-                $oFormWorkTab->setNewValue('amount_k['.$i.']', number_format($actWork['DRBI_DAUDZUMS'], 3, '.', '')); 
+                $oFormWorkTab->setNewValue('amount_k['.$i.']', $actWork['DRBI_DAUDZUMS']); 
                 $oFormWorkTab->addElement('text', 'amount_kor['.$i.']', '', $actWork['DRBI_DAUDZUMS_KOR'], (($isReadonly)?' disabled ':'').'maxlength="9"');
 
                 $oFormWorkTab -> addRule('amount_kor['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -311,7 +328,7 @@ if ( $isAdmin || $isSystemUser)
                 $oFormWorkTab->addElement('label', 'amount_kor['.$i.']', '', $actWork['DRBI_DAUDZUMS_KOR']);                 
               }
               if ($oFormWorkTab -> isFormSubmitted()){
-                $oFormWorkTab->setNewValue('amount_kor['.$i.']', number_format($actWork['DRBI_DAUDZUMS_KOR'], 3, '.', ''));
+                $oFormWorkTab->setNewValue('amount_kor['.$i.']', $actWork['DRBI_DAUDZUMS_KOR']);
               }
               
           } else {
@@ -338,7 +355,7 @@ if ( $isAdmin || $isSystemUser)
                 
             }
             if ($oFormWorkTab -> isFormSubmitted()){
-              $oFormWorkTab->setNewValue('amount['.$i.']', number_format($actWork['DRBI_DAUDZUMS'], 3, '.', ''));
+              $oFormWorkTab->setNewValue('amount['.$i.']', $actWork['DRBI_DAUDZUMS']);
               $oFormWorkTab->setNewValue('plan_date['.$i.']', $actWork['DRBI_PLAN_DATE']); 
             }
           }
@@ -386,8 +403,8 @@ if ( $isAdmin || $isSystemUser)
       }
 
       // if form iz submit (save button was pressed)
-	  if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
-	  { 
+      if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
+      { 
 		if($oFormWorkTab ->isValid()  && $isRowValid)
 		{ 
       
@@ -399,14 +416,14 @@ if ( $isAdmin || $isSystemUser)
 		   else
 		   {
 		        if(isset($aValidRows) && is_array($aValidRows))
-            {
+            		{
               
-                  foreach($aValidRows as $i => $row)
-                  {
+                  		foreach($aValidRows as $i => $row)
+                  		{
                     
-                      //if(!empty($row['edited'])) continue;
+                      			//if(!empty($row['edited'])) continue;
                       
-                      $r=dbProc::writeActWork($actId,
+                      			$r=dbProc::writeActWork($actId,
                                                     $row['kid'],
                                                     $row['chipher'],
                                                     $row['title'],
@@ -419,41 +436,54 @@ if ( $isAdmin || $isSystemUser)
                                                     ($tameWork) ? false : $row['plan_date'],
                                                     $row['day_total']
                                                     );
-                            // if work not inserted in to the DB
-                      // delete  task record and show error message
-                      if($r === false)
-                      {
-                        //dbProc::deleteActWorks($actId, $tameWork);
-                        $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                        break;
-                      }
-                      else
-                      {
-                           $Id=dbLayer::getInsertId();
-                           $oFormWorkTab -> setNewValue('id['.$row['rowNum'].']', $Id);
-                           $oFormWorkTab -> setNewValue('total['.$row['rowNum'].']', $row['total']);
-                           $oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
+                            		// if work not inserted in to the DB
+                      			// delete  task record and show error message
+                      			if($r === false)
+                      			{
+                        			//dbProc::deleteActWorks($actId, $tameWork);
+                        			$oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                        			break;
+                      			}
+                      			else
+                      			{
+                           			$Id=dbLayer::getInsertId();
+                           			$oFormWorkTab -> setNewValue('id['.$row['rowNum'].']', $Id);
+                           			$oFormWorkTab -> setNewValue('total['.$row['rowNum'].']', $row['total']);
+                           			$oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
                            
-                           $oLink=new urlQuery();
-                		       $oLink->addPrm(FORM_ID, 'f.akt.s.1');
-                		       $oLink->addPrm('actId', $actId);
-                           $oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
-                           $oLink->addPrm('isNew', RequestHandler::getMicroTime());
-                           $oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
-                           $oLink->addPrm('isTrase', $trase );
-                		      //RequestHandler::makeRedirect($oLink->getQuery());
-                      }
-                    }
-                    // pārsaglabājam summas
-                    dbProc::updateWorkSumms($actId, $tameWork);
+                           			$oLink=new urlQuery();
+                		       		$oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                		       		$oLink->addPrm('actId', $actId);
+                          			$oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
+                           			$oLink->addPrm('isNew', RequestHandler::getMicroTime());
+                           			$oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
+                           			$oLink->addPrm('isTrase', $trase );
+               		   			//RequestHandler::makeRedirect($oLink->getQuery());
+                      			}
+                    	}
+                    	// pārsaglabājam summas
+                    	dbProc::updateWorkSumms($actId, $tameWork);
                    
-                    // saglaba lietotaja darbiibu
-                    dbProc::setUserActionDate($userId, ACT_UPDATE);
+                    	// saglaba lietotaja darbiibu
+                    	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
-                    $tameWork = 0;
+			if($trase == 1) {
+				//$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+ 				foreach ($aWorkSums as $d => $aSum)
+      				{
+					
+					$oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+					$oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+					$oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+					$oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+					//break;
+      				}
+			}
+
+                    	$tameWork = 0;
                 }
-           }
-        }
+             }
+          }
       }
        $oFormWorkTab -> makeHtml();
        include('f.akt.s.2.tpl');

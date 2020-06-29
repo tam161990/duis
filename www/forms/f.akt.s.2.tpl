@@ -74,12 +74,40 @@ document.onmousemove=positiontip
 
 </script>
 
-<h1><?=text::toUpper(text::get(TAB_WORKS));?></h1>
+
 <?= $oFormWorkTab -> getFormHeader(); ?>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 	<tr>
 		<td align=center colspan="2"><?= $oFormWorkTab -> getMessage(); ?></td>
 	</tr>
+
+
+<tr>
+	<td align=center>
+	<table width="100%">
+		<tr>
+			<td><h1><?=text::toUpper(text::get(TAB_WORKS));?></h1></td>
+			<? if($trase == 1) {   ?>
+<td>
+<table cellpadding="5" cellspacing="1" border="0" width="100%">
+<tr>
+<td width="12%" class="table_cell_c"><?= $oFormWorkTab-> getElementLabel('sum_m3'); ?></td>
+<td width="13%" class="table_cell_2"><?= $oFormWorkTab-> getElementHtml('sum_m3'); ?></td>
+<td width="12%" class="table_cell_c"><?= $oFormWorkTab-> getElementLabel('sum_ha'); ?></td>
+<td width="13%" class="table_cell_2"><?= $oFormWorkTab-> getElementHtml('sum_ha'); ?></td>
+<td width="12%" class="table_cell_c"><?= $oFormWorkTab-> getElementLabel('sum_km'); ?></td>
+<td width="13%" class="table_cell_2"><?= $oFormWorkTab-> getElementHtml('sum_km'); ?></td>
+<td width="12%" class="table_cell_c"><?= $oFormWorkTab-> getElementLabel('sum_gab'); ?></td>
+<td width="13%" class="table_cell_2"><?= $oFormWorkTab-> getElementHtml('sum_gab'); ?></td>
+</tr>
+</table>
+</td>
+<? } ?>
+		</tr>
+	</table>
+	</td>
+	<td></td>
+</tr>
     <tr>
 		<td valign="top">
         <?

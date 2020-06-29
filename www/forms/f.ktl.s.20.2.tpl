@@ -61,7 +61,7 @@
 		<td><?=$oForm->getElementHtml('add');?></td>
 		<td><?=$oForm->getElementHtml('save');?></td>
 		<td><?=$oForm->getElementHtml('clear');?></td>
-        
+        <td><?=$oForm->getElementHtml('delete');?></td>
 	</tr>
 </table>
 <?= $oForm -> getFormBottom(); ?>

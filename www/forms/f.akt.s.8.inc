@@ -78,8 +78,24 @@ if ( $isAdmin || $isSystemUser)
       switch ($catalog)
       {
         case  KL_CALCULALATION:
-          if($trase)
-          {
+          
+            if($estimate == 1) {
+              // set list title
+              $title = strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get(TAB_WORKS_T);
+              // get calculation from estimate
+              $res = dbProc::getEstimatedCalculation($actId);
+              if (is_array($res))
+              {
+                  foreach ($res as $row)
+               	  {
+                	   $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
+                  }
+              }
+              unset($res);
+              $oFormPop -> addElement('hidden', 'estimate', '', $estimate);
+            }
+	   elseif($trase)
+           {
           
               // set list title
               $title = text::toUpper(text::get('TRASE_WORK'));
@@ -94,21 +110,6 @@ if ( $isAdmin || $isSystemUser)
               }
               unset($res);
               $oFormPop -> addElement('hidden', 'all', '', $all);
-            }
-            elseif($estimate == 1) {
-              // set list title
-              $title = strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get(TAB_WORKS_T);
-              // get calculation from estimate
-              $res = dbProc::getEstimatedCalculation($actId);
-              if (is_array($res))
-              {
-                  foreach ($res as $row)
-               	  {
-                	   $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
-                  }
-              }
-              unset($res);
-              $oFormPop -> addElement('hidden', 'estimate', '', $estimate);
             }
             // get info about calculation group
             elseif($all == 1)
