@@ -10,7 +10,7 @@ $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $isAuditor = dbProc::isUserInRole($userId, ROLE_AUDIT_USER);
-
+$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 
 
 if($isContractUser)
@@ -42,10 +42,6 @@ else
 // jalietotajam nav lomas sist�m�, tad vinam nav tiesibas redzet si formu
 if ( $isAdmin || $isSystemUser)
 {
-
-
-
-
     // menu ACT
 	// act main form
 	$oLink=new urlQuery();
@@ -60,11 +56,30 @@ if ( $isAdmin || $isSystemUser)
 	$actTrLink=$oLink ->getQuery();
 	unset($oLink);
 
+	// project
+	$oLink=new urlQuery();
+   	$oLink->addPrm(FORM_ID, 'f.akt.s.20');
+	$projectLink=$oLink ->getQuery();
+	unset($oLink);
+
     // act advanced search form
 	$oLink=new urlQuery();
 	$oLink->addPrm('isSearch', '1');
 	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
 	$actSearchLink=$oLink ->getQuery();
+	unset($oLink);
+    // list of acts
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'blank');
+	$actListLink=$oLink ->getQuery();
+	unset($oLink);
+
+	// project advanced search form
+	$oLink=new urlQuery();
+	$oLink->addPrm('isSearch', '3');
+	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
+	$projectSearchLink=$oLink ->getQuery();
 	unset($oLink);
     // list of acts
 	$oLink=new urlQuery();

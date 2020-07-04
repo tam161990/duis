@@ -103,10 +103,10 @@ if ( $isAdmin || $isSystemUser)
               $res = dbProc::getALLCalculationList($actId, 1, $serchText);
               if (is_array($res))
               {
-                  foreach ($res as $row)
+                foreach ($res as $row)
                 {
                       $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] .' ('.$row['KKAL_NORMATIVS'].')';
-                  }
+                }
               }
               unset($res);
               $oFormPop -> addElement('hidden', 'all', '', $all);

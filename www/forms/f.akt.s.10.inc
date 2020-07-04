@@ -3,18 +3,20 @@
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
+$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
 
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
-if ( $isAdmin || $isSystemUser)
+if ( $isAdmin || $isSystemUser || $isProjector)
 {
+	
     if($actId !== false )
     {
        // get file info by message ID
-	   $fileInfo=dbProc::getFilesInfo($actId, FILE_ESTIMATE);
+	   $fileInfo=dbProc::getFilesInfo($actId, (($isProject == 1) ? FILE_EXPORT : FILE_ESTIMATE) );
 
 	  // get file link
 	  $oLinkFile=new urlQuery();
@@ -25,7 +27,7 @@ if ( $isAdmin || $isSystemUser)
 	  	{
       		$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['RFLS_ID']);
 	  		$fileInfo[$i]['getFileURL']=$oLinkFile ->getQuery();
-            if($isEditor) break;
+            if($isEditor && $isProject == 0) break;
 	   	}
 	  }
 	  unset($oLinkFile);

@@ -45,8 +45,8 @@
     <tr>
          <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
-		<td class="table_cell_c">&nbsp;</td>
-		<td class="table_cell_2">&nbsp;</td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('projector'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('projector'); ?></td>
         <td class="table_cell_c">&nbsp;</td>
 		<td class="table_cell_2">&nbsp;</td>
 

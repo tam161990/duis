@@ -90,7 +90,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		$oForm -> addElement('checkbox', 'isActive',  text::get('STATUS_ACTIVE_INACTIVE'), isset($user['RLTT_IR_AKTIVS'])?$user['RLTT_IR_AKTIVS']:1, 'tabindex=3 onClick="if(!this.checked){alert(\''.text::get('WARNING_USER_NOT_ACTIVE').'\');}" '.(($isEdUser)?' disabled' : ''));
 
-        $oForm -> addElement('checkbox', 'contract',  text::get('CONTRACT_USER'), isset($user['RLTT_IR_LIGUMS'])?$user['RLTT_IR_LIGUMS']:0,'tabindex=11 '.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'contract',  text::get('CONTRACT_USER'), isset($user['RLTT_IR_LIGUMS'])?$user['RLTT_IR_LIGUMS']:0,'tabindex=11 '.(($isEdUser)?' disabled' : ''));
+		
+		$oForm -> addElement('checkbox', 'projector',  text::get('PROJECTOR'), isset($user['RLTT_PROJECTOR'])?$user['RLTT_PROJECTOR']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
 
 		// form buttons
         if(!$isEdUser)
@@ -174,7 +176,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
                         $oForm->getValue('worker'),
                         '',
                         $oForm->getValue('trase', 0),
-                        $oForm->getValue('contract', 0)
+						$oForm->getValue('contract', 0),
+						$oForm->getValue('projector', 0)
 						);
 
 						if (!$r)
