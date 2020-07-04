@@ -242,24 +242,24 @@ if ( $isAdmin || $isSystemUser)
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-  	$aWorkDb=dbProc::getActWorkList($actId, $tameWork);
+  	    $aWorkDb=dbProc::getActWorkList($actId, $tameWork);
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
           $aWorks[$work['DRBI_PLAN_DATE']][] = $work;     
           $aWorkExist = true;     
         }
-	if($trase == 1) {
-		$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
- 		foreach ($aWorkSums as $d => $aSum)
-      		{
-			$oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
-			$oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
-			$oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
-			$oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
-			break;
-      		}
-	}
+          if($trase == 1) {
+            $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+            foreach ($aWorkSums as $d => $aSum)
+                  {
+              $oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
+              $oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
+              $oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
+              $oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
+              break;
+                  }
+          }
 	
       }
 
@@ -302,11 +302,13 @@ if ( $isAdmin || $isSystemUser)
             $oFormWorkTab->setNewValue('measure['.$i.']',$actWork['DRBI_MERVIENIBA']);        
           }
 
-	$actWork['DRBI_DAUDZUMS'] = number_format($actWork['DRBI_DAUDZUMS'], 3, '.', '');
-	$actWork['DRBI_DAUDZUMS_KOR'] = number_format($actWork['DRBI_DAUDZUMS_KOR'], 3, '.', '');
+          $actWork['DRBI_DAUDZUMS'] = number_format($actWork['DRBI_DAUDZUMS'], 3, '.', '');
+          
 
 
           if($tameWork || $oFormWorkTab->getValue('tame') == 1){
+
+              $actWork['DRBI_DAUDZUMS_KOR'] = number_format($actWork['DRBI_DAUDZUMS_KOR'], 3, '.', '');
 
               $oFormWorkTab->addElement('label', 'amount_k['.$i.']', '', $actWork['DRBI_DAUDZUMS']);  
               
@@ -467,18 +469,18 @@ if ( $isAdmin || $isSystemUser)
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
-			if($trase == 1) {
-				//$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
- 				foreach ($aWorkSums as $d => $aSum)
-      				{
-					
-					$oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
-					$oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
-					$oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
-					$oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
-					//break;
-      				}
-			}
+                      if($trase == 1) {
+                            //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+                            foreach ($aWorkSums as $d => $aSum)
+                              {
+                          
+                                  $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+                                  $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+                                  $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+                                  $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+                                  //break;
+                              }
+                      }
 
                     	$tameWork = 0;
                 }

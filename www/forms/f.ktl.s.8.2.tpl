@@ -19,6 +19,15 @@
         <td class="table_cell_c" width="15%"><?= $oForm -> getElementLabel('isActive'); ?>:</td>
 		<td class="table_cell_2" width="5%"><?= $oForm -> getElementHtml('isActive'); ?></td>
 	</tr>
+	<tr>
+
+        <td class="table_cell_c" width="15%"><?= $oForm -> getElementLabel('nosaukums2'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2" width="25%"><?= $oForm -> getElementHtml('nosaukums2'); ?></td>
+        <td class="table_cell_c" width="15%">&nbsp;</td>
+		<td class="table_cell_2" width="25%">&nbsp;</td>
+        <td class="table_cell_c" width="15%">&nbsp;</td>
+		<td class="table_cell_2" width="5%">&nbsp;</td>
+	</tr>
        <tr>
      	<td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('number'); ?>:</td>
 		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('number'); ?></td>

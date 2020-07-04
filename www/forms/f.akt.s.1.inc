@@ -34,6 +34,7 @@ if($tametab === false)
 // auto akts
 $isAuto = reqVar::get('isAuto');
 $tame = false;
+$isProject = 0;
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -688,17 +689,18 @@ if(true)
   }
   if($actId != false)
   {
+    
       // back button
       // act advanced search form
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', $isSearch);
-      $oLink->addPrm('selectedId', ($isSearch == 1)?$actId : $searchNum);
+      $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
     	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
     	$actSearchLink=$oLink ->getQuery();
     	unset($oLink);
       // list of acts
     	$oLink=new urlQuery();
-      $oLink->addPrm('isNumber', ($isSearch == 1)?0 : $searchNum);
+      $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
       $oLink->addPrm('selectedId', $actId);
     	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
     	$actListLink=$oLink ->getQuery();
@@ -1585,11 +1587,8 @@ if(true)
 
     $tabs->start(text::get(TAB_AUDIT));
     include('f.akt.s.7.inc');
-  	$tabs->end();
-
-
-
-
+    $tabs->end();
+    
     $tabs->active = text::get($tab);
 
     $tabs->run();
