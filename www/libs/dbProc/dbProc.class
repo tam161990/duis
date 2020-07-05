@@ -4372,9 +4372,9 @@ class dbProc extends dbLayer
                 "'.dbLayer::quote_smart($designation).'",
                 "'.dbLayer::quote_smart($status).'",
                 "'.dbLayer::quote_smart($user).'",
-                "'.dbLayer::quote_smart($object).'",
-                "'.dbLayer::quote_smart($voltage).'",
-                "'.dbLayer::quote_smart($type).'",
+				'.(($object) ? '"'.dbLayer::quote_smart($object).'"' : '0').',
+				'.(($voltage) ? '"'.dbLayer::quote_smart($voltage).'"' : '0').',
+				'.(($type) ? '"'.dbLayer::quote_smart($type).'"' : '0').',
                 "'.dbLayer::quote_smart($worker).'",
                 "'.dbLayer::quote_smart($contract).'",       
                 "'.dbLayer::quote_smart($toid).'",
@@ -4383,11 +4383,11 @@ class dbProc extends dbLayer
                 "'.dbLayer::quote_smart($koeficent).'",
                 "'.dbLayer::quote_smart($actNumPostfix).'",
                 CONCAT('.(($trase==1)?'2':'""').',
-(SELECT `KEDI_KODS`  FROM `KL_ED_IECIRKNI` WHERE `KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'" ),
- RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" ),
-                (SELECT `KWRC_ID` FROM `KL_WRITEOFF_CODE` WHERE
+				(SELECT `KEDI_KODS`  FROM `KL_ED_IECIRKNI` WHERE `KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'" ),
+				RAKT_NUMURS, RAKT_NUMURS_OBJEKTA, "/'.dbLayer::quote_smart($actNumPostfix).'" ),
+				'.(($type) ? '(SELECT `KWRC_ID` FROM `KL_WRITEOFF_CODE` WHERE
                 `KWRC_KAKV_ID`  = "'.(($trase==1) ? 1 : dbLayer::quote_smart($type)).'"
-                AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 : dbLayer::quote_smart($object)).'"),
+                AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 : dbLayer::quote_smart($object)).'")' : '0').',
                 '.dbLayer::quote_smart($trase).',
                 "'.dbLayer::quote_smart($signature).'",                
                 '.(($isObjectFinished) ? '"'.dbLayer::quote_smart($isObjectFinished).'"' : '0').',
@@ -6339,13 +6339,13 @@ class dbProc extends dbLayer
             				"'.dbLayer::quote_smart($kid).'",
                             "'.dbLayer::quote_smart($chipher).'",
                             "'.dbLayer::quote_smart($title).'",
-                            "'.dbLayer::quote_smart($standart).'",
+							'.((!$standart) ? '"NULL",' : '"'.dbLayer::quote_smart($standart).'",').'
                             "'.dbLayer::quote_smart($amount).'",
-                            "'.dbLayer::quote_smart($total).'",
+							'.((!$total) ? '"NULL",' : '"'.dbLayer::quote_smart($total).'",').'
                             "'.dbLayer::quote_smart($measure).'",
                             '.((!$edited) ? '"NULL",' : '"'.dbLayer::parseDate($edited).'",').'
-                            "'.dbLayer::parseDate($plan_date).'",
-                            "'.dbLayer::quote_smart($day_total).'",
+							'.((!$plan_date) ? '"'.DEFAULT_DATE.'",' : '"'.dbLayer::parseDate($plan_date).'",').'
+							'.((!$day_total) ? '"NULL",' : '"'.dbLayer::quote_smart($day_total).'",').'
                             "'.dbLayer::quote_smart($notes).'"
                             )';
         }
@@ -6629,9 +6629,9 @@ class dbProc extends dbLayer
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
                     "'.dbLayer::quote_smart($unit).'",
-                    "'.dbLayer::quote_smart($price).'",
+					'.((!$price) ? '"NULL",' : '"'.dbLayer::quote_smart($price).'",').'
                     "'.dbLayer::quote_smart($amount).'",
-                    "'.dbLayer::quote_smart($total).'",
+					'.((!$total) ? '"NULL",' : '"'.dbLayer::quote_smart($total).'",').'
                     "'.dbLayer::quote_smart($st).'",
                     "'.dbLayer::quote_smart($notes).'"
                 )';
