@@ -454,8 +454,8 @@ if ( $isAdmin || $isSystemUser)
                            			$oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
                            
                            			$oLink=new urlQuery();
-                		       		$oLink->addPrm(FORM_ID, 'f.akt.s.1');
-                		       		$oLink->addPrm('actId', $actId);
+                		       		  $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                		       		  $oLink->addPrm('actId', $actId);
                           			$oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
                            			$oLink->addPrm('isNew', RequestHandler::getMicroTime());
                            			$oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
@@ -469,6 +469,7 @@ if ( $isAdmin || $isSystemUser)
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
+<<<<<<< HEAD
                       if($trase == 1) {
                             //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                             foreach ($aWorkSums as $d => $aSum)
@@ -483,6 +484,22 @@ if ( $isAdmin || $isSystemUser)
                       }
 
                     	$tameWork = 0;
+=======
+                    if($trase == 1) {
+                      $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+                      foreach ($aWorkSums as $d => $aSum)
+                      {
+                        
+                            $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+                            $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+                            $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+                            $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+                            //break;
+                      }
+			              }
+
+                    $tameWork = 0;
+>>>>>>> autoAct
                 }
              }
           }

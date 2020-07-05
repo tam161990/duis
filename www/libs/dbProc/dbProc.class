@@ -5835,25 +5835,24 @@ class dbProc extends dbLayer
 	}
 
 	// funkcija apre�ina akta darbu summas p�e m�rvien�bas : m3, ha, km, gab
-        function getActWorkSumms($ID, $tame = false)
+    function getActWorkSumms($ID, $tame = false)
 	{
 		 $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
 		
 		$query = "SELECT SUM(m3) m3, SUM(ha) ha, SUM(km) km, SUM(gab) gab 
 			FROM ( 
-				SELECT SUM(DRBI_CILVEKSTUNDAS)  m3, 0 ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'm3'
+				SELECT SUM(DRBI_DAUDZUMS)  m3, 0 ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'm3'
 				UNION
-				SELECT 0  m3, SUM(DRBI_CILVEKSTUNDAS) ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'ha'
+				SELECT 0  m3, SUM(DRBI_DAUDZUMS) ha, 0 km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'ha'
 				UNION
-				SELECT 0  me3, 0 ha, SUM(DRBI_CILVEKSTUNDAS) km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'km'
+				SELECT 0  me3, 0 ha, SUM(DRBI_DAUDZUMS) km, 0 gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'km'
 				UNION 
-				SELECT 0 m3, 0 ha, 0 km, SUM(DRBI_CILVEKSTUNDAS) gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'gab'
+				SELECT 0 m3, 0 ha, 0 km, SUM(DRBI_DAUDZUMS) gab FROM " . $table_name . " WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)." AND `DRBI_MERVIENIBA` = 'gab.'
 			) x "; 
 
 		//echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-
 
 	}	
 
@@ -8176,7 +8175,8 @@ class dbProc extends dbLayer
         function getMmsWorksByCodeList($code)
         {
                 
-            $query = 'select `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`,  `KMSD_KSRG_KODS`, `KMSD_NOSACIJUMA_KODS`
+            $query = 'select `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`,  `KMSD_KSRG_KODS`, `KMSD_NOSACIJUMA_KODS`,
+                `KMSD_IZPILDITAJA_KODS`, `KMSD_KEDI_KODS`
                 from `KL_MMS_DARBI`
                 where `KMSD_KODS` = "'.dbLayer::quote_smart($code).'"';
 
@@ -8199,17 +8199,17 @@ class dbProc extends dbLayer
 	function getActSectionName($actId) {
 		$query = 'select `KEDI_SECTION`
                 from KL_ED_IECIRKNI e
-		inner join AKTI a ON a.RAKT_KEDI_ID = e.KEDI_ID
-                where `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-		limit 1';
+                inner join AKTI a ON a.RAKT_KEDI_ID = e.KEDI_ID
+                        where `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+                limit 1';
 
             
             $oSQL = new dbLayer;
-		$result = $oSQL -> makeQuery($query);
-		if (isset($result[0]['KEDI_SECTION']))
-		{
-			return $result[0]['KEDI_SECTION'];
-		}
+            $result = $oSQL -> makeQuery($query);
+            if (isset($result[0]['KEDI_SECTION']))
+            {
+                return $result[0]['KEDI_SECTION'];
+            }
 		return false;
 
 	}
@@ -8242,7 +8242,10 @@ class dbProc extends dbLayer
                             END  AS `DAUDZUMS`
                             FROM `kl_mms_kalkulacija` 
                             INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
+                            INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
                             WHERE `KMKL_IR_AKTIVS` = 1 
+                            AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
+                            AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
                             AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
                             AND (
                                 ('.$mms['KMSD_KSRG_KODS'].' = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
