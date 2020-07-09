@@ -7792,11 +7792,12 @@ class dbProc extends dbLayer
                         if($r1) {
                             // sūta statusu uz KvikStep                            
                             $r1 = dbProc::sentDataToKvikStep($actId, $mms['KMSD_KODS'], $mms['KMSD_IR_EPLA']);
-                        }, 
-              }
-          }
-          return true;
-          
+                        }
+                    }
+                }
+            return true;
+            
+            }
         }
 
         function sentDataToKvikStep($actId, $mms_kods, $trase = 0) {
