@@ -7965,7 +7965,7 @@ class dbProc extends dbLayer
                         $status = STAT_CLOSE;
                         break;       
                     case 'AUTO':
-                        $status = STAT_AUTO;
+                        $status = false;
                         break;                               
                 }
 
@@ -7991,14 +7991,15 @@ class dbProc extends dbLayer
 
                 files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
 									'AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
-									'RAKT_STATUS: '.$status.PHP_EOL.
+									'RAKT_STATUS: '.(($status !== false) ? $status : '').PHP_EOL.
 									'RAKT_RLTT_ID: '.$user_id.PHP_EOL.
 									'RAKT_MSTK_ID: '.$place.PHP_EOL.
 									'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL
 							);						
 
                 				
-                $query = 'UPDATE `AKTI` SET `RAKT_STATUS`  = "' .$status .'" 
+                $query = 'UPDATE `AKTI` SET 
+                        '.(($status !== false ) ? '`RAKT_STATUS`  = "' .$status .'"' : '`RAKT_STATUS`=`RAKT_STATUS`' ) .'
 						'.(($user_id !== false ) ? ',`RAKT_RLTT_ID`  = ' .$user_id : '' ) .'						
                         '.(($place !== false ) ? ',`RAKT_MSTK_ID`  = ' .$place : '' ) .'
 						'.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
@@ -8118,16 +8119,15 @@ class dbProc extends dbLayer
 
                         if($r1) {
                             // sūta statusu uz KvikStep                            
-                            $r1 = dbProc::sentDataToCvikStep($actId, $mms['KMSD_KODS']);
-                        }
-                    }  
+                            $r1 = dbProc::sentDataToKvikStep($actId, $mms['KMSD_KODS'], $mms['KMSD_IR_EPLA']);
+                        }, 
               }
           }
           return true;
           
         }
 
-        function sentDataToCvikStep($actId, $mms_kods) {
+        function sentDataToKvikStep($actId, $mms_kods, $trase = 0) {
             $oDB = new dbLayer;
 
             $query = 'SELECT SUM(DRBI_CILVEKSTUNDAS) as CILVEKSTUNDAS FROM 
@@ -8140,9 +8140,20 @@ class dbProc extends dbLayer
             $result = $oDB -> makeQuery($query);
 			
             $materialTotal = isset($result[0]['TOTAL']) ? $result[0]['TOTAL'] : 0;
-			//echo $mms_kods.' '.$workTotal.' '.$materialTotal;
-            RequestHandler::sentDataToCvikStep ($mms_kods, $workTotal, $materialTotal );
-
+            //echo $mms_kods.' '.$workTotal.' '.$materialTotal;
+            
+            $aWorkSums = dbProc::getActWorkSumms($actId, 1);
+                           
+            RequestHandler::sentDataToKvikStep ($mms_kods, 
+                                                $trase,
+                                                $workTotal, 
+                                                $materialTotal, 
+                                                $aWorkSums[0]['m3'],
+                                                $aWorkSums[0]['ha'],
+                                                $aWorkSums[0]['km'],
+                                                $aWorkSums[0]['gab']
+                                                );
+           
         }
 
         // -----------------------------------------------------------------------------

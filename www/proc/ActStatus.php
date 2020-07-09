@@ -33,9 +33,9 @@
 
 	files::wh_log('Act status from KS: ' .date("d.m.Y H:i:s").PHP_EOL. 
 									'issue_key: '.$data->issue_key.PHP_EOL.
-									'issue_status: '.$data->issue_status.PHP_EOL.
-									'issue_assignee: '.$data->issue_assignee.PHP_EOL.
-									'issue_end_date:' .$data->issue_end_date.PHP_EOL
+									'issue_status: '. (isset($data->issue_status) ? $data->issue_status : '').PHP_EOL.
+									'issue_assignee: '.(isset($data->issue_assignee) ? $data->issue_assignee : '').PHP_EOL.
+									'issue_end_date:' .(isset($data->issue_end_date) ? $data->issue_end_date :'').PHP_EOL
 							);						
 	//var_dump($data);
 	if( isset($data->issue_key) && (isset($data->issue_status) || isset($data->issue_assignee) || isset($data->issue_end_date)))

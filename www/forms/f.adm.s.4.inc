@@ -132,7 +132,7 @@ if (userAuthorization::isAdmin())
 			if(isset($job['PROC_PID']))
 			{
 				$proc = new Process();
-				$proc->setPid($processId); 
+				$proc->setPid($job['PROC_PID']); 
 				$proc_status = $proc->status(); // возвращает true или false
 			}
 			$oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest'.(($proc_status) ? '_disabled' : '').'.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'jobCode\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
