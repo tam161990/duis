@@ -45,10 +45,10 @@
                     <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
                  <? } ?>
                 
-                 <? if(false/*!$isReadonly*/)  {?>
-                    <tr><td><?=$oForm->getElementHtml('clear');?></td></tr>
-                 <? } ?>
                  
+                 <? if($isDelete)  {?>
+                    <tr><td><?=$oForm->getElementHtml('delete');?></td></tr>
+                 <? } ?>
                  <? if($actId != false)  {?>
                     <tr><td><?=$oForm->getElementHtml('back');?></td></tr>
                  <? } ?>

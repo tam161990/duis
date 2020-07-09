@@ -56,7 +56,7 @@ $isProject = 1;
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector)
+if ( $isAdmin || $isProjector || $isEconomist)
 {
   $oLink=new urlQuery();
   $oLink->addPrm(FORM_ID, 'f.akt.s.20');
@@ -153,6 +153,7 @@ if ( $isAdmin || $isProjector)
   $isReadonly1   = true;
   $isReadonlyExceptAdmin   = true;
   $isReadonlyExceptEconomist   = true;
+  $isDelete   = false;
 
   if($actId != false)
   {
@@ -177,6 +178,12 @@ if ( $isAdmin || $isProjector)
     if($isEconomist && $status == STAT_ACCEPT )
     {
       $isReadonlyExceptEconomist   = false;
+    }
+
+    if(($act['RAKT_RLTT_ID'] == $userId && $isProjector && ($status == STAT_INSERT || $status == STAT_RETURN ) ) ||
+        ($isAdmin && ($status != STAT_DELETE))  )
+    {
+      $isDelete   = true;
     }
   }
   else
@@ -244,23 +251,7 @@ if ( $isAdmin || $isProjector)
     $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {setValue(\'action\',\''.OP_INSERT.'\');}"');
 
   }
-  if (!$isReadonly)
-  {
-
-    $oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshField();'));
-    $oForm -> addElement('static', 'jsButtonsControl', '', '
-			<script>
-				function refreshField()
-				{
-
-                    document.all["status"].value = "'.$status.'";
-				}
-				refreshField();
-
-			</script>
-		');
-
-  }
+  
   if (!$isReadonly1 && ($actId != false))
   {
     $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_nodot_saskanosanai.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
@@ -310,6 +301,10 @@ if ( $isAdmin || $isProjector)
       $oForm -> addElement('buttonImg', 'back', text::get('BACK'), 'img/btn_atpakal.gif', 'width="70" height="20" onClick="reloadBack();"');
   }
   
+  if ($isDelete)
+  {
+    $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest_r.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
+  }
 
   if ($oForm -> isFormSubmitted())
   {
@@ -318,7 +313,7 @@ if ( $isAdmin || $isProjector)
         ($oForm->getValue('action')==OP_EXPORT && is_numeric($oForm->getValue('actId'))) 
         )
 	  {
-         $check = true;
+         
     	    $r = false;
           $r1 = true;
           $r2 = true;
@@ -328,9 +323,9 @@ if ( $isAdmin || $isProjector)
          if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
              $oForm -> getValue('year')  &&  $oForm -> getValue('worker') &&  $oForm -> getValue('numPostfix') 
             )
-    	{
-          $checkRequiredFields = true;
-    	}
+        {
+            $checkRequiredFields = true;
+        }
 
         if ($isAdmin  && !$oForm -> getValue('ouner')  )
         {
@@ -338,7 +333,7 @@ if ( $isAdmin || $isProjector)
         }
 
         // if all is ok, do operation
-		  if($check)
+		  if($checkRequiredFields)
 		  {
 		        // save
             if($oForm->getValue('action')==OP_INSERT || $oForm->getValue('action')==OP_UPDATE)
@@ -677,6 +672,10 @@ if ( $isAdmin || $isProjector)
               }
             }
       }
+      else
+      {
+          $oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
+      }
       // if operation was compleated succefully, show success mesage and redirect current frame
 		  if ($r)
 		  {
@@ -698,22 +697,184 @@ if ( $isAdmin || $isProjector)
               $oLink->addPrm('tab', TAB_EXPORT);
               break;
            
-              }
+            }
             RequestHandler::makeRedirect($oLink->getQuery());
-        }
+          }
+      }      
     }
-	 else
-	 {
-	  	$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
-	 }
-  }
-  if (($oForm->getValue('action')==OP_RETURN && is_numeric($oForm->getValue('actId'))) ||
-          ($oForm->getValue('action')==OP_ACCEPT && is_numeric($oForm->getValue('actId'))) )
-	{
-       	 $r = false;
-         $r1 = true;
-       	 $checkRequiredFields = false;
-  
+    if (($oForm->getValue('action')==OP_RETURN && is_numeric($oForm->getValue('actId'))) ||
+        ($oForm->getValue('action')==OP_RETURN_CONFIRMED && is_numeric($oForm->getValue('actId'))) ||
+        ($oForm->getValue('action')==OP_ACCEPT && is_numeric($oForm->getValue('actId'))) )
+    {
+          $r = false;
+          $r1 = true;
+          $checkRequiredFields = false;
+          if ($isEconomist )
+          {
+                $checkRequiredFields = true;
+                $returnStatus  = STAT_RETURN;
+                $returnAction =  STAT_RETURN;
+          }
+          if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE || $oForm -> getValue('status') == STAT_CLOSE) )
+          {
+                $checkRequiredFields = true;
+
+                if($oForm -> getValue('status') == STAT_DELETE)
+                {
+                  $returnStatus  = STAT_INSERT;
+                  $returnAction =  ACT_RETURN_INSERT;
+                }
+                if($oForm -> getValue('status') == STAT_CLOSE)
+                {
+                  $returnStatus  = STAT_ACCEPT;
+                  $returnAction =  ACT_RETURN_ACCEPT;
+                }
+          }
+          if($checkRequiredFields)
+          {
+              // atgriezt vai apstiprin?t
+              if($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)
+              {
+                  $r=dbProc::saveAct($oForm->getValue('actId'),
+                              false,
+                              false,
+                              false,
+                              false,                    
+                              false,
+                              false,
+                              false,
+                              ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE),
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,                            
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,
+                              false,
+                              1,
+                              1
+                  );
+               
+                if($r)
+                {
+                    // save status changed time
+                    $r1 = dbProc::saveAuditRecord($actId, $userId, 
+                      ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? 
+                      $returnStatus : STAT_CLOSE);
+                    dbProc::setUserActionDate($userId, 
+                    ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? 
+                    $returnAction : STAT_CLOSE);
+
+                    if (!$r1)
+                    {
+                      $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                    }  
+                }
+                else
+                {
+                   $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                }
+
+                // veidot excel
+                if($oForm->getValue('action')==OP_ACCEPT)
+                {
+
+                }
+
+                // if operation was compleated succefully, show success mesage and redirect current frame
+                if ($r && $r1)
+                {
+                      $oLink=new urlQuery();
+                      $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                      $oLink->addPrm('actId', $actId);
+                      $oLink->addPrm('isTrase', $trase);
+                      $oLink->addPrm('isSearch', $isSearch);
+                      $oLink->addPrm('searchNum', $searchNum);
+                      $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+
+                      RequestHandler::makeRedirect($oLink->getQuery());
+                }
+            
+            }
+         }
+         else
+         {
+            $oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
+         }
+    }
+
+    	// nomainit akta statusu uz dz?sts
+     if (($oForm->getValue('action')==OP_DELETE && is_numeric($oForm->getValue('actId'))) )
+     {      
+        if(($act['RAKT_RLTT_ID'] == $userId && $isProjector && ($status == STAT_INSERT || $status == STAT_RETURN) ) ||
+           ($isAdmin && ($status != STAT_DELETE))  )
+        {          
+              $r=dbProc::saveAct($oForm->getValue('actId'),
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      STAT_DELETE,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false ,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      1,
+                      1
+                  );
+                  
+                  if($r)
+                  {
+                      // save status changed time
+                      $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_DELETE);
+                      dbProc::setUserActionDate($userId, ACT_DELETE);
+
+                      if (!$r1)
+                      {
+                        $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                      }                    
+                  }
+                  else
+                  {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }
+                  // if operation was compleated succefully, show success mesage and redirect current frame
+                  if ($r && $r1)
+                  {
+                        $oLink=new urlQuery();
+                        $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                        $oLink->addPrm('actId', $actId);                        
+                        $oLink->addPrm('isSearch', $isSearch);
+                        $oLink->addPrm('searchNum', $searchNum);
+                        $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+
+                        RequestHandler::makeRedirect($oLink->getQuery());
+                  }
+              }         
+        else
+        {
+          $oForm->addError(text::get('ERROR_NOT_PERMISSION'));
+        }      
     }
 
     $oForm -> makeHtml();
