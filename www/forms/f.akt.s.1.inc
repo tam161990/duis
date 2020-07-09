@@ -1073,15 +1073,15 @@ if(true)
                   }
                   $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
 
-                  $pct =  ($totalD*(100+ $pvn )/ 100 ) - $totalD;
-                  $summa = ($totalD*(100+ $pvn )/ 100 );
+                  $pct =  ($totalD*(100+ PCT_21 )/ 100 ) - $totalD;
+                  $summa = ($totalD*(100+ PCT_21 )/ 100 );
 
                   $pdf->SetFont('Arial','',8);
                   $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
                   $pdf->SetFont('Arial','B',8);
                   $pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
                    $pdf->SetFont('Arial','',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. PCT_21 . '%').":",0,0,'R');
                   $pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
                   $pdf->SetFont('Arial','B',8);
                   $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
