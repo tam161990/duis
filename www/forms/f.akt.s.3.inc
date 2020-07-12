@@ -68,6 +68,16 @@ if ( $isAdmin || $isSystemUser)
 
       //Popup saites sagatave
       $oPopLink=new urlQuery;
+      $oPopLink->addPrm(FORM_ID, 'f.akt.s.8');
+      $oPopLink->addPrm('actId',$actId);
+      $oPopLink->addPrm('catalog',KL_MATERIALS);
+      $oPopLink->addPrm('isSearch', $isSearch);
+      $oPopLink->addPrm('searchNum', $searchNum);
+
+      $favorit[0]['TITLE'] = text::get('TAB_ESTIMATE');   ;
+      $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
+
+      $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.11');
       $oPopLink->addPrm('actId',$actId);
       $oPopLink->addPrm('catalog',KL_MATERIALS);
@@ -75,9 +85,12 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('st',1);
       $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');
+
+      
+
       //$next =  count($favorit);
-      $favorit[0]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
-      $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
+      $favorit[1]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
+      $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
       unset($oPopLink);
 
       //Popup saites sagatave
@@ -102,8 +115,8 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('st',0);
       $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');
-      $favorit[1]['TITLE'] = text::get('SEARCH_NEW');   ;
-      $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
+      $favorit[2]['TITLE'] = text::get('SEARCH_NEW');   ;
+      $favorit[2]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
       unset($oPopLink);
 
       $aMaterials = array();

@@ -27,20 +27,38 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
     	$actTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
-        // Veiktâ darba pozîciju kopsavilkums
+        // Veiktï¿½ darba pozï¿½ciju kopsavilkums
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
-         $oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
-    	$workTotalReportLink=$oLink ->getQuery();
+    	$workTotalReportLinkP=$oLink ->getQuery();
+		unset($oLink);
+		// Veiktï¿½ darba pozï¿½ciju kopsavilkums
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
+    	$workTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
-        // Akts par izlietotiem materiâliem
+        // Akts par izlietotiem materiï¿½liem
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
-         $oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$materialTotalReportLink=$oLink ->getQuery();
+    	$materialTotalReportLinkP=$oLink ->getQuery();
+    	unset($oLink);
+		// Akts par izlietotiem materiï¿½liem
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+    	$materialTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // act summary
@@ -88,20 +106,38 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
     	$actTrTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
-        // Veiktâ darba pozîciju kopsavilkums
+        // Veiktï¿½ darba pozï¿½ciju kopsavilkums
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
-        $oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
-    	$workTrTotalReportLink=$oLink ->getQuery();
+    	$workTotalReportLinkP=$oLink ->getQuery();
+		unset($oLink);
+		// Veiktï¿½ darba pozï¿½ciju kopsavilkums
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
+    	$workTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
-        // Akts par izlietotiem materiâliem
+        // Akts par izlietotiem materiï¿½liem
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
-        $oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$materialTrTotalReportLink=$oLink ->getQuery();
+    	$materialTotalReportLinkP=$oLink ->getQuery();
+    	unset($oLink);
+		// Akts par izlietotiem materiï¿½liem
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '1');
+		$oLink->addPrm('sign', 'E');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+    	$materialTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // act summary

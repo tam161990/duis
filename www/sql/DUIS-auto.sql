@@ -623,3 +623,12 @@ ALTER TABLE `akta_statusa_maina` CHANGE `AAUD_DATUMS` `AAUD_DATUMS` DATETIME NOT
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
 ('REPORT_ACT_TOTAL_P', 'Darbu izpildes aktu kopsavilkums (fiziskais paraksts)'),
 ('REPORT_ACT_TOTAL_E', 'Darbu izpildes aktu kopsavilkums (e-paraksts)');
+
+-- 
+ALTER TABLE `tame_darbi` CHANGE `DRBI_KKAL_NORMATIVS` `DRBI_KKAL_NORMATIVS` FLOAT( 8, 2 ) NOT NULL;
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('REPORT_WORK_TOTAL_P', 'Darba pozīciju kopsavilkums (fiziskais paraksts)'),
+('REPORT_WORK_TOTAL_E', 'Darba pozīciju kopsavilkums (e-paraksts)'),
+('REPORT_MATERIAL_TOTAL_P', 'Akts par izlietotiem materiāliem (fiziskais paraksts)'),
+('REPORT_MATERIAL_TOTAL_E', 'Akts par izlietotiem materiāliem (e-paraksts)');

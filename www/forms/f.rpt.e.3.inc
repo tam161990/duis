@@ -2,6 +2,7 @@
    $sCriteria = reqVar::get('search');
     // TRASE act
    $trase =  reqVar::get('isTrase');
+   $sign =  reqVar::get('sign');
    $year = '';
    $month = '';
    $monthN = '';
@@ -66,7 +67,7 @@
    else
        $workerNumber = dbProc::getWorkOwnerNumberByCode($sCr[2]);*/
          // gel list of users
-        $res = dbProc::getActTotalMaterialList($sCriteria, $trase);
+        $res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign);
         /*echo "<pre>";
         print_r($res);
         echo "</pre>";*/
@@ -323,10 +324,12 @@
                         )
 	
                     );
-if($pdf->GetY() > 487) $pdf->AddPage('l');
+                if($pdf->GetY() > 487) $pdf->AddPage('l');
                 $pdf->FooterTable($actFooter);
 
-                //$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('EXPORT_FOOTER')), 0,1);
+                if($sign == 'E') {
+					$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0,1);
+				}
 
 
                 // redirect output to client browser
