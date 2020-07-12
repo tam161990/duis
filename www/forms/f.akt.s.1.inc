@@ -374,10 +374,10 @@ if ( $isAdmin || $isSystemUser)
         }
     }
     unset($res);
-    if($trase == 1) {
-	$sign = 'E';
+  if($trase == 1) {
+	    $sign = 'E';
     } else {
-	$sign = '';
+	    $sign = '';
     } 
   }
 
@@ -651,7 +651,7 @@ if(true)
   if (!$isReadonly1 && ($actId != false))
   {
     if($trase == 1) {
-      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_nodot_saskanosanai.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     } else {
       $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     
@@ -1131,7 +1131,7 @@ if(true)
                 // saglaba faila datus
 
                 $res=dbProc::replaceFile(
-                   (($trase == 1) ? (($oForm->getValue('action')==OP_EXPORT) ? 'S':'A') : (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'')).
+                   (($trase == 1) ? (($oForm->getValue('action')==OP_EXPORT) ? '':'A') : (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'')).
                     $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
                     $userId, $actId,
                     FILE_EXPORT ,

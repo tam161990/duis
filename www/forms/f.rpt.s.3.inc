@@ -5,6 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isSystemUser = dbProc::isExistsUserRole($userId);
 // TRASE act
    $trase =  reqVar::get('isTrase');
+   $sign =  reqVar::get('sign');
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if(true/*$isEdUser || $isAdmin*/)
 {
@@ -13,20 +14,22 @@ if(true/*$isEdUser || $isAdmin*/)
     if($searchMode)
 	{
         $oLink=new urlQuery();
-    	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$oLink->addPrm('isSearch', 1 );
+    	  $oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+    	  $oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
-    	// form inicialization
-    	$oForm = new Form('frmMain','post',$oLink->getQuery());
-    	unset($oLink);
+        $oLink->addPrm('sign', $sign );
+    	  // form inicialization
+    	  $oForm = new Form('frmMain','post',$oLink->getQuery());
+    	  unset($oLink);
 
         $oLink=new urlQuery();
-	    $oLink->addPrm('isReturn', '1');
+	      $oLink->addPrm('isReturn', '1');
         $oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
-	    $oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-	    $criteriaLink=$oLink ->getQuery();
-	    unset($oLink);
+        $oLink->addPrm('sign', $sign );
+	      $oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+	      $criteriaLink=$oLink ->getQuery();
+	      unset($oLink);
 
         // if operation
     	if ($oForm -> isFormSubmitted())
@@ -34,6 +37,7 @@ if(true/*$isEdUser || $isAdmin*/)
             $oListLink=new urlQuery();
             $oListLink->addPrm(FORM_ID, 'f.rpt.s.3');
             $oListLink->addPrm('isTrase', $trase );
+            $oListLink->addPrm('sign', $sign );
         }
         $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_MATERIAL_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
         $searchName = 'REPORT_MATERIAL_TOTAL';
@@ -63,16 +67,17 @@ if(true/*$isEdUser || $isAdmin*/)
             $pvn = PCT_22  ;
 
         // URL  export
-    	$oLink = new urlQuery;
-    	$oLink -> addPrm(FORM_ID, 'f.rpt.e.3');
-    	$oLink->addPrm('search', $sCriteria);
+    	  $oLink = new urlQuery;
+    	  $oLink -> addPrm(FORM_ID, 'f.rpt.e.3');
+    	  $oLink->addPrm('search', $sCriteria);
         $oLink->addPrm('isTrase', $trase );
+        $oLink->addPrm('sign', $sign );
         $oLink->addPrm(DONT_USE_GLB_TPL, '1');
         $exportUrl =  $oLink ->getQuery();
         unset($oLink);
 
         // gel list of users
-		$res = dbProc::getActTotalMaterialList($sCriteria, $trase);
+		$res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign);
        /* echo "<pre>";
         print_r($res);
         echo "</pre>";*/
