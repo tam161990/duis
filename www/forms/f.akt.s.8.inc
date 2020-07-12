@@ -38,7 +38,7 @@ if ( $isAdmin || $isSystemUser)
 
     if( $actId !== false && $catalog !== false &&
        ( ($catalog == KL_CALCULALATION  && ($calcGroup !== false|| $trase || $estimate == 1 )) ||
-         ($catalog == KL_MATERIALS && $favoritId !== false) ||
+         ($catalog == KL_MATERIALS ) ||
           ($all !== false) 
         ))
     {
@@ -154,7 +154,22 @@ if ( $isAdmin || $isSystemUser)
             break;
         case  KL_MATERIALS:
 
-
+          if($estimate == 1) {
+            // set list title
+            $title = strtoupper(text::get(TAB_ESTIMATE)). ' ' .text::get(TAB_MATERIAL_T);
+            // get material from estimate
+            $res = dbProc::getActEstimateMaterialList($actId);
+            if (is_array($res))
+            {
+                foreach ($res as $row)
+                 {
+                  $aScope[$row['KMAT_ID']] = $row['MATR_KODS'] .' : '. $row['MATR_NOSAUKUMS'].' : '. $row['MATR_DAUDZUMS_KOR'].' '.$row['MATR_MERVIENIBA'] .' : '.$row['MATR_CENA'].' EUR';
+                }
+            }
+            unset($res);
+            $oFormPop -> addElement('hidden', 'estimate', '', $estimate);
+          }
+          else {
             // set list title
             $title = text::toUpper($favoritTitle);
             // get material by favorit ID
@@ -169,6 +184,7 @@ if ( $isAdmin || $isSystemUser)
             unset($res);
             $oFormPop -> addElement('hidden', 'favoritId', '', $favoritId);
             break;
+          }
 
       }
 
@@ -200,11 +216,7 @@ if ( $isAdmin || $isSystemUser)
        $oFormPop -> addRule('plan_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
 
      }
-     else {
-       $oFormPop -> addElement('select', 'plan_date',  text::get('FINISHING_DATE'), '', (($isReadonly)?' disabled ':'').' ', '','', $days);
-       $oFormPop -> addRule('plan_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
-     }
-
+     
 
       // form buttons
       if (!$isReadonly)
@@ -232,7 +244,7 @@ if ( $isAdmin || $isSystemUser)
                             $r = dbProc::saveActWorkRecord($oFormPop->getValue('actId'), $cValue, $trase, $tame, $oFormPop->getValue('plan_date'));
                             break;                         
                           case  KL_MATERIALS:
-                            $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), $cValue, false, false, $tame);
+                            $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), $cValue, false, false, $tame, 0);
                             break;
 
                         }
