@@ -6960,6 +6960,45 @@ class dbProc extends dbLayer
 	{
 		$oSQL=new dbLayer();
 		return $oSQL->makeQuery('delete from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
+    }
+    
+     // -----------------------------------------------------------------------------
+	// Pievienoja faula ierakstu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function replaceExcelFile($filename,  $userId, $actId,  $metaInfo='')
+	{
+		$oSQL=new dbLayer();
+        $res=$oSQL->makeQuery('insert into `EXCEL_FAILI`
+						(`EFLS_NOSAUKUMS`,`EFLS_DATUMS`, `EFLS_RLTT_ID`,  `EFLS_RAKT_ID`, `EFLS_META_INFO`) values
+						("'.dbLayer::quote_smart($filename).'",
+						 now(),
+                         "'.dbLayer::quote_smart($userId).'",
+                         '.dbLayer::quote_smart($actId).',
+                         "'.dbLayer::quote_smart($metaInfo).'")');
+
+		if ($res!==false)
+		{
+			return true;
+		}
+		return false;
+    }
+    
+    // -----------------------------------------------------------------------------
+	// atgriezh failes datus peec acta ID
+	// author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getExcelInfo($actId)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'select f.*,'.dbLayer::sqlParseDateTime('EFLS_DATUMS').',
+                     CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
+					from `EXCEL_FAILI` f, `LIETOTAJI` lt
+					where f.EFLS_RLTT_ID=lt.RLTT_ID
+					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
+					order by f.EFLS_ID desc';
+
+		return $oSQL -> makeQuery($sql);
 	}
 
 

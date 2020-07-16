@@ -785,7 +785,57 @@ if ( $isAdmin || $isProjector || $isEconomist)
                 // veidot excel
                 if($oForm->getValue('action')==OP_ACCEPT)
                 {
+                      $cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;
+                      $cacheSettings = array( 'memoryCacheSize ' => '8MB');
+                      PHPExcel_Settings::setCacheStorageMethod($cacheMethod, $cacheSettings);
+          
+                      // Create new PHPExcel object
+                      $objPHPExcel = new PHPExcel();
+          
+                      $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
+                      $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+          
+                      $objPHPExcel->getActiveSheet()->getDefaultColumnDimension()->setWidth(15);
+                      $objPHPExcel->getActiveSheet()->getDefaultRowDimension()->setRowHeight(15);
+          
+                      $objPHPExcel->getActiveSheet()->setShowGridlines(true);
+          
+                      $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setName('Arial');
+                      $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setSize(9);
+          
+                      $objPHPExcel->getActiveSheet()->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+          
+                      $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
+                      $currentRow = 1; 
+                      $objPHPExcel->getActiveSheet()->duplicateStyleArray(
+                                  array(
+                                      'font'    => array(
+                                                      'bold'      => true,
+                                                      'italic' => false ,
+                                                      'size' => 9
+                                                        ),
+                                      'alignment' => array(
+                                                          'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                                                          )
+                                      ),  'A'.$currentRow.':F'.$currentRow   ); 
+                      $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
+                      $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('NAME')); 
+                      
+                      $currentRow ++; 
 
+                      $filename = $oForm->getValue('numPostfix').'.'.PROJECT_FILE_EXTENTION;
+                      $res=dbProc::replaceExcelFile( $filename, $userId, $actId, PROJECT_FILE_TYPE);
+                      if ($res)
+                      {
+                          $idFile=dbLayer::getInsertId();
+                          $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+                          $objWriter->setOffice2003Compatibility(true);
+                          $objWriter->save(PROJECT_FILES_STORE_PATH."/".$idFile);  
+                      }
+                      else
+                      {
+                          $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                      }
                 }
 
                 // if operation was compleated succefully, show success mesage and redirect current frame
