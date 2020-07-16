@@ -4100,7 +4100,7 @@ class dbProc extends dbLayer
         $oDB = new dbLayer;
         $r = $oDB -> makeQuery($query);
         
-        $updateNeaded = true;
+        //$updateNeaded = true;
         // update tammes
         if($updateNeaded) {
             if($actId !== false) {
@@ -8193,8 +8193,7 @@ class dbProc extends dbLayer
 
             $query = 'SELECT SUM(MATR_CENA_KOPA) as TOTAL FROM 
              `TAME_MATERIALI` WHERE `MATR_RAKT_ID` = ' .dbLayer::quote_smart($actId);
-            $result = $oDB -> makeQuery($query);
-			
+            $result = $oDB -> makeQuery($query);			
             $materialTotal = isset($result[0]['TOTAL']) ? $result[0]['TOTAL'] : 0;
             //echo $mms_kods.' '.$workTotal.' '.$materialTotal;
             
