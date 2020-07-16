@@ -79,13 +79,13 @@
             </td>
         </tr>
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('worker'); ?></td>
-             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('ouner'); ?>:<?=(($isReadonlyExceptAdmin)?'':'<font color="red">*</font>');?></td>
+             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('ouner'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('ouner'); ?></td>
            </tr>
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('type'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('type'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('type'); ?></td>
     
         <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('contract'); ?>:<font color="red">*</font></td>
@@ -93,15 +93,15 @@
     
            </tr>
         <tr>        
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('object'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('object'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('object'); ?></td>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('EDarea'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('EDarea'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('EDarea'); ?></td>
     
            </tr>
     
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('designation'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('designation'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('designation'); ?></td>
             <?  if(true)  {?>
                 <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('numPostfix'); ?><font color="red">*</font>:</td>
@@ -112,7 +112,7 @@
             <? } ?>
            </tr>
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('voltage'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('voltage'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('voltage'); ?></td>
              <? if($actId != false)  {?>
                 <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('writeoffAccount'); ?>:</td>
@@ -124,7 +124,7 @@
            </tr>
         
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('proces_date'); ?>:<?=(($isReadonly && $isReadonlyExceptEconomist)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('proces_date'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('proces_date'); ?></td>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('isFinished'); ?>:</td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('isFinished'); ?></td>
@@ -137,7 +137,7 @@
            </tr>
       <?  if(true)  {?>
         <tr>
-             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worktitle'); ?>:<?=(($isReadonly && $isReadonlyExceptEconomist)?'':'<font color="red">*</font>');?></td>
+             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worktitle'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" colspan="3"><?= $oForm -> getElementHtml('worktitle'); ?></td>
             
          </tr>
