@@ -380,6 +380,13 @@ class RequestHandler
 		
 		// The data to send to the API
 		if($trase == 1) {
+			files::wh_log('sentDataToKvikStep TRASE issue_key:'.$mms_kods.PHP_EOL.
+                                    'issue_status: "AUTO"'.PHP_EOL.
+									'issue_hour_sum:' .$workTotal.PHP_EOL.
+									'issue_wood_sawing_m3:' .$m3.PHP_EOL.
+									'issue_wood_sawing_g:' .$gab.PHP_EOL.
+									'issue_trench_cleaning_ha:' .$ha.PHP_EOL.
+                                    'issue_trench_cleaning_km:' .$km.PHP_EOL  );	
 			$postData = [
 				"issue_key" => $mms_kods,
 				"issue_status" => "AUTO",
@@ -390,6 +397,10 @@ class RequestHandler
 				"issue_trench_cleaning_km" => $km
 			];
 		} else {
+			files::wh_log('sentDataToKvikStep REM issue_key:'.$mms_kods.PHP_EOL.
+                                    'issue_status: "AUTO"'.PHP_EOL.
+									'issue_hour_sum:' .$workTotal.PHP_EOL.
+									'issue_material_sum:' .$materialTotal.PHP_EOL  );	
 			$postData = [
 				"issue_key" => $mms_kods,
 				"issue_status" => "AUTO",
@@ -410,23 +421,26 @@ class RequestHandler
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
 
 		// Send the request
-		$response = curl_exec($ch);
-		echo $response;
+		$response = curl_exec($ch);			
+		//echo $response;
 
 		// Check for errors
-		/*if($response === FALSE){
-			die(curl_error($ch));
-		}*/
+		if($response === FALSE){
+			files::wh_log('sentDataToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			//die(curl_error($ch));
+		}
 
-		/*
+		
 		// Decode the response
 		$responseData = json_decode($response, TRUE);
-
-		// Print the date from the response
-		dbProc::saveKvikStepActStatus(strval(mt_rand()), '', addslashes(print_r($responseData)));
-
-		return ($responseData['status'] == 'S') ? true : $responseData['code'] .' ' . $responseData['details'];
-		*/
+		files::wh_log('sentDataToKvikStep RESPONSE:'.PHP_EOL.
+                                    'status:'.$responseData['status'] .PHP_EOL.
+									'code:' .$responseData['code'].PHP_EOL.
+									'details:' .$responseData['details'].PHP_EOL  );	
+			
+		
+		//return ($responseData['status'] == 'S') ? true : $responseData['code'] .' ' . $responseData['details'];
+		
 	}
 }
 
