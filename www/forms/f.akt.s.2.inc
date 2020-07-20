@@ -64,7 +64,8 @@ if ( $isAdmin || $isSystemUser)
       $isReadonly   = true;
       // Ir pieejams main��anai, ja  AKTS:LIETOT�JS = �Teko�ais lietot�js� un lietot�ja loma ir �Ievad�tais� un AKTS:STATUS = �Izveide� vai �Atgriezts� vai �T�me�.
       if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
-        ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE || ($status == STAT_AUTO && $tameWork==1 ))
+        ((($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE) && $tameWork==0 )|| 
+        ($status == STAT_AUTO && $tameWork==1 ))
       )
       {
         $isReadonly   = false;
