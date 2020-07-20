@@ -56,11 +56,13 @@ if ( $isAdmin || $isSystemUser)
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
       if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
-      ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE || ($status == STAT_AUTO && $tame==1 ) )
+        ((($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE) && $tame==0 )|| 
+        ($status == STAT_AUTO && $tame==1 ))
       )
       {
         $isReadonly   = false;
       }
+
        
       $aScope=array();
       $aScope['-1']='';

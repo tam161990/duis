@@ -633,4 +633,3 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ('REPORT_MATERIAL_TOTAL_P', 'Akts par izlietotiem materiāliem (fiziskais paraksts)'),
 ('REPORT_MATERIAL_TOTAL_E', 'Akts par izlietotiem materiāliem (e-paraksts)');
 --
-ALTER TABLE `akti` CHANGE `RAKT_SIGNATURE` `RAKT_SIGNATURE` VARCHAR( 1 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NULL;
