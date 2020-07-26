@@ -243,33 +243,31 @@ if ( $isAdmin || $isSystemUser)
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-  	$aWorkDb=dbProc::getActWorkList($actId, $tameWork);
+  	    $aWorkDb=dbProc::getActWorkList($actId, $tameWork);
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
           $aWorks[$work['DRBI_PLAN_DATE']][] = $work;     
           $aWorkExist = true;     
         }
-	if($trase == 1) {
-		$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
- 		foreach ($aWorkSums as $d => $aSum)
-      		{
-			$oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
-			$oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
-			$oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
-			$oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
-			break;
-      		}
-	}
+        if($trase == 1) {
+            $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+            foreach ($aWorkSums as $d => $aSum)
+            {
+                $oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
+                $oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
+                $oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
+                $oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
+                break;
+            }
+	      }
 	
       }
-
      
       if(!$aWorkExist) {
         $aWorks[0] = array();          
       }
-      
-     
+           
 
       //echo '<pre>',print_r($aWorks,true),'</pre>';
 
