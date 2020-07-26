@@ -362,9 +362,11 @@ if ( $isAdmin || $isEconomist)
                    }
                   // saglaba faila datus
                    $res=dbProc::replaceFile(
-                      (($trase == 1) ? 'A' : '').
+                      'A'.
                       $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
-                      $userId, $actId,  FILE_ESTIMATE, EXPORT_FILE_TYPE);
+                      $userId, $actId,  
+                      FILE_EXPORT ,
+                      EXPORT_FILE_TYPE);
     		        if ($res)
     		        {
     		        	$idFile=dbLayer::getInsertId();
