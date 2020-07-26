@@ -1133,7 +1133,7 @@ if(true)
                 // saglaba faila datus
 
                 $res=dbProc::replaceFile(
-                   (($trase == 1) ? (($oForm->getValue('action')==OP_EXPORT) ? '':'A') : (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'')).
+                    (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'').
                     $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
                     $userId, $actId,
                     FILE_EXPORT ,
@@ -1209,7 +1209,7 @@ if(true)
               break;
             case OP_EXPORT:
               $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
-                        $oLink->addPrm('tab', TAB_ESTIMATE);
+                        $oLink->addPrm('tab', OP_EXPORT);
               break;
            
               }
@@ -1574,17 +1574,10 @@ if(true)
       include('f.akt.s.3.inc');
       $tabs->end();
     }
-    $tabs->start(text::get(TAB_ESTIMATE));
+    $tabs->start(text::get(TAB_EXPORT));
     include('f.akt.s.6.inc');
-   	$tabs->end();
-
-    if($trase == 1)
-    {
-  	  $tabs->start(text::get(TAB_EXPORT));
-      include('f.akt.s.10.inc');
-      $tabs->end();
-    }
-
+    $tabs->end();
+         
     $tabs->start(text::get(TAB_AUDIT));
     include('f.akt.s.7.inc');
     $tabs->end();
