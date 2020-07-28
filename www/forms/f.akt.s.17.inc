@@ -365,7 +365,7 @@ if ( $isAdmin || $isEconomist)
                       'A'.
                       $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
                       $userId, $actId,  
-                      FILE_EXPORT ,
+                      FILE_ESTIMATE ,
                       EXPORT_FILE_TYPE);
     		        if ($res)
     		        {

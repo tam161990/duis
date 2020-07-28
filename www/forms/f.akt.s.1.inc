@@ -34,6 +34,7 @@ if($tametab === false)
 // auto akts
 $isAuto = reqVar::get('isAuto');
 $tame = false;
+$isProject = 0;
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -304,6 +305,8 @@ if ( $isAdmin || $isSystemUser)
         $trase = $act['RAKT_TRASE'];
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
+	$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+
 
         // get contract list
         $res=dbProc::getDuContractNo($act['RAKT_KWOI_KODS'], $trase, true);
@@ -547,7 +550,7 @@ if ( $isAdmin || $isSystemUser)
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
  
-  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonly1 || $isCopy || $isAuto == 1)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
+  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonlyExceptAdmin && $status != STAT_AUTO)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
   if (!$isReadonly1 && !$isCopy)
   {
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -688,17 +691,18 @@ if(true)
   }
   if($actId != false)
   {
+    
       // back button
       // act advanced search form
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', $isSearch);
-      $oLink->addPrm('selectedId', ($isSearch == 1)?$actId : $searchNum);
+      $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
     	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
     	$actSearchLink=$oLink ->getQuery();
     	unset($oLink);
       // list of acts
     	$oLink=new urlQuery();
-      $oLink->addPrm('isNumber', ($isSearch == 1)?0 : $searchNum);
+      $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
       $oLink->addPrm('selectedId', $actId);
     	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
     	$actListLink=$oLink ->getQuery();
@@ -887,7 +891,7 @@ if(true)
                   $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                 }
     		    }
-            // export
+            // estimate
             if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT)
             {
 
@@ -1134,7 +1138,7 @@ if(true)
                     (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'').
                     $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
                     $userId, $actId,
-                    FILE_EXPORT ,
+                    FILE_ESTIMATE,
                     EXPORT_FILE_TYPE);
                
 		        if ($res)
@@ -1569,17 +1573,24 @@ if(true)
     if($trase != 1)
     {
   	  $tabs->start(text::get(TAB_MATERIAL));
-      include('f.akt.s.3.inc');
-      $tabs->end();
+      	include('f.akt.s.3.inc');
+      	$tabs->end();
     }
-    $tabs->start(text::get(TAB_EXPORT));
-    include('f.akt.s.6.inc');
+    
+    $tabs->start(text::get(TAB_ESTIMATE));
+    include('f.akt.s.10.inc');
     $tabs->end();
-         
+    	
+    if($trase == 1)
+    {	
+    	$tabs->start(text::get(TAB_EXPORT));
+    	include('f.akt.s.6.inc');
+    	$tabs->end();
+    }     
     $tabs->start(text::get(TAB_AUDIT));
     include('f.akt.s.7.inc');
-  	$tabs->end();
-
+    $tabs->end();
+    
     $tabs->active = text::get($tab);
 
     $tabs->run();

@@ -67,6 +67,7 @@ if ( $isAdmin || $isSystemUser)
       }
 
 
+       if($tameMaterial== false) {
 
       //Popup saites sagatave
       $oPopLink=new urlQuery;
@@ -76,8 +77,14 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('isSearch', $isSearch);
       $oPopLink->addPrm('searchNum', $searchNum);
 
-      $favorit[0]['TITLE'] = text::get('TAB_ESTIMATE');   ;
+
+      $favorit[0]['TITLE'] = text::get('TAB_ESTIMATE');  
       $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
+	} else {
+		 $favorit[0]['TITLE'] ='';
+      		$favorit[0]['URL'] = '';
+
+	}
 
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.11');

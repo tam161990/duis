@@ -91,6 +91,7 @@
         <td width="20%"  valign="top">
             <table cellpadding="5" cellspacing="1" border="0" align="center" width="100%">
             <? if(!$isReadonly)  {
+	      
               foreach($favorit as $i=>$val){?>
              <tr>
                 <td bgcolor="white"><?= $oFormMaterialTab->getElementHtml('group['.$i.']'); ?></td>

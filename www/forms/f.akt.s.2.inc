@@ -20,6 +20,11 @@ if(isset($tame))
   $tameWork  = $tame;
 else 
   $tameWork   = reqVar::get('tame');
+if(isset($actNumPostfix))
+  $kvikstep  = $actNumPostfix;
+else 
+  $kvikstep =  reqVar::get('kvikstep');
+
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -49,6 +54,7 @@ if ( $isAdmin || $isSystemUser)
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('trase', $trase);
+      $oLink->addPrm('kvikstep ', $kvikstep);
       $oFormWorkTab = new Form('frmWorkTab'.(($tameWork==1) ? 'T' : ''), 'post', $oLink->getQuery() . '#tab');
 
       unset($oLink);
@@ -243,31 +249,33 @@ if ( $isAdmin || $isSystemUser)
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-  	    $aWorkDb=dbProc::getActWorkList($actId, $tameWork);
+  	$aWorkDb=dbProc::getActWorkList($actId, $tameWork);
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
           $aWorks[$work['DRBI_PLAN_DATE']][] = $work;     
           $aWorkExist = true;     
         }
-        if($trase == 1) {
-            $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
-            foreach ($aWorkSums as $d => $aSum)
-            {
-                $oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
-                $oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
-                $oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
-                $oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
-                break;
-            }
-	      }
+	if($trase == 1) {
+		$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+ 		foreach ($aWorkSums as $d => $aSum)
+      		{
+			$oFormWorkTab->addElement('label', 'sum_m3', 'M3', $aSum['m3']);
+			$oFormWorkTab->addElement('label', 'sum_ha', 'HA', $aSum['ha']);
+			$oFormWorkTab->addElement('label', 'sum_km', 'KM', $aSum['km']);
+			$oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
+			break;
+      		}
+	   }
 	
       }
+
      
       if(!$aWorkExist) {
         $aWorks[0] = array();          
       }
-           
+      
+     
 
       //echo '<pre>',print_r($aWorks,true),'</pre>';
 
@@ -460,13 +468,23 @@ if ( $isAdmin || $isSystemUser)
                		   			//RequestHandler::makeRedirect($oLink->getQuery());
                       			}
                     	}
-                    	// pÄrsaglabÄjam summas
+                    	//pie saglabâðanas fonâ pârrçíina kopsummas un materiâlu apjomus
                     	dbProc::updateWorkSumms($actId, $tameWork);
-                   
+	
+			if($tameWork == 1) {
+                            // iztirit matçriâla tame
+                            dbProc::deleteAutoActMaterial($actId);
+			    // pârrçíinat materiâla tame
+			    dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
+		      	}
+                   	
+			// ìenerçta akta laboðanas gadîjumâ summas katru reizi tiek pârsûtîtas uz kvikstepu.
+			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
                     if($trase == 1) {
+		      
                       $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                       foreach ($aWorkSums as $d => $aSum)
                       {
@@ -477,7 +495,8 @@ if ( $isAdmin || $isSystemUser)
                             $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
                             //break;
                       }
-			              }
+		      
+		    }
 
                     $tameWork = 0;
                 }
