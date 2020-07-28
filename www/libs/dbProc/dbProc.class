@@ -4100,7 +4100,7 @@ class dbProc extends dbLayer
         $oDB = new dbLayer;
         $r = $oDB -> makeQuery($query);
         
-        //$updateNeaded = true;
+        $updateNeaded = true;
         // update tammes
         if($updateNeaded) {
             if($actId !== false) {
@@ -6620,7 +6620,7 @@ class dbProc extends dbLayer
             $query = 'insert into `TAME_MATERIALI`
                             (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                             `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, 
-                            `MATR_IS_WORKER`, `MATR_PIEZIMES`)                           
+                            `MATR_IS_WORKER`)                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -6629,14 +6629,13 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($amount).'",
                             "'.dbLayer::quote_smart($amount_kor).'",
                             "'.dbLayer::quote_smart($total).'",
-                            "'.dbLayer::quote_smart($st).'",
-                            "'.dbLayer::quote_smart($notes).'"
+                            "'.dbLayer::quote_smart($st).'"
                             )';
         } else {
             $query = 'insert into `MATERIALI`
                     (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
-                    `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`,
-                    `MATR_PIEZIMES`)
+                    `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`
+                    )
                     values ( '.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
@@ -6644,8 +6643,7 @@ class dbProc extends dbLayer
 					'.((!$price) ? '"NULL",' : '"'.dbLayer::quote_smart($price).'",').'
                     "'.dbLayer::quote_smart($amount).'",
 					'.((!$total) ? '"NULL",' : '"'.dbLayer::quote_smart($total).'",').'
-                    "'.dbLayer::quote_smart($st).'",
-                    "'.dbLayer::quote_smart($notes).'"
+                    "'.dbLayer::quote_smart($st).'"
                 )';
         }
 
@@ -8214,9 +8212,10 @@ class dbProc extends dbLayer
         function getCalcByMmsCodeList($mms_code, $trase)
         {
                 
-            $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`
+            $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`, `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
                 from `kl_mms_darbi`
-                INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`                
+                INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`  
+                INNER JOIN `TAME_DARBI` ON `DRBI_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`              
                 where `KMSD_KODS` = "'.dbLayer::quote_smart($mms_code).'"
                 AND EXISTS (SELECT 1 FROM  `kl_kalkulacija_materiali` WHERE `KKMT_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`)
 				AND (
@@ -8238,7 +8237,7 @@ class dbProc extends dbLayer
         {
                 
             $query = 'select `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`,  `KMSD_KSRG_KODS`, `KMSD_NOSACIJUMA_KODS`,
-                `KMSD_IZPILDITAJA_KODS`, `KMSD_KEDI_KODS`
+                `KMSD_IZPILDITAJA_KODS`, `KMSD_KEDI_KODS`, `KMSD_VV_NUMURS`
                 from `KL_MMS_DARBI`
                 where `KMSD_KODS` = "'.dbLayer::quote_smart($code).'"';
 
@@ -8279,7 +8278,7 @@ class dbProc extends dbLayer
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
-	        $section = dbProc::getActSectionName($actId);
+	    $section = dbProc::getActSectionName($actId);
             if ($mmsList!==false)
             {
                 $oDB = new dbLayer;
@@ -8307,6 +8306,7 @@ class dbProc extends dbLayer
                             INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
                             WHERE `KMKL_IR_AKTIVS` = 1 
                             AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
+			    AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
                             AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
                             AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
                             AND (

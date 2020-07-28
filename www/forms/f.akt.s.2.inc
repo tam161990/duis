@@ -20,6 +20,11 @@ if(isset($tame))
   $tameWork  = $tame;
 else 
   $tameWork   = reqVar::get('tame');
+if(isset($actNumPostfix))
+  $kvikstep  = $actNumPostfix;
+else 
+  $kvikstep =  reqVar::get('kvikstep');
+
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -49,6 +54,7 @@ if ( $isAdmin || $isSystemUser)
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('trase', $trase);
+      $oLink->addPrm('kvikstep ', $kvikstep);
       $oFormWorkTab = new Form('frmWorkTab'.(($tameWork==1) ? 'T' : ''), 'post', $oLink->getQuery() . '#tab');
 
       unset($oLink);
@@ -464,12 +470,22 @@ if ( $isAdmin || $isSystemUser)
                		   			//RequestHandler::makeRedirect($oLink->getQuery());
                       			}
                     	}
-                    	// pārsaglabājam summas
+                    	//pie saglab��anas fon� p�rr��ina kopsummas un materi�lu apjomus
                     	dbProc::updateWorkSumms($actId, $tameWork);
-                   
+	
+			if($tameWork == 1) {
+                            // iztirit mat�ri�la tame
+                            dbProc::deleteAutoActMaterial($actId);
+			    // p�rr��inat materi�la tame
+			    dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
+		      	}
+                   	
+			// �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
+			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
+<<<<<<< HEAD
                       if($trase == 1) {
                             //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                             foreach ($aWorkSums as $d => $aSum)
@@ -482,6 +498,22 @@ if ( $isAdmin || $isSystemUser)
                                   //break;
                               }
                       }
+=======
+                    if($trase == 1) {
+		      
+                      $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+                      foreach ($aWorkSums as $d => $aSum)
+                      {
+                        
+                            $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+                            $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+                            $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+                            $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+                            //break;
+                      }
+		      
+		    }
+>>>>>>> autoAct
 
                     	$tameWork = 0;
                 }
