@@ -20,6 +20,11 @@ if(isset($tame))
   $tameWork  = $tame;
 else 
   $tameWork   = reqVar::get('tame');
+if(isset($actNumPostfix))
+  $kvikstep  = $actNumPostfix;
+else 
+  $kvikstep =  reqVar::get('kvikstep');
+
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -49,6 +54,7 @@ if ( $isAdmin || $isSystemUser)
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('trase', $trase);
+      $oLink->addPrm('kvikstep ', $kvikstep);
       $oFormWorkTab = new Form('frmWorkTab'.(($tameWork==1) ? 'T' : ''), 'post', $oLink->getQuery() . '#tab');
 
       unset($oLink);
@@ -260,7 +266,7 @@ if ( $isAdmin || $isSystemUser)
 			$oFormWorkTab->addElement('label', 'sum_gab', 'GAB', $aSum['gab']);
 			break;
       		}
-	}
+	   }
 	
       }
 
@@ -462,13 +468,23 @@ if ( $isAdmin || $isSystemUser)
                		   			//RequestHandler::makeRedirect($oLink->getQuery());
                       			}
                     	}
-                    	// pÄrsaglabÄjam summas
+                    	//pie saglabâðanas fonâ pârrçíina kopsummas un materiâlu apjomus
                     	dbProc::updateWorkSumms($actId, $tameWork);
-                   
+	
+			if($tameWork == 1) {
+                            // iztirit matçriâla tame
+                            dbProc::deleteAutoActMaterial($actId);
+			    // pârrçíinat materiâla tame
+			    dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
+		      	}
+                   	
+			// ìenerçta akta laboðanas gadîjumâ summas katru reizi tiek pârsûtîtas uz kvikstepu.
+			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
 
                     if($trase == 1) {
+		      
                       $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                       foreach ($aWorkSums as $d => $aSum)
                       {
@@ -479,7 +495,8 @@ if ( $isAdmin || $isSystemUser)
                             $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
                             //break;
                       }
-			              }
+		      
+		    }
 
                     $tameWork = 0;
                 }
