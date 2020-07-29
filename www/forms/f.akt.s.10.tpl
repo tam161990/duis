@@ -1,4 +1,4 @@
-﻿<h1><?=text::toUpper(text::get(TAB_EXPORT));?></h1>
+﻿<h1><?=text::toUpper(text::get(TAB_ESTIMATE));?></h1>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 
 	<?
