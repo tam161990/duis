@@ -6918,29 +6918,30 @@ class dbProc extends dbLayer
         {
           $res=$oSQL->makeQuery('select EFLS_NOSAUKUMS  AS NOSAUKUMS, EFLS_META_INFO AS META_INFO
                from `EXCEL_FAILI` where EFLS_ID="'.dbLayer::quote_smart($id).'"');
-        }
+            }
 
-		if (isset($res[0]))
-		{
-			return $res[0];
-		}
-		return false;
-    }
-    
-    // funkcija kas dzēš visi akta pielikumi izņemot pēdējo
-    function deleteFilesFromAct($actId, $fileId){
-        $oSQL=new dbLayer();
-        $ok = true;
-        $res=$oSQL->makeQuery('select RFLS_ID from `FAILI` 
-                                where RFLS_RAKT_ID = '.dbLayer::quote_smart($actId).' 
-                                and RFLS_ID <>'.dbLayer::quote_smart($fileId).'');
-        if(isset($res) && is_array($res)) {
-            foreach($res as $r){
-                $ok = files::deleteFile($r['RFLS_ID']);                
+            if (isset($res[0]))
+            {
+                return $res[0];
+            }
+            return false;
+        }
+        
+        // funkcija kas dzēš visi akta pielikumi izņemot pēdējo
+        function deleteFilesFromAct($actId, $fileId, $type = false){
+            $oSQL=new dbLayer();
+            $ok = true;
+            $res=$oSQL->makeQuery('select RFLS_ID from `FAILI`
+                                    where RFLS_RAKT_ID = '.dbLayer::quote_smart($actId).'
+                                    '.(($type !== false) ? ' and RFLS_TYPE = '.dbLayer::quote_smart($fileId) : '' ) .'
+                                    and RFLS_ID <>'.dbLayer::quote_smart($fileId).'');
+            if(isset($res) && is_array($res)) {
+                foreach($res as $r){
+                    $ok = files::deleteFile($r['RFLS_ID']);                
             }
         }
         return true;
-        
+       
     }
 
 	// -----------------------------------------------------------------------------
@@ -8278,7 +8279,7 @@ class dbProc extends dbLayer
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
-	    $section = dbProc::getActSectionName($actId);
+	        $section = dbProc::getActSectionName($actId);
             if ($mmsList!==false)
             {
                 $oDB = new dbLayer;
@@ -8306,7 +8307,7 @@ class dbProc extends dbLayer
                             INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
                             WHERE `KMKL_IR_AKTIVS` = 1 
                             AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
-			    AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
+			                AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
                             AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
                             AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
                             AND (
@@ -8360,9 +8361,9 @@ class dbProc extends dbLayer
                                $row['KKAL_PLANA'].',"'.
                                $row['KKAL_MERVIENIBA'].'",'.
                                $row['DAUDZUMS'].','.
-                               $row['DAUDZUMS'].','.
-                               $row['CILVEKSTUNDAS'].',"'.
-                               DEFAULT_DATE.'"
+                               $row['DAUDZUMS'].', 
+							   `DRBI_DAUDZUMS`*`DRBI_KKAL_NORMATIVS`,'.
+                               '"'.DEFAULT_DATE.'"
                         )';    
                                     
                     $res = $oDB -> makeQuery($query);
@@ -8473,7 +8474,7 @@ class dbProc extends dbLayer
                                $row['KMAT_CENA'].','.
                                $row['DAUDZUMS'].','.
                                $row['DAUDZUMS'].','.
-                               $row['TOTAL'].
+                               $row['DAUDZUMS'].', `MATR_DAUDZUMS`*`MATR_CENA` '.    
                         ')';                    
                     $res = $oDB -> makeQuery($query);
                 }

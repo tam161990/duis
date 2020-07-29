@@ -388,7 +388,7 @@ if ( $isAdmin || $isEconomist)
                         }
 
                         // delete all files before
-                        $r1 = dbProc::deleteFilesFromAct($actId, $idFile);
+                        $r1 = dbProc::deleteFilesFromAct($actId, $idFile, FILE_ESTIMATE);
                         if (!$r1)
                         {
                               $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
@@ -407,7 +407,7 @@ if ( $isAdmin || $isEconomist)
                   $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.1');
                   $oRedirectLink->addPrm('actId', $oFormPop->getValue('actId'));
                   $oRedirectLink->addPrm('isTrase', $oFormPop->getValue('isTrase'));
-                  $oRedirectLink->addPrm('tab', TAB_EXPORT);
+                  $oRedirectLink->addPrm('tab', TAB_ESTIMATE);
 
                   $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
                   requestHandler::makeParentReplace($oRedirectLink->getQuery().'#tab');
