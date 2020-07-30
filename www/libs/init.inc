@@ -22,7 +22,8 @@
     require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/PDF.php');
     require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/Excel5.php');
     require_once(ZR_LIBS_DIR.'/tab/tabs.php');
-    require_once(ZR_LIBS_DIR.'/fpdf/fpdf.php');
+	require_once(ZR_LIBS_DIR.'/fpdf/fpdf.php');
+	require_once(ZR_LIBS_DIR.'/pdfact/pdfAct.class');
     require_once(ZR_LIBS_DIR.'/progress/PogProgressBar.php');
     require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
 	require_once(ZR_LIBS_DIR.'/process/Process.class');  

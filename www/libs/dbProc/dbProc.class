@@ -3551,7 +3551,7 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($user).'"
                         )';
 		}
-        echo $query;
+        //echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -7946,7 +7946,8 @@ class dbProc extends dbLayer
         function updateActStatusFromKvikStep()
         { 
             
-            $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`, `AAST_ID`
+            $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
+                                 `AAST_ID`, `RAKT_TRASE`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -8030,7 +8031,7 @@ class dbProc extends dbLayer
                     // ar pirmo INSERT jāielada materiālus
                     if($status == STAT_INSERT && !TEST_MODE) {
                             $r2 = dbProc::addAutoMaterialToAct($actId, $act['AAST_KODS']);
-                            if ($r2==false)    {        
+                            if ($r2===false)    {        
                                 files::wh_log('ERROR addAutoMaterialToAct: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                                     'AAST_ID:' .$act['AAST_ID'].PHP_EOL
 							    );						
@@ -8039,19 +8040,23 @@ class dbProc extends dbLayer
                     }
                     if($status == STAT_RETURN) {
                         $r2 = dbProc::setUnsetActItemsDate($actId, false);
-                        if ($r2==false)    {        
+                        if ($r2===false)    {        
                             files::wh_log('ERROR setUnsetActItemsDate: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                                 'AAST_ID:' .$act['AAST_ID'].PHP_EOL
-                            );						
-
+                            );	
                         }
+                    }
+
+                    if($status == STAT_CLOSE && $act['RAKT_TRASE'] ) {
+                        pdfAct::approvedTrasePdf($actId, MAIN_ADMIN_ID);
                     }
 
                     // save status changed time
                     $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
-                    VALUES 	('.$actId.', '.MAIN_ADMIN_ID.', "'.$status.'" )';	                   			
+                    VALUES 	('.$actId.', '.MAIN_ADMIN_ID.', "'.$status.'" )';
+
                     $r = $oSQL -> makeQuery($query);
-                    if ($r==false)    {        
+                    if ($r===false)    {        
                         files::wh_log('ERROR INSERT INTO `AKTA_STATUSA_MAINA`: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                             'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
                         );
@@ -8061,9 +8066,10 @@ class dbProc extends dbLayer
                     $query = 'UPDATE `AUTO_ACT_STATUS`   SET 
                     `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL"
                     WHERE `AAST_ID` = ' . $act['AAST_ID'];
+
                     //echo $query;
                     $r = $oSQL -> makeQuery($query);
-                    if ($r==false)    {        
+                    if ($r===alse)    {        
                         files::wh_log('ERROR UPDATE `AUTO_ACT_STATUS`: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                             'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
                         );						
@@ -8075,8 +8081,7 @@ class dbProc extends dbLayer
                                     'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
 							);						
 
-                }
-               
+                }               
               }
             }
 			return true;
