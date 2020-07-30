@@ -6,6 +6,10 @@ require_once(dirname(__FILE__).'/../libs/text/text.class');
 require_once(dirname(__FILE__).'/../libs/requestHandler/requestHandler.class');
 require_once(dirname(__FILE__).'/../libs/process/Process.class');  
 require_once(dirname(__FILE__).'/../libs/files/files.class');
+require_once(dirname(__FILE__).'/../libs/fpdf/fpdf.php');
+require_once(dirname(__FILE__).'/../libs/pdfact/pdfAct.class');
+require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
+
 $processId;
 $interval = 10;
 
