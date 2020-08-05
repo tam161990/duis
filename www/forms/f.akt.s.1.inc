@@ -64,7 +64,7 @@ if (reqVar::get('xmlHttp') == 1)
       }
 
     }     
-	
+	/*
 	if(reqVar::get('worker'))
     {
         $res=dbProc::getDuContractNo(reqVar::get('worker'), $trase, true);
@@ -87,8 +87,9 @@ if (reqVar::get('xmlHttp') == 1)
 				}	
         }
         unset($res);
+
 	}
-	
+	*/
     
     if(reqVar::get('type') && reqVar::get('contract'))
     {
@@ -282,13 +283,13 @@ if ( $isAdmin || $isSystemUser)
 
   }
 
-    // URL  acta help
+		// URL  acta help
 	  $oLink = new urlQuery;
 	  $oLink -> addPrm(FORM_ID, 'f.rpt.e.1');
-    $oLink->addPrm('isTrase', $trase );
-    $oLink->addPrm(DONT_USE_GLB_TPL, '1');
-    $actHelpUrl =  $oLink ->getQuery();
-    unset($oLink);
+		$oLink->addPrm('isTrase', $trase );
+		$oLink->addPrm(DONT_USE_GLB_TPL, '1');
+		$actHelpUrl =  $oLink ->getQuery();
+		unset($oLink);
 
   
 
@@ -299,13 +300,13 @@ if ( $isAdmin || $isSystemUser)
   	//print_r($actInfo);
   	if(count($actInfo)>0)
   	{
-  		  $act = $actInfo[0];
+  		$act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
         $statusLabel =  $act['STATUS_NAME'];
         $trase = $act['RAKT_TRASE'];
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
-	$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+		$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
 
 
         // get contract list
@@ -386,6 +387,7 @@ if ( $isAdmin || $isSystemUser)
 
  
   $ouner = array();
+  $ouner['']=text::get('EMPTY_SELECT_OPTION');
   if($worker !== false) {
     $res = dbProc::getUserWorkerList($worker);
   } else {
@@ -544,13 +546,13 @@ if ( $isAdmin || $isSystemUser)
       }
   }
 
-  $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isEdDisabled || ($actId != false))?' disabled':'').'', '', '', $edarea);
+  $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').'', '', '', $edarea);
   if (!$isReadonly1)
   {
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
  
-  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonlyExceptAdmin && $status != STAT_AUTO)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
+  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonly1 || $isCopy || $isAuto == 1)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
   if (!$isReadonly1 && !$isCopy)
   {
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -933,420 +935,17 @@ if(true)
                 if($trase == 1 && $oForm->getValue('action')==OP_EXPORT)
                 {
                   // akta sagatavi (tab tamme)
-                  $pdf=new FPDF();
-                  $pdf->AddFont('Arial','','arial.php');
-                  $pdf->AddFont('Arial','BI','arialbi.php');
-                  $pdf->AddFont('Arial','I','ariali.php');
-                  $pdf->AddFont('Arial','B','arialbd.php');
-                  $pdf->SetDisplayMode('real');
-                  $pdf->SetAutoPageBreak(true,20);
-                  $pdf->AliasNbPages();
-                  $pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4').' '.$act['NUMURS']));
-                  $pdf->SetLeftMargin(20);
-                  $pdf->AddPage();
-                  $pdf->SetFont('Arial','B',10);
-                  $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4')), 0,1,'C');
-
-
-                  // Create new PHPExcel object
-                  $objPHPExcel = new PHPExcel();
-
-                  // create act header
-                  $actHeader= array(
-                     array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-
-                       array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(date('d.m.Y'))), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
-                          ),
-                    array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER5')), 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ),
-                    array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_OFFER').':'), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('ST_COMPANY_NAME').', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.text::get('ST_REG_NR')), 'L', 'B', 8),
-                       array(iconv('UTF-8', 'windows-1257',$act['WORKER'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['KWOI_KODS']), 'L', 'B', 8)
-                          ),
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('ED_IECIKNIS').':'), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
-                       array('', 'L', '',8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                  ) ;
-                  $pdf->HeaderStyledTable($actHeader);
-
-                   $pdf->SetFont('Arial','BI',8);
-                   $pdf->Cell(0,8,iconv('UTF-8', 'windows-1257', $act['WORK_TITLE']),0,1);
-
-                  $actDescription = array(
-
-                      array(
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_ACT_TYPE')).':',
-                      iconv('UTF-8', 'windows-1257',$act['TYPE']),
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_OBJECT')).':',
-                      iconv('UTF-8', 'windows-1257',$act['OBJECT'])
-                          ),
-                      array(
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_VOLTAGE')).':',
-                      iconv('UTF-8', 'windows-1257',$act['SPRIEGUMS']),
-                      iconv('UTF-8', 'windows-1257',text::get('EXPORT_MAIN_DESIGNATION')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_OPERATIVAS_APZIM'])
-                          ),
-	                    array(
-                      iconv('UTF-8', 'windows-1257',text::get('COMMENT')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_PIEZIMES']),
-                      iconv('UTF-8', 'windows-1257',text::get('TO_ID')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_TO_ID'])
-                          )
-
-                      );
-                  $pdf->DescriptionTableTrase($actDescription);
-	  
-                  // darbi
-                  $pdf->SetFont('Arial','BI',10);
-                  $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_WORKS)), 0,1);
-
-                  $width=array(20,80,20,20,20,20);
-                  $alignHeader=array('R','C','R','R','R','R');
-                  $align=array('R','L','R','R','R','R');
-
-                  $headers = array(
-                      'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
-                      'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
-                      'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
-                      'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
-                      'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
-
-                      'DRBI_CILVEKSTUNDAS' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
-                      );
-
-                  $aWorkDb=dbProc::getActWorkList($actId);
-                  $data = array();
-                  $totalD = 0;
-                  foreach ($aWorkDb as $i => $work)
-                  {
-                    $data[$i] = array(
-                      'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-                      'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
-                      'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
-                      'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
-                      'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-
-                      'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
-                      );
-
-                    $totalD +=  $work['DRBI_CILVEKSTUNDAS'];
-                  }
-                  $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
-
-                  $pct =  ($totalD*(100+ $pvn )/ 100 ) - $totalD;
-                  $summa = ($totalD*(100+ $pvn )/ 100 );
-
-                  $pdf->SetFont('Arial','',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-                  $pdf->SetFont('Arial','B',8);
-                  $pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
-                   $pdf->SetFont('Arial','',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
-                  $pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
-                  $pdf->SetFont('Arial','B',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
-                  $pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
-
-                  $rows=dbProc::getUserInfo($userId);
-                  if (count($rows)==1)
-                  {
-                    $actAutorName =  $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
-                  }
-
-
-                   $actFooter = array(
-                   array(
-                    iconv('UTF-8', 'windows-1257',text::get('ACT_CREATER').': '.$act['AUTORS']),
-                    ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',text::get('DATE').': '.date('d.m.Y')),
-                    iconv('UTF-8', 'windows-1257',text::get('IS_NOT_ENDORSED'))
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',''),
-                    iconv('UTF-8', 'windows-1257','')
-                        ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',text::get('REPORT_WORKER_FINISHED').': '),
-                    ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',$act['WORKER']),
-                   ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',$act['AUTORS']),
-                    ''
-                       )
-                    );
-                  $pdf->FooterTablePortraitAsimetrikal($actFooter);
+                  $idFile = toPdf::estimateTrasePdf($actId, $userId, FILE_ESTIMATE);
 
                 }
                 else if($trase == 0 &&  ($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT) )
                 {
-                  // akta sagatavi (tab tamme)
-                  $pdf=new FPDF();
-                  $pdf->AddFont('Arial','','arial.php');
-                  $pdf->AddFont('Arial','BI','arialbi.php');
-                  $pdf->AddFont('Arial','I','ariali.php');
-                  $pdf->AddFont('Arial','B','arialbd.php');
-                  $pdf->SetDisplayMode('real');
-                  $pdf->SetAutoPageBreak(true,20);
-                  $pdf->AliasNbPages();
-                  $pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4').' '.$act['NUMURS']));
-                  $pdf->SetLeftMargin(20);
-                  $pdf->AddPage();
-                  $pdf->SetFont('Arial','B',10);
-                  $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4')), 0,1,'C');
-
-
-                  // Create new PHPExcel object
-                  $objPHPExcel = new PHPExcel();
-
-                  // create act header
-                  $actHeader= array(
-                     array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-
-                       array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(date('d.m.Y'))), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
-                          ),
-                    array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER5')), 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ),
-                    array(
-                       array('', 'L', '', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_OFFER').':'), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
-                          ) ,
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('ST_COMPANY_NAME').', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.text::get('ST_REG_NR')), 'L', 'B', 8),
-                       array(iconv('UTF-8', 'windows-1257',$act['WORKER'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['KWOI_KODS']), 'L', 'B', 8)
-                          ),
-                    array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('ED_IECIKNIS').':'), 'L', '', 8),
-                       array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
-                       array('', 'L', '',8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                     array(
-                       array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
-                       array('', 'L', '', 8)
-                          ) ,
-                  ) ;
-                  $pdf->HeaderStyledTable($actHeader);
-
-                   $pdf->SetFont('Arial','BI',8);
-                   $pdf->Cell(0,8,iconv('UTF-8', 'windows-1257', $act['WORK_TITLE']),0,1);
-
-                  $actDescription = array(
-
-                      array(
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_ACT_TYPE')).':',
-                      iconv('UTF-8', 'windows-1257',$act['TYPE']),
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_OBJECT')).':',
-                      iconv('UTF-8', 'windows-1257',$act['OBJECT'])
-                          ),
-                      array(
-                      iconv('UTF-8', 'windows-1257',text::get('SINGLE_VOLTAGE')).':',
-                      iconv('UTF-8', 'windows-1257',$act['SPRIEGUMS']),
-                      iconv('UTF-8', 'windows-1257',text::get('EXPORT_MAIN_DESIGNATION')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_OPERATIVAS_APZIM'])
-                          ),
-	                    array(
-                      iconv('UTF-8', 'windows-1257',text::get('COMMENT')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_PIEZIMES']),
-                      iconv('UTF-8', 'windows-1257',text::get('TO_ID')).':',
-                      iconv('UTF-8', 'windows-1257',$act['RAKT_TO_ID'])
-                          )
-
-                      );
-                  $pdf->DescriptionTableTrase($actDescription);
-	 
-                  // darbi
-                  $pdf->SetFont('Arial','BI',10);
-                  $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_WORKS)), 0,1);
-
-                  $width=array(15,15,75,15,20,20,20);
-                  $alignHeader=array('C','C','C','R','R','R');
-                  $align=array('C','L','C','R','R','R');
-
-                  $headers = array(
-                      'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
-                      'DRBI_PLAN_DATE' => iconv('UTF-8', 'windows-1257',text::get('FINISHING_DATE')),
-                      'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
-                      'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
-                      'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
-                      'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
-                      'DRBI_CILVEKSTUNDAS' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
-                      );
-
-                  $aWorkDb=dbProc::getActWorkList($actId, false, (($oForm->getValue('action')==OP_MIDLE_EXPORT)?true:false));
-                  $data = array();
-                  $totalD = 0;
-                  foreach ($aWorkDb as $i => $work)
-                  {
-                    $data[$i] = array(
-                      'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-                      'DRBI_PLAN_DATE'  => $work['DRBI_PLAN_DATE'],
-                      'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
-                      'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
-                      'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
-                      'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-                      'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
-                      );
-
-                    $totalD +=  $work['DRBI_CILVEKSTUNDAS'];
-                  }
-                  $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
-
-                  $pct =  ($totalD*(100+ PCT_21 )/ 100 ) - $totalD;
-                  $summa = ($totalD*(100+ PCT_21 )/ 100 );
-
-                  $pdf->SetFont('Arial','',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-                  $pdf->SetFont('Arial','B',8);
-                  $pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
-                   $pdf->SetFont('Arial','',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. PCT_21 . '%').":",0,0,'R');
-                  $pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
-                  $pdf->SetFont('Arial','B',8);
-                  $pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
-                  $pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
-
-                  $rows=dbProc::getUserInfo($userId);
-                  if (count($rows)==1)
-                  {
-                    $actAutorName =  $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
-                  }
-
-
-                   $actFooter = array(
-                   array(
-                    iconv('UTF-8', 'windows-1257',text::get('ACT_CREATER').': '.$act['AUTORS']),
-                    ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',text::get('DATE').': '.date('d.m.Y')),
-                    iconv('UTF-8', 'windows-1257',text::get('IS_NOT_ENDORSED'))
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',''),
-                    iconv('UTF-8', 'windows-1257','')
-                        ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',text::get('REPORT_WORKER_FINISHED').': '),
-                    ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',$act['WORKER']),
-                   ''
-                       ),
-                    array(
-                    iconv('UTF-8', 'windows-1257',$act['AUTORS']),
-                    ''
-                       )
-                    );
-                  $pdf->FooterTablePortraitAsimetrikal($actFooter);
-                  //DUIS-291
-                  if($act['RAKT_SIGNATURE'] == 'E') {
-                    $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0, 1,'C');
-                  }
-
+                  // akta sagatavi (tab export)
+                  $idFile = toPdf::exportActPdf($actId, $userId, $oForm->getValue('action')) ;
                 }
 
-                // saglaba faila datus
-                $res=dbProc::replaceFile(
-                    (($trase == 1) ? 'A' : (($oForm->getValue('action')==OP_MIDLE_EXPORT) ? 'S_':'')).
-                    $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
-                    $userId, $actId,
-                    (($trase == 1)? FILE_EXPORT : FILE_ESTIMATE),
-                    EXPORT_FILE_TYPE);
-               
-		        if ($res)
-		        {
-		        	$idFile=dbLayer::getInsertId();
-		        }
-		        else
-		        {
-		        	$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-		        }
-		        if ($idFile!==false)
-		        {
+                if ($idFile!==false)
+                {
                     $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
 
                    // update act status
@@ -1374,11 +973,11 @@ if(true)
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ($oForm->getValue('action')==OP_EXPORT)? ACT_EXPORT : ACT_ESTIMATE);
 
-        			if (!$r || !$r1)
-        			{
-        				$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-        			}
-		        }
+                  if (!$r || !$r1)
+                  {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }
+                }
 
               }
               else
