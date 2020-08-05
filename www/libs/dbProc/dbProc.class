@@ -7181,7 +7181,7 @@ class dbProc extends dbLayer
         $query = "INSERT INTO `FMK_MESSAGES` (`code`, `text`)
             VALUES ('".dbLayer::quote_smart($part[0])."', '".dbLayer::quote_smart($part[1])."')";
         $result = $oDB -> makeQuery($query);
-        echo ($result !== false) ? "insert  OK" : "insert  NOT OK"  ;
+        //echo ($result !== false) ? "insert  OK" : "insert  NOT OK"  ;
 
         return ($result !== false);
 	}
@@ -8048,7 +8048,7 @@ class dbProc extends dbLayer
                     }
 
                     if($status == STAT_CLOSE && $act['RAKT_TRASE'] ) {
-                        pdfAct::approvedTrasePdf($actId, MAIN_ADMIN_ID);
+                        toPdf::approvedTrasePdf($actId, MAIN_ADMIN_ID, FILE_EXPORT);
                     }
 
                     // save status changed time
@@ -8220,9 +8220,10 @@ class dbProc extends dbLayer
                 
             $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`, `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
                 from `kl_mms_darbi`
-                INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`  
-                INNER JOIN `TAME_DARBI` ON `DRBI_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`              
-                where `KMSD_KODS` = "'.dbLayer::quote_smart($mms_code).'"
+               INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`  
+		INNER JOIN `kl_kalkulacija` ON `KMKL_KKAL_SHIFRS` = `KKAL_SHIFRS` AND `KMSD_IZPILDITAJA_KODS` = `KKAL_KWOI_KODS` AND `KMSD_VV_NUMURS` = `KKAL_VV_NUMBER`
+                INNER JOIN `TAME_DARBI` ON `DRBI_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`                       
+		where `KMSD_KODS` = "'.dbLayer::quote_smart($mms_code).'"
                 AND EXISTS (SELECT 1 FROM  `kl_kalkulacija_materiali` WHERE `KKMT_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`)
 				AND (
                                 (`KMSD_KSRG_KODS` = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
@@ -8234,6 +8235,34 @@ class dbProc extends dbLayer
             $oSQL = new dbLayer;
             return $oSQL -> makeQuery($query);
         }
+
+	// -----------------------------------------------------------------------------
+        // Atgriezh kalkulacijas pēc nomenklatūras koda
+        // Author: Tatjana Fedorkova
+        // -----------------------------------------------------------------------------
+        function getCalcByActID($actId, $trase)
+        {
+                
+            $query = 'select DISTINCT `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`,  `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
+			from `TAME_DARBI`
+			INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` 
+			INNER JOIN `kl_mms_darbi` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS` 
+			INNER JOIN `akti` ON `DRBI_RAKT_ID` = `RAKT_ID`
+			WHERE `RAKT_ID` = '.dbLayer::quote_smart($actId).'
+			AND `KMSD_IZPILDITAJA_KODS` = `RAKT_KWOI_KODS`
+			AND `KMSD_VV_NUMURS` = `RAKT_VV_NUMBER`                
+			AND EXISTS (SELECT 1 FROM  `kl_kalkulacija_materiali` WHERE `KKMT_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`)
+				AND (
+                                (`KMSD_KSRG_KODS` = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
+                                (`KMSD_KSRG_KODS` <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
+                 )
+                AND `KMKL_TRASE` = '.dbLayer::quote_smart($trase).'
+                AND `KMKL_IR_AKTIVS` = 1';
+            
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+        }
+
 
         // -----------------------------------------------------------------------------
         // Atgriezh mms darbus pēc noteikta koda
@@ -8312,7 +8341,7 @@ class dbProc extends dbLayer
                             INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
                             WHERE `KMKL_IR_AKTIVS` = 1 
                             AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
-			                AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
+			    AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
                             AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
                             AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
                             AND (
@@ -8381,7 +8410,9 @@ class dbProc extends dbLayer
   
         function processAutoActMaterial($actId, $mms_code, $trase) {
            
-            $calcList = dbProc::getCalcByMmsCodeList($mms_code, $trase);
+            //$calcList = dbProc::getCalcByMmsCodeList($mms_code, $trase);
+	    $calcList = dbProc::getCalcByActID($actId, $trase);
+
             
             if ($calcList!==false)
             {
@@ -8394,15 +8425,15 @@ class dbProc extends dbLayer
                                 CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
                                     THEN 
                                         CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .' * '.$mms['DAUDZUMS'].'  
                                         ELSE 
-                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
+                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS`  * '.$mms['DAUDZUMS'].'  
                                         END 
                                 ELSE
                                     CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                        THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                                        THEN '.$mms['KMSD_VADU_SKAITS'].'  * '.$mms['DAUDZUMS'].'  
                                     ELSE 
-                                        `KKMT_DAUDZUMS`                                     
+                                        `KKMT_DAUDZUMS` * '.$mms['DAUDZUMS'].'                           
                                     END 
                                 END  AS `DAUDZUMS`
                                 FROM `kl_kalkulacija_materiali` 
@@ -8419,15 +8450,15 @@ class dbProc extends dbLayer
                                     CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
                                     THEN 
                                         CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .' * '.$mms['DAUDZUMS'].'  
                                         ELSE 
-                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
+                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS`  * '.$mms['DAUDZUMS'].'  
                                         END
                                     ELSE
                                         CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                                            THEN '.$mms['KMSD_VADU_SKAITS'].'  * '.$mms['DAUDZUMS'].'  
                                         ELSE 
-                                            `KKMT_DAUDZUMS`                                     
+                                            `KKMT_DAUDZUMS` * '.$mms['DAUDZUMS'].'                                       
                                         END 
                                     END AS `DAUDZUMS`
                                     FROM `kl_kalkulacija_materiali` 
@@ -8439,7 +8470,7 @@ class dbProc extends dbLayer
                                     AND `KKMT_KKAL_SHIFRS` = "'.$mms['KMKL_KKAL_SHIFRS'].'"
                                     LIMIT 1 
                                     ) y';
-                                    //echo $query;  
+                                    //echo '<br>'.$query.'<br>';  
                     $res = $oDB -> makeQuery($query);
 
                     foreach ($res as $i => $mat)
@@ -8478,9 +8509,10 @@ class dbProc extends dbLayer
                                $row['KMAT_MERVIENIBA'].'",'.
                                $row['KMAT_CENA'].','.
                                $row['DAUDZUMS'].','.
-                               $row['DAUDZUMS'].','.
-                               $row['DAUDZUMS'].', `MATR_DAUDZUMS`*`MATR_CENA` '.    
-                        ')';                    
+                               $row['DAUDZUMS'].', 
+			       `MATR_DAUDZUMS`*`MATR_CENA` )';     
+
+			//echo $query;               
                     $res = $oDB -> makeQuery($query);
                 }
             }
