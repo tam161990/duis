@@ -1192,7 +1192,7 @@ if(true)
 	// nomainit akta statusu uz dz?sts
     if (($oForm->getValue('action')==OP_DELETE && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_DELETE_CONFIRMED && is_numeric($oForm->getValue('actId'))))
-	{
+	  {
 	  
 			if(($act['RAKT_RLTT_ID'] == $userId && $isEditor && ($status == STAT_INSERT || $status == STAT_RETURN) ) || ($isAdmin && ($status != STAT_DELETE))  )
 			{

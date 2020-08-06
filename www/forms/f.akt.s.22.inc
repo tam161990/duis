@@ -33,7 +33,7 @@ if (reqVar::get('xmlHttp') == 1)
 
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
-if ( $isAdmin || $isSystemUser)
+if ( $isAdmin || $isProjector || $isEconomist)
 {
     if($actId !== false )
     {

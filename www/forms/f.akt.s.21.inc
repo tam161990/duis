@@ -4,7 +4,7 @@ $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
-$isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
+$isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 
 // act ID
 $actId  = reqVar::get('actId');
@@ -30,7 +30,7 @@ if (reqVar::get('xmlHttp') == 1)
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector)
+if ( $isAdmin || $isProjector || $isEconomist)
 {
     if($actId !== false )
     {
