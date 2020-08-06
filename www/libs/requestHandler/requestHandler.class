@@ -413,7 +413,7 @@ class RequestHandler
 		$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
 		
 		curl_setopt($ch, CURLOPT_POST, 1);
- 
+ 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 		 
@@ -422,24 +422,18 @@ class RequestHandler
 
 		// Send the request
 		$response = curl_exec($ch);			
-		echo $response;
-
-		// Check for errors
-		if($response === FALSE){
-			files::wh_log('sentDataToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
-			//die(curl_error($ch));
-		}
-
-		
-		// Decode the response
-		$responseData = json_decode($response, TRUE);
-		files::wh_log('sentDataToKvikStep RESPONSE:'.PHP_EOL.
+		//echo $response;
+		if (curl_errno($ch)) {
+            		files::wh_log('sentDataToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+        	} else { 
+			// Decode the response
+			$responseData = json_decode($response, TRUE);
+			files::wh_log('sentDataToKvikStep RESPONSE:'.PHP_EOL.
                                     'status:'.$responseData['status'] .PHP_EOL.
 									'code:' .$responseData['code'].PHP_EOL.
-									'details:' .$responseData['details'].PHP_EOL  );	
-			
-		
-		//return ($responseData['status'] == 'S') ? true : $responseData['code'] .' ' . $responseData['details'];
+									'details:' .$responseData['details'].PHP_EOL  );          	 	
+           	 	curl_close($ch);
+        	}		
 		
 	}
 }
