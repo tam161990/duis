@@ -894,7 +894,7 @@ if(true)
                 }
     		    }
             // estimate
-            if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT )
+            if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT)
             {
 
                 $r=dbProc::saveAct($oForm->getValue('actId'),
@@ -946,8 +946,7 @@ if(true)
 
                 if ($idFile!==false)
                 {
-                    $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
-
+                    
                    // update act status
                     $r=dbProc::saveAct($oForm->getValue('actId'),
                                   false,false,false,false,false,false,

@@ -142,7 +142,8 @@ if ( $isAdmin || $isSystemUser)
                  $aWorkFr[$i]['DRBI_APPROVE_DATE'] = $oFormWorkTab->getValue('edited['.$i.']');
                  $aWorkFr[$i]['DRBI_PLAN_DATE'] = $oFormWorkTab->getValue('plan_date['.$i.']');
                  $aWorkFr[$i]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
-                 
+                 $aWorkFr[$i]['DRBI_WORK_APROVE_DATE'] = $oFormWorkTab->getValue('work_aprove_date['.$i.']');
+
                  if($tameWork ){
                    
                     $aWorkFr[$i]['DRBI_DAUDZUMS_KOR'] = $oFormWorkTab->getValue('amount_kor['.$i.']');
@@ -210,6 +211,7 @@ if ( $isAdmin || $isSystemUser)
                     'edited' => $aWorkFr[$i]['DRBI_APPROVE_DATE'],
                     'plan_date' => $aWorkFr[$i]['DRBI_PLAN_DATE'],
                     'description' => $aWorkFr[$i]['KKAL_APRAKSTS'],
+		    'work_aprove_date' => $aWorkFr[$i]['DRBI_WORK_APROVE_DATE'],
                     'rowNum' => $i
                   );   
                   
@@ -288,6 +290,8 @@ if ( $isAdmin || $isSystemUser)
       $oFormWorkTab->addElement('hidden','tame','',($tameWork) ? 1 : 0);
       
       $totalTime = array();
+      $workApproveDate = array();
+
       $i = 0;
       // form elements
       foreach ($aWorks as $d => $aDayWorks)
@@ -298,6 +302,8 @@ if ( $isAdmin || $isSystemUser)
           $oFormWorkTab->addElement('hidden', 'kid['.$i.']', '', $actWork['DRBI_KKAL_ID']);
           $oFormWorkTab->addElement('hidden', 'edited['.$i.']', '', $actWork['DRBI_APPROVE_DATE']);
           $oFormWorkTab->addElement('hidden', 'description['.$i.']', '', $actWork['KKAL_APRAKSTS']);
+          $oFormWorkTab->addElement('hidden', 'work_aprove_date['.$i.']', '', $actWork['DRBI_WORK_APROVE_DATE']);
+
           $oFormWorkTab->addElement('label', 'chipher['.$i.']', '', $actWork['DRBI_KKAL_SHIFRS']);
           $oFormWorkTab->addElement('label', 'title['.$i.']', '', $actWork['DRBI_KKAL_NOSAUKUMS']);
           $oFormWorkTab->addElement('label', 'standart['.$i.']', '', $actWork['DRBI_KKAL_NORMATIVS']);
@@ -373,8 +379,7 @@ if ( $isAdmin || $isSystemUser)
           $oFormWorkTab->addElement('label', 'total['.$i.']', '', $actWork['DRBI_CILVEKSTUNDAS'], ' disabled maxlength="10"');
 
           $totalTime[$d] = number_format($actWork['DRBI_DAY_TOTAL'], 2, '.', '');
-
-          
+	  $workApproveDate[$d] =  $actWork['DRBI_WORK_APROVE_DATE'];
         
           // delete button
           if( empty($aWorks[$i]['DRBI_APPROVE_DATE']) || $tameWork  ) {
@@ -484,8 +489,6 @@ if ( $isAdmin || $isSystemUser)
 			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
-
-<<<<<<< HEAD
                       if($trase == 1) {
                             //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                             foreach ($aWorkSums as $d => $aSum)
@@ -497,23 +500,9 @@ if ( $isAdmin || $isSystemUser)
                                   $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
                                   //break;
                               }
+                    
+
                       }
-=======
-                    if($trase == 1) {
-		      
-                      $aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
-                      foreach ($aWorkSums as $d => $aSum)
-                      {
-                        
-                            $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
-                            $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
-                            $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
-                            $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
-                            //break;
-                      }
-		      
-		    }
->>>>>>> autoAct
 
                     	$tameWork = 0;
                 }

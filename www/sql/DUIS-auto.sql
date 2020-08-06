@@ -633,3 +633,6 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ('REPORT_MATERIAL_TOTAL_P', 'Akts par izlietotiem materiāliem (fiziskais paraksts)'),
 ('REPORT_MATERIAL_TOTAL_E', 'Akts par izlietotiem materiāliem (e-paraksts)');
 --
+ALTER TABLE `darbi` ADD `DRBI_WORK_APROVE_DATE` DATE NULL DEFAULT NULL;
+ALTER TABLE `tame_darbi` ADD `DRBI_WORK_APROVE_DATE` DATE NULL DEFAULT NULL;
+INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('WORK_APPROVE_DATE', 'Apstiprināšanas datums');
