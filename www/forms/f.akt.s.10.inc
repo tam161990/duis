@@ -7,7 +7,7 @@ $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
-
+$trase =  reqVar::get('isTrase');
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser || $isProjector)
@@ -33,9 +33,9 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 			unset($oLinkFile);
 		}
        // get file info by message ID
-	   $fileInfo=dbProc::getFilesInfo($actId, (($isProject == 1) ? FILE_EXPORT : FILE_ESTIMATE) );
+	   $fileInfo=dbProc::getFilesInfo($actId, ($trase && $isProject == 0) ? FILE_ESTIMATE : FILE_EXPORT);
 
-	  // get file link
+	  // get file lin0
 	  $oLinkFile=new urlQuery();
 	  $oLinkFile->addPrm(IS_GET_FILE_VARIABLE, 1);
 	  if (is_array($fileInfo))

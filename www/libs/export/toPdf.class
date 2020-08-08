@@ -653,6 +653,64 @@ class toPdf {
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
 		$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
 
+		// materiali
+		$pdf->SetFont('Arial','BI',10);
+		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
+
+		$width=array(20,80,20,20,20,20);
+		$align=array('C','L','C','C','C','C');
+
+		$headers = array(
+			'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
+			'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
+			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
+			'MATR_CENA' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
+			'MATR_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
+			'MATR_CENA_KOPA' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
+			);
+
+		$aMaterialDb=dbProc::getActMaterialList($actId);
+		$data = array();
+		$totalM = 0;
+		$mat_cena_kopa = 0;
+		foreach ($aMaterialDb as $i => $material)
+		{
+		  if (isset($material['MATR_CENA_KOPA']))
+		  {
+			 $mat_cena_kopa = $material['MATR_CENA_KOPA'];
+		  }
+		  else
+		  {
+			$mat_cena_kopa = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
+		  }
+		  $data[$i] = array(
+			'MATR_KODS' => ((true/*$material['MATR_IS_WORKER'] == '1'*/)? $material['MATR_KODS'] : ''),
+			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
+			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+			'MATR_CENA' => ((false/*$material['MATR_IS_WORKER'] == '1'*/)? '' : $material['MATR_CENA']),
+			'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
+			'MATR_CENA_KOPA' => ((false/*$material['MATR_IS_WORKER'] == '1'*/)? '' : $mat_cena_kopa)
+			);
+		  if(true/*$material['MATR_IS_WORKER'] != '1'*/)
+			 $totalM +=  $mat_cena_kopa;
+		}
+		$pdf->FancyTable($headers,$data, $width, $align);
+		if(true/*$material['MATR_IS_WORKER'] != '1'*/) {
+			$pct =  ($totalM*(100+ PCT_21 )/ 100 ) - $totalM;
+			$summa = ($totalM*(100+ PCT_21 )/ 100 );
+
+			$pdf->SetFont('Arial','',8);
+			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+			$pdf->SetFont('Arial','B',8);
+			$pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
+			$pdf->SetFont('Arial','',8);
+			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. PCT_21 . '%').":",0,0,'R');
+			$pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
+			$pdf->SetFont('Arial','B',8);
+			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
+			$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
+		}
+
 		$rows=dbProc::getUserInfo($userId);
 		if (count($rows)==1)
 		{
