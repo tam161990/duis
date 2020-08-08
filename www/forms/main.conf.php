@@ -5,17 +5,19 @@
 
 // MySQL: login
 //define ('MYSQL_USER','rcd');
-define ('MYSQL_USER','root');
+define ('MYSQL_USER','duisuser');
 
 // MySQL: password
 //define ('MYSQL_PASSWORD','pass@word1');
-define ('MYSQL_PASSWORD','');
+//define ('MYSQL_PASSWORD','Shu_0391oj33X');
+define ('MYSQL_PASSWORD','EBbJYrQM3bQiqJsufufx');
 
 // MySQL: host
 define ('MYSQL_HOST','localhost');
 
 // MySQL DB name
-define ('MYSQL_DB','duistst');
+//define ('MYSQL_DB','duistst');
+define ('MYSQL_DB','duisprd');
 
 # =============================================================================
 # LDAP configuration
@@ -23,19 +25,21 @@ define ('MYSQL_DB','duistst');
 
 // The base dn for  domain
 define ('LDAP_BASE_DIR','OU=LK,DC=energo,DC=lv');
-
+// OU=AdminiUnTehLiet
 // Array of domain controllers.
-define ('LDAP_DOMAIN1','10.20.15.1');
-define ('LDAP_DOMAIN2','10.20.15.2');
+//define ('LDAP_DOMAIN1','10.20.15.5');
+//define ('LDAP_DOMAIN2','10.20.15.2');
+//define ('LDAP_DOMAIN','10.20.15.14');
+define ('LDAP_DOMAIN','leldap.energo.lv');
 
 // The account suffix for domain
 define ('LDAP_ACCOUNT_SUFFIX','@energo.lv');
 
 // is LDAP autentificate mode
-define ('LDAP_AUTH_MODE',false);
+define ('LDAP_AUTH_MODE', true);
 
 // list of system admins, autentification with out LDAP
-define ('RCDIS_ADMIN_LIST', 'admin, ttest');
+define ('RCDIS_ADMIN_LIST', 'admin,ttest,tam,auditor');
 
 # =============================================================================
 # Main configuration
@@ -57,6 +61,7 @@ define ('ZR_SERVER_PATH',preg_replace('/config$/','',dirname(__FILE__)));
 
 // LOG stored dir
 define ('LOG_STORE_PATH', ZR_SERVER_PATH.'/logs');
+
 // Files stored dir
 define ('FILES_STORE_PATH', ZR_SERVER_PATH.'/files');
 // GPS files stored dir
@@ -93,7 +98,8 @@ define ('DEBUG_MODE',true);
 define ('CURRENT_YEAR','current_year');
 
 // SOA service for KvikStep act status
-define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+
 
 # =============================================================================
 # FMK configuration
@@ -107,7 +113,6 @@ define ('MAX_SHOW_TEXT_LENGTH',200);
 # =============================================================================
 
 define ('MAIN_ADMIN_ID',197);
-
 
 # =============================================================================
 # GET variables name
@@ -156,11 +161,10 @@ define ('URL_QUERY_IS_HASH',false);
 # =============================================================================
 # Date interval
 # =============================================================================
-define ('NEXT_YEAR_START',20141215);
-define ('PREV_YEAR_END',20150101);
+define ('NEXT_YEAR_START',20181227);
+define ('PREV_YEAR_END',20190101);
 // default datums
 define ('DEFAULT_DATE', '2000-01-01 00:00:00');
-
 
 # =============================================================================
 # Klasifikatori
@@ -187,7 +191,7 @@ define ('KL_CALCULALATION_TR','KL_KALKULACIJA_TRASE');
 define ('KL_MATERIALS','KL_MATERIALI');
 define ('KL_MMS_WORKS','KL_MMS_DARBI');
 define ('KL_WRITEOFF','KL_WRITEOFF_CODE');
-define ('KL_REGIONS','KL_REGIONI');
+define ('KL_REGIONS','KL_REGIONI');   
 define ('KL_MMS_WORK_CALCULALATION','KL_MMS_KALKULACIJA');
 define ('KL_CALCULALATION_MATERIAL','KL_KALKULACIJA_MATERIALI');
 define ('KL_SYSTEM_PROCESS','KL_SISTEMAS_PROCESI');
@@ -206,7 +210,7 @@ define('KRFK_ROLE', 'ROLE');
 define('KRFK_STATUS', 'STATUS');
 define('KRFK_IMPORT', 'IMPORTS');
 define('KRFK_FAVORIT', 'FAVORITS');
-define('KRFK_IMPORT_K', 'IMPORT');
+define('KRFK_IMPORT_K', 'IMPORT');  
 define('KRFK_POSITION', 'POSITION');
 
 # =============================================================================
@@ -216,8 +220,8 @@ define('KRFK_POSITION', 'POSITION');
 define ('ROLE_VIEWER', 'VIEWER');
 define ('ROLE_ECONOMIST', 'ECONOMIST');
 define ('ROLE_ED_USER', 'ED_USER');
-define ('ROLE_TR_USER', 'TRASE_EDIT');
-define ('ROLE_AUDIT_USER', 'AUDITOR'); 
+define ('ROLE_AUDIT_USER', 'AUDITOR');
+define ('ROLE_TR_USER', 'TRASE_EDIT'); 
 
 # =============================================================================
 # FAVORIT KRFK ID
@@ -257,6 +261,7 @@ define('TAB_ESTIMATE', 'TAB_ESTIMATE');
 define('TAB_WORKS_T', 'TAB_WORKS_T');
 define('TAB_MATERIAL_T', 'TAB_MATERIAL_T');
 
+
 # =============================================================================
 # message types
 # =============================================================================
@@ -295,16 +300,16 @@ define ('OP_PAY','P');
 define ('OP_RETURN_CONFIRMED','X');
 // delete  confirmed by admin
 define ('OP_DELETE_CONFIRMED','Y');
+// dzest rindu
+define ('OP_DELETE_ROW', 'L');
 // run job
 define ('OP_JOB_RUN','J');
 // kill job
 define ('OP_JOB_KILL','K');
 // straprezultāti
 define ('OP_MIDLE_EXPORT', 'M');
-// dzēst rindu
-define ('OP_DELETE_ROW', 'L');
-// statusa maiņa no ģenerēts to ievads
-define ('0', 'H');
+// statusa maina no generets to ievads
+define ('OP_CH_TO_INSERT', 'H');
 
 # =============================================================================
 # USER ACTION CODES
@@ -327,10 +332,10 @@ define ('ACT_CLOSE', 'ACT_CLOSE');
 # ACT TYPE ID
 # =============================================================================
 
-define ('ACT_TYPE_DAMAGE_ID', 10);
+define ('ACT_TYPE_DAMAGE_ID', 6);
 define ('ACT_TYPE_DEFECT_ID', 3);
 define ('ACT_TYPE_STIHIJA_ID', 7);
-define ('ACT_TYPE_DAMAGE_TR_ID', 6);
+define ('ACT_TYPE_DAMAGE_TR_ID', 11);
 define ('ACT_TYPE_DEFECT_TR_ID', 3);
 define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);
@@ -357,8 +362,9 @@ define ('VOLTAGE04KV', 6);
 define ('OBJECT20KV', 12);
 define ('OBJECT04KV', 11);
 
+
 #=================================================
-#  priek? Eltel Networks AS
+#  priek� Eltel Networks AS
 #=================================================
 define('WORKER_CODE_ENA','10722319');
 define('SECTION_CODE_ENA','31011,31012,31013,31014,31015,31016,31019');
@@ -373,4 +379,5 @@ define('WORKER_CODE_EPW','50003563201');
 define('CALC_GROUP_CODE_EPW','21,22,23,24,25,26,27,28,29,31');
 define('WORKER_TAX_EPW','300000/13-208');
 define('WORKER_SECTION_EPW','Daugavpils,Preili,Ludza,Kraslava,Rezekne');
+
 ?>

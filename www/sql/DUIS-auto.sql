@@ -636,3 +636,5 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ALTER TABLE `darbi` ADD `DRBI_WORK_APROVE_DATE` DATE NULL DEFAULT NULL;
 ALTER TABLE `tame_darbi` ADD `DRBI_WORK_APROVE_DATE` DATE NULL DEFAULT NULL;
 INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('WORK_APPROVE_DATE', 'Apstiprināšanas datums');
+--
+INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('TO_INSERT', 'Nomainīt statusu uz IEVADS');
