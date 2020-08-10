@@ -4398,7 +4398,18 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
-	}
+    }
+    
+    function updateActStatus($actId, $status)
+    {    
+        $query = 'UPDATE `AKTI` SET `RAKT_STATUS`  = "' .$status .'" WHERE `RAKT_ID` = '.$actId; 
+        //echo $query;       
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+        
+    }
 
     // -----------------------------------------------------------------------------
 	// Atgriezh akta(-as). Ja dots ID, atdod to
@@ -5834,7 +5845,7 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
 	}
 
-	// funkcija uzstada darba u npersonâla apstiprinâðanas datums
+	// funkcija uzstada darba u npersonï¿½la apstiprinï¿½ï¿½anas datums
     function setApproveDate($actId, $date) {
 		$oSQL = new dbLayer;
 		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
@@ -8170,7 +8181,7 @@ class dbProc extends dbLayer
                                         $mms['KMSD_VV_NUMURS'],
                                         false,
                                         $mms['KMSD_TO_ID'],
-                                        (($mms['KMSD_IR_EPLA'] == 1) ? 'E': ''),                                        
+                                        (($mms['KMSD_IR_EPLA'] == 1) ? 'E': 'K'),                                        
                                         1
                                 );
                     
@@ -8506,7 +8517,7 @@ class dbProc extends dbLayer
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = now() 
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NULL';
-                $oDB -> makeQuery($query);
+                $result = $oDB -> makeQuery($query);
                 
             } else {
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = "NULL"
@@ -8514,9 +8525,11 @@ class dbProc extends dbLayer
                         AND `DRBI_APPROVE_DATE` IS NOT NULL
                         AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
                                                                 WHERE d.DRBI_RAKT_ID ='. $actId.')';
-                $oDB -> makeQuery($query);
+                $result = $oDB -> makeQuery($query);
                 
             }
+           
+            return ($result !== false);
         }
 
         //////////////////////////////

@@ -638,3 +638,8 @@ ALTER TABLE `tame_darbi` ADD `DRBI_WORK_APROVE_DATE` DATE NULL DEFAULT NULL;
 INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('WORK_APPROVE_DATE', 'Apstiprināšanas datums');
 --
 INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('TO_INSERT', 'Nomainīt statusu uz IEVADS');
+--
+INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALUES 
+('SIGNATURE', 'K', 'KVIKSTEPS');
+INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('TO_RETURN', 'Nomainīt statusu uz ATGRIEZTS');
+

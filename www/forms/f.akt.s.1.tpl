@@ -78,6 +78,9 @@
                  <? if($isAdmin && ($actId != false) && ($status == STAT_AUTO) )  {?>
                     <tr><td><?=$oForm->getElementHtml('to_insert');?></td></tr>
                  <? } ?>
+                 <? if($isAdmin && ($actId != false) && ($status == STAT_INSERT) )  {?>
+                    <tr><td><?=$oForm->getElementHtml('to_return');?></td></tr>
+                 <? } ?>
                 </table>
             </td>
         </tr>
