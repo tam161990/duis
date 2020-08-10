@@ -6,7 +6,7 @@ $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
-
+$trase =  reqVar::get('isTrase');
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isSystemUser)
@@ -14,7 +14,7 @@ if ( $isAdmin || $isSystemUser)
     if($actId !== false )
     {
        // get file info by message ID
-	   $fileInfo=dbProc::getFilesInfo($actId, FILE_ESTIMATE);
+	   $fileInfo=dbProc::getFilesInfo($actId, ($trase) ? FILE_ESTIMATE : FILE_EXPORT);
 
 	  // get file link
 	  $oLinkFile=new urlQuery();

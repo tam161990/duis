@@ -181,7 +181,10 @@ document.onmousemove=positiontip
         }
         ?>
         <tr>
-             <td align="right" colspan="7"><b><?=text::get('TOTAL');?>:</b></td>
+             <td align="right" colspan="2"><b><?=text::get('WORK_APPROVE_DATE');?>:</b></td>
+	     <td align="left" colspan="2"><b><?= isset($workApproveDate[$d])?$workApproveDate[$d]:''; ?></b></td>
+
+             <td align="right" colspan="3"><b><?=text::get('TOTAL');?>:</b></td>
              <td align="center"><b><?= isset($totalTime[$d])?$totalTime[$d]:''; ?></b></td>
         </tr>
         <?

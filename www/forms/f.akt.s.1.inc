@@ -406,6 +406,7 @@ if ( $isAdmin || $isSystemUser)
 
   $isReadonly   = true;
   $isReadonly1   = true;
+  $isReadonly2   = true;
   $isReadonlyExceptAdmin   = true;
   $isReadonlyExceptEconomist   = true;
   $isAllowEstimate = false;
@@ -426,6 +427,12 @@ if ( $isAdmin || $isSystemUser)
     {
       
       $isReadonly1   = false;
+    }
+    // labo autors,  administrators
+    if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO))
+    {
+      
+      $isReadonly2   = false;
     }
     // Ir pieejams main??anai, ja  �Teko?ais lietot?js� ir Sist?mas administrators un AKTS:STATUS = �Izveide� vai �Atgriezts� vai �T?me�.
     if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE))
@@ -579,13 +586,13 @@ if ( $isAdmin || $isSystemUser)
   }
 
   
-  $oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>(($trase== 1) ? KL_OBJECTS_TRASE : KL_OBJECTS),'value'=>isset($act['RAKT_KOBJ_ID'])?$act['RAKT_KOBJ_ID']:'','readonly'=>false), 'maxlength="2000"'.(( ($trase== 1 && $isReadonly1 ) || ($trase== 0 && $isReadonly1 && !$isCopy) )?' disabled':''));
+  $oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>(($trase== 1) ? KL_OBJECTS_TRASE : KL_OBJECTS),'value'=>isset($act['RAKT_KOBJ_ID'])?$act['RAKT_KOBJ_ID']:'','readonly'=>false), 'maxlength="2000"'.(( ($trase== 1 && $isReadonly2 ) || ($trase== 0 && $isReadonly2 && !$isCopy) )?' disabled':''));
   if (!$isReadonly1 || ($isCopy && $trase == 0))
   {
     $oForm -> addRule('object', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.(($isReadonly1 || $isCopy)?' disabled':''));
+  $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.(($isReadonly2 || $isCopy)?' disabled':''));
   
   $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.(($isReadonly1 || $isCopy)?' disabled':'').'', '', '', $signature);
   if (!$isReadonly1 && !$isCopy)
@@ -661,7 +668,7 @@ if(true)
       $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     
       if($act['RAKT_IS_AUTO'] == 1) {
-        $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'width="110" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
+        $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
       }
     }
     
@@ -690,6 +697,14 @@ if(true)
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
+  }
+  if ($isAdmin && ($actId != false) && ($status == STAT_AUTO))
+  {
+    $oForm -> addElement('submitImg', 'to_insert', text::get('TO_INSERT'), 'img/btn_auto_to_insert_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
+  }
+  if ($isAdmin && ($actId != false) && ($status == STAT_INSERT))
+  {
+    $oForm -> addElement('submitImg', 'to_return', text::get('TO_RETURN'), 'img/btn_insert_to_return_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
   }
   if($actId != false)
   {
@@ -894,11 +909,7 @@ if(true)
                 }
     		    }
             // estimate
-<<<<<<< HEAD
             if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT)
-=======
-            if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT )
->>>>>>> autoAct
             {
 
                 $r=dbProc::saveAct($oForm->getValue('actId'),
@@ -950,8 +961,7 @@ if(true)
 
                 if ($idFile!==false)
                 {
-                    $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
-
+                    
                    // update act status
                     $r=dbProc::saveAct($oForm->getValue('actId'),
                                   false,false,false,false,false,false,
@@ -1022,6 +1032,50 @@ if(true)
 	  	$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
 	 }
   }
+  // nomainīt akta statusu to INSERT
+  if ($oForm->getValue('action')==OP_CH_TO_INSERT && is_numeric($oForm->getValue('actId')))
+  {
+      $r = false;
+      $r1 = false;
+      $r2 = false;  
+      if($oForm->getValue('status') == STAT_AUTO) {
+        $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_INSERT);
+        $r2 = true;
+      }
+      if($oForm->getValue('status') == STAT_INSERT) {
+        $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_RETURN);
+        $r2 = dbProc::setUnsetActItemsDate($actId, false);
+      }
+      if($r && $r2)
+      {
+          // save status changed time
+          $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_INSERT);
+          dbProc::setUserActionDate($userId, STAT_INSERT);
+
+          if (!$r1)
+          {
+            $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+          }                 
+      
+      }
+      else
+      {
+        $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+      }
+      // if operation was compleated succefully, show success mesage and redirect current frame
+      if ($r && $r1)
+      {
+            $oLink=new urlQuery();
+            $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+            $oLink->addPrm('actId', $actId);
+            $oLink->addPrm('isTrase', $trase);
+            $oLink->addPrm('isSearch', $isSearch);
+            $oLink->addPrm('searchNum', $searchNum);
+            $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+
+            RequestHandler::makeRedirect($oLink->getQuery());
+      }
+  }
   if (($oForm->getValue('action')==OP_RETURN && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_RETURN_CONFIRMED && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_ACCEPT && is_numeric($oForm->getValue('actId'))) )
@@ -1057,30 +1111,10 @@ if(true)
             // atgriezt vai apstiprin?t
             if($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)
             {
-                $r=dbProc::saveAct($oForm->getValue('actId'),
-                            false,
-                            false,
-                            $_proces_date,
-                            false,                    
-                            false,
-                            false,
-                            false,
-                            ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE),
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,                            
-                            false,
-                            false,
-                            false,
-							              false,
-                            $oForm->getValue('toid'),
-                            $oForm->getValue('signature')
-    						);
+                $r=dbProc::updateActStatus($oForm->getValue('actId'), 
+                  ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE)
+                );
+               
                // Ja akts tiek atgriezts nepiln�bu nov�r�anai vai dz�sts, tad PDF ar amatpersonu v�z�m j�k��st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
                 {
@@ -1134,30 +1168,7 @@ if(true)
             // nomainit akta statusu uz  apmaksu
             if($oForm->getValue('action')==OP_PAY)
             {
-              $r=dbProc::saveAct($oForm->getValue('actId'),
-    		    			          false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            STAT_TOPAY,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false ,
-                            false,
-                            false,
-                            false,                            
-                            $oForm->getValue('toid'),
-                            $oForm->getValue('signature')
-    						);
+                $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_TOPAY);
 
                 if($r)
                 {
@@ -1201,31 +1212,9 @@ if(true)
 	  
 			if(($act['RAKT_RLTT_ID'] == $userId && $isEditor && ($status == STAT_INSERT || $status == STAT_RETURN) ) || ($isAdmin && ($status != STAT_DELETE))  )
 			{
-				
-                    $r=dbProc::saveAct($oForm->getValue('actId'),
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            STAT_DELETE,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false,
-                            false ,
-                            false,
-                            false,
-                            false,
-                            $oForm->getValue('toid'),
-                            $oForm->getValue('signature')
-    						);
+
+            $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_DELETE);
+
                 // Ja akts tiek atgriezts nepiln�bu nov�r�anai vai dz�sts, tad PDF ar amatpersonu v�z�m j�k��st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
                 {
@@ -1278,26 +1267,26 @@ if(true)
          $objNumber =  dbProc::getNextObjNumber($oForm->getValue('actId'));
          $r=dbProc::saveAct(false,
     		    			$oForm->getValue('actNumber'),
-                            $objNumber,
-                            $oForm->getValue('proces_date'),
-                            $oForm->getValue('isFinished', 0) ,
-                            $oForm->getValue('description'),
-                            $oForm->getValue('designation'),
-                            STAT_INSERT,
-                            ($oForm->getValue('ouner'))? $oForm->getValue('ouner'):$userId,
-                            $oForm->getValue('object'),
-                            $oForm->getValue('voltage'),
-                            $oForm->getValue('type'),
-                            ($oForm->getValue('worker'))? $oForm->getValue('worker') : false,
-                            $oForm->getValue('EDarea'),
-                            1,/*$oForm->getValue('koeficent')*/
-                            $oForm->getValue('isTrase'),
-                            $oForm->getValue('numPostfix'),
-                            $oForm->getValue('worktitle'),
-                            $oForm->getValue('contract') ,
-                            false,                            
-                            $oForm->getValue('toid'),
-                            $oForm->getValue('signature')
+                          $objNumber,
+                          $oForm->getValue('proces_date'),
+                          $oForm->getValue('isFinished', 0) ,
+                          $oForm->getValue('description'),
+                          $oForm->getValue('designation'),
+                          STAT_INSERT,
+                          ($oForm->getValue('ouner'))? $oForm->getValue('ouner'):$userId,
+                          $oForm->getValue('object'),
+                          $oForm->getValue('voltage'),
+                          $oForm->getValue('type'),
+                          ($oForm->getValue('worker'))? $oForm->getValue('worker') : false,
+                          $oForm->getValue('EDarea'),
+                          1,/*$oForm->getValue('koeficent')*/
+                          $oForm->getValue('isTrase'),
+                          $oForm->getValue('numPostfix'),
+                          $oForm->getValue('worktitle'),
+                          $oForm->getValue('contract') ,
+                          false,                            
+                          $oForm->getValue('toid'),
+                          $oForm->getValue('signature')
     			);
 
           // save status changed time
