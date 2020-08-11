@@ -87,7 +87,7 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('catalog',KL_MATERIALS);
       $oPopLink->addPrm('isSearch', $isSearch);
       $oPopLink->addPrm('searchNum', $searchNum);
-      $oPopLink->addPrm('st',0);
+      $oPopLink->addPrm('st',1);
       $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');
      // $favorit[1]['TITLE'] = text::get('SEARCH_NEW_FROM_LIST');   ;
      // $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());

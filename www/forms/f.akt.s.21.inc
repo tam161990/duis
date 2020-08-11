@@ -63,6 +63,7 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.23');
       $oPopLink->addPrm('actId',$actId);
+      $oPopLink->addPrm('st',1);
       $oPopLink->addPrm('catalog',KL_CALCULALATION);      
 
       $calcGroups=array();
@@ -73,6 +74,20 @@ if ( $isAdmin || $isProjector || $isEconomist)
 
       unset($oPopLink);
       unset($res);
+      $j ++;
+      //Popup saites sagatave
+      $oPopLink=new urlQuery;
+      $oPopLink->addPrm(FORM_ID, 'f.akt.s.13');
+      $oPopLink->addPrm('actId',$actId);
+      $oPopLink->addPrm('catalog',KL_CALCULALATION);
+      $oPopLink->addPrm('isSearch', $isSearch);
+      $oPopLink->addPrm('searchNum', $searchNum);
+      $oPopLink->addPrm('isProject',1);
+      $oPopLink->addPrm('st',0);
+      $calcGroups[$j]['TITLE'] = text::get('SEARCH_NEW');   ;
+      $calcGroups[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+      unset($oPopLink);
+
 
       $aWorks = array();
       if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
@@ -84,8 +99,7 @@ if ( $isAdmin || $isProjector || $isEconomist)
             $total = 0;
             foreach ($aKids as $i => $val)
             {
-                if($oFormWorkTab->getValue('chipher['.$i.']') == '') continue;
-
+                
                  $aWorks[$i]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
                  $aWorks[$i]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
                  $aWorks[$i]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
@@ -217,21 +231,19 @@ if ( $isAdmin || $isProjector || $isEconomist)
 		if($oFormWorkTab ->isValid()  && $isRowValid)
 		{
 		   $r=dbProc::deleteActWorks($actId);
-
 		   if ($r === false)
 		   {
-		   	$oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+		   	  $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
 		   }
 		   else
-		   {
-		        if(is_array($aValidRows))
-                {
+		   { 
+		        if(isset($aValidRows) && is_array($aValidRows))
+            { 
         	    	foreach($aValidRows as $i => $row)
-                {
-                    if($row['chipher'] == '') continue;
+                { 
                             $r=dbProc::writeActWork($actId,
                                                     $row['kid'],
-                                                    $row['chipher'],
+                                                    isset($row['chipher'])?$row['chipher']:' ',
                                                     $row['title'],
                                                     false,
                                                     $row['amount'],
