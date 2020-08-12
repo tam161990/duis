@@ -8223,7 +8223,7 @@ class dbProc extends dbLayer
             
             $aWorkSums = dbProc::getActWorkSumms($actId, 1);
                            
-            /*RequestHandler::sentDataToKvikStep ($mms_kods, 
+            RequestHandler::sentDataToKvikStep ($mms_kods, 
                                                 $trase,
                                                 $workTotal, 
                                                 $materialTotal, 
@@ -8231,7 +8231,7 @@ class dbProc extends dbLayer
                                                 $aWorkSums[0]['ha'],
                                                 $aWorkSums[0]['km'],
                                                 $aWorkSums[0]['gab']
-                                                );*/
+                                                );
            
         }
 
@@ -8239,7 +8239,7 @@ class dbProc extends dbLayer
         // Atgriezh kalkulacijas pēc nomenklatūras koda
         // Author: Tatjana Fedorkova
         // -----------------------------------------------------------------------------
-        function getCalcByMmsCodeList($mms_code, $trase)
+        function getCalcByMmsCodeList($actId, $mms_code, $trase)
         {
                 
             $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`, `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
@@ -8247,6 +8247,7 @@ class dbProc extends dbLayer
                 INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`  
                 INNER JOIN `TAME_DARBI` ON `DRBI_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`              
                 where `KMSD_KODS` = "'.dbLayer::quote_smart($mms_code).'"
+		AND `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId).'
                 AND EXISTS (SELECT 1 FROM  `kl_kalkulacija_materiali` WHERE `KKMT_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`)
 				AND (
                                 (`KMSD_KSRG_KODS` = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
@@ -8405,7 +8406,7 @@ class dbProc extends dbLayer
   
         function processAutoActMaterial($actId, $mms_code, $trase) {
            
-            $calcList = dbProc::getCalcByMmsCodeList($mms_code, $trase);
+            $calcList = dbProc::getCalcByMmsCodeList($actId, $mms_code, $trase);
             
             if ($calcList!==false)
             {
@@ -8415,45 +8416,24 @@ class dbProc extends dbLayer
                 {	
                     $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KMAT_KODS`,
                                     `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
-                                CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
-                                    THEN 
-                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
-                                        ELSE 
-                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
-                                        END 
-                                ELSE
-                                    CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                        THEN '.$mms['KMSD_VADU_SKAITS'].' 
-                                    ELSE 
-                                        `KKMT_DAUDZUMS`                                     
-                                    END 
+                                CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 AND `KKMT_NOKLUSETAIS` = 1
+                                    THEN '.$mms['DAUDZUMS'].' * `KKMT_KOEFICENTS`                                       
+                                    ELSE`KKMT_DAUDZUMS` 
                                 END  AS `DAUDZUMS`
                                 FROM `kl_kalkulacija_materiali` 
                                 INNER JOIN `kl_materiali`  ON `KMAT_KODS` = `KKMT_KMAT_KODS`
                                 WHERE `KKMT_IR_AKTIVS` = 1 
                                 AND `KMAT_IR_AKTIVS` = 1
-                                AND `KKMT_IZMANTOT_NOMENKLATURU` = 1
-                                AND `KKMT_NOKLUSETAIS` = 1
+                                AND `KKMT_IZMANTOT_NOMENKLATURU` = 1                                
                                 AND `KKMT_KKAL_SHIFRS` = "'.$mms['KMKL_KKAL_SHIFRS'].'"
                             UNION
                             SELECT y.* FROM (
                                 SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KMAT_KODS`,
                                     `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
                                     CASE WHEN `KKMT_IZMANTOT_LINIJU` = 1 
-                                    THEN 
-                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
-                                        ELSE 
-                                            '.$mms['KMSD_DAUDZUMS'].' * `KKMT_KOEFICENTS` 
-                                        END
-                                    ELSE
-                                        CASE WHEN `KKMT_IZMANTOT_VADU` = 1 
-                                            THEN '.$mms['KMSD_VADU_SKAITS'].' 
-                                        ELSE 
-                                            `KKMT_DAUDZUMS`                                     
-                                        END 
-                                    END AS `DAUDZUMS`
+                                    THEN '.$mms['DAUDZUMS'].' * `KKMT_KOEFICENTS`                                       
+                                    ELSE`KKMT_DAUDZUMS` 
+                                END  AS `DAUDZUMS`
                                     FROM `kl_kalkulacija_materiali` 
                                     INNER JOIN `kl_materiali`  ON `KMAT_KATEGORIJAS_KODS` = `KKMT_KMAT_APAKSGRUPA`
                                     WHERE `KKMT_IR_AKTIVS` = 1 
