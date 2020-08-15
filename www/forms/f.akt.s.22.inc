@@ -63,20 +63,23 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.23');
       $oPopLink->addPrm('actId',$actId);
-      $oPopLink->addPrm('catalog',KL_MATERIALS);
+      $oPopLink->addPrm('catalog',KL_MATERIALS);     
+      $oPopLink->addPrm('st',1); 
       $favorit[0]['TITLE'] = text::get('SEARCH_NEW_FROM_LIST');   ;
       $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
 
       //Popup saites sagatave
       $oPopLink=new urlQuery;
-      $oPopLink->addPrm(FORM_ID, 'f.akt.s.24');
+      $oPopLink->addPrm(FORM_ID, 'f.akt.s.13');
       $oPopLink->addPrm('actId',$actId);
       $oPopLink->addPrm('catalog',KL_MATERIALS);
       $oPopLink->addPrm('isSearch', $isSearch);
       $oPopLink->addPrm('searchNum', $searchNum);
-      //$favorit[1]['TITLE'] = text::get('SEARCH_NEW');   ;
-      //$favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+      $oPopLink->addPrm('isProject',1);
+      $oPopLink->addPrm('st',0);
+      $favorit[1]['TITLE'] = text::get('SEARCH_NEW');   ;
+      $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
 
       $aMaterials = array();
@@ -209,18 +212,18 @@ if ( $isAdmin || $isProjector || $isEconomist)
 
       // if form iz submit (save button was pressed)
 	  if ($oFormMaterialTab -> isFormSubmitted()&& $isNew === false)
-	  {
+	  { 
       if($oFormMaterialTab ->isValid()  && $isRowValid)
       {
           $r=dbProc::deleteActMaterials($actId);
-        if ($r === false)
-        {
-          $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-        }
-        else
-        {
-		        if(is_array($aValidRows))
-                {
+          if ($r === false)
+          {
+            $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+          }
+          else
+          {
+              if(is_array($aValidRows))
+              { 
                     foreach($aValidRows as $i => $row)
                     {                         
                           $r=dbProc::writeActMaterial($actId,
@@ -242,13 +245,12 @@ if ( $isAdmin || $isProjector || $isEconomist)
                                 $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                                 break;
                           }
-                         else
-                         {
-                           $Id=dbLayer::getInsertId();
-                           $oFormMaterialTab -> setNewValue('id['.$row['rowNum'].']', $Id);
-                           $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));
-
-                         }
+                          else
+                          {
+                            $Id=dbLayer::getInsertId();
+                            $oFormMaterialTab -> setNewValue('id['.$row['rowNum'].']', $Id);
+                            $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));
+                          }
                     }
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_UPDATE);
