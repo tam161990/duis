@@ -18,7 +18,10 @@
 	require_once(ZR_LIBS_DIR.'/classif/classif.class');
 	require_once(ZR_LIBS_DIR.'/email/email.class');
 	require_once(ZR_LIBS_DIR.'/datetime/dtime.class');
-	require_once(ZR_LIBS_DIR.'/excel1.7.6/PHPExcel/IOFactory.php');
+	//require_once(ZR_LIBS_DIR.'/excel1.7.6/PHPExcel/IOFactory.php');
+	require_once(ZR_LIBS_DIR.'/excel1.7.6/PHPExcel.php');
+	require_once(ZR_LIBS_DIR.'/export/toExcel.class');
+	require_once(ZR_LIBS_DIR.'/export/toPdf.class');
     //require_once(ZR_LIBS_DIR.'/excel/PHPExcel/IOFactory.php');
     //require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/PDF.php');
     //require_once(ZR_LIBS_DIR.'/excel/PHPExcel/Writer/Excel5.php');
