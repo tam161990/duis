@@ -4325,7 +4325,7 @@ class dbProc extends dbLayer
           '.(($EDarea !==false)?',`RAKT_KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'"':'').'
           '.(($koeficent !==false)?',`RAKT_KOEFICENT` = "'.dbLayer::quote_smart($koeficent).'"':'').'
           '.(($trase !==false)?',`RAKT_TRASE` = "'.dbLayer::quote_smart($trase).'"':'').'     
-	  '.(($project!==false)?',`RAKT_PROJECT` = "'.dbLayer::quote_smart($trase).'"':'').'             
+	  '.(($project!==false)?',`RAKT_PROJECT` = "'.dbLayer::quote_smart($project).'"':'').'             
           '.(($actNumPostfix !==false)?',`RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($actNumPostfix).'"':'').'
           '.(($EDarea !==false && $actNumPostfix !==false)?',`RAKT_FULL_NUMBER` = CONCAT('.(($trase==1)?'2':'""').',
             (SELECT `KEDI_KODS`  FROM `KL_ED_IECIRKNI` WHERE `KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'" ),
@@ -5851,10 +5851,8 @@ class dbProc extends dbLayer
     function setApproveDate($actId, $date) {
 		$oSQL = new dbLayer;
 		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
-		$result =  $oSQL -> makeQuery($query);
-		$query = 'UPDATE `PERSONALS` SET  `PRSN_WORK_APROVE_DATE`  = "' .$date .'" WHERE `PRSN_RAKT_ID` = '.$actId;  		
-		$result =  $oSQL -> makeQuery($query);
-
+		return  $oSQL -> makeQuery($query);
+		
     }
 
 
@@ -8022,7 +8020,8 @@ class dbProc extends dbLayer
         function saveKvikStepActStatus($code, 
                                         $status = false, 
                                         $user_name = false, 
-                                        $end_date = false
+                                        $end_date = false,
+                                        $accept_date = false
                                         )
         { 
             $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date;
@@ -8033,14 +8032,16 @@ class dbProc extends dbLayer
                             `AAST_KODS`,                            
                             `AAST_DESCRIPTION`,
 							`AAST_STATUS`,
-                            `user_name`,
-                            `END_DATE`
+                            `USER_NAME`,
+                            `END_DATE`,
+                            `ACCEPT_DATE`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
                         '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
-						  '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .'
+                          '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
+                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -8051,14 +8052,16 @@ class dbProc extends dbLayer
                             `AAST_KODS`,                            
                             `AAST_DESCRIPTION`,
 							`AAST_STATUS`,
-                            `user_name`,
-                            `END_DATE`
+                            `USER_NAME`,
+                            `END_DATE`,
+                            `ACCEPT_DATE`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
                         '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
-						  '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .'
+                          '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
+                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -8072,7 +8075,7 @@ class dbProc extends dbLayer
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
-                                 `AAST_ID`, `RAKT_TRASE`
+                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -8115,6 +8118,7 @@ class dbProc extends dbLayer
                 $user_id = false;
                 $place = false;
                 $end_date = false;
+                $accept_date = false;
 				$actId = $act['RAKT_ID'];
 
                 if(isset($act['USER_NAME'])){
@@ -8131,9 +8135,11 @@ class dbProc extends dbLayer
                 {
                     $end_date = $act['END_DATE'];
                 }
-
-		//  setApproveDate($actId, $date);
-
+                if(isset($act['ACCEPT_DATE']))
+                {
+                    $accept_date = $act['ACCEPT_DATE'];
+                }
+		
                 files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
 									'AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
 									'RAKT_STATUS: '.$status.PHP_EOL.
@@ -8171,6 +8177,17 @@ class dbProc extends dbLayer
                             files::wh_log('ERROR setUnsetActItemsDate: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                                 'AAST_ID:' .$act['AAST_ID'].PHP_EOL
                             );	
+                        }
+                    }
+
+                    if($accept_date !== false) {
+                        $r2 = dbProc::setApproveDate($actId, $accept_date);
+                        if ($r2===false)    {        
+                            files::wh_log('ERROR setApproveDate: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
+                                'AAST_ID:' .$act['AAST_ID'].PHP_EOL.
+                                'accept_date:' .$accept_date.PHP_EOL
+                            );						
+
                         }
                     }
 
