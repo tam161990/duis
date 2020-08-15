@@ -35,7 +35,8 @@
 									'issue_key: '.$data->issue_key.PHP_EOL.
 									'issue_status: '. (isset($data->issue_status) ? $data->issue_status : '').PHP_EOL.
 									'issue_assignee: '.(isset($data->issue_assignee) ? $data->issue_assignee : '').PHP_EOL.
-									'issue_end_date:' .(isset($data->issue_end_date) ? $data->issue_end_date :'').PHP_EOL
+									'issue_end_date:' .(isset($data->issue_end_date) ? $data->issue_end_date :'').PHP_EOL.
+									'issue_accept_date:' .(isset($data->issue_accept_date) ? $data->issue_accept_date :'').PHP_EOL
 							);						
 	//var_dump($data);
 	if( isset($data->issue_key) && (isset($data->issue_status) || isset($data->issue_assignee) || isset($data->issue_end_date)))
@@ -45,7 +46,8 @@
 		$r = dbProc::saveKvikStepActStatus($data->issue_key, 
 									  isset($data->issue_status) ? $data->issue_status : false, 
 									  isset($data->issue_assignee) ? $data->issue_assignee : false,
-									  isset($data->issue_end_date) ? $data->issue_end_date : false
+									  isset($data->issue_end_date) ? $data->issue_end_date : false,
+									  isset($data->issue_accept_date) ? $data->issue_accept_date : false
 									);	
 		
 		$response = ob_get_clean();	
