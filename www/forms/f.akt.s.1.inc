@@ -985,9 +985,16 @@ if(true)
                                   $oForm->getValue('signature')
                                  );
                     // save status changed time
-                    $r1 = dbProc::saveAuditRecord($actId, $userId, ($oForm->getValue('action')==OP_EXPORT)? STAT_ACCEPT : STAT_ESTIMATE);
+                    $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_ACCEPT);
                     // saglaba lietotaja darbiibu
-                    dbProc::setUserActionDate($userId, ($oForm->getValue('action')==OP_EXPORT)? ACT_EXPORT : ACT_ESTIMATE);
+                    dbProc::setUserActionDate($userId, ACT_EXPORT);
+
+		    if($isAuto){
+                          // set darba, transporta un personala nodošanas datumu
+                          dbProc::setUnsetActItemsDate(addslashes($actId), true);
+                          
+                        }
+
 
                   if (!$r || !$r1)
                   {

@@ -15,23 +15,23 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 	
     if($actId !== false )
     {
-	   // get excel
-	   if($isProject) {
-			$excelInfo=dbProc::getExcelInfo($actId);
+	   // get excel	  
+		$excelInfo=dbProc::getExcelInfo($actId);
+		
 
-			// get file link
-			$oLinkFile=new urlQuery();
-			$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
-			if (is_array($excelInfo))
+		// get file link
+		$oLinkFile=new urlQuery();
+		$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
+		if (is_array($excelInfo))
+		{
+			foreach ($excelInfo as $i=>$row)
 			{
-				foreach ($excelInfo as $i=>$row)
-				{
-					$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['EFLS_ID']);
-					$excelInfo[$i]['getFileURL']=$oLinkFile ->getQuery();
-				}
+				$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['EFLS_ID']);
+				$excelInfo[$i]['getFileURL']=$oLinkFile ->getQuery();
 			}
-			unset($oLinkFile);
 		}
+		unset($oLinkFile);
+	
        // get file info by message ID
 	   $fileInfo=dbProc::getFilesInfo($actId, ($trase && $isProject == 0) ? FILE_ESTIMATE : FILE_EXPORT);
 

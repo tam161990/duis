@@ -69,22 +69,21 @@ if ( $isAdmin || $isSystemUser)
 
        if($tameMaterial== false) {
 
-      //Popup saites sagatave
-      $oPopLink=new urlQuery;
-      $oPopLink->addPrm(FORM_ID, 'f.akt.s.8');
-      $oPopLink->addPrm('actId',$actId);
-      $oPopLink->addPrm('catalog',KL_MATERIALS);
-      $oPopLink->addPrm('isSearch', $isSearch);
-      $oPopLink->addPrm('searchNum', $searchNum);
+        //Popup saites sagatave
+        $oPopLink=new urlQuery;
+        $oPopLink->addPrm(FORM_ID, 'f.akt.s.8');
+        $oPopLink->addPrm('actId',$actId);
+        $oPopLink->addPrm('catalog',KL_MATERIALS);
+        $oPopLink->addPrm('isSearch', $isSearch);
+        $oPopLink->addPrm('searchNum', $searchNum);
 
 
-      $favorit[0]['TITLE'] = text::get('TAB_ESTIMATE');  
-      $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
-	} else {
-		 $favorit[0]['TITLE'] ='';
-      		$favorit[0]['URL'] = '';
-
-	}
+        $favorit[0]['TITLE'] = text::get('TAB_ESTIMATE');  
+        $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
+      } else {
+        $favorit[0]['TITLE'] ='';
+              $favorit[0]['URL'] = '';
+      }
 
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.11');
@@ -93,9 +92,7 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('isSearch', $isSearch);
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('st',1);
-      $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');
-
-      
+      $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');      
 
       //$next =  count($favorit);
       $favorit[1]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
@@ -129,8 +126,9 @@ if ( $isAdmin || $isSystemUser)
       unset($oPopLink);
 
       $aMaterials = array();
-      if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false)
+      if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false && $oFormMaterialTab->getValue('action')!=OP_EXPORT)
       {
+        echo 'action'.$oFormMaterialTab->getValue('action');
           $isRowValid = true;
           $aCodes =  $oFormMaterialTab->getValue('code');
           if(is_array($aCodes) )
@@ -243,6 +241,7 @@ if ( $isAdmin || $isSystemUser)
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormMaterialTab->addElement('hidden','actId','',$actId);
+      $oFormMaterialTab->addElement('hidden','action','','');
       $oFormMaterialTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormMaterialTab->addElement('hidden','minAmaunt','','0.00');
       $oFormMaterialTab->addElement('hidden','tame_mat','',($tameMaterial) ? 1 : 0);
@@ -315,55 +314,77 @@ if ( $isAdmin || $isSystemUser)
            $oFormMaterialTab->addElement('link', 'group['.$i.']', $group['TITLE'], '#', 'onClick="'.$group['URL'].'"', '');
         }
         $oFormMaterialTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_material.gif', 'width="120" height="20" ');
-        //$oFormMaterialTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
+        
       }
+      if($tameMaterial) {
+        $oFormMaterialTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMaterialTabT\',\'actId\') ) {setFormValue(\'frmMaterialTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+     }
 
       // if form iz submit (save button was pressed)
 	  if ($oFormMaterialTab -> isFormSubmitted()&& $isNew === false)
 	  {
-		if($oFormMaterialTab ->isValid()  && $isRowValid)
-		{
-        $r=dbProc::deleteActMaterials($actId, $tameMaterial);
-		   if ($r === false)
-		   {
-		   	$oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-		   }
-		   else
-		   {
-		        if(is_array($aValidRows))
-                {
-        	    	foreach($aValidRows as $i => $row)
-        			{                         
+      if($tameMaterial && $oFormMaterialTab->getValue('action')==OP_EXPORT)
+      {
+          // akta sagatavi (tab tamme)
+          $idFile = toExcel::exportTameMaterial($actId, $userId, FILE_ESTIMATE);
+          if($idFile !== false) {
+            $oLink=new urlQuery();
+            $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+            $oLink->addPrm('actId', $actId);
+            $oLink->addPrm('tab', TAB_ESTIMATE);
+            RequestHandler::makeRedirect($oLink->getQuery());
+        }
+        else {
+          $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+        }
+      } 
+      else 
+      {
+        if($oFormMaterialTab ->isValid()  && $isRowValid)
+        {
+      
+          $r=dbProc::deleteActMaterials($actId, $tameMaterial);
+          if ($r === false)
+          {
+            $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+          }
+          else
+          {
+              if(is_array($aValidRows))
+              {
+                    foreach($aValidRows as $i => $row)
+                    {                         
                           $r=dbProc::writeActMaterial($actId,
-                                                $row['code'],
-                                                $row['title'],
-                                                $row['unit'],
-                                                $row['price'],
-                                                $row['amount_mat'],
-                                                $row['total_mat'],
-                                                $row['st'],
-                                               ($tameMaterial) ? $row['amount_kor_mat']:false);
-                         // if work not inserted in to the DB
-    					 // delete  task record and show error message
-    					 if($r === false)
-    					 {
-                    dbProc::deleteActMaterials($actId, $tameMaterial);
-                    $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-    				        break;
-    					 }
-                         else
-                         {
-                           $Id=dbLayer::getInsertId();
-                           $oFormMaterialTab -> setNewValue('id['.$row['rowNum'].']', $Id);
-                           $oFormMaterialTab -> setNewValue('total_mat['.$row['rowNum'].']', $row['total_mat']);
-                           $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));
+                                                  $row['code'],
+                                                  $row['title'],
+                                                  $row['unit'],
+                                                  $row['price'],
+                                                  $row['amount_mat'],
+                                                  $row['total_mat'],
+                                                  $row['st'],
+                                                ($tameMaterial) ? $row['amount_kor_mat']:false);
+                          // if work not inserted in to the DB
+                          // delete  task record and show error message
+                          if($r === false)
+                          {
+                                dbProc::deleteActMaterials($actId, $tameMaterial);
+                                $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                                break;
+                          }
+                          else
+                          {
+                            $Id=dbLayer::getInsertId();
+                            $oFormMaterialTab -> setNewValue('id['.$row['rowNum'].']', $Id);
+                            $oFormMaterialTab -> setNewValue('total_mat['.$row['rowNum'].']', $row['total_mat']);
+                            $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));
 
-                         }
-                    }
-                    // saglaba lietotaja darbiibu
-                    dbProc::setUserActionDate($userId, ACT_UPDATE);
-                }
-           }
+                          }
+                      }
+                      // saglaba lietotaja darbiibu
+                      dbProc::setUserActionDate($userId, ACT_UPDATE);
+                  }
+            }
+          }
         }
       }
        $oFormMaterialTab -> makeHtml();

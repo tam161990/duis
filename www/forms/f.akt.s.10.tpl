@@ -1,8 +1,7 @@
 ﻿<h1><?=text::toUpper(text::get(TAB_ESTIMATE));?></h1>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
-
 	<?
-	if ($isProject && isset($excelInfo) && is_array($excelInfo))
+	if (isset($excelInfo) && is_array($excelInfo))
 	{
 		for($i=0; $i<count($excelInfo); $i++)
 		{
@@ -18,9 +17,10 @@
 			</tr>
 
 		<?
-         break;
+         
 		}
 	}
+	
 	if (isset($fileInfo) && is_array($fileInfo))
 	{
 		for($i=0; $i<count($fileInfo); $i++)
