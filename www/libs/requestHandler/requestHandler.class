@@ -292,11 +292,19 @@ class RequestHandler
 			}
 
 			// -----------------------------------------------------------------------------
-			// Getting file (image or other)
+			// Getting excel file 
 			// -----------------------------------------------------------------------------
 			if (reqVar::get(IS_GET_EXCEL_FILE_VARIABLE) && is_numeric(reqVar::get(GET_EXEL_FILE_VARIABLE)))
 			{
 				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'EXCEL');
+			}
+
+			// -----------------------------------------------------------------------------
+			// Getting project excel file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_PEXCEL_FILE_VARIABLE) && is_numeric(reqVar::get(GET_EXEL_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'PEXCEL');
 			}
 
             // -----------------------------------------------------------------------------

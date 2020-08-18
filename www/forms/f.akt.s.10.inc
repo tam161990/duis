@@ -21,7 +21,11 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 
 		// get file link
 		$oLinkFile=new urlQuery();
-		$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
+		if($isProject == 1){
+			$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
+		} else {
+			$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
+		}
 		if (is_array($excelInfo))
 		{
 			foreach ($excelInfo as $i=>$row)

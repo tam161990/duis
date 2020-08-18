@@ -254,7 +254,7 @@ if ( $isAdmin || $isProjector || $isEconomist)
   
   if (!$isReadonly1 && ($actId != false))
   {
-    $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_nodot_saskanosanai.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
   }
   
   if (!$isReadonlyExceptEconomist)
