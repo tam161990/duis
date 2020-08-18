@@ -291,6 +291,14 @@ class RequestHandler
 				files::sendFile(reqVar::get(GET_FILE_VARIABLE));
 			}
 
+			// -----------------------------------------------------------------------------
+			// Getting file (image or other)
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_EXCEL_FILE_VARIABLE) && is_numeric(reqVar::get(GET_EXEL_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'EXCEL');
+			}
+
             // -----------------------------------------------------------------------------
 			// Getting GPS file
 			// -----------------------------------------------------------------------------

@@ -478,11 +478,11 @@ if ( $isAdmin || $isSystemUser)
                     	//pie saglab��anas fon� p�rr��ina kopsummas un materi�lu apjomus
                     	dbProc::updateWorkSumms($actId, $tameWork);
 	
-			if($tameWork == 1) {
-                            // iztirit mat�ri�la tame
-                            dbProc::deleteAutoActMaterial($actId);
-			    // p�rr��inat materi�la tame
-			    dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
+              if($tameWork == 1) {
+                  // iztirit mat�ri�la tame
+                  dbProc::deleteAutoActMaterial($actId);
+                  // p�rr��inat materi�la tame
+                  dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
 		      	}
                    	
 			// �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.

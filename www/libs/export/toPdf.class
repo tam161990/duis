@@ -531,11 +531,7 @@ class toPdf {
 		  array(
 			 array('', 'L', '', 8),
 			 array('', 'L', '', 8)
-				) ,
-		  array(
-			 array(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER5')), 'L', '', 8),
-			 array('', 'L', '', 8)
-				),
+				) ,		  
 		  array(
 			 array('', 'L', '', 8),
 			 array('', 'L', '', 8)
