@@ -7688,6 +7688,8 @@ class dbProc extends dbLayer
                         `KKMT_KOEFICENTS`,
                         `KKMT_IZMANTOT_VADU`,
                         `KKMT_IR_AKTIVS`,
+                        `KKMT_APJOMS_ROUND`,
+                        `KKMT_DVD`,
                         `KKMT_CREATOR`
                     )
                     VALUES
@@ -7703,6 +7705,8 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[7]).'",
                             "'.dbLayer::quote_smart($data[8]).'",
                             "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart($data[10]).'",
+                            "'.dbLayer::quote_smart($data[11]).'",
                             "'.dbLayer::quote_smart( $user).'"
                         )
                     ON DUPLICATE KEY UPDATE
@@ -7713,6 +7717,7 @@ class dbProc extends dbLayer
                             `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($data[7]).'",
                             `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[8]).'",
                             `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($data[9]).'",
+                            `KKMT_APJOMS_ROUND` = "'.dbLayer::quote_smart($data[10]).'",
                             `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
                             `KKMT_EDITED` = now()
                     ';
@@ -7850,12 +7855,13 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function calcMaterialWithChipherExists($group, $subgroup, $code, $mater_code, $ID = false)
+	function calcMaterialWithChipherExists($group, $subgroup, $code, $mater_code, $dvd, $ID = false)
 	{
 		$query = 'select `KKMT_ID` from `KL_KALKULACIJA_MATERIALI`
             where `KKMT_KMAT_GRUPA` = "'.dbLayer::quote_smart($group).'"
             AND `KKMT_KMAT_APAKSGRUPA` = "'.dbLayer::quote_smart($subgroup).'"
             AND `KKMT_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+            AND `KKMT_DVD` = '.dbLayer::quote_smart($dvd).'
             AND `KKMT_KMAT_KODS` = "'.dbLayer::quote_smart($mater_code).'"';
 		if ($ID)
 		{
@@ -7885,6 +7891,8 @@ class dbProc extends dbLayer
                                 $koeficent=1,
                                 $useCord=0,
                                 $isActive=1,
+                                $roundAmount=0,
+                                $dvd=0,
                                 $user)
     {
         
@@ -7902,6 +7910,8 @@ class dbProc extends dbLayer
                         `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($koeficent).'",
                         `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
                         `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
+                        `KKMT_APJOMS_ROUND` = "'.dbLayer::quote_smart($roundAmount).'",
+                        `KKMT_DVD` = "'.dbLayer::quote_smart($dvd).'",
                         `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
                         `KKMT_EDITED` = now()
                     where `KKMT_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -7922,6 +7932,8 @@ class dbProc extends dbLayer
                     `KKMT_KOEFICENTS`,
                     `KKMT_IZMANTOT_VADU`,
                     `KKMT_IR_AKTIVS`,
+                    `KKMT_APJOMS_ROUND`,
+                    `KKMT_DVD`,
                     `KKMT_CREATOR`
                 )
                 VALUES
@@ -7937,6 +7949,8 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($koeficent).'",
                         "'.dbLayer::quote_smart($useCord).'",
                         "'.dbLayer::quote_smart($isActive).'",
+                        "'.dbLayer::quote_smart($roundAmount).'",
+                        "'.dbLayer::quote_smart($dvd).'",
                         "'.dbLayer::quote_smart( $user).'"
                     )';
             }
@@ -7946,7 +7960,6 @@ class dbProc extends dbLayer
 
             return ($result !== false);
         }
-
         //////////////////////////
         // AUTO ACT//////////////
         // -----------------------------------------------------------------------------

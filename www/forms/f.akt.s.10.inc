@@ -3,14 +3,16 @@
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
+$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
 $trase =  reqVar::get('isTrase');
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
-if ( $isAdmin || $isSystemUser)
+if ( $isAdmin || $isSystemUser || $isProjector)
 {
+	
     if($actId !== false )
     {
 	   // get excel	  
@@ -19,7 +21,11 @@ if ( $isAdmin || $isSystemUser)
 
 		// get file link
 		$oLinkFile=new urlQuery();
-		$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
+		if($isProject == 1){
+			$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
+		} else {
+			$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
+		}
 		if (is_array($excelInfo))
 		{
 			foreach ($excelInfo as $i=>$row)
@@ -31,7 +37,7 @@ if ( $isAdmin || $isSystemUser)
 		unset($oLinkFile);
 	
        // get file info by message ID
-	   $fileInfo=dbProc::getFilesInfo($actId, ($trase && $isProject == 0) ? FILE_ESTIMATE : FILE_EXPORT);
+	   $fileInfo=dbProc::getFilesInfo($actId, FILE_ESTIMATE);
 
 	  // get file lin0
 	  $oLinkFile=new urlQuery();

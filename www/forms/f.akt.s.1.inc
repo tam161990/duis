@@ -238,6 +238,25 @@ if ( $isAdmin || $isSystemUser)
     $signature[$row['nosaukums']]=$row['nozime'];
   }
   }
+
+  // get act type
+  $acttype=array();
+  $acttype['']=text::get('EMPTY_SELECT_OPTION');
+	if($trase == 1) {
+		$res=dbProc::getActTraseTypeActivList();
+	} else {
+  		$res=dbProc::getActTypeActivList();
+	}
+	if (is_array($res))
+	{
+		foreach ($res as $row)
+		{
+        		if($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) continue;
+        		$acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+		}
+	}
+unset($res);
+
   
   if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && dbProc::isActTypePlan($oForm -> getValue('type')) )
   {
@@ -307,6 +326,23 @@ if ( $isAdmin || $isSystemUser)
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
 		$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+
+// get act type
+        $acttype=array();
+        $acttype['']=text::get('EMPTY_SELECT_OPTION');
+        if($trase == 1) {
+		$res=dbProc::getActTraseTypeActivList();
+	} else {
+  		$res=dbProc::getActTypeActivList();
+	}
+        if (is_array($res))
+        {
+          foreach ($res as $row)
+          {
+            $acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+          }
+        }
+	unset($res);
 
 
         // get contract list
@@ -539,8 +575,8 @@ if ( $isAdmin || $isSystemUser)
     $oForm -> addElement('label', 'writeoffAccount',  text::get('WRITE_OFF_ACCOUNT'), isset($act['WRITE_OFF_ACCOUNT'])?$act['WRITE_OFF_ACCOUNT']:'');
   }
   
-  
-  $oForm -> addElement('kls', 'type',  text::get('SINGLE_ACT_TYPE'), array('classifName'=> (($trase== 1) ? KL_ACT_TYPE_TRASE : KL_ACT_TYPE),'value'=>isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'','readonly'=>false), (($isReadonly1 || $isCopy || $isAuto == 1)?' disabled ':'').'maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"');
+  $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'', ''.(($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').' onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"', '', '', $acttype);
+  //$oForm -> addElement('kls', 'type',  text::get('SINGLE_ACT_TYPE'), array('classifName'=> (($trase== 1) ? KL_ACT_TYPE_TRASE : KL_ACT_TYPE),'value'=>isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'','readonly'=>false), (($isReadonly1 || $isCopy || $isAuto == 1)?' disabled ':'').'maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"');
   if (!$isReadonly1 && !$isCopy)
   {
      $oForm -> addRule('type', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -642,7 +678,7 @@ if(true)
   // form buttons
   if (!$isReadonly || !$isReadonlyExceptAdmin)
   {
-    $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {setValue(\'action\',\''.OP_INSERT.'\');}"');
+    $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_UPDATE.'\');} else {setFormValue(\'frmMain\',\'action\',\''.OP_INSERT.'\');}"');
 
   }
   if (!$isReadonly)
@@ -665,12 +701,12 @@ if(true)
   if (!$isReadonly1 && ($actId != false))
   {
     if($trase == 1) {
-      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     } else {
-      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     
       if($act['RAKT_IS_AUTO'] == 1) {
-        $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
+        $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
       }
     }
     
@@ -678,7 +714,7 @@ if(true)
   
   if (!$isReadonlyExceptEconomist)
   {
-    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN.'\');} else {return false;}"');
     if($trase == 1)
     {
        //Popup saites sagatave
@@ -692,21 +728,21 @@ if(true)
     }
     else
     {         
-      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
     }
 
   }
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
-    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
   }
   if ($isAdmin && ($actId != false) && ($status == STAT_AUTO))
   {
-    $oForm -> addElement('submitImg', 'to_insert', text::get('TO_INSERT'), 'img/btn_auto_to_insert_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'to_insert', text::get('TO_INSERT'), 'img/btn_auto_to_insert_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
   }
   if ($isAdmin && ($actId != false) && ($status == STAT_INSERT))
   {
-    $oForm -> addElement('submitImg', 'to_return', text::get('TO_RETURN'), 'img/btn_insert_to_return_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'to_return', text::get('TO_RETURN'), 'img/btn_insert_to_return_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_CH_TO_INSERT.'\');} else {return false;}"');
   }
   if($actId != false)
   {
@@ -743,7 +779,7 @@ if(true)
   }
   if($isAllowEstimate)
   {
-      //$oForm -> addElement('submitImg', 'estimate', text::get('ESTIMATE'), 'img/btn_tame.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_ESTIMATE.'\');} else {return false;}"');
+      //$oForm -> addElement('submitImg', 'estimate', text::get('ESTIMATE'), 'img/btn_tame.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ESTIMATE.'\');} else {return false;}"');
       //Popup saites sagatave
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, (($trase == 1) ? 'f.akt.s.16': 'f.akt.s.12'));
@@ -769,15 +805,16 @@ if(true)
 
   if ($isDelete)
   {
-    $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest_r.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest_r.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_DELETE.'\');} else {return false;}"');
   }
   if($isAllowToPay)
   {
-      $oForm -> addElement('submitImg', 'topay', text::get('TO_PAY'), 'img/Nodot-apmaksai2.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_TOPAY').'\')) {setValue(\'action\',\''.OP_PAY.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'topay', text::get('TO_PAY'), 'img/Nodot-apmaksai2.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_TOPAY').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_PAY.'\');} else {return false;}"');
   }
 
   if ($oForm -> isFormSubmitted())
-  {
+  { 
+
     if ($oForm->getValue('action')==OP_INSERT ||
         ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_EXPORT && is_numeric($oForm->getValue('actId'))) ||
@@ -789,7 +826,7 @@ if(true)
           $r1 = true;
           $r2 = true;
           $checkRequiredFields = false;
-         
+
          $actNumber = false;
          if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
             $oForm -> getValue('type') && $oForm -> getValue('contract') &&
@@ -909,7 +946,8 @@ if(true)
                 {
                   $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                 }
-    		    }
+    	    }
+
             // estimate
             if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT)
             {
@@ -941,14 +979,7 @@ if(true)
 
               if ($r )
               {
-                // get info about voltage
-                $actInfo = dbProc::getActInfo($oForm->getValue('actId'));
-                if(count($actInfo)>0)
-                {
-                    $act = $actInfo[0];
-                    $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
-                    $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
-                }
+             
                 if($trase == 1 && $oForm->getValue('action')==OP_EXPORT)
                 {
                   // akta sagatavi (tab tamme)
@@ -957,6 +988,7 @@ if(true)
                 }
                 else if($trase == 0 &&  ($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_MIDLE_EXPORT) )
                 {
+
                   // akta sagatavi (tab export)
                   $idFile = toPdf::exportActPdf($actId, $userId, $oForm->getValue('action')) ;
                 }
@@ -1158,7 +1190,7 @@ if(true)
                       $oLink->addPrm('searchNum', $searchNum);
                       $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
-                      RequestHandler::makeRedirect($oLink->getQuery());
+                      //RequestHandler::makeRedirect($oLink->getQuery());
                 }
             
             }

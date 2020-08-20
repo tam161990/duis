@@ -38,6 +38,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				$calcMaterial = $calculationMaterialInfo[0];
 			}
 			// get user info
+			$creator = '';
+			$editor = '';
 			$userInfo = dbProc::getUserInfo($calcMaterial['KKMT_CREATOR']);
 			if(count($userInfo) >0 )
 			{
@@ -91,6 +93,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('checkbox', 'useCord',  text::get('USE_CORD'), isset($calcMaterial['KKMT_IZMANTOT_VADU'])?$calcMaterial['KKMT_IZMANTOT_VADU']:0, 'tabindex=10'.(($isEdUser)?' disabled' : ''));
 
         $oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($calcMaterial['KKMT_IR_AKTIVS'])?$calcMaterial['KKMT_IR_AKTIVS']:1, 'tabindex=11'.(($isEdUser)?' disabled' : ''));
+
+		$oForm -> addElement('checkbox', 'round_amount',  text::get('APJOMS_ROUND'), isset($calcMaterial['KKMT_APJOMS_ROUND'])?$calcMaterial['KKMT_APJOMS_ROUND']:0, 'tabindex=12'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'dvd',  text::get('DVD'), isset($calcMaterial['KKMT_DVD'])?$calcMaterial['KKMT_DVD']:0, 'tabindex=13'.(($isEdUser)?' disabled' : ''));
 
 				
 		// importa dati
@@ -156,6 +161,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 															$oForm->getValue('subgroup'),
 															$oForm->getValue('chipher'),
 															$oForm->getValue('matr_code'),
+															$oForm->getValue('dvd'),
                                                             ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('calcMaterialId'):false)
                                                             )
 					{
@@ -181,6 +187,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 										$oForm->getValue('koeficent'),
 										$oForm->getValue('useCord', 0),
 										$oForm->getValue('isActive', 0),
+										$oForm->getValue('round_amount', 0),
+										$oForm->getValue('dvd', 0),
 										$userId
 						);
 
