@@ -158,7 +158,7 @@ if($isAdmin || $isSystemUser)
 			    <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('NEW');?></a></td>
                 <?
             }
-            if((($isAdmin || $isEditor) && $isTraseUser ))
+            if($isAdmin || $isTraseUser )
             {
                 ?>
 			    <td class="menu_cell<?= (!$isAdmin && !$isTraseUser)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actTrLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('TRASES');?></a></td>

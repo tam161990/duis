@@ -969,7 +969,7 @@ class toPdf {
 			(($type==OP_MIDLE_EXPORT) ? 'S_':'').
 			$act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
 			$userId, $actId,  
-			FILE_EXPORT ,
+			FILE_ESTIMATE ,
 			EXPORT_FILE_TYPE);
 		if ($res)
 		{
