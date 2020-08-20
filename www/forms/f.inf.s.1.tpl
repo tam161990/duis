@@ -133,23 +133,14 @@ if($isAdmin || $isSystemUser)
 	<table cellpadding="0" cellspacing="0" border="0">
 		<tr>
             
-			<?
-            if(!$isProjector)
-            {
-            ?>
-            <td class="menu_cell<?= ($isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
+			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
+                    
+           
             <?
-            }
-			if($isAdmin ||  $isProjector || $isEconomist)
-            {
-            ?>
-            <td class="menu_cell<?= (!$isAdmin && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$projectSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_PROJECT_SEARCH');?></a></td>
-            <?
-            }			
             if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
             {
             ?>
-            <td class="menu_cell<?= (!$isAdmin && !$isEditor && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
+            <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
             <?
             }
             if((($isAdmin || $isEditor) && $isContractUser ))

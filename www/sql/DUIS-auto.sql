@@ -646,3 +646,34 @@ INSERT INTO `fmk_messages` (`code` ,`text`) VALUES ('TO_RETURN', 'Nomainīt stat
 ALTER TABLE AUTO_ACT_STATUS ADD COLUMN `ACCEPT_DATE` DATETIME NULL ;
 ALTER TABLE AUTO_ACT_STATUS_LOG ADD COLUMN `ACCEPT_DATE` DATETIME NULL ;
 
+ALTER TABLE `kl_kalkulacija_materiali`
+	ADD COLUMN `KKMT_APJOMS_ROUND` TINYINT(1) NOT NULL DEFAULT 0 ,
+	ADD COLUMN `KKMT_DVD` TINYINT(1) NOT NULL DEFAULT 0 ,
+	DROP INDEX `U_KKMT_GROUP_MATERI`,
+	ADD UNIQUE INDEX `U_KKMT_GROUP_MATERI` (`KKMT_KKAL_SHIFRS`, `KKMT_KMAT_GRUPA`, `KKMT_KMAT_APAKSGRUPA`, `KKMT_KMAT_KODS`, `KKMT_DVD`);
+
+INSERT INTO `kl_ref_kolonnas`(KLKL_COLUMN,KLKL_TITLE,KLKL_CATALOG,KLKL_IS_DEFAULT) VALUES 
+('KKMT_APJOMS_ROUND', 'Apjums apaļots', 'KL_KALKULACIJA_MATERIALI', 1),
+('KKMT_DVD', 'Darbība visam darbam', 'KL_KALKULACIJA_MATERIALI', 0);
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('APJOMS_ROUND', 'Apjums apaļots'),
+('DVD', 'Darbība visam darbam');
+
+UPDATE `FMK_MESSAGES` 
+SET `TEXT` = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr>         
+        <tr><td>Kalkulācijas šifrs</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Materiālu kategorija</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`, `.`. Formāts [xxxx.xxx]. Maksimāli 8 simboli.</td></tr>
+        <tr><td>Materiālu nomenklatūra</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 7 simboli.</td></tr>
+        <tr><td>Izmantot nomenklatūru</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Noklusētais materiāls</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Daudzums</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot līnijas garumu</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Koeficents</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot vadu skaitu</td><td>+</td><td>Stihijas kalkul. Cipars formātā [0/1]</td></tr>
+        <tr><td>Ir aktīvs</td><td>+</td><td>Kalkulācija ir aktuāla. Cipars formātā [0/1]</td></tr>     
+        <tr><td>Apjums apaļots</td><td>+</td><td>Cipars formātā [0/1]</td></tr>     
+        <tr><td>Darbība visam darbam</td><td>+</td><td>Cipars formātā [0/1]</td></tr>        
+       </table>'  WHERE `CODE`  = 'REQUIREMENTS_CALCULATION_MATERIAL';
