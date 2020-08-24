@@ -39,7 +39,7 @@ if(true/*$isEdUser || $isAdmin*/)
             $oListLink->addPrm('isTrase', $trase );
             $oListLink->addPrm('sign', $sign );
         }
-        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_MATERIAL_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
+        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_MATERIAL_TOTAL_'.$sign).(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
         $searchName = 'REPORT_MATERIAL_TOTAL';
         include('f.akt.m.4.inc');
 	}

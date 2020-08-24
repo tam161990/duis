@@ -2,7 +2,7 @@
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
 	<tr>
-		<td><h1><?= text::toUpper(text::get('REPORT_MATERIAL_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )); ?></h1></td>
+		<td><h1><?= text::toUpper(text::get('REPORT_MATERIAL_TOTAL_'.$sign).(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )); ?></h1></td>
 		<td align="right">
 
             <img src="img/ico_pdf.gif" alt="" width="16" height="16">&nbsp;

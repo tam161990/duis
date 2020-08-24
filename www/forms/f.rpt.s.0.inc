@@ -112,7 +112,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
-    	$workTotalReportLinkP=$oLink ->getQuery();
+    	$workTrTotalReportLinkP=$oLink ->getQuery();
 		unset($oLink);
 		// Veikt� darba poz�ciju kopsavilkums
     	$oLink=new urlQuery();
@@ -120,7 +120,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'E');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.2');
-    	$workTotalReportLinkE=$oLink ->getQuery();
+    	$workTrTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // Akts par izlietotiem materi�liem
@@ -129,7 +129,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'P');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$materialTotalReportLinkP=$oLink ->getQuery();
+    	$materialTrTotalReportLinkP=$oLink ->getQuery();
     	unset($oLink);
 		// Akts par izlietotiem materi�liem
     	$oLink=new urlQuery();
@@ -137,7 +137,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'E');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$materialTotalReportLinkE=$oLink ->getQuery();
+    	$materialTRTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // act summary
