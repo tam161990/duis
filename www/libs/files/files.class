@@ -173,7 +173,7 @@ class files
             }
             else
             {
-                 $c=@file_get_contents(WRITEOF_FILES_STORE_PATH.'/'.$idFile);
+                 $c=@file_get_contents(EXCEL_FILES_STORE_PATH.'/'.$idFile);
             }
 
 			if ($c)
@@ -189,6 +189,7 @@ class files
 		}
 		return false;
 	}
+
 
 	function wh_log($log_msg)
 	{

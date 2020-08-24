@@ -503,11 +503,11 @@ class toPdf {
 		$pdf->SetDisplayMode('real');
 		$pdf->SetAutoPageBreak(true,20);
 		$pdf->AliasNbPages();
-		$pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4').' '.$act['NUMURS']));
+		$pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER1').' '.$act['NUMURS']));
 		$pdf->SetLeftMargin(20);
 		$pdf->AddPage();
 		$pdf->SetFont('Arial','B',10);
-		$pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER4')), 0,1,'C');
+		$pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER1')), 0,1,'C');
 
 
 		// Create new PHPExcel object
@@ -532,37 +532,38 @@ class toPdf {
 			 array('', 'L', '', 8),
 			 array('', 'L', '', 8)
 				) ,
-		  array(
-			 array(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER5')), 'L', '', 8),
+		   array(
+			 array(iconv('UTF-8', 'windows-1257',text::get('SUPORT_ACT_HEADER5')), 'L', '', 8),
 			 array('', 'L', '', 8)
 				),
+		  
 		  array(
 			 array('', 'L', '', 8),
 			 array('', 'L', '', 8)
 				) ,
 		  array(
 			 array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_OFFER').':'), 'L', '', 8),
-			 array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
+			 array(iconv('UTF-8', 'windows-1257',text::get('SINGLE_SOURCE_OF_FOUNDS').':'), 'L', '', 8)
 				) ,
 		  array(
 			 array(iconv('UTF-8', 'windows-1257',text::get('ST_COMPANY_NAME').', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.text::get('ST_REG_NR')), 'L', 'B', 8),
-			 array(iconv('UTF-8', 'windows-1257',$act['WORKER'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['KWOI_KODS']), 'L', 'B', 8)
+			 array(iconv('UTF-8', 'windows-1257',$act['WRITE_OFF_ACCOUNT']), 'L', 'B', 8)
 				),
 		  array(
 			 array(iconv('UTF-8', 'windows-1257',text::get('ED_IECIKNIS').':'), 'L', '', 8),
-			 array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
+			 array('', 'L', '', 8)
 				) ,
 		   array(
 			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
-			 array('', 'L', '', 8)
+			 array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
 				) ,
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
-			 array('', 'L', '', 8)
+			 array(iconv('UTF-8', 'windows-1257',$act['WORKER'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['KWOI_KODS']), 'L', 'B', 8)
 				) ,
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
-			 array('', 'L', '',8)
+			 array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
 				) ,
 		   array(
 			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
@@ -571,7 +572,7 @@ class toPdf {
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
 			 array('', 'L', '', 8)
-				) ,
+				) 
 		) ;
 		$pdf->HeaderStyledTable($actHeader);
 
@@ -642,6 +643,7 @@ class toPdf {
 		$pct =  ($totalD*(100+ PCT_21 )/ 100 ) - $totalD;
 		$summa = ($totalD*(100+ PCT_21 )/ 100 );
 
+		/*
 		$pdf->SetFont('Arial','',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
@@ -652,6 +654,12 @@ class toPdf {
 		$pdf->SetFont('Arial','B',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
 		$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
+		*/
+		$pdf->SetFont('Arial','',8);
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->SetFont('Arial','B',8);
+		$pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
+
 
 		// materiali
 		$pdf->SetFont('Arial','BI',10);
@@ -695,7 +703,8 @@ class toPdf {
 			 $totalM +=  $mat_cena_kopa;
 		}
 		$pdf->FancyTable($headers,$data, $width, $align);
-		if(true/*$material['MATR_IS_WORKER'] != '1'*/) {
+		/*
+		if($material['MATR_IS_WORKER'] != '1') {
 			$pct =  ($totalM*(100+ PCT_21 )/ 100 ) - $totalM;
 			$summa = ($totalM*(100+ PCT_21 )/ 100 );
 
@@ -710,6 +719,17 @@ class toPdf {
 			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
 			$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
 		}
+		*/
+		$pdf->SetFont('Arial','',8);
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->SetFont('Arial','B',8);
+		$pdf->Cell(20,6,number_format($totalM , 2), 0,1,'R');
+
+		$pdf->SetFont('Arial','',8);
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->SetFont('Arial','B',8);
+		$pdf->Cell(20,6,number_format($totalD + $totalM , 2), 0,1,'R');
+
 
 		$rows=dbProc::getUserInfo($userId);
 		if (count($rows)==1)

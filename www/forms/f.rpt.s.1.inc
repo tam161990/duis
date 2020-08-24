@@ -6,7 +6,7 @@ $isSystemUser = dbProc::isExistsUserRole($userId);
 // TRASE act
 $trase =  reqVar::get('isTrase');
 $sign =  reqVar::get('sign');
-// tikai  sistçmas lietotajam vai administrâtoram ir pieeja!
+// tikai  sistï¿½mas lietotajam vai administrï¿½toram ir pieeja!
 if(true/*$isEdUser || $isAdmin*/)
 {
 	$searchMode = reqVar::get('isSearch');
@@ -39,7 +39,7 @@ if(true/*$isEdUser || $isAdmin*/)
 			$oListLink->addPrm('sign', $sign );
             $oListLink->addPrm('isTrase', $trase );
         }
-        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_ACT_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
+        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_ACT_TOTAL_'.$sign).(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
         $searchName = 'REPORT_ACT_TOTAL';
         include('f.akt.m.4.inc');
 	}

@@ -135,9 +135,10 @@ if ( $isAdmin || $isSystemUser)
         }
         else
         {
-          $res = dbProc::getActByNumberList(      $listing->getStartPosition(),
+            $res = dbProc::getActByNumberList( $listing->getStartPosition(),
                                         $listing->getAmountOnPage(),
-                                        $sCriteria);
+                                        $sCriteria,
+                                        userAuthorization::getWorker());
         }
 
 		if (is_array($res))
