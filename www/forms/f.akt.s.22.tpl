@@ -6,22 +6,28 @@
 	</tr>
     <tr>
 		<td valign="top">
+        <?
+        $x = 0;
+        foreach ($aMaterials as $d => $aGroupMaterials)
+        {
+        ?>
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
 
-				<th width="13%"><?=text::get('CODE');?></th>
-				<th width="32%"><?=text::get('NAME');?></th>
-				<th  width="10%"><?=text::get('UNIT_OF_MEASURE');?></th>
-                <th  width="12%"><?=text::get('AMOUNT');?></th>
-                <th  width="30%"><?=text::get('COMMENT');?></th>
+                <th width="10%"><?=text::get('CODE');?></th>
+                <th width="25%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+				<th width="25%"><?=text::get('NAME');?></th>
+				<th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
+                <th  width="10%"><?=text::get('AMOUNT');?></th>
+                <th  width="20%"><?=text::get('COMMENT');?></th>
 			 	<th width="3%">&nbsp;</th>
 			</tr>
 
 	  <?
-	   	foreach($aMaterials as $i=>$val)
-		{
+      foreach ($aGroupMaterials as $j => $actMaterial)
+	  {
            $changestyle = "font-weight:normal;"   ;
-           if($aMaterials[$i]['MATR_IS_WORKER'] == 1)
+           if($actMaterial['MATR_IS_WORKER'] == 1)
            {
                 $pricestyle = "color:#e4edd8;  font-size:1px;"   ;
            ?>
@@ -38,25 +44,34 @@
 
 
 				<td>
-                    <?= $oFormMaterialTab->getElementHtml('id['.$i.']'); ?>
-                    <?= $oFormMaterialTab->getElementHtml('code['.$i.']'); ?>
+                    <?= $oFormMaterialTab->getElementHtml('id['.$x.']'); ?>
+                    <?= $oFormMaterialTab->getElementHtml('code['.$x.']'); ?>
                 </td>
-				<td><?= $oFormMaterialTab->getElementHtml('title['.$i.']'); ?></td>
-				<td><?= $oFormMaterialTab->getElementHtml('unit['.$i.']'); ?></td>                
-                <td><?= $oFormMaterialTab->getElementHtml('amount_mat['.$i.']'); ?></td>
-				<td><?= $oFormMaterialTab->getElementHtml('notes['.$i.']'); ?></td>
+                <td><?= $oFormMaterialTab->getElementHtml('work_type['.$x.']'); ?> </td>   
+				<td><?= $oFormMaterialTab->getElementHtml('title['.$x.']'); ?></td>
+				<td><?= $oFormMaterialTab->getElementHtml('unit['.$x.']'); ?></td>                
+                <td><?= $oFormMaterialTab->getElementHtml('amount_mat['.$x.']'); ?></td>
+				<td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>
              	<td>
                     <? if(!$isReadonly)  {?>
-                    <?= $oFormMaterialTab->getElementHtml('mat_del['.$i.']'); ?>
+                    <?= $oFormMaterialTab->getElementHtml('mat_del['.$x.']'); ?>
                     <? } else{ ?>
                     &nbsp;
                     <? } ?>
                 </td>
 			</tr>
 
-		<?
+            <?
+            $x++;
+            }
+            ?>
+            <tr>
+                 <td align="right" colspan="7">&nbsp;</td>
+            </tr>
+            <?
+           
 		}
-        ?>
+		?>
         
 	    </table>
         </td>

@@ -328,6 +328,19 @@ if ( $isAdmin || $isSystemUser)
 	$editCalculationMaterialLink = $oLink->getQuery();
 	unset($oLink);
 
+	// list work type
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.22');
+	$workTypeListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit work type form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.22');
+	$oLink->addPrm('editMode', '1');
+	$editWorkTypeLink = $oLink->getQuery();
+	unset($oLink);
+
     // calalog imports
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');

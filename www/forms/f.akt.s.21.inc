@@ -88,43 +88,60 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $calcGroups[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
 
+      // get grupas list
+      $workType=array();
+      $workType['']=text::get('EMPTY_SELECT_OPTION');		
+      $res=dbProc::getWorkTypeList();
+      if (is_array($res))
+      {
+        foreach ($res as $row)
+        {
+          $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+        }
+      }
+      unset($res);
+
 
       $aWorks = array();
+      $aWorkExist = false;
       if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
           $aKids =  $oFormWorkTab->getValue('kid');
           if(is_array($aKids) )
           {
-            $total = 0;
+            $aWorkFr = array();
+            
             foreach ($aKids as $i => $val)
             {
                 
-                 $aWorks[$i]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
-                 $aWorks[$i]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
-                 $aWorks[$i]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
-                 $aWorks[$i]['DRBI_KKAL_NOSAUKUMS'] = $oFormWorkTab->getValue('title['.$i.']');
-                 $aWorks[$i]['DRBI_DAUDZUMS'] = $oFormWorkTab->getValue('amount['.$i.']');
-                 $aWorks[$i]['DRBI_MERVIENIBA'] = $oFormWorkTab->getValue('measure['.$i.']');
-                 $aWorks[$i]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
-                 $aWorks[$i]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
+                 $aWorkFr[$i]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
+                 $aWorkFr[$i]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
+                 $aWorkFr[$i]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
+                 $aWorkFr[$i]['DRBI_KKAL_NOSAUKUMS'] = $oFormWorkTab->getValue('title['.$i.']');
+                 $aWorkFr[$i]['DRBI_DAUDZUMS'] = $oFormWorkTab->getValue('amount['.$i.']');
+                 $aWorkFr[$i]['DRBI_MERVIENIBA'] = $oFormWorkTab->getValue('measure['.$i.']');
+                 $aWorkFr[$i]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
+                 $aWorkFr[$i]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
+                 $aWorkFr[$i]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
+                 $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
                  
                  // validate work progress value
-                if (empty($aWorks[$i]['DRBI_DAUDZUMS']))
+                if (empty($aWorkFr[$i]['DRBI_DAUDZUMS']))
                 {
                   // assign error message
                   $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
                   $isRowValid = false;
                 }
                         // validate work progress value
-                elseif (!is_numeric($aWorks[$i]['DRBI_DAUDZUMS']))
+                elseif (!is_numeric($aWorkFr[$i]['DRBI_DAUDZUMS']))
                 {
                   // assign error message
                   $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
                   $isRowValid = false;
                 }
                         // validate work progress value
-                elseif ($aWorks[$i]['DRBI_DAUDZUMS'] >= 100000)
+                elseif ($aWorkFr[$i]['DRBI_DAUDZUMS'] >= 100000)
                 {
                   // assign error message
                   $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
@@ -132,35 +149,40 @@ if ( $isAdmin || $isProjector || $isEconomist)
                 }
                   // prepare database record data
   			          $aValidRows[] = array(
-                    'kid' => $aWorks[$i]['DRBI_KKAL_ID'],
-                    'chipher' => $aWorks[$i]['DRBI_KKAL_SHIFRS'],
-                    'title' => $aWorks[$i]['DRBI_KKAL_NOSAUKUMS'],
-                    'amount' => $aWorks[$i]['DRBI_DAUDZUMS'],
-                    'measure' => $aWorks[$i]['DRBI_MERVIENIBA'],
-                    'description' => $aWorks[$i]['KKAL_APRAKSTS'],
-                    'notes' => $aWorks[$i]['DRBI_PIEZIMES'],
+                    'kid' => $aWorkFr[$i]['DRBI_KKAL_ID'],
+                    'chipher' => $aWorkFr[$i]['DRBI_KKAL_SHIFRS'],
+                    'title' => $aWorkFr[$i]['DRBI_KKAL_NOSAUKUMS'],
+                    'amount' => $aWorkFr[$i]['DRBI_DAUDZUMS'],
+                    'measure' => $aWorkFr[$i]['DRBI_MERVIENIBA'],
+                    'description' => $aWorkFr[$i]['KKAL_APRAKSTS'],
+                    'notes' => $aWorkFr[$i]['DRBI_PIEZIMES'],
+                    'st' => $aWorkFr[$i]['DRBI_IS_WORKER'],
+                    'work_type' => $aWorkFr[$i]['DRBI_WORK_TYPE_ID'],
                     'rowNum' => $i
   			          );
                 }
+
+            foreach ($aWorkFr as $i=>$work)
+            {
+              $aWorks[$work['DRBI_WORK_TYPE_ID']][] = $work;              
+            }
            }
       }
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-  	    $aWorkDb=dbProc::getActWorkList($actId);      	
-
-        foreach ($aWorkDb as $i => $work)
+        $aWorkDb=dbProc::getActWorkList($actId);      	
+        
+        $aWorkExist = false;
+        foreach ($aWorkDb as $work)
         {
-           $aWorks[$i]['DRBI_ID'] = $work['DRBI_ID'];
-           $aWorks[$i]['DRBI_KKAL_ID'] = $work['DRBI_KKAL_ID'];
-           $aWorks[$i]['DRBI_KKAL_SHIFRS'] = $work['DRBI_KKAL_SHIFRS'];
-           $aWorks[$i]['DRBI_KKAL_NOSAUKUMS'] = $work['DRBI_KKAL_NOSAUKUMS'];
-           $aWorks[$i]['DRBI_DAUDZUMS'] = $work['DRBI_DAUDZUMS'];
-           $aWorks[$i]['DRBI_MERVIENIBA'] = $work['DRBI_MERVIENIBA'];
-           $aWorks[$i]['KKAL_APRAKSTS'] = str_replace('"', '`', $work['KKAL_APRAKSTS']);
-           $aWorks[$i]['DRBI_PIEZIMES'] = $work['DRBI_PIEZIMES'];
-          
+          $aWorks[$work['DRBI_WORK_TYPE_ID']][] = $work;     
+          $aWorkExist = true;     
         }
+
+        if(!$aWorkExist) {
+          $aWorks[0] = array();          
+        }        
       }
       $oFormWorkTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormWorkTab -> addElement('hidden', 'searchNum', '', $searchNum);
@@ -168,52 +190,58 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $oFormWorkTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormWorkTab->addElement('hidden','minAmaunt','','0.00');     
 
-      $totalTime = 0;
+      $i = 0;
       // form elements
-      foreach ($aWorks as $i => $actWork)
+      foreach ($aWorks as $d => $aGroupWorks)
       {
+        foreach ($aGroupWorks as $j => $actWork)
+        {          
 
-        $oFormWorkTab->addElement('hidden', 'id['.$i.']', '', $actWork['DRBI_ID']);
-        $oFormWorkTab->addElement('hidden', 'description['.$i.']', '', $actWork['KKAL_APRAKSTS']);
-        $oFormWorkTab->addElement('hidden', 'kid['.$i.']', '', $actWork['DRBI_KKAL_ID']);
-        $oFormWorkTab->addElement('label', 'chipher['.$i.']', '', $actWork['DRBI_KKAL_SHIFRS']);
-        $oFormWorkTab->addElement('label', 'title['.$i.']', '', $actWork['DRBI_KKAL_NOSAUKUMS']);
-        $oFormWorkTab->addElement('label', 'measure['.$i.']', '', $actWork['DRBI_MERVIENIBA']);
-        
-        $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
-        
-        if(!empty($actWork['DRBI_KKAL_SHIFRS']))
-        {
-            
-                $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-                $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-                // check Amaunt field
-                $v1=&$oFormWorkTab->createValidation('amauntValidation_'.$i, array('amount['.$i.']'), 'ifonefilled');
-                // ja Cilv?kstundas normat?vs ir defin?ts un > 100000
-                $r1=&$oFormWorkTab->createRule(array('amount['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-                // ja koeficent ir defin?ts un < 0
-                $r2=&$oFormWorkTab->createRule(array('amount['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-                $oFormWorkTab->addRule(array($r1, $r2), 'groupRuleAmaunt_'.$i, 'group', $v1);
-            
-        }       
-        $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
-        
+          $oFormWorkTab->addElement('hidden', 'id['.$i.']', '', $actWork['DRBI_ID']);
+          $oFormWorkTab->addElement('hidden', 'description['.$i.']', '', $actWork['KKAL_APRAKSTS']);
+          $oFormWorkTab->addElement('hidden', 'kid['.$i.']', '', $actWork['DRBI_KKAL_ID']);
+          $oFormWorkTab->addElement('label', 'chipher['.$i.']', '', $actWork['DRBI_KKAL_SHIFRS']);
+          $oFormWorkTab->addElement('label', 'title['.$i.']', '', $actWork['DRBI_KKAL_NOSAUKUMS']);
+          $oFormWorkTab->addElement('label', 'measure['.$i.']', '', $actWork['DRBI_MERVIENIBA']);
+          $oFormWorkTab->addElement('hidden', 'st['.$i.']', '', $actWork['DRBI_IS_WORKER']);
+          $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+          
+          if(!empty($actWork['DRBI_KKAL_SHIFRS']))
+          {
+              
+                  $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                  $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+                  // check Amaunt field
+                  $v1=&$oFormWorkTab->createValidation('amauntValidation_'.$i, array('amount['.$i.']'), 'ifonefilled');
+                  // ja Cilv?kstundas normat?vs ir defin?ts un > 100000
+                  $r1=&$oFormWorkTab->createRule(array('amount['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+                  // ja koeficent ir defin?ts un < 0
+                  $r2=&$oFormWorkTab->createRule(array('amount['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+                  $oFormWorkTab->addRule(array($r1, $r2), 'groupRuleAmaunt_'.$i, 'group', $v1);
+              
+          }       
+          $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
+          
+          $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
+          $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-        // ajax handler link for delete
-        $delLink = new urlQuery();
-        $delLink->addPrm(FORM_ID, 'f.akt.s.21');        
-        $delLink->addPrm(DONT_USE_GLB_TPL, '1');
-        $delLink->addPrm('xmlHttp', '1');
-        // delete button
-        $delButtonJs = "if(isDelete()) { 
-							var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
-							eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
-						}";
 
-		    $oFormWorkTab->addElement('button', 'work_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
-        unset($delLink);
+          // ajax handler link for delete
+          $delLink = new urlQuery();
+          $delLink->addPrm(FORM_ID, 'f.akt.s.21');        
+          $delLink->addPrm(DONT_USE_GLB_TPL, '1');
+          $delLink->addPrm('xmlHttp', '1');
+          // delete button
+          $delButtonJs = "if(isDelete()) { 
+                var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
+              }";
+
+          $oFormWorkTab->addElement('button', 'work_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
+          unset($delLink);
+          $i++;
+        }
       }
-      $totalTime = number_format($totalTime, 2, '.', '');
       // form buttons
       if (!$isReadonly)
       {
@@ -253,7 +281,9 @@ if ( $isAdmin || $isProjector || $isEconomist)
                                                     false,
                                                     false,
                                                     false,
-                                                    $row['notes']
+                                                    $row['notes'],
+                                                    $row['st'],
+                                                    $row['work_type']
                                                     );
                             // if work not inserted in to the DB
                         // delete  task record and show error message

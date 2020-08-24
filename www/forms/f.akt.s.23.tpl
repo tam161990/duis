@@ -32,6 +32,12 @@
 </tr>
 
 </table>
+<table cellpadding="5" cellspacing="1" border="0" width="100%">
+    <tr>
+        <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('work_type'); ?></td>
+        <td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('work_type'); ?></td>    
+    </tr>
+</table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">
     <tr>

@@ -74,8 +74,8 @@
         <tr>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('year'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('year'); ?></td>
-            <td class="table_cell_c" width="16%">&nbsp;</td>
-            <td class="table_cell_2" width="24%">&nbsp;</td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('type'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+            <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('type'); ?></td>
         </tr>
         
         <tr>
