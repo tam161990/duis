@@ -199,8 +199,9 @@ if ( $isAdmin || $isSystemUser)
         {
             $res = dbProc::getActByNumberList( $listing->getStartPosition(),
                                         $listing->getAmountOnPage(),
-                                        $sCriteria);
-            $oLink->addPrm('isSearch', 2 );
+                                        $sCriteria,
+                                        userAuthorization::getWorker());
+                $oLink->addPrm('isSearch', 2 );
         }
 
 		if (is_array($res))
