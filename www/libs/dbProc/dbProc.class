@@ -4448,7 +4448,7 @@ class dbProc extends dbLayer
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getActByNumberList($offset = false, $limit = false, $searchString, $worker = false)
+	function getActByNumberList($offset = false, $limit = false, $searchString)
 	{
 
         $query = "select *, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_NOSAUKUMS `TYPE`,
@@ -4462,11 +4462,8 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID)
-            where `RAKT_FULL_NUMBER` LIKE '%".dbLayer::quote_smart($searchString)."%' 
-            ".(($worker !== false) ? " AND `RAKT_KWOI_KODS` = '".dbLayer::quote_smart($worker)."'" : "" )."
-            
+            where `RAKT_FULL_NUMBER` LIKE '%".dbLayer::quote_smart($searchString)."%'
             GROUP BY `RAKT_FULL_NUMBER` ORDER BY `RAKT_FULL_NUMBER`";
-        //echo $query;
         $oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
     }
@@ -5534,7 +5531,12 @@ class dbProc extends dbLayer
 
             $query .= " AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'";
             $query .= " AND a.RAKT_TRASE = ".$trase;
-			$query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
+			if($sign == 'E') {
+				$query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
+			} else {
+				$query .= " and a.RAKT_SIGNATURE  IN ('P') ";
+			}
+			
             $query .= " GROUP BY  a.RAKT_ID ORDER BY ww.KWRC_ID, a.RAKT_FULL_NUMBER";
 
        // echo $query;
@@ -5852,7 +5854,7 @@ class dbProc extends dbLayer
     function setApproveDate($actId, $date) {
 		$oSQL = new dbLayer;
 		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
-		return $oSQL -> makeQuery($query);		
+		return $oSQL -> makeQuery($query);	
 
     }
 
@@ -6994,47 +6996,8 @@ class dbProc extends dbLayer
 	{
 		$oSQL=new dbLayer();
 		return $oSQL->makeQuery('delete from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
-    }
-    
-     // -----------------------------------------------------------------------------
-	// Pievienoja faula ierakstu
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function replaceExcelFile($filename,  $userId, $actId,  $metaInfo='')
-	{
-		$oSQL=new dbLayer();
-        $res=$oSQL->makeQuery('insert into `EXCEL_FAILI`
-						(`EFLS_NOSAUKUMS`,`EFLS_DATUMS`, `EFLS_RLTT_ID`,  `EFLS_RAKT_ID`, `EFLS_META_INFO`) values
-						("'.dbLayer::quote_smart($filename).'",
-						 now(),
-                         "'.dbLayer::quote_smart($userId).'",
-                         '.dbLayer::quote_smart($actId).',
-                         "'.dbLayer::quote_smart($metaInfo).'")');
-
-		if ($res!==false)
-		{
-			return true;
-		}
-		return false;
-    }
-    
-
-    // -----------------------------------------------------------------------------
-	// atgriezh failes datus peec acta ID
-	// author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function getExcelInfo($actId)
-	{
-		$oSQL=new dbLayer();
-		$sql = 'select f.*,'.dbLayer::sqlParseDateTime('EFLS_DATUMS').',
-                     CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
-					from `EXCEL_FAILI` f, `LIETOTAJI` lt
-					where f.EFLS_RLTT_ID=lt.RLTT_ID
-					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
-					order by f.EFLS_ID desc';
-
-		return $oSQL -> makeQuery($sql);
 	}
+
 
 // STATUSA MAINA
     // -----------------------------------------------------------------------------
@@ -7691,8 +7654,6 @@ class dbProc extends dbLayer
                         `KKMT_KOEFICENTS`,
                         `KKMT_IZMANTOT_VADU`,
                         `KKMT_IR_AKTIVS`,
-                        `KKMT_APJOMS_ROUND`,
-                        `KKMT_DVD`,
                         `KKMT_CREATOR`
                     )
                     VALUES
@@ -7708,8 +7669,6 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[7]).'",
                             "'.dbLayer::quote_smart($data[8]).'",
                             "'.dbLayer::quote_smart($data[9]).'",
-                            "'.dbLayer::quote_smart($data[10]).'",
-                            "'.dbLayer::quote_smart($data[11]).'",
                             "'.dbLayer::quote_smart( $user).'"
                         )
                     ON DUPLICATE KEY UPDATE
@@ -7720,7 +7679,6 @@ class dbProc extends dbLayer
                             `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($data[7]).'",
                             `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[8]).'",
                             `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($data[9]).'",
-                            `KKMT_APJOMS_ROUND` = "'.dbLayer::quote_smart($data[10]).'",
                             `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
                             `KKMT_EDITED` = now()
                     ';
@@ -7858,13 +7816,12 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function calcMaterialWithChipherExists($group, $subgroup, $code, $mater_code, $dvd, $ID = false)
+	function calcMaterialWithChipherExists($group, $subgroup, $code, $mater_code, $ID = false)
 	{
 		$query = 'select `KKMT_ID` from `KL_KALKULACIJA_MATERIALI`
             where `KKMT_KMAT_GRUPA` = "'.dbLayer::quote_smart($group).'"
             AND `KKMT_KMAT_APAKSGRUPA` = "'.dbLayer::quote_smart($subgroup).'"
             AND `KKMT_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
-            AND `KKMT_DVD` = '.dbLayer::quote_smart($dvd).'
             AND `KKMT_KMAT_KODS` = "'.dbLayer::quote_smart($mater_code).'"';
 		if ($ID)
 		{
@@ -7894,8 +7851,6 @@ class dbProc extends dbLayer
                                 $koeficent=1,
                                 $useCord=0,
                                 $isActive=1,
-                                $roundAmount=0,
-                                $dvd=0,
                                 $user)
     {
         
@@ -7913,8 +7868,6 @@ class dbProc extends dbLayer
                         `KKMT_KOEFICENTS` = "'.dbLayer::quote_smart($koeficent).'",
                         `KKMT_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
                         `KKMT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
-                        `KKMT_APJOMS_ROUND` = "'.dbLayer::quote_smart($roundAmount).'",
-                        `KKMT_DVD` = "'.dbLayer::quote_smart($dvd).'",
                         `KKMT_EDITOR` = "'.dbLayer::quote_smart($user).'",
                         `KKMT_EDITED` = now()
                     where `KKMT_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -7935,8 +7888,6 @@ class dbProc extends dbLayer
                     `KKMT_KOEFICENTS`,
                     `KKMT_IZMANTOT_VADU`,
                     `KKMT_IR_AKTIVS`,
-                    `KKMT_APJOMS_ROUND`,
-                    `KKMT_DVD`,
                     `KKMT_CREATOR`
                 )
                 VALUES
@@ -7952,8 +7903,6 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($koeficent).'",
                         "'.dbLayer::quote_smart($useCord).'",
                         "'.dbLayer::quote_smart($isActive).'",
-                        "'.dbLayer::quote_smart($roundAmount).'",
-                        "'.dbLayer::quote_smart($dvd).'",
                         "'.dbLayer::quote_smart( $user).'"
                     )';
             }
@@ -7963,6 +7912,7 @@ class dbProc extends dbLayer
 
             return ($result !== false);
         }
+
         //////////////////////////
         // AUTO ACT//////////////
         // -----------------------------------------------------------------------------
