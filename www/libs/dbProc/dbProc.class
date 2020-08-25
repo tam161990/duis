@@ -3593,8 +3593,10 @@ class dbProc extends dbLayer
 
     function getMaterialGroup(){
         
-        $query = 'select `KMAT_GRUPAS_KODS`, `KMAT_GRUPAS_NOSAUKUNS` from `KL_MATERIALI`
-        order by `KMAT_GRUPAS_KODS` asc';
+        $query = 'select `KMAT_GRUPAS_KODS`, `KMAT_GRUPAS_NOSAUKUNS`,
+        LPAD(KMAT_GRUPAS_KODS, 2, 0) as GRUPAS_KODS
+        from `KL_MATERIALI`
+        order by LPAD(KMAT_GRUPAS_KODS, 2, 0) asc';
 
         $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
@@ -3602,7 +3604,8 @@ class dbProc extends dbLayer
 
     function getMaterialSubGroup($group){
         
-        $query = 'select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` 
+        $query = 'select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
+        LPAD(KMAT_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS
         from `KL_MATERIALI`
         WHERE `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group).' 
         order by `KMAT_APAKSGRUPAS_KODS` asc';
@@ -3680,7 +3683,7 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[1]).'",
                             "'.dbLayer::quote_smart($data[2]).'",
                             "'.dbLayer::quote_smart($data[3]).'",
-                            "'.dbLayer::quote_smart($material_kagegory[0]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
                             "'.dbLayer::quote_smart($data[5]).'",
                             "'.dbLayer::quote_smart($data[6]).'",
                             "'.dbLayer::quote_smart($data[7]).'",
@@ -8110,7 +8113,7 @@ class dbProc extends dbLayer
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
-                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`
+                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -8228,8 +8231,15 @@ class dbProc extends dbLayer
                         }
                     }
 
-                    if($status == STAT_CLOSE && $act['RAKT_TRASE'] ) {
+                    if($status == STAT_CLOSE && $act['RAKT_TRASE'] = 1 ) {
                         toPdf::approvedTrasePdf($actId, MAIN_ADMIN_ID, FILE_ESTIMATE);
+                    }
+                    if($status == STAT_CLOSE && $act['RAKT_PROJECT'] = 1 ) {
+                        $fileId = toExcel::acceptProjectReport($actId, $userId);
+                        if($fileId !== false) {
+                            // sūta file link uz KvikStep                            
+                            $r1 = dbProc::sentExcelToKvikStep($act['AAST_KODS'], $fileId);
+                        }
                     }
 
                     // save status changed time

@@ -57,7 +57,7 @@ $catalog  = reqVar::get('catalog');
         {
           // feel options array
           ?>
-          document.all["mat_sub_group"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_APAKSGRUPAS_KODS'] .' : '. $row['KMAT_APAKSGRUPAS_NOSAUKUNS'];?>', '<?=$row['KMAT_APAKSGRUPAS_KODS'];?>');
+          document.all["mat_sub_group"].options[<?=$i;?>] = new Option( '<?=$row['APAKSGRUPAS_KODS'] .' : '. $row['KMAT_APAKSGRUPAS_NOSAUKUNS'];?>', '<?=$row['KMAT_APAKSGRUPAS_KODS'];?>');
           <?
           $i++;
         }
@@ -82,7 +82,7 @@ $catalog  = reqVar::get('catalog');
         {
           // feel options array
           ?>
-          document.all["scope[]"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_KODS'] .' : '. $row['KMAT_NOSAUKUMS'];?>', '<?=$row['KMAT_ID'];?>');
+          document.all["scope[]"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'];?>', '<?=$row['KMAT_ID'];?>');
           <?
           $i++;
         }
@@ -177,7 +177,7 @@ if ( $isAdmin || $isProjector)
               $matrGroup['']=text::get('ALL');
               foreach ($res as $row)
               {
-                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['KMAT_GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
+                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
               }
             }
             unset($res);
@@ -192,7 +192,7 @@ if ( $isAdmin || $isProjector)
               {
                   foreach ($res as $row)
                	  {
-                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KODS'] .' : '. $row['KMAT_NOSAUKUMS'] ;
+                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
                   }
                   unset($res);
               }
