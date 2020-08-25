@@ -486,7 +486,7 @@ class toPdf {
     }
             
     function projectTammePdf($actId, $userId, $type) {
-        
+		// need to merge        
         // get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
 		if(count($actInfo)>0)
