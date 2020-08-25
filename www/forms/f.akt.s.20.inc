@@ -623,7 +623,6 @@ if ( $isAdmin || $isProjector || $isEconomist)
                       $oLink=new urlQuery();
                       $oLink->addPrm(FORM_ID, 'f.akt.s.20');
                       $oLink->addPrm('actId', $actId);
-                      $oLink->addPrm('isTrase', $trase);
                       $oLink->addPrm('isSearch', $isSearch);
                       $oLink->addPrm('searchNum', $searchNum);
                       $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
