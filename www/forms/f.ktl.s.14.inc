@@ -126,7 +126,8 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 
         //datums
         $oForm -> addElement('date', 'proces_date',  text::get('PROCESS_DATE'), isset($mms['KMSD_IZPILDES_DATUMS'])?$mms['KMSD_IZPILDES_DATUMS']:dtime::now(), 'tabindex=4 maxlength="10"'.(($isAuditUser)?' disabled' : ''));
-        $oForm -> addRule('proces_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
+        $oForm -> addRule('proces_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	$oForm -> addRule('proces_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
   
 		$oForm -> addElement('text', 'requirement_code',  text::get('REQUIREMENT_CODE'), isset($mms['KMSD_NOSACIJUMA_KODS'])?$mms['KMSD_NOSACIJUMA_KODS']:'', 'tabindex=5 maxlength="10"' . (($mmsId || $isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('requirement_code', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
@@ -150,9 +151,11 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 		//$oForm -> addRule('network_element_code', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
 
         $oForm -> addElement('text', 'quantity',  text::get('MMS_QUANTITY'), isset($mms['KMSD_DAUDZUMS'])?$mms['KMSD_DAUDZUMS']:'', ' tabindex=14  maxlength="10"'.(($isAuditUser)?' disabled' : ''));
+		$oForm -> addRule('quantity', text::get('ERROR_REQUIRED_FIELD'), 'required');
 		$oForm -> addRule('quantity', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
 		
 		$oForm -> addElement('text', 'line_count',  text::get('MMS_LINE_COUNT'), isset($mms['KMSD_VADU_SKAITS'])?$mms['KMSD_VADU_SKAITS']:'', 'tabindex=15 maxlength="10"'.(($isAuditUser)?' disabled' : '') );
+		$oForm -> addRule('line_count', text::get('ERROR_REQUIRED_FIELD'), 'required');
 		$oForm -> addRule('line_count', text::get('ERROR_NUMERIC_VALUE'), 'numeric');
 		
 		$oForm -> addElement('text', 'mms_x',  text::get('MMS_X'), isset($mms['KMSD_X'])?$mms['KMSD_X']:'', ' tabindex=16  maxlength="20"'.(($mmsId || $isAuditUser)?' disabled' : ''));
@@ -161,7 +164,10 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 		$oForm -> addElement('text', 'mms_y',  text::get('MMS_Y'), isset($mms['KMSD_Y'])?$mms['KMSD_Y']:'', ' tabindex=17  maxlength="20"'.(($mmsId || $isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('mms_y', text::get('ERROR_DOUBLE_VALUE'), 'double', 8);
 
-        $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>KL_VOLTAGE_BY_CODE,'value'=>isset($mms['KMSD_KSRG_KODS'])?$mms['KMSD_KSRG_KODS']:'','readonly'=>false), 'tabindex=18 maxlength="2000"'.(($isAuditUser)?' disabled':''));
+        	$oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>KL_VOLTAGE_BY_CODE,'value'=>isset($mms['KMSD_KSRG_KODS'])?$mms['KMSD_KSRG_KODS']:'','readonly'=>false), 'tabindex=18 maxlength="2000"'.(($isAuditUser)?' disabled':''));
+		$oForm -> addRule('voltage', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
+
 		$oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>KL_OBJECTS_BY_CODE,'value'=>isset($mms['KMSD_KOBJ_KODS'])?$mms['KMSD_KOBJ_KODS']:'','readonly'=>false), 'tabindex=19 maxlength="2000"'.(($isAuditUser)?' disabled':''));
 		//$oForm -> addElement('kls', 'sourceOfFounds',  text::get('SINGLE_SOURCE_OF_FOUNDS'), array('classifName'=>KL_SOURCE_OF_FOUNDS_BY_CODE,'value'=>isset($mms['KMSD_KFNA_KODS'])?$mms['KMSD_KFNA_KODS']: '','readonly'=>false), 'tabindex=20 maxlength="2000"'.(($mmsId || $isAuditUser)?' disabled':''));
 
@@ -313,7 +319,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
     					$oLink->addPrm('successMessage', text::get('RECORD_WAS_DELETED'));
     					break;
     			}
-    			RequestHandler::makeRedirect($oLink->getQuery());
+    			//RequestHandler::makeRedirect($oLink->getQuery());
     		}
 		}
 
