@@ -37,7 +37,7 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 		unset($oLinkFile);
 	
        // get file info by message ID
-	   $fileInfo=dbProc::getFilesInfo($actId, ($trase && $isProject == 0) ? FILE_ESTIMATE : FILE_EXPORT);
+	   $fileInfo=dbProc::getFilesInfo($actId, ($trase) ? FILE_ESTIMATE : FILE_EXPORT);
 
 	  // get file lin0
 	  $oLinkFile=new urlQuery();
