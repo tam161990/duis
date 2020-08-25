@@ -82,42 +82,68 @@ document.onmousemove=positiontip
 	</tr>
     <tr>
 		<td valign="top">
+        <?
+        $x = 0;
+        foreach ($aWorks as $d => $aGroupWorks)
+        {
+        ?>
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
 
-				<th width="10%"><?=text::get('CHIPHER');?></th>
-				<th width="37%" colspan="2"><?=text::get('NAME');?></th>
-                <th  width="10%"><?=text::get('UNIT_OF_MEASURE');?></th>
+                <th width="10%"><?=text::get('CHIPHER');?></th>
+                <th width="25%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+				<th width="25%" ><?=text::get('NAME');?></th>
+                <th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
 				<th  width="10%"><?=text::get('AMOUNT');?></th>                
-				<th  width="30%"><?=text::get('COMMENT');?></th>
+				<th  width="20%"><?=text::get('COMMENT');?></th>
 			 	<th width="3%">&nbsp;</th>
 			</tr>
 
 	  <?
-	   	foreach($aWorks as $i=>$val)
+        foreach ($aGroupWorks as $j => $actWork)
 		{
-		?>
-			<tr class="table_cell_3"  id="blank_work<?= $i; ?>">
+		
+            $changestyle = "font-weight:normal;"   ;
+            if($actWork['DRBI_IS_WORKER'] == 1)
+            {
+                $pricestyle = "color:#e4edd8;  font-size:1px;"   ;
+            ?>
+            <tr class="table_cell_4" style="<?=$changestyle;?>" id="blank_mat<?= $i; ?>">
+
+            <?} else
+            {
+                $pricestyle = "color:#ffffff;  font-size:11px;"   ;
+            ?>
+            <tr class="table_cell_3" style="<?=$changestyle;?>" id="blank_mat<?= $i; ?>">
+            <?}
+         ?>
 
 				<td>
-                    <?= $oFormWorkTab->getElementHtml('id['.$i.']'); ?>
-                    <?= $oFormWorkTab->getElementHtml('chipher['.$i.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('id['.$x.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('chipher['.$x.']'); ?>
                 </td>
-				<td width="40%"><?= $oFormWorkTab->getElementHtml('title['.$i.']'); ?> </td>
-                <td width="20"><div onMouseover="ddrivetip('<?= $val['KKAL_APRAKSTS']; ?>', '#EFEFEF')";     onMouseout="hideddrivetip()" style="text-align:right;"><img src="img/info.PNG" alt="" width="16" height="16"></div> </td>
-				<td><?= $oFormWorkTab->getElementHtml('measure['.$i.']'); ?></td>
-				<td><?= $oFormWorkTab->getElementHtml('amount['.$i.']'); ?></td>                
-				<td><?= $oFormWorkTab->getElementHtml('notes['.$i.']'); ?></td>
+                <td><?= $oFormWorkTab->getElementHtml('work_type['.$x.']'); ?> </td>   
+				<td><?= $oFormWorkTab->getElementHtml('title['.$x.']'); ?> </td>                
+				<td><?= $oFormWorkTab->getElementHtml('measure['.$x.']'); ?></td>
+				<td><?= $oFormWorkTab->getElementHtml('amount['.$x.']'); ?></td>                
+				<td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
              	<td>
                     <? if(!$isReadonly)  {?>
-                    <?= $oFormWorkTab->getElementHtml('work_del['.$i.']'); ?>
+                    <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
                     <? } else{ ?>
                     &nbsp;
                     <? } ?>
                 </td>
 			</tr>
-
-		<?
+            <?
+            $x++;
+            }
+            ?>
+            <tr>
+                 <td align="right" colspan="7">&nbsp;</td>
+            </tr>
+            <?
+           
 		}
 		?>
        

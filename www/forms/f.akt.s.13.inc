@@ -69,6 +69,31 @@ if ( $isAdmin || $isSystemUser)
       $meassure['par']='par';
       $meassure['t']='t';
 
+      if($isProject == 1) {
+         // get grupas list
+         $workType=array();
+         $workType['']=text::get('EMPTY_SELECT_OPTION');		
+         switch ($catalog )
+         {
+         case  KL_CALCULALATION:
+               // get grupas list           
+               $res=dbProc::getWorkTypeList();           
+               break;         
+            case  KL_MATERIALS: 
+               // get grupas list             
+               $res=dbProc::getWorkTypeListByWork($actId);  
+               break;
+         }
+         if (is_array($res))
+         {
+           foreach ($res as $row)
+           {
+             $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+           }
+         }
+         unset($res);
+      }
+
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
       $oFormPop -> addElement('hidden', 'catalog', '', $catalog);
@@ -165,7 +190,8 @@ if ( $isAdmin || $isSystemUser)
                                                    $oFormPop->getValue('tame'),
                                                    (($oFormPop->getValue('st') == 1 ) ? 0 : 1),
                                                    $oFormPop->getValue('title'),
-                                                   $oFormPop->getValue('mervieniba')
+                                                   $oFormPop->getValue('mervieniba'),
+                                                   ($isProject == 1) ? $oFormPop->getValue('work_type'): false
                                                 );
                      break;         
                case  KL_MATERIALS: 
@@ -177,7 +203,9 @@ if ( $isAdmin || $isSystemUser)
                                                 $oFormPop->getValue('tame'),
                                                 (($oFormPop->getValue('st') == 1 ) ? 0 : 1),
                                                 $oFormPop->getValue('title'),
-                                                $oFormPop->getValue('mervieniba')); 
+                                                $oFormPop->getValue('mervieniba'),
+                                                ($isProject == 1) ? $oFormPop->getValue('work_type'): false
+                                             ); 
                   break;
                }
               
@@ -227,7 +255,12 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('text', 'title', '', '',(($isReadonly)?' disabled ':'').'maxlength="250"');
       //$oFormPop->addElement('text', 'mervieniba', '', '',(($isReadonly)?' disabled ':'').'maxlength="15"');
       $oFormPop -> addElement('select', 'mervieniba',  '', '', (($isReadonly)?' disabled ':''), '', '',$meassure);
-      $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"');           $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+      $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"'); 
+      $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+      if($isProject == 1) {
+         $oFormPop -> addElement('select', 'work_type',  '', '', 'tabindex=2', '', '', $workType);
+         $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      } 
       // form buttons
       if (!$isReadonly)
       {

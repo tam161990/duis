@@ -78,6 +78,10 @@ if ( $isAdmin || $isProjector || $isEconomist)
   $ouner = array();
   $ouner['']=text::get('EMPTY_SELECT_OPTION');
 
+  $type = array();
+  $type['']=text::get('EMPTY_SELECT_OPTION');
+
+
   // if operation is success, show success message and redirect top frame
   if (reqVar::get('successMessage'))
   {
@@ -98,7 +102,6 @@ if ( $isAdmin || $isProjector || $isEconomist)
   }
 
   $res=dbProc::getEDAreaActivList();
-
   if (is_array($res))
   {
         foreach ($res as $row)
@@ -107,6 +110,17 @@ if ( $isAdmin || $isProjector || $isEconomist)
         }
   }
   unset($res);
+
+  $res = dbProc::getKrfkName('PROJECT_TYPE');
+  if (is_array($res))
+  {
+        foreach ($res as $row)
+        {
+            $type[$row['nosaukums']]=$row['nozime'];
+        }
+  }
+  unset($res);
+
   
   if($actId != false)
   {
@@ -218,6 +232,8 @@ if ( $isAdmin || $isProjector || $isEconomist)
     
   $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:'', ''.((!$isReadonlyExceptAdmin || !$isReadonly)? '' :' disabled').'', '', '', $ouner);
   
+  $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_PROJECT_TYPE'])?$act['RAKT_PROJECT_TYPE']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $type);
+    
   if (!$isReadonlyExceptAdmin || !$isReadonly)
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -243,6 +259,7 @@ if ( $isAdmin || $isProjector || $isEconomist)
         $oForm -> addRule('numPostfix', text::get('ERROR_REQUIRED_FIELD'), 'required');
         $oForm -> addRule('worktitle', text::get('ERROR_REQUIRED_FIELD'), 'required');       
         $oForm -> addRule('year', text::get('ERROR_REQUIRED_FIELD'), 'required');
+        $oForm -> addRule('type', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
   
   // form buttons
@@ -321,7 +338,8 @@ if ( $isAdmin || $isProjector || $isEconomist)
          
          $actNumber = false;
          if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
-             $oForm -> getValue('year')  &&  $oForm -> getValue('worker') &&  $oForm -> getValue('numPostfix') 
+             $oForm -> getValue('year')  &&  $oForm -> getValue('worker') &&  
+             $oForm -> getValue('numPostfix')  && $oForm -> getValue('type') 
             )
         {
             $checkRequiredFields = true;
@@ -362,7 +380,8 @@ if ( $isAdmin || $isProjector || $isEconomist)
                 false,
                 false,
                 1,
-                1
+                1,
+                $oForm->getValue('type'),
               );
 
               // get inserted record ID

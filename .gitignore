@@ -1,5 +1,7 @@
 config/
 files/
+excel/
+logs/
 temp/
 output/
 gps_files/

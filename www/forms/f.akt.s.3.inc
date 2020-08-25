@@ -128,7 +128,7 @@ if ( $isAdmin || $isSystemUser)
       $aMaterials = array();
       if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false && $oFormMaterialTab->getValue('action')!=OP_EXPORT)
       {
-        echo 'action'.$oFormMaterialTab->getValue('action');
+        
           $isRowValid = true;
           $aCodes =  $oFormMaterialTab->getValue('code');
           if(is_array($aCodes) )

@@ -82,39 +82,55 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
 
+      // get grupas list
+      $workType=array();
+      $workType['']=text::get('EMPTY_SELECT_OPTION');		
+      $res=dbProc::getWorkTypeListByWork($actId);
+      if (is_array($res))
+      {
+        foreach ($res as $row)
+        {
+          $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+        }
+      }
+      unset($res);
+
       $aMaterials = array();
+      $aMaterialExist = false;
       if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
           $aCodes =  $oFormMaterialTab->getValue('code');
           if(is_array($aCodes) )
           {
+            $aMaterialsFr = array();
             foreach ($aCodes as $i => $val)
             {
-                 $aMaterials[$i]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
-                 $aMaterials[$i]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
-                 $aMaterials[$i]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
-                 $aMaterials[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
-                 $aMaterials[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
-                 $aMaterials[$i]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
+                 $aMaterialsFr[$i]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
+                 $aMaterialsFr[$i]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
+                 $aMaterialsFr[$i]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
+                 $aMaterialsFr[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
+                 $aMaterialsFr[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
+                 $aMaterialsFr[$i]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
+                 $aMaterialsFr[$i]['MATR_WORK_TYPE_ID'] = $oFormMaterialTab->getValue('work_type['.$i.']');
                  // validate work progress value
                  
-                  $aMaterials[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
-                  if (empty($aMaterials[$i]['MATR_DAUDZUMS']))
+                  $aMaterialsFr[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
+                  if (empty($aMaterialsFr[$i]['MATR_DAUDZUMS']))
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
                       $isRowValid = false;
                   }
                   // validate work progress value
-                  elseif (!is_numeric($aMaterials[$i]['MATR_DAUDZUMS']))
+                  elseif (!is_numeric($aMaterialsFr[$i]['MATR_DAUDZUMS']))
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
                       $isRowValid = false;
                   }
                   // validate work progress value
-                  elseif ($aMaterials[$i]['MATR_DAUDZUMS'] >= 100000)
+                  elseif ($aMaterialsFr[$i]['MATR_DAUDZUMS'] >= 100000)
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
@@ -124,14 +140,19 @@ if ( $isAdmin || $isProjector || $isEconomist)
               
                   // prepare database record data
                   $aValidRows[] = array(
-                        'code' => $aMaterials[$i]['MATR_KODS'],
-                        'title' => $aMaterials[$i]['MATR_NOSAUKUMS'],
-                        'unit' => $aMaterials[$i]['MATR_MERVIENIBA'],
-                        'amount_mat' => $aMaterials[$i]['MATR_DAUDZUMS'],                        
-                        'st' => $aMaterials[$i]['MATR_IS_WORKER'],
-                        'notes' => $aMaterials[$i]['MATR_PIEZIMES'],
+                        'code' => $aMaterialsFr[$i]['MATR_KODS'],
+                        'title' => $aMaterialsFr[$i]['MATR_NOSAUKUMS'],
+                        'unit' => $aMaterialsFr[$i]['MATR_MERVIENIBA'],
+                        'amount_mat' => $aMaterialsFr[$i]['MATR_DAUDZUMS'],                        
+                        'st' => $aMaterialsFr[$i]['MATR_IS_WORKER'],
+                        'notes' => $aMaterialsFr[$i]['MATR_PIEZIMES'],
+                        'work_type' => $aMaterialsFr[$i]['MATR_WORK_TYPE_ID'],
                         'rowNum' => $i
                       );
+                }
+                foreach ($aMaterialsFr as $i=>$material)
+                {
+                  $aMaterials[$material['MATR_WORK_TYPE_ID']][] = $material;              
                 }
            }
       }
@@ -141,18 +162,16 @@ if ( $isAdmin || $isProjector || $isEconomist)
         //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
         $aMaterialDb=dbProc::getActMaterialList($actId);
 
-        foreach ($aMaterialDb as $i => $material)
-        {          
-
-           $aMaterials[$i]['MATR_ID'] = $material['MATR_ID'];
-           $aMaterials[$i]['MATR_KODS'] = $material['MATR_KODS'];
-           $aMaterials[$i]['MATR_NOSAUKUMS'] = $material['MATR_NOSAUKUMS'];
-           $aMaterials[$i]['MATR_MERVIENIBA'] = $material['MATR_MERVIENIBA'];          
-           $aMaterials[$i]['MATR_DAUDZUMS'] = $material['MATR_DAUDZUMS'];           
-           $aMaterials[$i]['MATR_IS_WORKER'] = $material['MATR_IS_WORKER'];   
-           $aMaterials[$i]['MATR_PIEZIMES'] = $material['MATR_PIEZIMES'];           
-
+        $aMaterialExist = false;
+        foreach ($aMaterialDb as $material)
+        {
+          $aMaterials[$material['MATR_WORK_TYPE_ID']][] = $material;     
+          $aMaterialExist = true;     
         }
+
+        if(!$aMaterialExist) {
+          $aMaterials[0] = array();          
+        }    
       }
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
@@ -160,45 +179,52 @@ if ( $isAdmin || $isProjector || $isEconomist)
       $oFormMaterialTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormMaterialTab->addElement('hidden','minAmaunt','','0.00');
       
+      $i = 0;
       // form elements
-      $totalPrice = 0;
-      foreach ($aMaterials as $i => $actMaterial)
+      foreach ($aMaterials as $d => $aGroupMaterials)
       {
-        $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
-        $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
-        $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
-        $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
-        $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
-                
-        $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
-        $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-        // check Amaunt field
-        $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
-        // ja Amount ir definēts un > 100000
-        $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-        // ja Amount ir definēts un < 0
-        $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-        $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
-    
-        $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
-
+        foreach ($aGroupMaterials as $j => $actMaterial)
+        {          
       
+          $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
+          $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
+          $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
+          $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
+          $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
+                  
+          $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+          $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+          $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+          // check Amaunt field
+          $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
+          // ja Amount ir definēts un > 100000
+          $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+          // ja Amount ir definēts un < 0
+          $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+          $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+      
+          $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
 
-        // ajax handler link for delete
-        $delLink = new urlQuery();
-        $delLink->addPrm(FORM_ID, 'f.akt.s.22');
-        $delLink->addPrm(DONT_USE_GLB_TPL, '1');
-        $delLink->addPrm('xmlHttp', '1');
-        // delete button
-        $delButtonJs = "if(isDelete()) {
-              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
-            }";
-            $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
-            unset($delLink);
+          $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
+          $oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+        
+
+          // ajax handler link for delete
+          $delLink = new urlQuery();
+          $delLink->addPrm(FORM_ID, 'f.akt.s.22');
+          $delLink->addPrm(DONT_USE_GLB_TPL, '1');
+          $delLink->addPrm('xmlHttp', '1');
+          // delete button
+          $delButtonJs = "if(isDelete()) {
+                var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
+              }";
+              $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
+              unset($delLink);
+            
+            $i++;
+        }
       }
-      
       // form buttons
       if (!$isReadonly)
       {
@@ -235,7 +261,8 @@ if ( $isAdmin || $isProjector || $isEconomist)
                                                 false,
                                                 $row['st'],
                                                 false,
-                                                $row['notes']
+                                                $row['notes'],
+                                                $row['work_type']
                                               );
                           // if work not inserted in to the DB
                           // delete  task record and show error message

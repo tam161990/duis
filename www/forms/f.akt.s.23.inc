@@ -57,7 +57,7 @@ $catalog  = reqVar::get('catalog');
         {
           // feel options array
           ?>
-          document.all["mat_sub_group"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_APAKSGRUPAS_KODS'] .' : '. $row['KMAT_APAKSGRUPAS_NOSAUKUNS'];?>', '<?=$row['KMAT_APAKSGRUPAS_KODS'];?>');
+          document.all["mat_sub_group"].options[<?=$i;?>] = new Option( '<?=$row['APAKSGRUPAS_KODS'] .' : '. $row['KMAT_APAKSGRUPAS_NOSAUKUNS'];?>', '<?=$row['KMAT_APAKSGRUPAS_KODS'];?>');
           <?
           $i++;
         }
@@ -82,7 +82,7 @@ $catalog  = reqVar::get('catalog');
         {
           // feel options array
           ?>
-          document.all["scope[]"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_KODS'] .' : '. $row['KMAT_NOSAUKUMS'];?>', '<?=$row['KMAT_ID'];?>');
+          document.all["scope[]"].options[<?=$i;?>] = new Option( '<?=$row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'];?>', '<?=$row['KMAT_ID'];?>');
           <?
           $i++;
         }
@@ -121,14 +121,27 @@ if ( $isAdmin || $isProjector)
 
       $aScope=array();
       $aScope['-1']='';
-
+     
+      // get grupas list
+      $workType=array();
+      $workType['']=text::get('EMPTY_SELECT_OPTION');		
+      
       
       switch ($catalog)
       {
         case  KL_CALCULALATION:
             // set list title
             $title = text::toUpper(text::get('ST_WORK'));     
-            
+            // get grupas list           
+            $res=dbProc::getWorkTypeList();
+            if (is_array($res))
+            {
+              foreach ($res as $row)
+              {
+                $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+              }
+            }
+            unset($res);
             if ($oFormPop->isFormSubmitted() && $oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
             {
               $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'));
@@ -147,7 +160,16 @@ if ( $isAdmin || $isProjector)
 
             // set list title
             $title = text::toUpper(text::get('ST_MATERIAL'));     
-            
+            // get grupas list           
+            $res=dbProc::getWorkTypeListByWork($actId);
+            if (is_array($res))
+            {
+              foreach ($res as $row)
+              {
+                $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+              }
+            }
+            unset($res);
             $matrGroup = array();
             $res=dbProc::getMaterialGroup();
             if (is_array($res))
@@ -155,7 +177,7 @@ if ( $isAdmin || $isProjector)
               $matrGroup['']=text::get('ALL');
               foreach ($res as $row)
               {
-                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['KMAT_GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
+                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
               }
             }
             unset($res);
@@ -170,7 +192,7 @@ if ( $isAdmin || $isProjector)
               {
                   foreach ($res as $row)
                	  {
-                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KODS'] .' : '. $row['KMAT_NOSAUKUMS'] ;
+                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
                   }
                   unset($res);
               }
@@ -211,6 +233,9 @@ if ( $isAdmin || $isProjector)
       }
       unset($oLink);
 
+      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), '', 'tabindex=2', '', '', $workType);
+		  $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
       // form buttons
       if (!$isReadonly)
       {
@@ -234,10 +259,17 @@ if ( $isAdmin || $isProjector)
                                 switch ($catalog)
                                 {
                                   case  KL_CALCULALATION:
-                                    $r = dbProc::saveProjectWorkRecord($oFormPop->getValue('actId'), $cValue);
+                                    $r = dbProc::saveProjectWorkRecord($oFormPop->getValue('actId'), 
+                                                                      $cValue, 
+                                                                      $oFormPop->getValue('work_type'));
                                     break;                          
                                   case  KL_MATERIALS:
-                                    $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), $cValue);
+                                    $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), 
+                                                                      $cValue, 
+                                                                      false, false, false,
+                                                                      0, '', '',
+                                                                      $oFormPop->getValue('work_type')
+                                                                    );
                                     break;
 
                                 }
