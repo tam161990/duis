@@ -463,11 +463,224 @@ class toPdf {
 
 		// saglaba faila datus
 		$res=dbProc::replaceFile(
-			'E'.
-			$act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
-			$userId, $actId,  
-			$type ,
-			EXPORT_FILE_TYPE);
+			'T_'.$act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
+			$userId, $actId,
+			($type == OP_EXPORT ) ? FILE_EXPORT : FILE_ESTIMATE,
+            EXPORT_FILE_TYPE);
+            
+            if ($res)
+            {
+                $idFile=dbLayer::getInsertId();
+            }else {
+                return false;
+            }
+            if ($idFile!==false)
+            {
+                $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');						
+            }
+    
+            return $idFile;
+    }
+            
+    function projectTammePdf($actId, $userId, $type) {
+		// need to merge        
+        // get info about voltage
+		$actInfo = dbProc::getActInfo($actId);
+		if(count($actInfo)>0)
+		{
+			$act = $actInfo[0];
+        }
+        
+		$start_date = date('d.m.Y');
+		$pvn = PCT_21  ;
+
+		// akta sagatavi (tab tamme)
+        $pdf=new FPDF();
+        $pdf->AddFont('Arial','','arial.php');
+        $pdf->AddFont('Arial','BI','arialbi.php');
+        $pdf->AddFont('Arial','I','ariali.php');
+        $pdf->AddFont('Arial','B','arialbd.php');
+        $pdf->SetDisplayMode('real');
+        $pdf->SetAutoPageBreak(true,20);
+        $pdf->AliasNbPages();
+        $pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('PROJECT_HEADER').' '.$act['NUMURS']));
+        $pdf->SetLeftMargin(20);
+        $pdf->AddPage();
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('PROJECT_HEADER')), 0,1,'C');
+
+
+        // Create new PHPExcel object
+        $objPHPExcel = new PHPExcel();
+
+        // create act header
+        $actHeader= array(
+          array(
+            array('', 'L', '', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+            array('', 'L', '', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+
+            array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(date('d.m.Y'))), 'L', '', 8),
+            array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
+                ),
+          array(
+            array('', 'L', '', 8),
+            array('', 'L', '', 8)
+                ) ,
+          /*array(
+            array(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER5')), 'L', '', 8),
+            array('', 'L', '', 8)
+                ),*/
+          array(
+            array('', 'L', '', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_OFFER').':'), 'L', '', 8),
+            array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257',text::get('ST_COMPANY_NAME').', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.text::get('ST_REG_NR')), 'L', 'B', 8),
+            array(iconv('UTF-8', 'windows-1257',$act['WORKER'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['KWOI_KODS']), 'L', 'B', 8)
+                ),                     
+          array(
+            array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
+            array('', 'L', '',8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
+            array('', 'L', '', 8)
+                ) ,
+          array(
+            array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
+            array('', 'L', '', 8)
+                ) ,
+        ) ;
+        $pdf->HeaderStyledTable($actHeader);
+
+        $pdf->SetFont('Arial','BI',8);
+        $pdf->Cell(0,8,iconv('UTF-8', 'windows-1257', $act['WORK_TITLE']),0,1);
+
+        // darbi
+        $pdf->SetFont('Arial','BI',10);
+        $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_WORKS)), 0,1);
+
+        $width=array(15,75,15,20,55);
+        $alignHeader=array('C','C','R','L');
+        $align=array('C','C','R','L');
+
+        $headers = array(
+            'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
+            'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
+            'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
+            'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
+            'DRBI_PIEZIMES' => iconv('UTF-8', 'windows-1257',text::get('COMMENT'))
+            );
+
+        $aWorkDb=dbProc::getActWorkList($actId);
+        $data = array();
+        foreach ($aWorkDb as $i => $work)
+        {
+          $data[$i] = array(
+            'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+            'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
+            'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),                        
+            'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
+            'DRBI_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_PIEZIMES']),  2, "\n", 60)
+            );
+        }
+        $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
+
+        // materiali                   
+        $pdf->SetFont('Arial','BI',10);
+        $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
+
+        $width=array(20,80,20,20,40);
+        $alignHeader=array('C','C','C','R','L');
+        $align=array('C','L','C','R','L');
+
+        $headers = array(
+            'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
+            'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
+            'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
+            'MATR_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
+            'MATR_PIEZIMES' => iconv('UTF-8', 'windows-1257',text::get('COMMENT'))
+            );
+
+        $aMaterialDb=dbProc::getActMaterialList($actId);
+        $data = array();
+        foreach ($aMaterialDb as $i => $material)
+        {
+          $data[$i] = array(
+            'MATR_KODS' => $material['MATR_KODS'],
+            'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
+            'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+            'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],'MATR_CENA' => $material['MATR_CENA'],
+            'MATR_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_PIEZIMES']),  2, "\n", 60)
+            );
+        }
+        $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
+       
+        $rows=dbProc::getUserInfo($userId);
+        if (count($rows)==1)
+        {
+          $actAutorName =  $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
+        }
+
+
+        $actFooter = array(
+          array(
+            '',
+            ''
+              ),
+          array(
+            '',
+            ''
+              ),
+        array(
+          iconv('UTF-8', 'windows-1257',text::get('ACT_CREATER').': '.$act['AUTORS']),
+          ''
+            ),
+          array(
+          iconv('UTF-8', 'windows-1257',text::get('DATE').': '.date('d.m.Y')),
+          iconv('UTF-8', 'windows-1257',text::get('IS_NOT_ENDORSED'))
+            ),
+          array(
+          iconv('UTF-8', 'windows-1257',''),
+          iconv('UTF-8', 'windows-1257','')
+              ),                     
+          array(
+          iconv('UTF-8', 'windows-1257',$act['WORKER']),
+        ''
+            ),
+          array(
+          iconv('UTF-8', 'windows-1257',$act['AUTORS']),
+          ''
+            )
+          );
+        $pdf->FooterTablePortraitAsimetrikal($actFooter);
+        
+        $res=dbProc::replaceFile(
+            'P'.
+            $act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
+            $userId, $actId,
+            FILE_EXPORT,
+            EXPORT_FILE_TYPE);
+
+		
 		if ($res)
 		{
 			$idFile=dbLayer::getInsertId();
