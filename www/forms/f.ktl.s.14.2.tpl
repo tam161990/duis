@@ -19,7 +19,7 @@
         <td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('worktitle'); ?></td>
 	</tr>
     <tr>        
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('proces_date'); ?>:</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('proces_date'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('proces_date'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('requirement_code'); ?>:</td>
         <td class="table_cell_2"><?= $oForm -> getElementHtml('requirement_code'); ?></td>
@@ -45,9 +45,9 @@
     <tr>        
         <td class="table_cell_c"><?= $oForm -> getElementLabel('network_element_code'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('network_element_code'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('quantity'); ?>:</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('quantity'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('quantity'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('line_count'); ?>:</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('line_count'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('line_count'); ?></td>
     </tr>
     <tr>        
@@ -55,7 +55,7 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('mms_x'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('mms_y'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('mms_y'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('voltage'); ?>:</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('voltage'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('voltage'); ?></td>
     </tr>
     <tr>        
