@@ -458,7 +458,7 @@ class dbProc extends dbLayer
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select *  from `LIETOTAJI`
-                    where  `RLTT_PROJECTOR` = "1" and '.
+                    where  1=1 and '.
                     (($isActive) ? '`RLTT_IR_AKTIVS`=1 and ' : '').
                     (($worker != -1)? '`RLTT_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"' : 1).'
 					GROUP by RLTT_VARDS, RLTT_UZVARDS'
@@ -599,7 +599,7 @@ class dbProc extends dbLayer
 		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
 					where '.
                     ' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-                    ' AND `RLTT_PROJECTOR` = "1" '					
+                    ' '					
 				);
 
 		if (is_array($res) && count($res)==1)
