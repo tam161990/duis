@@ -44,7 +44,9 @@
                  <? if(!$isReadonlyExceptEconomist)  {?>
                     <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
                  <? } ?>
-                
+                 <? if($projectApprover && $status == STAT_ACCEPT) {?>
+                    <tr><td><?=$oForm->getElementHtml('decline');?></td></tr>
+                 <? } ?>
                  
                  <? if($isDelete)  {?>
                     <tr><td><?=$oForm->getElementHtml('delete');?></td></tr>

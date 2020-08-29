@@ -71,22 +71,20 @@
 			isset($data->type) ? $data->type : false
 		  );	
 	}
-	catch(Error $e) {
-		$trace = $e->getTrace();
-		//echo $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine().' called from '.$trace[0]['file'].' on line '.$trace[0]['line'];
-		$response = ob_get_clean();	
-		$response = json_response(500, $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine().' called from '.$trace[0]['file'].' on line '.$trace[0]['line']);
+	catch(Throwable $e) {
+
+		//$trace = $e->getTrace();
+		$err_message = $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine();
+			
 	}	
-	$response = ob_get_clean();	
-	$response = json_response(200, "OK");
-	
-	/*
+
+		$response = ob_get_clean();	
 	if( $r !== false ) {
 		$response = json_response(200, "OK");
 	} else {
-		$response = json_response(500, "NOK");
+		$response = json_response(500, "NOK: ".$err_message);
 	}
-	*/
+
 		
 	echo $response;
 	

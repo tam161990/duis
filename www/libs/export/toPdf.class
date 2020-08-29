@@ -577,72 +577,72 @@ class toPdf {
         $pdf->SetFont('Arial','BI',8);
         $pdf->Cell(0,8,iconv('UTF-8', 'windows-1257', $act['WORK_TITLE']),0,1);
 
-        // darbi
-        $pdf->SetFont('Arial','BI',10);
-        $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_WORKS)), 0,1);
+		$res=dbProc::getWorkTypeListByWork($actId);
+		if (is_array($res))
+		{
+			foreach ($res as $group)
+			{        
+				$pdf->SetFont('Arial','B',9);
+				$pdf->Cell(160,8,iconv('UTF-8', 'windows-1257',$group['KLDV_NOSAUKUMS']), 0,1);
+				$pdf->Cell(160,4,iconv('UTF-8', 'windows-1257',text::get('WORK_COAST')), 0,1);
 
-        $width=array(15,75,15,20,55);
-        $alignHeader=array('C','C','R','L');
-        $align=array('C','C','R','L');
+				$width=array(15,75,15,20,55);
+				$align=array('L','L','R','L');
+				$headers = array(
+					'DRBI_KKAL_SHIFRS' => '',
+					'DRBI_KKAL_NOSAUKUMS' => '',
+					'DRBI_MERVIENIBA' => '',                        
+					'DRBI_DAUDZUMS' => '',
+					'DRBI_PIEZIMES' => ''
+					);
+				$aWorkDb=dbProc::getActWorkList($actId, false, false, $group['KLDV_ID']);
+				$data = array();
+				foreach ($aWorkDb as $i => $work)
+				{
+					$data[$i] = array(
+						'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+						'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 80),
+						'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),                        
+						'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
+						'DRBI_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_PIEZIMES']),  2, "\n", 60)
+						);
+				}
+        		$pdf->FancyTableNoHeader($headers, $data, $width, $align);
 
-        $headers = array(
-            'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
-            'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
-            'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
-            'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
-            'DRBI_PIEZIMES' => iconv('UTF-8', 'windows-1257',text::get('COMMENT'))
-            );
+				// materiali                   
+				$pdf->SetFont('Arial','B',9);
+				$pdf->Cell(160,4,iconv('UTF-8', 'windows-1257',text::get('MATERIAL_COAST')), 0,1);
 
-        $aWorkDb=dbProc::getActWorkList($actId);
-        $data = array();
-        foreach ($aWorkDb as $i => $work)
-        {
-          $data[$i] = array(
-            'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-            'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
-            'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),                        
-            'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-            'DRBI_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_PIEZIMES']),  2, "\n", 60)
-            );
-        }
-        $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
+				$width=array(15,75,15,20,55);
+				$align=array('L','L','R','L');
+				$headers = array(
+					'MATR_KODS' => '',
+					'MATR_NOSAUKUMS' => '',
+					'MATR_MERVIENIBA' => '',                        
+					'MATR_DAUDZUMS' => '',
+					'MATR_PIEZIMES' => ''
+					);
+				$aMaterialDb=dbProc::getProjectMaterialList($actId, $group['KLDV_ID']);
+				$data = array();
+				foreach ($aMaterialDb as $i => $material)
+				{
+					$data[$i] = array(
+						'MATR_KODS' => $material['MATR_KODS'],
+						'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 80),
+						'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+						'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],'MATR_CENA' => $material['MATR_CENA'],
+						'MATR_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_PIEZIMES']),  2, "\n", 60)
+						);
+				}
+				$pdf->FancyTableNoHeader($headers, $data, $width, $align);
+			}
+		}
 
-        // materiali                   
-        $pdf->SetFont('Arial','BI',10);
-        $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
-
-        $width=array(20,80,20,20,40);
-        $alignHeader=array('C','C','C','R','L');
-        $align=array('C','L','C','R','L');
-
-        $headers = array(
-            'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
-            'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
-            'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
-            'MATR_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
-            'MATR_PIEZIMES' => iconv('UTF-8', 'windows-1257',text::get('COMMENT'))
-            );
-
-        $aMaterialDb=dbProc::getActMaterialList($actId);
-        $data = array();
-        foreach ($aMaterialDb as $i => $material)
-        {
-          $data[$i] = array(
-            'MATR_KODS' => $material['MATR_KODS'],
-            'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
-            'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
-            'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],'MATR_CENA' => $material['MATR_CENA'],
-            'MATR_PIEZIMES' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_PIEZIMES']),  2, "\n", 60)
-            );
-        }
-        $pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
-       
-        $rows=dbProc::getUserInfo($userId);
-        if (count($rows)==1)
-        {
-          $actAutorName =  $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
-        }
-
+		$rows=dbProc::getUserInfo($userId);
+		if (count($rows)==1)
+		{
+			$actAutorName =  $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
+		}
 
         $actFooter = array(
           array(

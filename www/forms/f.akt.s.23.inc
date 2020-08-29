@@ -131,7 +131,9 @@ if ( $isAdmin || $isProjector)
       {
         case  KL_CALCULALATION:
             // set list title
-            $title = text::toUpper(text::get('ST_WORK'));     
+            $title = text::toUpper(text::get('ST_WORK'));    
+            // get grupas nokluseto vertibu 
+            $defaultWork = dbProc::getDefaultWork($actId);
             // get grupas list           
             $res=dbProc::getWorkTypeList();
             if (is_array($res))
@@ -159,7 +161,9 @@ if ( $isAdmin || $isProjector)
         case  KL_MATERIALS:
 
             // set list title
-            $title = text::toUpper(text::get('ST_MATERIAL'));     
+            $title = text::toUpper(text::get('ST_MATERIAL'));   
+             // get grupas nokluseto vertibu 
+             $defaultMaterial = dbProc::getDefaultMaterial($actId);  
             // get grupas list           
             $res=dbProc::getWorkTypeListByWork($actId);
             if (is_array($res))
@@ -219,7 +223,8 @@ if ( $isAdmin || $isProjector)
         $oFormPop -> addElement('kls', 'calc_group',  text::get('SINGL_CALCULATION_GROUP'), 
         array('classifName'=>KL_CALCULALATION_GROUP,'value'=>'','readonly'=>false), 
         'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&calc_group=\'+this.value+\'\'))"');
-	      
+        
+        
       }
       if($catalog == KL_MATERIALS )
       {
@@ -230,10 +235,11 @@ if ( $isAdmin || $isProjector)
         $oFormPop -> addElement('select', 'mat_sub_group',  text::get('SUBGROUP_TITLE'), '', 
         ' tabindex=2 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&mat_sub_group=\'+this.value+\'\'))"', 
         '', '', $matrSubGroup);
+        
       }
       unset($oLink);
 
-      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), '', 'tabindex=2', '', '', $workType);
+      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
 		  $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
       // form buttons

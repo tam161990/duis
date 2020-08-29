@@ -1,7 +1,7 @@
 <?
 class toExcel {	
 
-function acceptProjectReport($actId, $userId){
+function projectTammeExcel($actId, $userId){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
     if(count($actInfo)>0)

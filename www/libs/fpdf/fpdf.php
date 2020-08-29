@@ -1288,6 +1288,26 @@ function FooterTablePortrait2dBold($data)
 
 }
 
+function FancyTableNoHeader($headers, $data, $width, $align)
+{
+   
+    $this->SetFont('Arial','',8);    
+    
+    //Data
+    foreach($data as $row)
+    {
+		$i = 0; 
+      	foreach($headers as $key=>$header)
+        {
+          	$this->Cell($width[$i],6,$row[$key],'B',0,$align[$i]);
+          	$i++;
+        }
+        $this->Ln();
+    }
+
+
+}
+
 
 //Colored table
 function FancyTable($headers,$data, $width, $align)
