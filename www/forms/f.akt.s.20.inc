@@ -5,6 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
+$projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 // act ID
 $actId  = reqVar::get('actId');
 // tab name
@@ -280,6 +281,10 @@ if ( $isAdmin || $isProjector || $isEconomist)
     $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
   }
 
+  if($projectApprover && $status == STAT_ACCEPT) {
+    $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
+  }
+
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
@@ -364,7 +369,7 @@ if ( $isAdmin || $isProjector || $isEconomist)
                 false,
                 false,
                 false,
-                $oForm->getValue('status'),
+                (($oForm->getValue('status') == STAT_AUTO ) ? STAT_INSERT : $oForm->getValue('status')),
                 ($oForm->getValue('ouner'))? $oForm->getValue('ouner'):$userId,
                 false,
                 false,
@@ -454,6 +459,12 @@ if ( $isAdmin || $isProjector || $isEconomist)
 
                     // akta sagatavi (tab tamme)
                     $fileId = toPdf::projectTammePdf($actId, $userId, OP_EXPORT);
+                    if( $fileId === false){
+                      $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                    }
+                    else {
+                      $fileId = toExcel::projectTammeExcel($actId, $userId);
+                    }
                     if( $fileId === false){
                         $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                     } else 
@@ -561,33 +572,9 @@ if ( $isAdmin || $isProjector || $isEconomist)
               // atgriezt vai apstiprin?t
               if($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)
               {
-                  $r=dbProc::saveAct($oForm->getValue('actId'),
-                              false,
-                              false,
-                              false,
-                              false,                    
-                              false,
-                              false,
-                              false,
-                              ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE),
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,                            
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,
-                              false,
-                              1,
-                              1
-                  );
-               
+                $r=dbProc::updateActStatus($oForm->getValue('actId'), 
+                ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE));  
+                 
                 if($r)
                 {
                     // save status changed time
@@ -608,15 +595,15 @@ if ( $isAdmin || $isProjector || $isEconomist)
                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                 }
 
-                // veidot excel
+                // sūtit excel link to KS
                 if($oForm->getValue('action')==OP_ACCEPT)
                 {
-                      $fileId = toExcel::acceptProjectReport($actId, $userId);
-                      if( $fileId === false){
-                        $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                      }
+                    $fileId = dbProc::getExcelId($actId);
+                    if($fileId !== false) {
+                        // sūta file link uz KvikStep                            
+                        RequestHandler::sentExcelToKvikStep($oForm->getValue('numPostfix'), $fileId);
+                    }
                 }
-
                 // if operation was compleated succefully, show success mesage and redirect current frame
                 if ($r && $r1)
                 {
@@ -638,6 +625,45 @@ if ( $isAdmin || $isProjector || $isEconomist)
          }
     }
 
+        	// nomainit akta statusu uz dz?sts
+          if (($oForm->getValue('action')==OP_DECLINE && is_numeric($oForm->getValue('actId'))) )
+          {      
+             if($projectApprover && $status = STAT_ACCEPT )
+             {       
+                  $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_RETURN);  
+                  if($r)
+                  {
+                      // save status changed time
+                      $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_RETURN);
+                      dbProc::setUserActionDate($userId, STAT_RETURN);
+
+                      if (!$r1)
+                      {
+                        $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                      }                    
+                  }
+                  else
+                  {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }
+                  // if operation was compleated succefully, show success mesage and redirect current frame
+                  if ($r && $r1)
+                  {
+                        $oLink=new urlQuery();
+                        $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                        $oLink->addPrm('actId', $actId);                        
+                        $oLink->addPrm('isSearch', $isSearch);
+                        $oLink->addPrm('searchNum', $searchNum);
+                        $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+
+                        RequestHandler::makeRedirect($oLink->getQuery());
+                  }
+              }         
+             else
+             {
+               $oForm->addError(text::get('ERROR_NOT_PERMISSION'));
+             }      
+         }
     	// nomainit akta statusu uz dz?sts
      if (($oForm->getValue('action')==OP_DELETE && is_numeric($oForm->getValue('actId'))) )
      {      

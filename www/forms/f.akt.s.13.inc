@@ -77,11 +77,15 @@ if ( $isAdmin || $isSystemUser)
          {
          case  KL_CALCULALATION:
                // get grupas list           
-               $res=dbProc::getWorkTypeList();           
+               $res=dbProc::getWorkTypeList();    
+               // get grupas nokluseto vertibu 
+               $defaultWork = dbProc::getDefaultWork($actId);       
                break;         
             case  KL_MATERIALS: 
                // get grupas list             
                $res=dbProc::getWorkTypeListByWork($actId);  
+               // get grupas nokluseto vertibu 
+               $defaultMaterial = dbProc::getDefaultMaterial($actId);  
                break;
          }
          if (is_array($res))
@@ -258,7 +262,7 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"'); 
       $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
       if($isProject == 1) {
-         $oFormPop -> addElement('select', 'work_type',  '', '', 'tabindex=2', '', '', $workType);
+         $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
          $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
       } 
       // form buttons

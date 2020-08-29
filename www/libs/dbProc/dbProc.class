@@ -6376,7 +6376,17 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
-	}
+    }
+    
+    function getDefaultWork($actId) {
+        $query = 'select `DRBI_WORK_TYPE_ID` from `DARBI` 
+            where `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId).'
+            order by `DRBI_ID` desc
+            limit 1';
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+        return isset($result[0]['DRBI_WORK_TYPE_ID']) ? $result[0]['DRBI_WORK_TYPE_ID'] : '';
+    }
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
@@ -6393,8 +6403,7 @@ class dbProc extends dbLayer
                 (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`,
                 `DRBI_DAUDZUMS`, `DRBI_DAUDZUMS_KOR`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                 `DRBI_APPROVE_DATE`, 
-                `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`
-                '.(($work_type !== false) ? ', `DRBI_WORK_TYPE_ID`' : '').' )
+                `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, `DRBI_WORK_TYPE_ID` )
                 values ( '.dbLayer::quote_smart($actId).',
 				"'.dbLayer::quote_smart($kid).'",
                 "'.dbLayer::quote_smart($chipher).'",
@@ -6416,8 +6425,7 @@ class dbProc extends dbLayer
                             (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, 
                             `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                             `DRBI_APPROVE_DATE`, 
-                            `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`
-                            '.(($work_type !== false) ? ', `DRBI_WORK_TYPE_ID`' : '').')
+                            `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, `DRBI_WORK_TYPE_ID`)
                             values ( '.dbLayer::quote_smart($actId).',
             				"'.dbLayer::quote_smart($kid).'",
                             "'.dbLayer::quote_smart($chipher).'",
@@ -6727,7 +6735,17 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
-	}
+    }
+    
+    function getDefaultMaterial($actId) {
+        $query = 'select `MATR_WORK_TYPE_ID` from `MATERIALI` 
+            where `MATR_RAKT_ID` = '.dbLayer::quote_smart($actId).'
+            order by `MATR_ID` desc
+            limit 1';
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+        return isset($result[0]['MATR_WORK_TYPE_ID']) ? $result[0]['MATR_WORK_TYPE_ID'] : '';
+    }
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta materiala ierakstu.
@@ -7137,8 +7155,23 @@ class dbProc extends dbLayer
 					order by f.EFLS_ID desc';
 
 		return $oSQL -> makeQuery($sql);
-	}
- 
+    }
+    
+    function getExcelId($actId)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'select MAX(f.EFLS_ID) as FILE_ID
+					from `EXCEL_FAILI` f
+					where  f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId);
+
+        $res = $oSQL->makeQuery($sql);
+        if (isset($res[0]['FILE_ID']))
+        {
+            return $res[0]['FILE_ID'];
+        }
+        return false;
+    }
+
 // STATUSA MAINA
     // -----------------------------------------------------------------------------
 	// atgriezh audita datus peec acta ID
@@ -8239,10 +8272,10 @@ class dbProc extends dbLayer
                         toPdf::approvedTrasePdf($actId, MAIN_ADMIN_ID, FILE_ESTIMATE);
                     }
                     if($status == STAT_CLOSE && $act['RAKT_PROJECT'] = 1 ) {
-                        $fileId = toExcel::acceptProjectReport($actId, $userId);
+                        $fileId = dbProc::getExcelId($actId);
                         if($fileId !== false) {
                             // sūta file link uz KvikStep                            
-                            $r1 = dbProc::sentExcelToKvikStep($act['AAST_KODS'], $fileId);
+                            RequestHandler::sentExcelToKvikStep($act['AAST_KODS'], $fileId);
                         }
                     }
 
@@ -8394,7 +8427,7 @@ class dbProc extends dbLayer
             
             $aWorkSums = dbProc::getActWorkSumms($actId, 1);
                            
-            /*RequestHandler::sentDataToKvikStep ($mms_kods, 
+            RequestHandler::sentDataToKvikStep ($mms_kods, 
                                                 $trase,
                                                 $workTotal, 
                                                 $materialTotal, 
@@ -8402,7 +8435,7 @@ class dbProc extends dbLayer
                                                 $aWorkSums[0]['ha'],
                                                 $aWorkSums[0]['km'],
                                                 $aWorkSums[0]['gab']
-                                                );*/
+                                                );
            
         }
 
