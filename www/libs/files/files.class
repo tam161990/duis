@@ -56,7 +56,7 @@ class files
         }
         else
         {
-             return @unlink(WRITEOF_FILES_STORE_PATH.'/'.$idFile);
+             return @unlink(PROJECT_FILES_STORE_PATH.'/'.$idFile);
         }
 	}
 
@@ -171,9 +171,13 @@ class files
             {
                  $c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
             }
-            else
+            else if($type == "EXCEL")
             {
                  $c=@file_get_contents(EXCEL_FILES_STORE_PATH.'/'.$idFile);
+			}
+			else if($type == "PEXCEL")
+            {
+                 $c=@file_get_contents(PROJECT_FILES_STORE_PATH.'/'.$idFile);
             }
 
 			if ($c)

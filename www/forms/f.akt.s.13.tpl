@@ -17,12 +17,18 @@
 	   <th class="table_head_2"><?=text::get('AMOUNT');?></th>
        <td class="table_cell_3"><?= $oFormPop->getElementHtml('amount'); ?></td>
    </tr>
+   <? if($isProject != 1) { ?>
    <tr>
 	    <th class="table_head_2"><?=text::get('PRICE');?></th>
        <td class="table_cell_3"><?= $oFormPop->getElementHtml('price'); ?></td>
    </tr>
-
-
+   <? } ?>
+   <? if($isProject == 1) { ?>
+    <tr>
+        <th class="table_head_2"><?=text::get('SINGLE_WORK_TYPE');?></th>
+        <td class="table_cell_3"><?= $oFormPop->getElementHtml('work_type'); ?></td>
+    </tr>
+    <? } ?>
 </table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">

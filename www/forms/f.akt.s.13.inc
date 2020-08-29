@@ -17,6 +17,8 @@ $st  = reqVar::get('st');
 $isSearch  = reqVar::get('isSearch');
 // search act by number
 $searchNum  = reqVar::get('searchNum');
+// pievienošana projektētajiem
+$isProject  = reqVar::get('isProject');
 
 $tame  = reqVar::get('tame');
 
@@ -25,10 +27,11 @@ if ( $isAdmin || $isSystemUser)
 {
     $oLink=new urlQuery();
     $oLink->addPrm(FORM_ID, 'f.akt.s.13');
+    $oLink->addPrm('catalog', $catalog);
     $oFormPop = new Form('frmMain','post',$oLink->getQuery());
     unset($oLink);
 
-    if($actId !== false && $catalog == KL_MATERIALS )
+    if($actId !== false &&  ($catalog == KL_CALCULALATION  || $catalog == KL_MATERIALS)  )
     {
       // get info about act
       $actInfo = dbProc::getActInfo($actId);
@@ -36,8 +39,8 @@ if ( $isAdmin || $isSystemUser)
       if(count($actInfo)>0)
       {
       	$act = $actInfo[0];
-        $status = $act['RAKT_STATUS'];
-        $isAuto = $act['RAKT_IS_AUTO'];
+         $status = $act['RAKT_STATUS'];
+         $isAuto = $act['RAKT_IS_AUTO'];
       }
 
       $isReadonly   = true;
@@ -66,6 +69,34 @@ if ( $isAdmin || $isSystemUser)
       $meassure['par']='par';
       $meassure['t']='t';
 
+      if($isProject == 1) {
+         // get grupas list
+         $workType=array();
+         $workType['']=text::get('EMPTY_SELECT_OPTION');		
+         switch ($catalog )
+         {
+         case  KL_CALCULALATION:
+               // get grupas list           
+               $res=dbProc::getWorkTypeList();    
+               // get grupas nokluseto vertibu 
+               $defaultWork = dbProc::getDefaultWork($actId);       
+               break;         
+            case  KL_MATERIALS: 
+               // get grupas list             
+               $res=dbProc::getWorkTypeListByWork($actId);  
+               // get grupas nokluseto vertibu 
+               $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+               break;
+         }
+         if (is_array($res))
+         {
+           foreach ($res as $row)
+           {
+             $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+           }
+         }
+         unset($res);
+      }
 
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
@@ -76,70 +107,73 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('static','jsRefresh2','','');
       $oFormPop -> addElement('hidden', 'isAuto', '', $isAuto);
       $oFormPop -> addElement('hidden', 'tame', '', $tame);
+      $oFormPop -> addElement('hidden', 'isProject', '', $isProject);
 
       // form buttons
       $oFormPop -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
       if ($oFormPop -> isFormSubmitted() && $oFormPop->getValue('action')==OP_UPDATE)
       {
          $isRowValid = true;
+         // validate material amount value
+         if ($oFormPop->getValue('amount') == '')
+         {
+            // assign error message
+            $oFormPop->addErrorPerElem('amount', text::get('ERROR_REQUIRED_FIELD'));
+            $isRowValid = false;
+         }
+         // validate material amount value
+         elseif (!is_numeric($oFormPop->getValue('amount')))
+         {
+            // assign error message
+            $oFormPop->addErrorPerElem('amount', text::get('ERROR_DOUBLE_VALUE'));
+            $isRowValid = false;
+         }
         // validate material amount value
-  		if ($oFormPop->getValue('amount') == '')
-		{
-    		// assign error message
-  			$oFormPop->addErrorPerElem('amount', text::get('ERROR_REQUIRED_FIELD'));
-  			$isRowValid = false;
-  		}
-        // validate material amount value
-  		elseif (!is_numeric($oFormPop->getValue('amount')))
-    	{
-  			// assign error message
-  			$oFormPop->addErrorPerElem('amount', text::get('ERROR_DOUBLE_VALUE'));
-  			$isRowValid = false;
-  		}
-        // validate material amount value
-  		elseif ($oFormPop->getValue('amount') >= 100000)
-  		{
-  			// assign error message
-  			$oFormPop->addErrorPerElem('amount', text::get('ERROR_AMOUNT_VALUE'));
-  			$isRowValid = false;
-  		}
+         elseif ($oFormPop->getValue('amount') >= 100000)
+         {
+            // assign error message
+            $oFormPop->addErrorPerElem('amount', text::get('ERROR_AMOUNT_VALUE'));
+            $isRowValid = false;
+         }
         if ($oFormPop->getValue('st') == '0')
         {
-          // validate material price value
-    		if ($oFormPop->getValue('title') == '')
-  		    {
-      		// assign error message
-    			$oFormPop->addErrorPerElem('title', text::get('ERROR_REQUIRED_FIELD'));
-    			$isRowValid = false;
-    		}
-        // validate material price value
-    		if ($oFormPop->getValue('mervieniba') == '')
-  		    {
-      		// assign error message
-    			$oFormPop->addErrorPerElem('mervieniba', text::get('ERROR_REQUIRED_FIELD'));
-    			$isRowValid = false;
-    		}
-          // validate material price value
-    		if ($oFormPop->getValue('price') == '')
-  		{
-      		// assign error message
-    			$oFormPop->addErrorPerElem('price', text::get('ERROR_REQUIRED_FIELD'));
-    			$isRowValid = false;
-    		}
-          // validate material price value
-    		elseif (!is_numeric($oFormPop->getValue('price')))
-      	{
-    			// assign error message
-    			$oFormPop->addErrorPerElem('price', text::get('ERROR_DOUBLE_VALUE'));
-    			$isRowValid = false;
-    		}
-          // validate material price value
-    		elseif ($oFormPop->getValue('price') >= 100000)
-    		{
-    			// assign error message
-    			$oFormPop->addErrorPerElem('price', text::get('ERROR_AMOUNT_VALUE'));
-    			$isRowValid = false;
-    		}
+            // validate material price value
+            if ($oFormPop->getValue('title') == '')
+            {
+               // assign error message
+               $oFormPop->addErrorPerElem('title', text::get('ERROR_REQUIRED_FIELD'));
+               $isRowValid = false;
+            }
+            // validate material price value
+            if ($oFormPop->getValue('mervieniba') == '')
+            {
+               // assign error message
+               $oFormPop->addErrorPerElem('mervieniba', text::get('ERROR_REQUIRED_FIELD'));
+               $isRowValid = false;
+            }
+            if($isProject != 1) {
+               // validate material price value
+               if ($oFormPop->getValue('price') == '')
+               {
+                  // assign error message
+                  $oFormPop->addErrorPerElem('price', text::get('ERROR_REQUIRED_FIELD'));
+                  $isRowValid = false;
+               }
+               // validate material price value
+               elseif (!is_numeric($oFormPop->getValue('price')))
+               {
+                  // assign error message
+                  $oFormPop->addErrorPerElem('price', text::get('ERROR_DOUBLE_VALUE'));
+                  $isRowValid = false;
+               }
+               // validate material price value
+               elseif ($oFormPop->getValue('price') >= 100000)
+               {
+                  // assign error message
+                  $oFormPop->addErrorPerElem('price', text::get('ERROR_AMOUNT_VALUE'));
+                  $isRowValid = false;
+               }
+            }
         }
         if($isRowValid === false)
         {
@@ -148,35 +182,74 @@ if ( $isAdmin || $isSystemUser)
 
         if($isRowValid)
         {
-
-              $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'),
+            switch ($catalog)
+            {
+               case  KL_CALCULALATION:
+                  
+                     // set list title
+                     $r = dbProc::saveActWorkFreeRecord($oFormPop->getValue('actId'),
+                                                   false,
+                                                   $oFormPop->getValue('amount'),
+                                                   false,
+                                                   $oFormPop->getValue('tame'),
+                                                   (($oFormPop->getValue('st') == 1 ) ? 0 : 1),
+                                                   $oFormPop->getValue('title'),
+                                                   $oFormPop->getValue('mervieniba'),
+                                                   ($isProject == 1) ? $oFormPop->getValue('work_type'): false
+                                                );
+                     break;         
+               case  KL_MATERIALS: 
+                  // set list title             
+                  $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'),
                                                 false,
                                                 $oFormPop->getValue('amount'),
-                                                $oFormPop->getValue('price'),
+                                                ($isProject == 1) ? false : $oFormPop->getValue('price'),
                                                 $oFormPop->getValue('tame'),
-                                                $oFormPop->getValue('st'),
+                                                (($oFormPop->getValue('st') == 1 ) ? 0 : 1),
                                                 $oFormPop->getValue('title'),
-                                                $oFormPop->getValue('mervieniba'));
+                                                $oFormPop->getValue('mervieniba'),
+                                                ($isProject == 1) ? $oFormPop->getValue('work_type'): false
+                                             ); 
+                  break;
+               }
+              
               if(!$r)
               {
                  $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
               }
               else
               {
-                $oRedirectLink=new urlQuery();
-                $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.1');
-                $oRedirectLink->addPrm('actId', $oFormPop->getValue('actId'));
-                $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
-                $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
-                $oRedirectLink->addPrm('tab', TAB_MATERIAL);
-                $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
-                $oRedirectLink->addPrm('tame', $tame);
-                $oRedirectLink->addPrm('tame_mat', $tame);
-                $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
-                $oFormPop -> setNewValue('jsRefresh2', '<script>window.opener.location.replace( "'.$oRedirectLink->getQuery().'" );</script>');
+                  $oRedirectLink=new urlQuery();
+                  $oRedirectLink->addPrm('actId', $oFormPop->getValue('actId'));
+                  $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
+                  $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
+                  $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                  $oRedirectLink->addPrm('tame', $tame);
 
-                unset($oRedirectLink);
+                  if($isProject == 1) {
+                     $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');
+                  } 
+                  
+                  switch ($catalog)
+                  {
+                     case  KL_CALCULALATION:
+                        $oRedirectLink->addPrm('tab', TAB_WORKS);
+                        if($isProject == 1) {
+                           $oRedirectLink->addPrm('tametab', TAB_WORKS_T);
+                        } 
+                        break;         
+                     case  KL_MATERIALS: 
+                        $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                        if($isProject == 1) {
+                           $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
+                        } 
+                        break;
+                  }
+                
+                  $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
+                  $oFormPop -> setNewValue('jsRefresh2', '<script>window.opener.location.replace( "'.$oRedirectLink->getQuery().'" );</script>');
 
+                  unset($oRedirectLink);
 
               }
           }
@@ -186,7 +259,12 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('text', 'title', '', '',(($isReadonly)?' disabled ':'').'maxlength="250"');
       //$oFormPop->addElement('text', 'mervieniba', '', '',(($isReadonly)?' disabled ':'').'maxlength="15"');
       $oFormPop -> addElement('select', 'mervieniba',  '', '', (($isReadonly)?' disabled ':''), '', '',$meassure);
-      $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"');           $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+      $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"'); 
+      $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+      if($isProject == 1) {
+         $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
+         $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      } 
       // form buttons
       if (!$isReadonly)
       {
@@ -200,8 +278,18 @@ if ( $isAdmin || $isSystemUser)
         $oFormPop -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
       }
 
-
-      $title = text::toUpper(text::get(TAB_MATERIAL));
+      switch ($catalog)
+      {
+        case  KL_CALCULALATION:
+            // set list title
+            $title = text::toUpper(text::get('TAB_WORKS'));     
+            break;         
+         case  KL_MATERIALS: 
+             // set list title             
+             $title = text::toUpper(text::get('TAB_MATERIAL'));     
+            break;
+      }
+      
       $oFormPop -> makeHtml();
       include('f.akt.s.13.tpl');
     }

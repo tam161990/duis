@@ -292,11 +292,19 @@ class RequestHandler
 			}
 
 			// -----------------------------------------------------------------------------
-			// Getting file (image or other)
+			// Getting excel file 
 			// -----------------------------------------------------------------------------
 			if (reqVar::get(IS_GET_EXCEL_FILE_VARIABLE) && is_numeric(reqVar::get(GET_EXEL_FILE_VARIABLE)))
 			{
 				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'EXCEL');
+			}
+
+			// -----------------------------------------------------------------------------
+			// Getting project excel file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_PEXCEL_FILE_VARIABLE) && is_numeric(reqVar::get(GET_EXEL_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'PEXCEL');
 			}
 
             // -----------------------------------------------------------------------------
@@ -443,6 +451,55 @@ class RequestHandler
            	 	curl_close($ch);
         	}		
 		
+	}
+
+		// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+		function sentExcelToKvikStep ($mms_kods, $fileId) 
+		{
+			
+			// get file link
+			$oLinkFile=new urlQuery();
+			$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
+			$oLinkFile->addPrm(GET_FILE_VARIABLE,$fileId);
+			$link = $oLinkFile ->getQuery();
+
+			unset($oLinkFile);
+			// The data to send to the API		
+			files::wh_log('sentExcelToKvikStep REM issue_key:'.$mms_kods.PHP_EOL.
+					'file_id: '.$fileId.PHP_EOL.
+					'link:' .$link.PHP_EOL.
+					'issue_material_sum:' .$materialTotal.PHP_EOL  );	
+			$postData = [
+			"issue_key" => $mms_kods,
+			"issue_link" => $materialTotal
+			];
+			
+			// Setup cURL
+			$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
+
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			//Attach our encoded JSON string to the POST fields.
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+			//Set the content type to application/json
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+			// Send the request
+			$response = curl_exec($ch);			
+			//echo $response;
+			if (curl_errno($ch)) {
+				files::wh_log('sentExcelToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			} else { 
+				// Decode the response
+				$responseData = json_decode($response, TRUE);
+				files::wh_log('sentExcelToKvikStep RESPONSE:'.PHP_EOL.
+						'status:'.$responseData['status'] .PHP_EOL.
+						'code:' .$responseData['code'].PHP_EOL.
+						'details:' .$responseData['details'].PHP_EOL  );          	 	
+				curl_close($ch);
+			}		
+
 	}
 }
 

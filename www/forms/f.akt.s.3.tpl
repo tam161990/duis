@@ -107,7 +107,7 @@
 
              </tr>
              <tr>
-                <? if( $tameMaterial)  {?>
+                <? if( false)  {?>
                    <td><?= $oFormMaterialTab -> getElementHtml('export'); ?></td>
                 <? } ?>
    

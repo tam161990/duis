@@ -48,14 +48,17 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($worker['KWOI_NOSAUKUMS'])?$worker['KWOI_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
+		$oForm -> addElement('text', 'nosaukums2',  text::get('NAME2'), isset($worker['KWOI_NOSAUKUMS2'])?$worker['KWOI_NOSAUKUMS2']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('nosaukums2', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
         $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($worker['KWOI_KODS'])?$worker['KWOI_KODS']:'', 'maxlength="13"' . (($isEdUser)?' disabled' : ''));
-	 $oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	 	$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
         $oForm -> addRule('kods', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
 
         $oForm -> addElement('static', 'number',  text::get('KWOI_VV_NUMBER'), isset($worker['CONTRACT_NO'])?$worker['CONTRACT_NO']:'', 'maxlength="20"' . (($isEdUser)?' disabled' : ''));
-	 $oForm -> addRule('number', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	 	$oForm -> addRule('number', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-       $oForm -> addElement('static', 'trase_number',  text::get('KWOI_TRASE_VV_NUMBER'), isset($worker['CONTRACT_NO_TR'])?$worker['CONTRACT_NO_TR']:'', 'maxlength="20"' . (($isEdUser)?' disabled' : ''));
+       	$oForm -> addElement('static', 'trase_number',  text::get('KWOI_TRASE_VV_NUMBER'), isset($worker['CONTRACT_NO_TR'])?$worker['CONTRACT_NO_TR']:'', 'maxlength="20"' . (($isEdUser)?' disabled' : ''));
 
 		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($worker['KWOI_IR_AKTIVS'])?$worker['KWOI_IR_AKTIVS']:1, ''.(($isEdUser)?' disabled' : ''));
 
@@ -110,7 +113,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-			if ( $oForm -> getValue('nosaukums') )
+			if ( $oForm -> getValue('nosaukums') && $oForm -> getValue('nosaukums2') )
 			{
 				$checkRequiredFields = true;
 			}
@@ -127,6 +130,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$r=dbProc::saveWorkOwner(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('workerId'):false),
 
 						$oForm->getValue('nosaukums'),
+						$oForm->getValue('nosaukums2'),
                         $oForm->getValue('isActive',0),
                         $oForm->getValue('kods'),
 			            $oForm->getValue('number') ,

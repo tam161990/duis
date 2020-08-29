@@ -37,7 +37,7 @@
 			</tr>
 
 		<?
-        if($isEditor) break;
+        if($isEditor && $isProject == 0) break;
 		}
 	}
 	?>

@@ -137,7 +137,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'E');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
-    	$materialTRTotalReportLinkE=$oLink ->getQuery();
+    	$materialTrTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
         // act summary

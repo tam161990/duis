@@ -489,8 +489,6 @@ if ( $isAdmin || $isSystemUser)
 			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
                     	// saglaba lietotaja darbiibu
                     	dbProc::setUserActionDate($userId, ACT_UPDATE);
-
-
                       if($trase == 1) {
                             //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                             foreach ($aWorkSums as $d => $aSum)
@@ -502,6 +500,8 @@ if ( $isAdmin || $isSystemUser)
                                   $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
                                   //break;
                               }
+                    
+
                       }
 
                     	$tameWork = 0;
