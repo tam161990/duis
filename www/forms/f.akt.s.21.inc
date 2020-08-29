@@ -5,7 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
-
+$projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 // act ID
 $actId  = reqVar::get('actId');
 // search form
@@ -30,7 +30,7 @@ if (reqVar::get('xmlHttp') == 1)
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector || $isEconomist)
+if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
 {
     if($actId !== false )
     {

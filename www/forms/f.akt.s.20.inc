@@ -57,7 +57,7 @@ $isProject = 1;
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector || $isEconomist)
+if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
 {
   $oLink=new urlQuery();
   $oLink->addPrm(FORM_ID, 'f.akt.s.20');
