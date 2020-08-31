@@ -88,7 +88,7 @@ if($isAdmin || $isEdUser || $isAuditor )
 		   <td class="menu_cell"><a  target="frame_1" href="<?=$mmsListLink;?>" onclick="reloadFrame(2,'<?=$editMMSLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SINGLE_MMS');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$mmsCalculationListLink;?>" onclick="reloadFrame(2,'<?=$editMmsCalculationLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('MMS_CALCULATION');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$calculationMaterialListLink;?>" onclick="reloadFrame(2,'<?=$editCalculationMaterialLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('CALCULATION_MATERIAL');?></a></td>
-		   <td class="menu_cell" ><a  target="frame_1" href="<?=$workTypeListLink;?>" onclick="reloadFrame(2,'<?=$editWorkTypeLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('WORK_TYPES');?></a></td>
+		   <!--td class="menu_cell" ><a  target="frame_1" href="<?=$workTypeListLink;?>" onclick="reloadFrame(2,'<?=$editWorkTypeLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('WORK_TYPES');?></a></td-->
            <?
 if(!$isAuditor)
 {
@@ -138,7 +138,7 @@ if($isAdmin || $isSystemUser)
             
             <?
             			
-            if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) )
+            if($isAdmin || $isEconomist || $isAuditor || $isEditor )
             {
             ?>
             <td class="menu_cell<?= (!$isAdmin && !$isEditor && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>

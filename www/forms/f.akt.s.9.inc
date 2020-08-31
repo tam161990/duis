@@ -168,7 +168,7 @@ if ( $isAdmin || $isSystemUser)
        	// inicialising of listing object
         $amount= (($isNumber == 0) ? 
                     (($isProject == 0 ) ? dbProc::getActCount($sCriteria) : dbProc::getProjectCount($sCriteria)) : 
-                    dbProc::getActByNumberCount($sCriteria));
+                    dbProc::getActByNumberCount($sCriteria, userAuthorization::getWorker()));
 		$listing=new listing();
 		$listing->setAmount($amount);
 
