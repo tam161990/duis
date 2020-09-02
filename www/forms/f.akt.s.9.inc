@@ -168,7 +168,7 @@ if ( $isAdmin || $isSystemUser)
        	// inicialising of listing object
         $amount= (($isNumber == 0) ? 
                     (($isProject == 0 ) ? dbProc::getActCount($sCriteria) : dbProc::getProjectCount($sCriteria)) : 
-                    dbProc::getActByNumberCount($sCriteria, userAuthorization::getWorker()));
+                    dbProc::getActByNumberCount($sCriteria, (($isAdmin ) ? false : userAuthorization::getWorker())));
 		$listing=new listing();
 		$listing->setAmount($amount);
 
@@ -200,7 +200,8 @@ if ( $isAdmin || $isSystemUser)
             $res = dbProc::getActByNumberList( $listing->getStartPosition(),
                                         $listing->getAmountOnPage(),
                                         $sCriteria,
-                                        userAuthorization::getWorker());
+                                        (($isAdmin ) ? false : userAuthorization::getWorker())
+                                    );
             $oLink->addPrm('isSearch', 2 );
         }
 
