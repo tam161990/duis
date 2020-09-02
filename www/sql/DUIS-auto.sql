@@ -677,3 +677,54 @@ SET `TEXT` = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
         <tr><td>Apjums apaļots</td><td>+</td><td>Cipars formātā [0/1]</td></tr>     
         <tr><td>Darbība visam darbam</td><td>+</td><td>Cipars formātā [0/1]</td></tr>        
        </table>'  WHERE `CODE`  = 'REQUIREMENTS_CALCULATION_MATERIAL';
+
+--
+ALTER TABLE `kl_kalkulacija_materiali`
+	DROP COLUMN `KKMT_APJOMS_ROUND` ,
+	DROP COLUMN `KKMT_DVD`,
+	DROP INDEX `U_KKMT_GROUP_MATERI`;
+
+ALTER TABLE `kl_mms_kalkulacija`
+	ADD COLUMN `KMKL_APJOMS_ROUND` TINYINT(1) NOT NULL DEFAULT 0 ,
+	ADD COLUMN `KMKL_DVD` TINYINT(1) NOT NULL DEFAULT 0 ,
+	DROP INDEX `U_KMKL_NOS_KALK`,
+	ADD UNIQUE INDEX `U_KMKL_NOS_KALK` (`KMKL_KMSD_NOSACIJUMA_KODS`, `KMKL_KKAL_SHIFRS`, 
+    `KMKL_TRASE`, `KMKL_NOKL_SPRIEGUMS_10`, `KMKL_NOKL_SPRIEGUMS_NE_10`, `KMKL_DVD`);
+
+DELETE FROM  `kl_ref_kolonnas` WHERE KLKL_COLUMN IN ('KKMT_APJOMS_ROUND', 'KKMT_DVD');
+INSERT INTO `kl_ref_kolonnas`(KLKL_COLUMN,KLKL_TITLE,KLKL_CATALOG,KLKL_IS_DEFAULT) VALUES 
+('KMKL_APJOMS_ROUND', 'Apjums apaļots', 'KL_MMS_WORK_CALCULALATION', 1),
+('KMKL_DVD', 'Darbība visam darbam', 'KL_MMS_WORK_CALCULALATION', 0);
+
+
+UPDATE `FMK_MESSAGES` 
+SET `TEXT` = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr>         
+        <tr><td>Kalkulācijas šifrs</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Materiālu kategorija</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`, `.`. Formāts [xxxx.xxx]. Maksimāli 8 simboli.</td></tr>
+        <tr><td>Materiālu nomenklatūra</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 7 simboli.</td></tr>
+        <tr><td>Izmantot nomenklatūru</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Noklusētais materiāls</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Daudzums</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot līnijas garumu</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Koeficents</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot vadu skaitu</td><td>+</td><td>Stihijas kalkul. Cipars formātā [0/1]</td></tr>
+        <tr><td>Ir aktīvs</td><td>+</td><td>Kalkulācija ir aktuāla. Cipars formātā [0/1]</td></tr>
+       </table>'  WHERE `CODE`  = 'REQUIREMENTS_CALCULATION_MATERIAL';
+
+UPDATE `FMK_MESSAGES` 
+SET `TEXT` = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
+         <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr> 
+        <tr><td>MMS nosacījuma kods</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 11 simboli.</td></tr>
+        <tr><td>Kalkulācijas šifrs</td><td>+</td><td>Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Noklusētā kalk. sprieguma kodam 10</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Noklusētā kalk. sprieguma kodam <> 10</td><td>+</td><td>Cipars formātā [0/1]</td></tr>
+        <tr><td>Daudzums</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot līnijas garumu</td><td>+</td><td>>Cipars formātā [0/1]</td></tr>
+        <tr><td>Koeficents</td><td>+</td><td>Cipars formātā [xxxxx.xxx].</td></tr>
+        <tr><td>Izmantot vadu skaitu</td><td>+</td><td>Stihijas kalkul. Cipars formātā [0/1]</td></tr>
+        <tr><td>Ir aktīvs</td><td>+</td><td>Kalkulācija ir aktuāla. Cipars formātā [0/1]</td></tr>
+        <tr><td>Trašu kalkulācija</td><td>+</td><td>Kalkulācija tiek izmantota trašu tīrīšanas darbiem. Cipars formātā [0/1]</td></tr>       
+        <tr><td>Apjums apaļots</td><td>+</td><td>Cipars formātā [0/1]</td></tr>     
+        <tr><td>Darbība visam darbam</td><td>+</td><td>Cipars formātā [0/1]</td></tr>        
+       </table>'  WHERE `CODE`  = 'REQUIREMENTS_MMS_CALCULATION';

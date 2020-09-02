@@ -88,7 +88,7 @@ if($isAdmin || $isEdUser || $isAuditor )
 		   <td class="menu_cell"><a  target="frame_1" href="<?=$mmsListLink;?>" onclick="reloadFrame(2,'<?=$editMMSLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SINGLE_MMS');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$mmsCalculationListLink;?>" onclick="reloadFrame(2,'<?=$editMmsCalculationLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('MMS_CALCULATION');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$calculationMaterialListLink;?>" onclick="reloadFrame(2,'<?=$editCalculationMaterialLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('CALCULATION_MATERIAL');?></a></td>
-		   <td class="menu_cell" ><a  target="frame_1" href="<?=$workTypeListLink;?>" onclick="reloadFrame(2,'<?=$editWorkTypeLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('WORK_TYPES');?></a></td>
+		   <!--td class="menu_cell" ><a  target="frame_1" href="<?=$workTypeListLink;?>" onclick="reloadFrame(2,'<?=$editWorkTypeLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('WORK_TYPES');?></a></td-->
            <?
 if(!$isAuditor)
 {
@@ -135,14 +135,20 @@ if($isAdmin || $isSystemUser)
 		<tr>
             
 			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
-                    
-           
             <?
-            if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
+            if($isAdmin || $isEconomist || $isProjector)
+            {
+            ?>        
+			<td class="menu_cell<?= (!$isAdmin && !$isProjector && !$isEconomist)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$projectSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_PROJECT_SEARCH');?></a></td>
+			<?
+			}
+            if($isAdmin || $isEconomist || $isAuditor  || $isEditor  || $isProjector)
             {
             ?>
             <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
-            <?
+            
+            <?          			
+           
             }
             if((($isAdmin || $isEditor) && $isContractUser ))
             {
@@ -162,6 +168,7 @@ if($isAdmin || $isSystemUser)
 			    <td class="menu_cell<?= (!$isAdmin )? '_2': '';?>" nowrap><a target="frame_1" href="<?=$projectLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('PROJECT');?></a></td>
                 <?
             }
+			
             ?>
              <?
             if(($isAdmin || $isEconomist))

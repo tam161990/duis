@@ -84,6 +84,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		$oForm -> addElement('checkbox', 'isEpla',  text::get('TRASE'), isset($mmsCalc['KMKL_TRASE'])?$mmsCalc['KMKL_TRASE']:0, 'tabindex=10'.(($isEdUser)?' disabled' : ''));
 		
+		$oForm -> addElement('checkbox', 'round_amount',  text::get('APJOMS_ROUND'), isset($mmsCalc['KMKL_APJOMS_ROUND'])?$mmsCalc['KMKL_APJOMS_ROUND']:0, 'tabindex=12'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'dvd',  text::get('DVD'), isset($mmsCalc['KMKL_DVD'])?$mmsCalc['KMKL_DVD']:0, 'tabindex=13'.(($isEdUser)?' disabled' : ''));
+
 		// importa dati
 		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($mmsCalc['KMKL_CREATED'])?$mmsCalc['KMKL_CREATED']:dtime::now(), 'tabindex=11 maxlength="20" disabled');
 		$oForm -> addElement('text', 'creator',  text::get('CREATOR'), isset($mmsCalc)?$creator:'', 'tabindex=12 maxlength="20" disabled');
@@ -158,6 +161,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                                             $oForm->getValue('requirement'),
 															$oForm->getValue('chipher'),
 															$oForm->getValue('isEpla', 0),
+															$oForm->getValue('dvd'),
                                                             ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('mmsCalcId'):false)
                                                             )
 					{
@@ -182,6 +186,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 										$oForm->getValue('useCord', 0),
 										$oForm->getValue('isActive', 0),
 										$oForm->getValue('isEpla', 0),
+										$oForm->getValue('round_amount', 0),
+										$oForm->getValue('dvd', 0),
 										$userId
 						);
 
