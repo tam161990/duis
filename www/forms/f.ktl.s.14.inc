@@ -127,7 +127,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
         //datums
         $oForm -> addElement('date', 'proces_date',  text::get('PROCESS_DATE'), isset($mms['KMSD_IZPILDES_DATUMS'])?$mms['KMSD_IZPILDES_DATUMS']:dtime::now(), 'tabindex=4 maxlength="10"'.(($isAuditUser)?' disabled' : ''));
         $oForm -> addRule('proces_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
-	$oForm -> addRule('proces_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
+		$oForm -> addRule('proces_date', text::get('ERROR_INCORRECT_DATE'),'validatedate');
   
 		$oForm -> addElement('text', 'requirement_code',  text::get('REQUIREMENT_CODE'), isset($mms['KMSD_NOSACIJUMA_KODS'])?$mms['KMSD_NOSACIJUMA_KODS']:'', 'tabindex=5 maxlength="10"' . (($mmsId || $isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('requirement_code', text::get('ERROR_NUMERIC_VALUE'), 'numeric');

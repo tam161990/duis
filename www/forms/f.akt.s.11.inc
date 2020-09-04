@@ -141,7 +141,7 @@ if ( $isAdmin || $isSystemUser)
                                                 $oFormPop->getValue('amount_'.$r),
                                                 $oFormPop->getValue('price_'.$r),
                                                 $oFormPop->getValue('tame'),
-                                                $oFormPop->getValue('st'));
+                                                (($oFormPop->getValue('st') == 1 ) ? 0 : 1));
               if(!$r)
               {
                  $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());

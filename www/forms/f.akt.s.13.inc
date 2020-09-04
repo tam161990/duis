@@ -223,12 +223,13 @@ if ( $isAdmin || $isSystemUser)
                   $oRedirectLink->addPrm('actId', $oFormPop->getValue('actId'));
                   $oRedirectLink->addPrm('isSearch', $oFormPop->getValue('isSearch'));
                   $oRedirectLink->addPrm('searchNum', $oFormPop->getValue('searchNum'));
-                  $oRedirectLink->addPrm('tab', TAB_MATERIAL);
                   $oRedirectLink->addPrm('tame', $tame);
 
                   if($isProject == 1) {
                      $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');
-                  } 
+                  } else {
+                     $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.1');
+                  }
                   
                   switch ($catalog)
                   {
