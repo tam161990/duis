@@ -677,3 +677,7 @@ SET `TEXT` = '<table cellpadding="3" cellspacing="0" border="1" width="100%">
         <tr><td>Apjums apaļots</td><td>+</td><td>Cipars formātā [0/1]</td></tr>     
         <tr><td>Darbība visam darbam</td><td>+</td><td>Cipars formātā [0/1]</td></tr>        
        </table>'  WHERE `CODE`  = 'REQUIREMENTS_CALCULATION_MATERIAL';
+
+-- 01.09
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES ('WORKER_MATERIAL', 'DU materiāli');

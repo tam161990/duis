@@ -121,7 +121,7 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('st',0);
       $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');
-      $favorit[2]['TITLE'] = text::get('SEARCH_NEW');   ;
+      $favorit[2]['TITLE'] = text::get('WORKER_MATERIAL');   ;
       $favorit[2]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
       unset($oPopLink);
 

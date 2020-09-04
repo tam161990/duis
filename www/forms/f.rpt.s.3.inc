@@ -95,7 +95,7 @@ if(true/*$isEdUser || $isAdmin*/)
 		{
             foreach ($res as $i=>$row)
 			{
-              if($row['MATR_IS_WORKER'] == '0')
+              if($row['MATR_IS_WORKER'] == '1')
               {
                 if($row['CENA_KOPA'] == '')
                 {
@@ -157,13 +157,13 @@ if(true/*$isEdUser || $isAdmin*/)
                   $y = 0;
               }
 		*/
-		if($row['MATR_IS_WORKER']  == 1 && ($j == 0 || $writeof != $row['WRITE_OFF_ACCOUNT']))
+		        if($row['MATR_IS_WORKER']  == 0 && ($j == 0 || $writeof != $row['WRITE_OFF_ACCOUNT']))
               {
                  $subtitle = text::get('ST_COMPANY_NAME').' '.text::get('MATERIALS');
                  $j++;
                  
               }
-              elseif($row['MATR_IS_WORKER']  == 0 && ($j > 0  || ($y == 0 && $writeof != $row['WRITE_OFF_ACCOUNT'])))
+              elseif($row['MATR_IS_WORKER']  == 1 && ($j > 0  || ($y == 0 && $writeof != $row['WRITE_OFF_ACCOUNT'])))
               {
                   $subtitle = $row['WORKER'].' '.text::get('MATERIALS');
                   $j = 0;

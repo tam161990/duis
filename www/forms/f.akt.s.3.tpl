@@ -29,7 +29,7 @@
             } else {
                 $changestyle = "font-weight:normal;"   ;
             }
-           if($aMaterials[$i]['MATR_IS_WORKER'] == 1)
+           if($aMaterials[$i]['MATR_IS_WORKER'] != 1)
            {
                 $pricestyle = "color:#e4edd8;  font-size:1px;"   ;
            ?>

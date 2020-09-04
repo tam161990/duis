@@ -831,7 +831,7 @@ class toPdf {
 
 		$headers = array(
 			'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
-			'DRBI_PLAN_DATE' => iconv('UTF-8', 'windows-1257',text::get('FINISHING_DATE')),
+			'DRBI_WORK_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
 			'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
 			'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
@@ -846,7 +846,7 @@ class toPdf {
 		{
 		  $data[$i] = array(
 			'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-			'DRBI_PLAN_DATE'  => $work['DRBI_PLAN_DATE'],
+			'DRBI_WORK_APROVE_DATE'  => $work['DRBI_WORK_APROVE_DATE'],
 			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
 			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
@@ -861,18 +861,7 @@ class toPdf {
 		$pct =  ($totalD*(100+ PCT_21 )/ 100 ) - $totalD;
 		$summa = ($totalD*(100+ PCT_21 )/ 100 );
 
-		/*
-		$pdf->SetFont('Arial','',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-		$pdf->SetFont('Arial','B',8);
-		$pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
-		 $pdf->SetFont('Arial','',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. PCT_21 . '%').":",0,0,'R');
-		$pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
-		$pdf->SetFont('Arial','B',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
-		$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
-		*/
+		
 		$pdf->SetFont('Arial','',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
@@ -910,34 +899,18 @@ class toPdf {
 			$mat_cena_kopa = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
 		  }
 		  $data[$i] = array(
-			'MATR_KODS' => ((true/*$material['MATR_IS_WORKER'] == '1'*/)? $material['MATR_KODS'] : ''),
+			'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
 			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
-			'MATR_CENA' => ((false/*$material['MATR_IS_WORKER'] == '1'*/)? '' : $material['MATR_CENA']),
+			'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
 			'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
-			'MATR_CENA_KOPA' => ((false/*$material['MATR_IS_WORKER'] == '1'*/)? '' : $mat_cena_kopa)
+			'MATR_CENA_KOPA' => (($material['MATR_IS_WORKER'] == '1')? $mat_cena_kopa : '' )
 			);
-		  if(true/*$material['MATR_IS_WORKER'] != '1'*/)
+		  if($material['MATR_IS_WORKER'] == '1')
 			 $totalM +=  $mat_cena_kopa;
 		}
 		$pdf->FancyTable($headers,$data, $width, $align);
-		/*
-		if($material['MATR_IS_WORKER'] != '1') {
-			$pct =  ($totalM*(100+ PCT_21 )/ 100 ) - $totalM;
-			$summa = ($totalM*(100+ PCT_21 )/ 100 );
-
-			$pdf->SetFont('Arial','',8);
-			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-			$pdf->SetFont('Arial','B',8);
-			$pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
-			$pdf->SetFont('Arial','',8);
-			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. PCT_21 . '%').":",0,0,'R');
-			$pdf->Cell(20,6,number_format(number_format($pct,2,'.',''), 2),0,1,'R');
-			$pdf->SetFont('Arial','B',8);
-			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":", 0,0,'R');
-			$pdf->Cell(20,6,number_format(number_format($summa,2,'.',''), 2), 0,1,'R');
-		}
-		*/
+		
 		$pdf->SetFont('Arial','',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
