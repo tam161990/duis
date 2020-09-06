@@ -8538,121 +8538,112 @@ class dbProc extends dbLayer
 
 	}
 
-        function processAutoActWorks($actId, $mms_code, $trase) {
+    function processAutoActWorks($actId, $mms_code, $trase) {
 
-            $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
-	        $section = dbProc::getActSectionName($actId);
-            if ($mmsList!==false)
-            {
-                $oDB = new dbLayer;
-                $aWorks = array();
-                $j = 0;  
-                foreach ($mmsList as $mms)
-                {	
-                    $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KKAL_ID`, `KKAL_SHIFRS`, 
-                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, `KKAL_KEDI_SECTION`,
-                            CASE WHEN `KMKL_IZMANTOT_LINIJU` = 1 
-                                THEN 
-                                    CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
-                                        THEN '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
-                                    ELSE  
-                                        '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` 
-                                    END 
-                            ELSE
+        $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
+        $section = dbProc::getActSectionName($actId);
+        if ($mmsList!==false)
+        {
+            $oDB = new dbLayer;
+            $aWorks = array();
+            $j = 0;  
+            foreach ($mmsList as $mms)
+            {	
+                $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KKAL_ID`, `KKAL_SHIFRS`, 
+                            `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, `KKAL_KEDI_SECTION`,
+                        CASE WHEN `KMKL_IZMANTOT_LINIJU` = 1 
+                            THEN 
                                 CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
-                                    THEN '.$mms['KMSD_VADU_SKAITS'].' 
-                                ELSE
-                                    `KMKL_DAUDZUMS` 
+                                    THEN '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` * '. $mms['KMSD_VADU_SKAITS'] .'
+                                ELSE  
+                                    '.$mms['KMSD_DAUDZUMS'].' * `KMKL_KOEFICENTS` 
                                 END 
-                            END  AS `DAUDZUMS`,
-                            `KMKL_APJOMS_ROUND`, `KMKL_DVD`,
-                            CASE WHEN `KMKL_APJOMS_ROUND` = 1 
-                                THEN ROUND(KMKL_DAUDZUMS, 0) 
-                                ELSE  `KMKL_DAUDZUMS` 
-                            END  AS `KMKL_DAUDZUMS`          
-                            FROM `kl_mms_kalkulacija` 
-                            INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
-                            INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
-                            WHERE `KMKL_IR_AKTIVS` = 1 
-                            AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
-			                AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
-                            AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
-                            AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
-                            AND (
-                                ('.$mms['KMSD_KSRG_KODS'].' = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
-                                ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
-                            )
-                            AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"
-                            ORDER BY KMKL_DVD DESC';
-                   // echo $query;    
-                    $res = $oDB -> makeQuery($query);
-                    // print_r($res);
-                        
-                    foreach ($res as $work)
-                    {
-                        if($work['KKAL_KEDI_SECTION'] != $section) {
-                            continue;
-                        }
-                                                
-                        if(isset($aWorks[$work['KKAL_SHIFRS']]) && is_array($aWorks[$work['KKAL_SHIFRS']]) )
-                        {   
-                            if( $work['KMKL_DVD'] == 0 ) {                            
-                                $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
-                                $aWorks[$work['KKAL_SHIFRS']]['KMKL_APJOMS_ROUND'] = $work['KMKL_APJOMS_ROUND'];
-                            }
-                        } else {
-                            $aWorks[$work['KKAL_SHIFRS']]  = array (
-                                'AKT_ID' => $work['AKT_ID'],
-                                'KKAL_ID' => $work['KKAL_ID'],
-                                'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
-                                'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
-                                'KKAL_PLANA' => $work['KKAL_PLANA'],
-                                'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
-                                'DAUDZUMS' => (($work['KMKL_DVD'] == 0 ) ? $work['DAUDZUMS'] : 0),
-                                'KMKL_DAUDZUMS' => (($work['KMKL_DVD'] == 1 ) ? $work['KMKL_DAUDZUMS'] : 0),
-                                'KMKL_APJOMS_ROUND' => (($work['KMKL_DVD'] == 0 ) ? $work['KMKL_APJOMS_ROUND'] : 0),
-                                );
-                            }                                            
-                    }                       
-                }
-                
-                foreach ($aWorks as $row)
-                { 
-                    if($row['KMKL_APJOMS_ROUND'] == 1) {
-                        $row['DAUDZUMS'] = round($row['DAUDZUMS']);
+                        ELSE
+                            CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
+                                THEN '.$mms['KMSD_VADU_SKAITS'].' 
+                            ELSE
+                                `KMKL_DAUDZUMS` 
+                            END 
+                        END  AS `DAUDZUMS`
+                        FROM `kl_mms_kalkulacija` 
+                        INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
+                        INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
+                        WHERE `KMKL_IR_AKTIVS` = 1 
+                        AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
+                        AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
+                        AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
+                        AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
+                        AND (
+                            ('.$mms['KMSD_KSRG_KODS'].' = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
+                            ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
+                        )
+                        AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"
+                        ORDER BY KMKL_DVD DESC';
+               // echo $query;    
+                $res = $oDB -> makeQuery($query);
+                // print_r($res);
+                    
+                foreach ($res as $work)
+                {
+                    if($work['KKAL_KEDI_SECTION'] != $section) {
+                        continue;
                     }
-                    $row['DAUDZUMS'] += $row['KMKL_DAUDZUMS']; 
-                      
-                    $query = 'INSERT into `TAME_DARBI`
-                            (`DRBI_RAKT_ID`, 
-                            `DRBI_KKAL_ID`, 
-                            `DRBI_KKAL_SHIFRS`, 
-                            `DRBI_KKAL_NOSAUKUMS`,
-                            `DRBI_KKAL_NORMATIVS`, 
-                            `DRBI_MERVIENIBA`, 
-                            `DRBI_DAUDZUMS`, 
-                            `DRBI_DAUDZUMS_KOR`,
-                            `DRBI_CILVEKSTUNDAS`,
-                            `DRBI_PLAN_DATE` )
-                         VALUES ('.$row['AKT_ID'].','.
-                               $row['KKAL_ID'].',"'.
-                               $row['KKAL_SHIFRS'].'","'.
-                               $row['KKAL_NOSAUKUMS'].'",'.
-                               $row['KKAL_PLANA'].',"'.
-                               $row['KKAL_MERVIENIBA'].'",'.
-                               $row['DAUDZUMS'].','.
-                               $row['DAUDZUMS'].', 
-							   `DRBI_DAUDZUMS`*`DRBI_KKAL_NORMATIVS`,'.
-                               '"'.DEFAULT_DATE.'"
-                        )';    
-                                    
-                    $res = $oDB -> makeQuery($query);
-                }
-
-                dbProc::updateWorkSumms($actId, true);
+                                            
+                    if(isset($aWorks[$work['KKAL_SHIFRS']]) && is_array($aWorks[$work['KKAL_SHIFRS']]) )
+                    {   
+                                               
+                            $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
+                            $aWorks[$work['KKAL_SHIFRS']]['KMKL_APJOMS_ROUND'] = $work['KMKL_APJOMS_ROUND'];
+                        
+                    } else {
+                       $aWorks[$work['KKAL_SHIFRS']]  = array (
+                               'AKT_ID' => $work['AKT_ID'],
+                               'KKAL_ID' => $work['KKAL_ID'],
+                               'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
+                               'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
+                               'KKAL_PLANA' => $work['KKAL_PLANA'],
+                               'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
+                               'DAUDZUMS' => $work['DAUDZUMS'],
+                               'CILVEKSTUNDAS' => $work['DAUDZUMS'] * $work['KKAL_PLANA']
+                            );
+                        }                                            
+                }                       
             }
-            return true;
+            
+            foreach ($aWorks as $row)
+            { 
+               
+                  
+                $query = 'INSERT into `TAME_DARBI`
+                        (`DRBI_RAKT_ID`, 
+                        `DRBI_KKAL_ID`, 
+                        `DRBI_KKAL_SHIFRS`, 
+                        `DRBI_KKAL_NOSAUKUMS`,
+                        `DRBI_KKAL_NORMATIVS`, 
+                        `DRBI_MERVIENIBA`, 
+                        `DRBI_DAUDZUMS`, 
+                        `DRBI_DAUDZUMS_KOR`,
+                        `DRBI_CILVEKSTUNDAS`,
+                        `DRBI_PLAN_DATE` )
+                     VALUES ('.$row['AKT_ID'].','.
+                           $row['KKAL_ID'].',"'.
+                           $row['KKAL_SHIFRS'].'","'.
+                           $row['KKAL_NOSAUKUMS'].'",'.
+                           $row['KKAL_PLANA'].',"'.
+                           $row['KKAL_MERVIENIBA'].'",'.
+                           $row['DAUDZUMS'].','.
+                           $row['DAUDZUMS'].', 
+                           `DRBI_DAUDZUMS`*`DRBI_KKAL_NORMATIVS`,'.
+                           '"'.DEFAULT_DATE.'"
+                    )';    
+                                
+                $res = $oDB -> makeQuery($query);
+            }
+
+            dbProc::updateWorkSumms($actId, true);
         }
+        return true;
+    }
   
         function processAutoActMaterial($actId, $mms_code, $trase) {
            
