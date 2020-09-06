@@ -448,7 +448,11 @@ if ( $isAdmin || $isSystemUser)
                                                     ($tameWork) ? $row['amount_kor']:false,
                                                     $row['edited'],
                                                     ($tameWork) ? false : $row['plan_date'],
-                                                    $row['day_total']
+                                                    $row['day_total'],
+                                                    false, 
+                                                    0,
+                                                    false,
+                                                    $row['work_aprove_date']
                                                     );
                             		// if work not inserted in to the DB
                       			// delete  task record and show error message
