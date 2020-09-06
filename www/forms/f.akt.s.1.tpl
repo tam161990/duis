@@ -35,7 +35,7 @@
             <td width="20%" rowspan="<?=(($actId === false)?'14':'15');?>" valign="bottom">
                 <table cellpadding="5" cellspacing="0" border="0" align="center">
                  <? if(!$isReadonly1 && ($actId != false))  {?>
-                    <? if(!$trase && $isAdmin)  {?>
+                    <? if(!$trase || $isAdmin)  {?>
                         <tr><td><?=$oForm->getElementHtml('export_part');?></td></tr>
                     <? } ?>
                     <tr><td><?=$oForm->getElementHtml('export');?></td></tr>
