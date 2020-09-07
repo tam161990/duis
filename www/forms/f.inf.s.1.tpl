@@ -30,6 +30,8 @@ function hideMenu()
 	var c=getElement('tdReport',true); c.className="menu_cell_top";
     var c=getElement('optionSubMenuDiv',true); c.style.visibility="hidden";
 	var c=getElement('tdOptions',true); c.className="menu_cell_top";
+	var c=getElement('projectSubMenuDiv',true); c.style.visibility="hidden";
+	var c=getElement('tdProject',true); c.className="menu_cell_top";
 }
 
 function disableFrameControl()
@@ -136,13 +138,9 @@ if($isAdmin || $isSystemUser)
             
 			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
             <?
-            if($isAdmin || $isEconomist || $isProjector)
-            {
-            ?>        
-			<td class="menu_cell<?= (!$isAdmin && !$isProjector && !$isEconomist)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$projectSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_PROJECT_SEARCH');?></a></td>
-			<?
-			}
-            if($isAdmin || $isEconomist || $isAuditor  || $isEditor  || $isProjector)
+            }
+				
+            if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
             {
             ?>
             <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
@@ -162,12 +160,6 @@ if($isAdmin || $isSystemUser)
 			    <td class="menu_cell<?= (!$isAdmin && !$isTraseUser)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actTrLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('TRASES');?></a></td>
                 <?
 			}
-			if($isAdmin)
-            {
-                ?>
-			    <td class="menu_cell<?= (!$isAdmin )? '_2': '';?>" nowrap><a target="frame_1" href="<?=$projectLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('PROJECT');?></a></td>
-                <?
-            }
 			
             ?>
              <?
@@ -184,6 +176,44 @@ if($isAdmin || $isSystemUser)
 }
 ?>
 </div>
+<div id="projectSubMenuDiv"  class="sub_menu" style="position: absolute;left: 300px;top: 26px;visibility:hidden;">
+	<?
+	if($isAdmin || $isSystemUser)
+	{
+	  ?>
+		<table cellpadding="0" cellspacing="0" border="0">
+			<tr>
+				
+				
+				<?
+				
+				if($isAdmin ||  $isProjector || $isEconomist)
+				{
+				?>
+				<td class="menu_cell<?= (!$isAdmin && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$projectSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_PROJECT_SEARCH');?></a></td>
+				<?
+				}			
+				if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
+				{
+				?>
+				<td class="menu_cell<?= (!$isAdmin && !$isEditor && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
+				<?
+				}
+				
+				if($isAdmin)
+				{
+					?>
+					<td class="menu_cell_2" nowrap><a target="frame_1" href="<?=$projectLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('PROJECT');?></a></td>
+					<?
+				}
+				?>
+				
+			</tr>
+		</table>
+	<?
+	}
+	?>
+	</div>
 
 <div id="reportSubMenuDiv"  class="sub_menu" style="position: absolute;left: 377px;top: 26px;visibility:hidden;">
 
@@ -201,9 +231,10 @@ if($isAdmin || $isSystemUser)
 
 
                     <td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
-			<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
+					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
                     	<td nowrap id="tdGps" class="menu_cell_top" <?=($isEditor || $isEdUser || $isAdmin)?'':'disabled';?>><?=($isEditor || $isEdUser || $isAdmin)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cGpsMain.'" target="frame_1">':'';?><?=text::get('GPS');?><?=($isEditor || $isEdUser || $isAdmin)?'</a>':'';?></td>
-                    <td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
+					<td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
+					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $isEconomist)?'':'disabled';?>><?=($isAdmin ||  $isProjector || $isEconomist)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
 					<td nowrap class="menu_cell_right">&nbsp;</td>
 				</tr>
 			</table>
