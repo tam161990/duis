@@ -133,7 +133,7 @@ if ( $isAdmin || $isProjector)
             // set list title
             $title = text::toUpper(text::get('ST_WORK'));    
             // get grupas nokluseto vertibu 
-            $defaultWork = dbProc::getDefaultWork($actId);
+            $defaultWork = explode('^', dbProc::getDefaultWork($actId));
             // get grupas list           
             $res=dbProc::getWorkTypeList();
             if (is_array($res))
@@ -163,14 +163,14 @@ if ( $isAdmin || $isProjector)
             // set list title
             $title = text::toUpper(text::get('ST_MATERIAL'));   
              // get grupas nokluseto vertibu 
-             $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+            $defaultMaterial = dbProc::getDefaultMaterial($actId);  
             // get grupas list           
             $res=dbProc::getWorkTypeListByWork($actId);
             if (is_array($res))
             {
               foreach ($res as $row)
               {
-                $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+                $workType[$row['KLDV_ID'].'^'.$row['DRBI_WORK_TYPE_TEXT']]=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
               }
             }
             unset($res);
@@ -224,7 +224,7 @@ if ( $isAdmin || $isProjector)
         array('classifName'=>KL_CALCULALATION_GROUP,'value'=>'','readonly'=>false), 
         'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&calc_group=\'+this.value+\'\'))"');
         
-        
+        $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
       }
       if($catalog == KL_MATERIALS )
       {
@@ -239,8 +239,9 @@ if ( $isAdmin || $isProjector)
       }
       unset($oLink);
 
-      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
-		  $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork[0] : $defaultMaterial), 'tabindex=2', '', '', $workType);
+      $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      
 
       // form buttons
       if (!$isReadonly)
@@ -267,13 +268,12 @@ if ( $isAdmin || $isProjector)
                                   case  KL_CALCULALATION:
                                     $r = dbProc::saveProjectWorkRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
-                                                                      $oFormPop->getValue('work_type'));
+                                                                      $oFormPop->getValue('work_type'),
+                                                                      $oFormPop->getValue('work_type_text'));
                                     break;                          
                                   case  KL_MATERIALS:
-                                    $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), 
+                                    $r = dbProc::saveProjectMaterialRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
-                                                                      false, false, false,
-                                                                      0, '', '',
                                                                       $oFormPop->getValue('work_type')
                                                                     );
                                     break;

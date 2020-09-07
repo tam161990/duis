@@ -583,7 +583,7 @@ class toPdf {
 			foreach ($res as $group)
 			{        
 				$pdf->SetFont('Arial','B',9);
-				$pdf->Cell(160,8,iconv('UTF-8', 'windows-1257',$group['KLDV_NOSAUKUMS']), 0,1);
+				$pdf->Cell(160,8,iconv('UTF-8', 'windows-1257',$group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']), 0,1);
 				$pdf->Cell(160,4,iconv('UTF-8', 'windows-1257',text::get('WORK_COAST')), 0,1);
 
 				$width=array(15,75,15,20,55);

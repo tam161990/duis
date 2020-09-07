@@ -62,7 +62,7 @@ function projectTammeExcel($actId, $userId){
                     ); 
             $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
             $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS']); 
+            $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']); 
             $currentRow ++; 
 
             $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
@@ -113,7 +113,7 @@ function projectTammeExcel($actId, $userId){
             $data = array();
             foreach ($aMaterialDb as $i => $row)
             {
-                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['GROUP'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
                 $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
                 $objPHPExcel->getActiveSheet()->setCellValue('D'.$currentRow, $row['MATR_MERVIENIBA']);
                 $objPHPExcel->getActiveSheet()->setCellValueExplicit('E'.$currentRow, $row['MATR_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);

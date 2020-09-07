@@ -25,9 +25,15 @@
    <? } ?>
    <? if($isProject == 1) { ?>
     <tr>
-        <th class="table_head_2"><?=text::get('SINGLE_WORK_TYPE');?></th>
+        <th class="table_head_2"><?= $oFormPop -> getElementLabel('work_type'); ?></th>
         <td class="table_cell_3"><?= $oFormPop->getElementHtml('work_type'); ?></td>
     </tr>
+    <?  if($catalog == KL_CALCULALATION ) { ?>        
+        <tr>
+            <th class="table_head_2"><?= $oFormPop -> getElementLabel('work_type_text'); ?></th>
+            <td class="table_cell_3"><?= $oFormPop->getElementHtml('work_type_text'); ?></td>
+        </tr>
+        <? } ?>
     <? } ?>
 </table>
 

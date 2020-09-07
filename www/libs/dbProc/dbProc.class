@@ -5828,16 +5828,18 @@ class dbProc extends dbLayer
 	// Atgriezh akta darbus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
     // -----------------------------------------------------------------------------
-    	function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false)
+    	function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false, $project = false)
 	{
             $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
             $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
+            $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
             $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
                     ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                     (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
                     AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
-                    AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
+                    AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
                 from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -5847,8 +5849,9 @@ class dbProc extends dbLayer
                 ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                 (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
                 AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
-                AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS
+                AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
                 from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -6226,7 +6229,8 @@ class dbProc extends dbLayer
                                     $st = 0, 
                                     $title = '', 
                                     $mervieniba = '',
-                                    $work_type = false)
+                                    $work_type = false,
+                                    $work_type_text = false)
 	{
         $table_name = ($tame) ? '`TAME_DARBI`' : '`DARBI`';
 
@@ -6237,7 +6241,9 @@ class dbProc extends dbLayer
                 '.(($price !== false)? '`DRBI_KKAL_NORMATIVS`,': '').'                 
                 `DRBI_DAUDZUMS`, 
                 `DRBI_IS_WORKER`'.(($tame)? ', `DRBI_DAUDZUMS_KOR` ' : '' ).
-                (($work_type!== false)? ', `DRBI_WORK_TYPE_ID` ' : '' ).')
+                (($work_type!== false)? ', `DRBI_WORK_TYPE_ID` ' : '' ).
+                (($work_type!== false)? ', `DRBI_WORK_TYPE_TEXT` ' : '' ).
+                ')                
                 values ('.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($title).'",
                     "'.dbLayer::quote_smart($mervieniba).'",
@@ -6245,7 +6251,8 @@ class dbProc extends dbLayer
                     '.dbLayer::quote_smart($amount).',
                     '.dbLayer::quote_smart($st).'
                     '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
-                    (($work_type!== false)? ','.dbLayer::quote_smart($work_type) : '' ).
+                    (($work_type!== false)? ','.dbLayer::quote_smart($work_type) : '"NULL"' ).
+                    (($work_type!== false)? ',"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"' ).
                     ' )' ;
 
         }
@@ -6355,15 +6362,15 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
     
-    function saveProjectWorkRecord($actId, $ID, $work_type)
+    function saveProjectWorkRecord($actId, $ID, $work_type, $work_type_text)
 	{
         $query = 'insert into `DARBI`
         (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
-        `DRBI_MERVIENIBA`, DRBI_PLAN_DATE, `DRBI_WORK_TYPE_ID`)
+        `DRBI_MERVIENIBA`, DRBI_PLAN_DATE, `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`)
         select '.dbLayer::quote_smart($actId).',
         `KKAL_ID`, `KKAL_SHIFRS`,`KKAL_NOSAUKUMS`,
         `KKAL_PLANA`, `KKAL_MERVIENIBA`, 
-         now(), '.dbLayer::quote_smart($work_type).'
+         now(), '.dbLayer::quote_smart($work_type).', "'.dbLayer::quote_smart($work_type_text).'"
         from `KL_KALKULACIJA`
         where `KKAL_ID` = '.dbLayer::quote_smart($ID).' ';
 
@@ -6374,14 +6381,36 @@ class dbProc extends dbLayer
     }
     
     function getDefaultWork($actId) {
-        $query = 'select `DRBI_WORK_TYPE_ID` from `DARBI` 
+        $query = 'select CONCAT(DRBI_WORK_TYPE_ID, \'^\', NVL(DRBI_WORK_TYPE_TEXT, \'\')) AS DRBI_WORK_TYPE
+            from `DARBI` 
             where `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId).'
             order by `DRBI_ID` desc
             limit 1';
         $oDB = new dbLayer;
         $result = $oDB -> makeQuery($query);
-        return isset($result[0]['DRBI_WORK_TYPE_ID']) ? $result[0]['DRBI_WORK_TYPE_ID'] : '';
+        return isset($result[0]['DRBI_WORK_TYPE']) ? $result[0]['DRBI_WORK_TYPE'] : '';
     }
+
+    function saveProjectMaterialRecord($actId, $ID, $work_type)
+	{
+        $r_work_type = explode('^', $work_type);
+        $query = 'insert into `MATERIALI`
+        (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+         `MATR_IS_WORKER`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`)
+        select '.dbLayer::quote_smart($actId).',
+            `KMAT_KATEGORIJAS_KODS`,`KMAT_KATEGORIJAS_NOSAUKUNS`, `KMAT_MERVIENIBA`, 
+                0,'.dbLayer::quote_smart($work_type[0]).', "'.(isset($work_type[1]) ? dbLayer::quote_smart($work_type[1]) : "").'" 
+                from `KL_MATERIALI`
+                where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
+        
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+    
+    
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
@@ -6391,14 +6420,15 @@ class dbProc extends dbLayer
 	function writeActWork($actId, $kid, $chipher, $title, $standart = false, $amount, 
                             $total = false, $measure, $amount_kor = false, $edited = false, 
                             $plan_date = false, $day_total = false, $notes = false,
-                            $st = 0, $work_type = false)
+                            $st = 0, $work_type = false, $work_type_text = false)
 	{
 	    if($amount_kor !== false) {
 	   	    $query = 'insert into `TAME_DARBI`
                 (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`,
                 `DRBI_DAUDZUMS`, `DRBI_DAUDZUMS_KOR`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                 `DRBI_APPROVE_DATE`, 
-                `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, `DRBI_WORK_TYPE_ID` )
+                `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
+                `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT` )
                 values ( '.dbLayer::quote_smart($actId).',
 				"'.dbLayer::quote_smart($kid).'",
                 "'.dbLayer::quote_smart($chipher).'",
@@ -6413,14 +6443,16 @@ class dbProc extends dbLayer
                 "'.dbLayer::quote_smart($day_total).'",
                 '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes ).'"').',
                 '.dbLayer::quote_smart($st).'
-                '.(($work_type !== false) ? ','.dbLayer::quote_smart($work_type) : '').'
+                '.(($work_type !== false) ? ','.dbLayer::quote_smart($work_type) : '"NULL"').'
+                '.(($work_type !== false) ? ',"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').'
                 )';
         } else {
             $query = 'insert into `DARBI`
                             (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, 
                             `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                             `DRBI_APPROVE_DATE`, 
-                            `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, `DRBI_WORK_TYPE_ID`)
+                            `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
+                            `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`)
                             values ( '.dbLayer::quote_smart($actId).',
             				"'.dbLayer::quote_smart($kid).'",
                             "'.dbLayer::quote_smart($chipher).'",
@@ -6435,6 +6467,7 @@ class dbProc extends dbLayer
                             '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes ).'"').',
                             '.dbLayer::quote_smart($st).',
                             '.(($work_type !== false ) ? dbLayer::quote_smart($work_type ) : '"NULL"').'
+                            '.(($work_type !== false) ? ',"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').'
                             )';
         }
         //echo ($query);
@@ -6524,18 +6557,23 @@ class dbProc extends dbLayer
 	// Atgriezh akta materialus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getActMaterialList($ID, $tame = false)
+	function getActMaterialList($ID, $tame = false, $project = false)
     {
         $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
         $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
+        $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
 
-		$query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA
+        $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA  ". $group_name.",
+                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE
                 from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NOT NULL
                 union
-                select *, FORMAT(0, 2) AS `MATR_CENA_KOPA`
+                select *, FORMAT(0, 2) AS `MATR_CENA_KOPA` ". $group_name.",
+                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE
                 from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NULL 
                 ORDER BY `MATR_IS_WORKER` DESC";
@@ -6561,10 +6599,8 @@ class dbProc extends dbLayer
     function getProjectMaterialList($ID, $group_id = false)
     {        
 
-        $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA,
-                CONCAT(KMAT_GRUPAS_KODS, '.', KMAT_APAKSGRUPAS_KODS) as `GROUP`
-                from `MATERIALI`
-                left join `kl_materiali` ON KMAT_KODS = MATR_KODS
+        $query = "select *
+                from `MATERIALI`                
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND `MATR_DAUDZUMS` IS NOT NULL     
                 " . (($group_id !== false) ? " AND `MATR_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."           
@@ -6661,15 +6697,16 @@ class dbProc extends dbLayer
                                     $work_type = false)
 	{
         $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
-
+        $r_work_type = explode('^', $work_type);
         if($ID == false)
-        {
+        { 
             $query = 'insert into '.$table_name.'
                 (`MATR_RAKT_ID`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                 '.(($price !== false)? '`MATR_CENA`,': '').'       
                 `MATR_DAUDZUMS`, 
                 `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).
-                (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).')
+                (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).
+                (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).')
                 values ('.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($title).'",
                     "'.dbLayer::quote_smart($mervieniba).'",
@@ -6677,55 +6714,62 @@ class dbProc extends dbLayer
                     '.dbLayer::quote_smart($amount).',
                     '.dbLayer::quote_smart($st).'
                     '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
-                    (($work_type !== false)? ','.dbLayer::quote_smart($work_type) : '' ).
+                    (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
+                    (($work_type !== false)? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]).'"' : ""): '' ).
                     ' )' ;
 
         }
         elseif($amount === false && $price === false)
-        {
+        { 
             $query = 'insert into '.$table_name.'
                 (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, 
                 `MATR_CENA`, `MATR_IS_WORKER`'
-                .(($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).')
+                .(($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).
+                (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).')
 			select '.dbLayer::quote_smart($actId).',
                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, 
                 `KMAT_CENA`,'.dbLayer::quote_smart($st).
-                (($work_type !== false)? ','.dbLayer::quote_smart($work_type) : '' ).' 
-                    from `KL_MATERIALI`
+                (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
+                (($work_type !== false)? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]).'"' : ""): '' ).
+                 '   from `KL_MATERIALI`
                     where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
         }
         elseif($price === false || $st == 1)
-        {
+        { 
            $query = 'insert into '.$table_name.'
                 (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, 
                 `MATR_DAUDZUMS`,
                  `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).
-                 (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).')
+                 (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).
+                 (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).')
 			select '.dbLayer::quote_smart($actId).',
                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_CENA`, 
                 '.dbLayer::quote_smart($amount).', 
                 '.dbLayer::quote_smart($st).' 
                 '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
-                (($work_type !== false)? ','.dbLayer::quote_smart($work_type) : '' ).
+                (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
+                (($work_type !== false)? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]).'"' : ""): '' ).
                 ' from `KL_MATERIALI`
                     where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
         }
         else
-        {
+        { 
            $query = 'insert into '.$table_name.'
                 (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`, `MATR_CENA`, `MATR_DAUDZUMS`, 
                 `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).
-                (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).')
+                (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).
+                (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).')
 			select '.dbLayer::quote_smart($actId).',
                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, '.dbLayer::quote_smart($price).' , 
                 '.dbLayer::quote_smart($amount).', 
                 '.dbLayer::quote_smart($st).' 
                  '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
-                 (($work_type !== false)? ','.dbLayer::quote_smart($work_type) : '' ).
+                 (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
+                 (($work_type !== false)? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]).'"' : ""): '' ).
                 ' from `KL_MATERIALI`
                     where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
         }
-        echo $query;
+        //echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -6733,13 +6777,14 @@ class dbProc extends dbLayer
     }
     
     function getDefaultMaterial($actId) {
-        $query = 'select `MATR_WORK_TYPE_ID` from `MATERIALI` 
+        $query = 'select CONCAT(MATR_WORK_TYPE_ID, \'^\', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE
+             from `MATERIALI` 
             where `MATR_RAKT_ID` = '.dbLayer::quote_smart($actId).'
             order by `MATR_ID` desc
             limit 1';
         $oDB = new dbLayer;
         $result = $oDB -> makeQuery($query);
-        return isset($result[0]['MATR_WORK_TYPE_ID']) ? $result[0]['MATR_WORK_TYPE_ID'] : '';
+        return isset($result[0]['MATR_WORK_TYPE']) ? $result[0]['MATR_WORK_TYPE'] : '';
     }
 
     // -----------------------------------------------------------------------------
@@ -6750,12 +6795,17 @@ class dbProc extends dbLayer
                                 $total = false, $st = 0, $amount_kor = false, $notes = false,
                                 $work_type = false)
 	{
+        
+        $r_work_type = explode('^', $work_type);
+
         if($amount_kor !== false) {
             $query = 'insert into `TAME_MATERIALI`
                             (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                             `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, 
                             `MATR_IS_WORKER`, `MATR_PIEZIMES`
-                            '.(($work_type !== false) ? ', `MATR_WORK_TYPE_ID`' : '').' )                           
+                            '.(($work_type !== false) ? ', `MATR_WORK_TYPE_ID`' : '').
+                            (($work_type !== false) ? ', `MATR_WORK_TYPE_TEXT`' : '').
+                            ' )                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -6766,14 +6816,16 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($total).'",
                             "'.dbLayer::quote_smart($st).'",
                             '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').
-                            (($work_type !== false) ? ','.dbLayer::quote_smart($work_type) : '').'
-                            )';
+                            (($work_type !== false) ? ','.dbLayer::quote_smart($r_work_type[0]) : '').
+                            (($work_type !== false) ? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '').
+                            ')';
         } else {
             $query = 'insert into `MATERIALI`
                     (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                     `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, `MATR_IS_WORKER`, `MATR_PIEZIMES`
-                    '.(($work_type !== false) ? ', `MATR_WORK_TYPE_ID`' : '').'
-                    )
+                    '.(($work_type !== false) ? ', `MATR_WORK_TYPE_ID`' : '').
+                    (($work_type !== false) ? ', `MATR_WORK_TYPE_TEXT`' : '').
+                    ')
                     values ( '.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
@@ -6783,10 +6835,11 @@ class dbProc extends dbLayer
 		            '.((!$total) ? '"NULL",' : '"'.dbLayer::quote_smart($total).'",').'
                     "'.dbLayer::quote_smart($st).'",
                     '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').
-                    (($work_type !== false) ? ','.dbLayer::quote_smart($work_type) : '').'
-                )';
+                    (($work_type !== false) ? ','.dbLayer::quote_smart($r_work_type[0]) : '').
+                    (($work_type !== false) ? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '').
+                    ' )';
         }
-
+        //echo  $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -8894,7 +8947,7 @@ class dbProc extends dbLayer
     // -----------------------------------------------------------------------------
     function getWorkTypeListByWork($actId)
     {
-    $query = 'select DISTINCT `KLDV_ID`,`KLDV_NOSAUKUMS`  
+    $query = 'select DISTINCT `KLDV_ID`,`KLDV_NOSAUKUMS`, `DRBI_WORK_TYPE_TEXT` 
             from `kl_darba_veidi`
             INNER JOIN `darbi` ON DRBI_WORK_TYPE_ID = KLDV_ID
             where `KLDV_IR_AKTIVS` = 1

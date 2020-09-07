@@ -79,23 +79,32 @@ if ( $isAdmin || $isSystemUser)
                // get grupas list           
                $res=dbProc::getWorkTypeList();    
                // get grupas nokluseto vertibu 
-               $defaultWork = dbProc::getDefaultWork($actId);       
+               $defaultWork = explode('^', dbProc::getDefaultWork($actId));    
+               if (is_array($res))
+               {
+                  foreach ($res as $row)
+                  {
+                     $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+                  }
+               }
+         unset($res); 
                break;         
             case  KL_MATERIALS: 
                // get grupas list             
                $res=dbProc::getWorkTypeListByWork($actId);  
                // get grupas nokluseto vertibu 
                $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+               if (is_array($res))
+               {
+                  foreach ($res as $row)
+                  {
+                     $workType[$row['KLDV_ID'].'^'.$row['DRBI_WORK_TYPE_TEXT']]=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+                  }
+               }
+         unset($res);
                break;
          }
-         if (is_array($res))
-         {
-           foreach ($res as $row)
-           {
-             $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
-           }
-         }
-         unset($res);
+         
       }
 
       $oFormPop -> addElement('hidden', 'action', '');
@@ -195,7 +204,8 @@ if ( $isAdmin || $isSystemUser)
                                                    (($oFormPop->getValue('st') == 1 ) ? 0 : 1),
                                                    $oFormPop->getValue('title'),
                                                    $oFormPop->getValue('mervieniba'),
-                                                   ($isProject == 1) ? $oFormPop->getValue('work_type'): false
+                                                   ($isProject == 1) ? $oFormPop->getValue('work_type'): false,
+                                                   ($isProject == 1) ? $oFormPop->getValue('work_type_text'): false
                                                 );
                      break;         
                case  KL_MATERIALS: 
@@ -262,8 +272,12 @@ if ( $isAdmin || $isSystemUser)
       $oFormPop->addElement('text', 'amount', '', '', (($isReadonly)?' disabled ':'').'maxlength="6"'); 
       $oFormPop->addElement('text', 'price', '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
       if($isProject == 1) {
-         $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
+         $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork[0] : $defaultMaterial), 'tabindex=2', '', '', $workType);
          $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+         if($catalog == KL_CALCULALATION )
+         { 
+            $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
+         }
       } 
       // form buttons
       if (!$isReadonly)
