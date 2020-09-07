@@ -138,7 +138,7 @@ if($isAdmin || $isSystemUser)
             
 			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
             <?
-            }
+           
 				
             if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
             {

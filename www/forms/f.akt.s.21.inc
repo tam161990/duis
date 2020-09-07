@@ -309,9 +309,11 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                     false,
                                                     $row['notes'],
                                                     $row['st'],
+                                                    false,
                                                     $row['work_type'],
                                                     $row['work_type_text']
                                                     );
+                                                   
                             // if work not inserted in to the DB
                         // delete  task record and show error message
                         if($r === false)
