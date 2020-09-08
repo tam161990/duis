@@ -989,7 +989,7 @@ if(true)
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_EXPORT);
 
-		    if($isAuto){
+		                  if($isAuto){
                           // set darba, transporta un personala nodošanas datumu
                           dbProc::setUnsetActItemsDate(addslashes($actId), true);
                           

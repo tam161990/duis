@@ -94,6 +94,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       unset($res);
+      $type=array();
+      $res = dbProc::getKrfkName('PROJECT_EXPORT');
+      $type['']=text::get('EMPTY_SELECT_OPTION');		
+      if (is_array($res))
+      {
+            foreach ($res as $row)
+            {
+                $type[$row['nosaukums']]=$row['nozime'];
+            }
+      }
+      unset($res);
 
       $aMaterials = array();
       $aMaterialExist = false;
@@ -118,6 +129,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                   $isRowValid = true;
                   $aMaterialsFr[$i]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type_id['.$i.']');
                   $aMaterialsFr[$i]['KLDV_NOSAUKUMS'] = $oFormMaterialTab->getValue('work_type['.$i.']');
+                  $aMaterialsFr[$i]['MATR_PROJECT_EXPORT'] = $oFormMaterialTab->getValue('export_type['.$i.']');
                 } else {
                  
                   $aMaterialsFr[$i]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type['.$i.']');
@@ -153,6 +165,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                         'st' => $aMaterialsFr[$i]['MATR_IS_WORKER'],
                         'notes' => $aMaterialsFr[$i]['MATR_PIEZIMES'],
                         'work_type' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
+                        'work_type_id' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
+                        'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aMaterialsFr[$i]['MATR_PROJECT_EXPORT'] : '',
                         'rowNum' => $i
                       );
                 }
@@ -200,10 +214,11 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           
           if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
-            $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
+            $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
             $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
-            $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'] .' '. $actMaterial['MATR_WORK_TYPE_TEXT']); 
+            $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'].' '.explode('^', $actMaterial['MATR_WORK_TYPE'])[0] ); 
             $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
+            $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
         } else {
             $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -277,7 +292,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                 $row['st'],
                                                 false,
                                                 $row['notes'],
-                                                ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type']
+                                                ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
+                                                $row['export_type'],
                                               );
                           // if work not inserted in to the DB
                           // delete  task record and show error message
