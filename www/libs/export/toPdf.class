@@ -490,7 +490,7 @@ class toPdf {
 		{
 			$act = $actInfo[0];
         }
-        
+        $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
 		$start_date = date('d.m.Y');
 		$pvn = PCT_21  ;
 
@@ -592,7 +592,7 @@ class toPdf {
 					'DRBI_DAUDZUMS' => '',
 					'DRBI_PIEZIMES' => ''
 					);
-				$aWorkDb=dbProc::getActWorkList($actId, false, false, $group['KLDV_ID']);
+				$aWorkDb=dbProc::getActWorkList($actId, false, false, $group['KLDV_ID'],true, $group['DRBI_WORK_TYPE_TEXT']);
 				$data = array();
 				foreach ($aWorkDb as $i => $work)
 				{
@@ -619,7 +619,7 @@ class toPdf {
 					'MATR_DAUDZUMS' => '',
 					'MATR_PIEZIMES' => ''
 					);
-				$aMaterialDb=dbProc::getProjectMaterialList($actId, $group['KLDV_ID']);
+				$aMaterialDb=dbProc::getProjectMaterialList($actId, $group['KLDV_ID'],$group['DRBI_WORK_TYPE_TEXT']);
 				$data = array();
 				foreach ($aMaterialDb as $i => $material)
 				{

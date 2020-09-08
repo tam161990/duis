@@ -518,7 +518,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             // izveidot excel tikai ST darbiniekam
             if($oForm->getValue('action')==OP_MIDLE_EXPORT )
             {
-              $fileId = toExcel::projectTammeExcel($actId, $userId);
+              $fileId = toExcel::projectExportExcel($actId, $userId);
             
               if( $fileId === false){
                   $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());

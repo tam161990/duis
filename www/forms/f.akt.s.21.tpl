@@ -96,8 +96,12 @@ document.onmousemove=positiontip
 				<th width="20%" ><?=text::get('NAME');?></th>
                 <th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
 				<th  width="10%"><?=text::get('AMOUNT');?></th>                
-				<th  width="15%"><?=text::get('COMMENT');?></th>
-			 	<th width="3%">&nbsp;</th>
+                <th  width="15%"><?=text::get('COMMENT');?></th>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <? } else {?>
+                 <th width="3%">&nbsp;</th>
+                 <? } ?>
 			</tr>
 
 	  <?
@@ -128,14 +132,19 @@ document.onmousemove=positiontip
 				<td><?= $oFormWorkTab->getElementHtml('title['.$x.']'); ?> </td>                
 				<td><?= $oFormWorkTab->getElementHtml('measure['.$x.']'); ?></td>
 				<td><?= $oFormWorkTab->getElementHtml('amount['.$x.']'); ?></td>                
-				<td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
-             	<td>
-                    <? if(!$isReadonly)  {?>
-                    <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
-                    <? } else{ ?>
-                    &nbsp;
-                    <? } ?>
-                </td>
+                <td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                    <td><?= $oFormWorkTab->getElementHtml('export_type['.$x.']'); ?></td>
+                <? } else {?>
+                    <td>
+                        <? if(!$isReadonly)  {?>
+                        <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
+                        <? } else{ ?>
+                        &nbsp;
+                        <? } ?>
+                    </td>
+                <? } ?>
+             	
 			</tr>
             <?
             $x++;

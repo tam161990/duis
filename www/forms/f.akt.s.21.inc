@@ -100,6 +100,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       unset($res);
+      $type=array();
+      $res = dbProc::getKrfkName('PROJECT_EXPORT');
+      $type['']=text::get('EMPTY_SELECT_OPTION');		
+      if (is_array($res))
+      {
+            foreach ($res as $row)
+            {
+                $type[$row['nosaukums']]=$row['nozime'];
+            }
+      }
+      unset($res);
 
 
       $aWorks = array();
@@ -130,6 +141,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                   $isRowValid = true;
                   $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
                   $aWorkFr[$i]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                  $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] = $oFormWorkTab->getValue('export_type['.$i.']');
                 } else {
                   $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
                   // validate work progress value
@@ -165,7 +177,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     'notes' => $aWorkFr[$i]['DRBI_PIEZIMES'],
                     'st' => $aWorkFr[$i]['DRBI_IS_WORKER'],
                     'work_type' => $aWorkFr[$i]['DRBI_WORK_TYPE_ID'],
-                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],
+                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],                    
+                    'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] : '',
                     'rowNum' => $i
   			          );
                 }
@@ -221,11 +234,12 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           
           
           if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
-              $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], ' maxlength="250"');
+              $oFormWorkTab->addElement('label', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], ' maxlength="250"');
               $oFormWorkTab->addElement('label', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS']); 
               $oFormWorkTab->addElement('label', 'work_type['.$i.']', '', $actWork['KLDV_NOSAUKUMS']); 
               $oFormWorkTab->addElement('hidden', 'work_type_id['.$i.']', '', $actWork['DRBI_WORK_TYPE_ID']);
               $oFormWorkTab->addElement('label', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT']);
+              $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
           } else {
             $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
             $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required'); 
@@ -311,7 +325,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                     $row['st'],
                                                     false,
                                                     $row['work_type'],
-                                                    $row['work_type_text']
+                                                    $row['work_type_text'],
+                                                    $row['export_type'],
                                                     );
                                                    
                             // if work not inserted in to the DB
