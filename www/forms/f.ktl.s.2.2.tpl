@@ -38,15 +38,15 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('trase'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('password2'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('password2'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('changePass'); ?></td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('changePass'); ?></td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('projector'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('projector'); ?></td>
 
 	</tr>
     <tr>
          <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
-		<td class="table_cell_c"><?= $oForm -> getElementLabel('projector'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('projector'); ?></td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('changePass'); ?></td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('changePass'); ?></td>
         <td class="table_cell_c">&nbsp;</td>
 		<td class="table_cell_2">&nbsp;</td>
 
