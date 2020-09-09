@@ -7650,8 +7650,6 @@ class dbProc extends dbLayer
                         `KMKL_IZMANTOT_VADU`,
                         `KMKL_IR_AKTIVS`,
                         `KMKL_TRASE`,
-                        `KMKL_APJOMS_ROUND`,
-                        `KMKL_DVD`,
                         `KMKL_CREATOR`
                     )
                     VALUES
@@ -7666,8 +7664,6 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[7]).'",
                             "'.dbLayer::quote_smart($data[8]).'",
                             "'.dbLayer::quote_smart($data[9]).'",
-                            "'.dbLayer::quote_smart($data[10]).'",
-                            "'.dbLayer::quote_smart($data[11]).'",
                             "'.dbLayer::quote_smart( $user).'"
                         )
                     ON DUPLICATE KEY UPDATE
@@ -7678,7 +7674,6 @@ class dbProc extends dbLayer
                             `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($data[6]).'",
                             `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[7]).'",
                             `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($data[8]).'",
-                            `KMKL_APJOMS_ROUND` = "'.dbLayer::quote_smart($data[10]).'",
                             `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
                             `KMKL_EDITED` = now()
                     ';
@@ -7776,13 +7771,12 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function mmsCalculationWithChipherExists($requirement, $code, $is_epla, $dvd, $ID = false)
+	function mmsCalculationWithChipherExists($requirement, $code, $is_epla,  $ID = false)
 	{
 		$query = 'select `KMKL_ID` from `KL_MMS_KALKULACIJA`
             where `KMKL_KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement).'"
             AND `KMKL_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
-            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'
-            AND `KMKL_DVD` = '.dbLayer::quote_smart($dvd).'';
+            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'';
 		if ($ID)
 		{
 			$query .= ' and `KMKL_ID` != "'.dbLayer::quote_smart($ID).'"';
@@ -7810,8 +7804,6 @@ class dbProc extends dbLayer
                                 $useCord=0,
                                 $isActive=1,
                                 $isEpla=0,
-                                $round = 0,
-                                $dvd = 0,
                                 $user)
     {
         
@@ -7828,8 +7820,6 @@ class dbProc extends dbLayer
                         `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
                         `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
                         `KMKL_TRASE` = "'.dbLayer::quote_smart($isEpla).'",
-                        `KMKL_APJOMS_ROUND` = "'.dbLayer::quote_smart($round).'",
-                        `KMKL_DVD` = "'.dbLayer::quote_smart($dvd).'",
                         `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
                         `KMKL_EDITED` = now()
                     where `KMKL_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -7849,8 +7839,6 @@ class dbProc extends dbLayer
                     `KMKL_IZMANTOT_VADU`,
                     `KMKL_IR_AKTIVS`,
                     `KMKL_TRASE`,
-                    `KMKL_APJOMS_ROUND`,
-                    `KMKL_DVD`,
                     `KMKL_CREATOR`
                 )
                 VALUES
@@ -7865,8 +7853,6 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($useCord).'",
                         "'.dbLayer::quote_smart($isActive).'",
                         "'.dbLayer::quote_smart($isEpla).'",
-                        "'.dbLayer::quote_smart($round).'",
-                        "'.dbLayer::quote_smart($dvd).'",
                         "'.dbLayer::quote_smart( $user).'"
                     )';
             }
@@ -8637,7 +8623,7 @@ class dbProc extends dbLayer
                             ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
                         )
                         AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"
-                        ORDER BY KMKL_DVD DESC';
+                        ';
                // echo $query;    
                 $res = $oDB -> makeQuery($query);
                 // print_r($res);
@@ -8656,16 +8642,16 @@ class dbProc extends dbLayer
                         
                     } else {
                        $aWorks[$work['KKAL_SHIFRS']]  = array (
-                               'AKT_ID' => $work['AKT_ID'],
-                               'KKAL_ID' => $work['KKAL_ID'],
-                               'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
-                               'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
-                               'KKAL_PLANA' => $work['KKAL_PLANA'],
-                               'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
-                               'DAUDZUMS' => $work['DAUDZUMS'],
-                               'CILVEKSTUNDAS' => $work['DAUDZUMS'] * $work['KKAL_PLANA']
-                            );
-                        }                                            
+                           'AKT_ID' => $work['AKT_ID'],
+                           'KKAL_ID' => $work['KKAL_ID'],
+                           'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
+                           'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
+                           'KKAL_PLANA' => $work['KKAL_PLANA'],
+                           'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
+                           'DAUDZUMS' => $work['DAUDZUMS'],
+                           'CILVEKSTUNDAS' => $work['DAUDZUMS'] * $work['KKAL_PLANA']
+                        );
+                    }                                            
                 }                       
             }
             
