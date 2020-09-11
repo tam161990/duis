@@ -211,7 +211,7 @@ if ( $isAdmin || $isSystemUser)
                     'edited' => $aWorkFr[$i]['DRBI_APPROVE_DATE'],
                     'plan_date' => $aWorkFr[$i]['DRBI_PLAN_DATE'],
                     'description' => $aWorkFr[$i]['KKAL_APRAKSTS'],
-		    'work_aprove_date' => $aWorkFr[$i]['DRBI_WORK_APROVE_DATE'],
+		                'work_aprove_date' => $aWorkFr[$i]['DRBI_WORK_APROVE_DATE'],
                     'rowNum' => $i
                   );   
                   

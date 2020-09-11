@@ -137,11 +137,11 @@ document.onmousemove=positiontip
                 
                 if($tame && $actWork['DRBI_DAUDZUMS'] != $actWork['DRBI_DAUDZUMS_KOR'] ) {
                 ?>
-                <tr class="table_cell_3"  style="font-weight:bold;" id="blank_work<?= $i; ?>">
+                <tr class="table_cell_3"  style="font-weight:bold;" id="blank_work<?= $x; ?>">
                 <?
                 } else {
                 ?>
-                <tr class="table_cell_3"  id="blank_work<?= $i; ?>">
+                <tr class="table_cell_3"  id="blank_work<?= $x; ?>">
                 <?    
                 }
                 ?>

@@ -842,7 +842,7 @@ class toPdf {
 		  $data[$i] = array(
 			'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
 			'DRBI_WORK_APROVE_DATE'  => $work['DRBI_WORK_APROVE_DATE'],
-			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
+			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 50),
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
 			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
 			'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
@@ -867,11 +867,13 @@ class toPdf {
 		$pdf->SetFont('Arial','BI',10);
 		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
 
-		$width=array(20,80,20,20,20,20);
-		$align=array('C','L','C','C','C','C');
+		$width=array(15,15,75,15,20,20,20);
+		//$alignHeader=array('C','C','C','R','R','R');
+		$align=array('C','L','C','R','R','R');
 
 		$headers = array(
 			'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
+			'WORK_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
 			'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
 			'MATR_CENA' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
@@ -895,7 +897,8 @@ class toPdf {
 		  }
 		  $data[$i] = array(
 			'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
-			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
+			'WORK_APROVE_DATE'  => $material['MATR_WORK_APROVE_DATE'],
+			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 50),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
 			'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
 			'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],

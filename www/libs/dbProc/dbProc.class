@@ -4930,7 +4930,7 @@ class dbProc extends dbLayer
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function getActTotalWorkList($searchString, $trase = 0, $sign = 'P')
+	function getActTotalWorkList($searchString, $trase = 0, $sign = 'P')
 	{
             $sCriteria = explode("^", $searchString);
 
@@ -5887,6 +5887,8 @@ class dbProc extends dbLayer
     function setApproveDate($actId, $date) {
 		$oSQL = new dbLayer;
 		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
+        return $oSQL -> makeQuery($query);	
+        $query = 'UPDATE `materiali` SET  `MATR_WORK_APROVE_DATE`  = "' .$date .'" WHERE `MATR_RAKT_ID` = '.$actId;  		
 		return $oSQL -> makeQuery($query);	
 
     }
@@ -6589,20 +6591,22 @@ class dbProc extends dbLayer
         $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
 
         $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA  ". $group_name.",
-                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE
+                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE,
+                 ".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NOT NULL
                 union
                 select *, FORMAT(0, 2) AS `MATR_CENA_KOPA` ". $group_name.",
-                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE
+                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE,
+                ".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NULL 
                 ORDER BY `MATR_IS_WORKER` DESC";
-        
+        //echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
     }
@@ -6819,7 +6823,7 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
     function writeActMaterial($actId, $code, $title, $unit, $price = false, $amount, 
                                 $total = false, $st = 0, $amount_kor = false, $notes = false,
-                                $work_type = false, $export_type = false)
+                                $work_type = false, $export_type = false, $work_approve_date = false)
 	{
         
         $r_work_type = explode('^', $work_type);
@@ -6829,7 +6833,9 @@ class dbProc extends dbLayer
                             (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                             `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, 
                             `MATR_IS_WORKER`, `MATR_PIEZIMES`, 
-                            `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` )                           
+                            `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,,                           
+                             `MATR_WORK_APROVE_DATE`
+                            )                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -6843,13 +6849,17 @@ class dbProc extends dbLayer
                             '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
                             '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                            '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').'
+                            
                             )';
         } else {
             $query = 'insert into `MATERIALI`
                     (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
                     `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_CENA_KOPA`, 
                     `MATR_IS_WORKER`, `MATR_PIEZIMES`,
-                    `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` )     
+                    `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` ,
+                     `MATR_WORK_APROVE_DATE`
+                    )
                     values ( '.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
@@ -6862,9 +6872,11 @@ class dbProc extends dbLayer
                     '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                     '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
                     '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                    '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').'
+                    
                     )';
         }
-        //echo  $query;
+        //echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -7650,8 +7662,7 @@ class dbProc extends dbLayer
                         `KMKL_IZMANTOT_VADU`,
                         `KMKL_IR_AKTIVS`,
                         `KMKL_TRASE`,
-                        `KMKL_APJOMS_ROUND`,
-                        `KMKL_DVD`,
+                       
                         `KMKL_CREATOR`
                     )
                     VALUES
@@ -7666,8 +7677,7 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[7]).'",
                             "'.dbLayer::quote_smart($data[8]).'",
                             "'.dbLayer::quote_smart($data[9]).'",
-                            "'.dbLayer::quote_smart($data[10]).'",
-                            "'.dbLayer::quote_smart($data[11]).'",
+                           
                             "'.dbLayer::quote_smart( $user).'"
                         )
                     ON DUPLICATE KEY UPDATE
@@ -7678,7 +7688,7 @@ class dbProc extends dbLayer
                             `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($data[6]).'",
                             `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($data[7]).'",
                             `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($data[8]).'",
-                            `KMKL_APJOMS_ROUND` = "'.dbLayer::quote_smart($data[10]).'",
+                            
                             `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
                             `KMKL_EDITED` = now()
                     ';
@@ -7776,13 +7786,12 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function mmsCalculationWithChipherExists($requirement, $code, $is_epla, $dvd, $ID = false)
+	function mmsCalculationWithChipherExists($requirement, $code, $is_epla, $ID = false)
 	{
 		$query = 'select `KMKL_ID` from `KL_MMS_KALKULACIJA`
             where `KMKL_KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement).'"
             AND `KMKL_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
-            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'
-            AND `KMKL_DVD` = '.dbLayer::quote_smart($dvd).'';
+            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'';
 		if ($ID)
 		{
 			$query .= ' and `KMKL_ID` != "'.dbLayer::quote_smart($ID).'"';
@@ -7810,8 +7819,6 @@ class dbProc extends dbLayer
                                 $useCord=0,
                                 $isActive=1,
                                 $isEpla=0,
-                                $round = 0,
-                                $dvd = 0,
                                 $user)
     {
         
@@ -7827,9 +7834,7 @@ class dbProc extends dbLayer
                         `KMKL_KOEFICENTS` = "'.dbLayer::quote_smart($koeficent).'",
                         `KMKL_IZMANTOT_VADU` = "'.dbLayer::quote_smart($useCord).'",
                         `KMKL_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
-                        `KMKL_TRASE` = "'.dbLayer::quote_smart($isEpla).'",
-                        `KMKL_APJOMS_ROUND` = "'.dbLayer::quote_smart($round).'",
-                        `KMKL_DVD` = "'.dbLayer::quote_smart($dvd).'",
+                        `KMKL_TRASE` = "'.dbLayer::quote_smart($isEpla).'",                        
                         `KMKL_EDITOR` = "'.dbLayer::quote_smart($user).'",
                         `KMKL_EDITED` = now()
                     where `KMKL_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -7849,8 +7854,6 @@ class dbProc extends dbLayer
                     `KMKL_IZMANTOT_VADU`,
                     `KMKL_IR_AKTIVS`,
                     `KMKL_TRASE`,
-                    `KMKL_APJOMS_ROUND`,
-                    `KMKL_DVD`,
                     `KMKL_CREATOR`
                 )
                 VALUES
@@ -7865,8 +7868,7 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($useCord).'",
                         "'.dbLayer::quote_smart($isActive).'",
                         "'.dbLayer::quote_smart($isEpla).'",
-                        "'.dbLayer::quote_smart($round).'",
-                        "'.dbLayer::quote_smart($dvd).'",
+                       
                         "'.dbLayer::quote_smart( $user).'"
                     )';
             }
@@ -8533,7 +8535,7 @@ class dbProc extends dbLayer
         function getCalcByMmsCodeList($actId, $mms_code, $trase)
         {
                 
-            $query = 'select `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`, `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
+            $query = 'select DISTINCT `KMKL_KKAL_SHIFRS` ,  `KMSD_DAUDZUMS`, `KMSD_VADU_SKAITS`, `DRBI_DAUDZUMS_KOR` as `DAUDZUMS`
                 from `kl_mms_darbi`
                 INNER JOIN `kl_mms_kalkulacija` ON `KMKL_KMSD_NOSACIJUMA_KODS` = `KMSD_NOSACIJUMA_KODS`  
                 INNER JOIN `TAME_DARBI` ON `DRBI_KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`              
@@ -8623,12 +8625,7 @@ class dbProc extends dbLayer
                                 ELSE
                                     `KMKL_DAUDZUMS` 
                                 END 
-                            END  AS `DAUDZUMS`,
-                            `KMKL_APJOMS_ROUND`, `KMKL_DVD`,
-                            CASE WHEN `KMKL_APJOMS_ROUND` = 1 
-                                THEN ROUND(KMKL_DAUDZUMS, 0) 
-                                ELSE  `KMKL_DAUDZUMS` 
-                            END  AS `KMKL_DAUDZUMS`          
+                            END  AS `DAUDZUMS`
                             FROM `kl_mms_kalkulacija` 
                             INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
                             INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
@@ -8642,7 +8639,7 @@ class dbProc extends dbLayer
                                 ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
                             )
                             AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"
-                            ORDER BY KMKL_DVD DESC';
+                            ';
                    // echo $query;    
                     $res = $oDB -> makeQuery($query);
                     // print_r($res);
@@ -8655,32 +8652,28 @@ class dbProc extends dbLayer
                                                 
                         if(isset($aWorks[$work['KKAL_SHIFRS']]) && is_array($aWorks[$work['KKAL_SHIFRS']]) )
                         {   
-                            if( $work['KMKL_DVD'] == 0 ) {                            
+                                                   
                                 $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
                                 $aWorks[$work['KKAL_SHIFRS']]['KMKL_APJOMS_ROUND'] = $work['KMKL_APJOMS_ROUND'];
-                            }
+                            
                         } else {
-                            $aWorks[$work['KKAL_SHIFRS']]  = array (
-                                'AKT_ID' => $work['AKT_ID'],
-                                'KKAL_ID' => $work['KKAL_ID'],
-                                'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
-                                'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
-                                'KKAL_PLANA' => $work['KKAL_PLANA'],
-                                'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
-                                'DAUDZUMS' => (($work['KMKL_DVD'] == 0 ) ? $work['DAUDZUMS'] : 0),
-                                'KMKL_DAUDZUMS' => (($work['KMKL_DVD'] == 1 ) ? $work['KMKL_DAUDZUMS'] : 0),
-                                'KMKL_APJOMS_ROUND' => (($work['KMKL_DVD'] == 0 ) ? $work['KMKL_APJOMS_ROUND'] : 0),
-                                );
-                            }                                            
+                           $aWorks[$work['KKAL_SHIFRS']]  = array (
+                               'AKT_ID' => $work['AKT_ID'],
+                               'KKAL_ID' => $work['KKAL_ID'],
+                               'KKAL_SHIFRS' => $work['KKAL_SHIFRS'],
+                               'KKAL_NOSAUKUMS' => $work['KKAL_NOSAUKUMS'],
+                               'KKAL_PLANA' => $work['KKAL_PLANA'],
+                               'KKAL_MERVIENIBA' => $work['KKAL_MERVIENIBA'],
+                               'DAUDZUMS' => $work['DAUDZUMS'],
+                               'CILVEKSTUNDAS' => $work['DAUDZUMS'] * $work['KKAL_PLANA']
+                            );
+                        }                                            
                     }                       
                 }
                 
                 foreach ($aWorks as $row)
                 { 
-                    if($row['KMKL_APJOMS_ROUND'] == 1) {
-                        $row['DAUDZUMS'] = round($row['DAUDZUMS']);
-                    }
-                    $row['DAUDZUMS'] += $row['KMKL_DAUDZUMS']; 
+                   
                       
                     $query = 'INSERT into `TAME_DARBI`
                             (`DRBI_RAKT_ID`, 
@@ -9069,15 +9062,6 @@ class dbProc extends dbLayer
 
         return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
     }
-
-
-
-
-
 }
-
-
-
-
 
 ?>
