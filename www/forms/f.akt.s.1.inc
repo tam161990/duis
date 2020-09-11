@@ -1061,8 +1061,12 @@ if(true)
               break;
             case OP_EXPORT:
               $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
-                        $oLink->addPrm('tab', TAB_EXPORT);
+              $oLink->addPrm('tab', TAB_EXPORT);
               break;
+            case OP_MIDLE_EXPORT:
+                $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
+                $oLink->addPrm('tab', TAB_EXPORT);
+                break;
            
               }
             RequestHandler::makeRedirect($oLink->getQuery());

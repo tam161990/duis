@@ -391,6 +391,7 @@ if ( $isAdmin || $isSystemUser)
                                                   ($tameMaterial) ? $row['amount_kor_mat']:false,
                                                   false,
                                                   false,
+                                                  false,
                                                   $row['work_aprove_date']
                                                 );
                           // if work not inserted in to the DB

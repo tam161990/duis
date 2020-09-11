@@ -6848,9 +6848,8 @@ class dbProc extends dbLayer
                             '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').',
                             '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
-                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
-                            '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').'
-                            
+                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                            '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).'     
                             )';
         } else {
             $query = 'insert into `MATERIALI`
@@ -6871,8 +6870,8 @@ class dbProc extends dbLayer
                     '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').',
                     '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                     '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
-                    '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
-                    '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').'
+                    '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                    '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).'
                     
                     )';
         }
