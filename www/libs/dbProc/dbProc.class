@@ -6790,7 +6790,7 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($total).'",
                             "'.dbLayer::quote_smart($st).'",
                             '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').',
-                            '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').',
+                            '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).',
                             '.(($work_type !== false) ? dbLayer::quote_smart($work_type) : '"NULL"').'
                             )';
         } else {
@@ -6809,7 +6809,7 @@ class dbProc extends dbLayer
 		            '.((!$total) ? '"NULL",' : '"'.dbLayer::quote_smart($total).'",').'
                     "'.dbLayer::quote_smart($st).'",
                     '.((!$notes ) ? '"NULL"' : '"'.dbLayer::quote_smart($notes).'"').',
-                    '.((!$work_approve_date) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"').',
+                    '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).',
                     '.(($work_type !== false) ? dbLayer::quote_smart($work_type) : '"NULL"').'
                     )';
         }

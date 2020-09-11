@@ -827,7 +827,7 @@ class toPdf {
 
 		$width=array(15,15,75,15,20,20,20);
 		$alignHeader=array('C','C','C','R','R','R');
-		$align=array('C','L','C','R','R','R');
+		$align=array('C','L','L','R','R','R');
 
 		$headers = array(
 			'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
@@ -874,7 +874,7 @@ class toPdf {
 
 		$width=array(15,15,75,15,20,20,20);
 		//$alignHeader=array('C','C','C','R','R','R');
-		$align=array('C','L','C','R','R','R');
+		$align=array('C','L','L','R','R','R');
 
 		$headers = array(
 			'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
