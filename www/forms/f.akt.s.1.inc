@@ -1021,11 +1021,11 @@ if(true)
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_EXPORT);
 
-		                  if($isAuto){
+		                if($isAuto){
                           // set darba, transporta un personala nodošanas datumu
                           dbProc::setUnsetActItemsDate(addslashes($actId), true);
                           
-                        }
+                    }
 
 
                   if (!$r || !$r1)
@@ -1067,8 +1067,7 @@ if(true)
                 $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
                 $oLink->addPrm('tab', TAB_EXPORT);
                 break;
-           
-              }
+           }
             RequestHandler::makeRedirect($oLink->getQuery());
         }
     }
