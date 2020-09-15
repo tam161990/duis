@@ -5879,12 +5879,14 @@ class dbProc extends dbLayer
 
 	// funkcija uzstada darba u nperson�la apstiprin��anas datums
     function setApproveDate($actId, $date) {
-		$oSQL = new dbLayer;
+        $oSQL = new dbLayer;
+        $r1 = false;
+        $r2 = false;
 		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
-        return $oSQL -> makeQuery($query);	
+        $r1 = $oSQL -> makeQuery($query);	
         $query = 'UPDATE `materiali` SET  `MATR_WORK_APROVE_DATE`  = "' .$date .'" WHERE `MATR_RAKT_ID` = '.$actId;  		
-		return $oSQL -> makeQuery($query);	
-
+		$r2 = $oSQL -> makeQuery($query);	
+        return ($r1 && $r2);
     }
 
 
@@ -8736,7 +8738,11 @@ class dbProc extends dbLayer
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = now() 
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NULL';
-                $result = $oDB -> makeQuery($query);
+                $result1 = $oDB -> makeQuery($query);
+                $query = 'UPDATE `MATERIALI` SET `MATR_WORK_APROVE_DATE` = now() 
+                        WHERE `MATR_RAKT_ID` = ' .$actId. '
+                        AND `MATR_WORK_APROVE_DATE` IS NULL';
+                $result1 = $oDB -> makeQuery($query);
                 
             } else {
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = "NULL"
@@ -8744,6 +8750,12 @@ class dbProc extends dbLayer
                         AND `DRBI_APPROVE_DATE` IS NOT NULL
                         AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
                                                                 WHERE d.DRBI_RAKT_ID ='. $actId.')';
+                $result = $oDB -> makeQuery($query);
+                $query = 'UPDATE `MATERIALI` SET `MATR_WORK_APROVE_DATE` = "NULL"
+                WHERE `MATR_RAKT_ID` = ' .$actId. '
+                AND `MATR_WORK_APROVE_DATE` IS NOT NULL
+                AND `MATR_WORK_APROVE_DATE` = (SELECT MAX(m.MATR_WORK_APROVE_DATE) FROM MATERIALI m 
+                                                        WHERE m.MATR_RAKT_ID ='. $actId.')';
                 $result = $oDB -> makeQuery($query);
                 
             }

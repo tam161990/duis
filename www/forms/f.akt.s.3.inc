@@ -295,16 +295,20 @@ if ( $isAdmin || $isSystemUser)
               $r2 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '>');
               $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmauntKor_' . $i, 'group', $v1);
           } else {
-              $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
-              $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-              $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-              // check Amaunt field
-              $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
-              // ja Amount ir definēts un > 100000
-              $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-              // ja Amount ir definēts un < 0
-              $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-              $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+              if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE  ) {
+                  $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+                  $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                  $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+                  // check Amaunt field
+                  $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
+                  // ja Amount ir definēts un > 100000
+                  $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+                  // ja Amount ir definēts un < 0
+                  $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+                  $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+              } else {
+                  $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
+              }
           }
 
           $oFormMaterialTab->addElement('label', 'total_mat['.$i.']', '', $actMaterial['MATR_CENA_KOPA'], ' disabled maxlength="13"');
@@ -312,20 +316,22 @@ if ( $isAdmin || $isSystemUser)
           $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
 	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
 
-          // ajax handler link for delete
-          $delLink = new urlQuery();
-          $delLink->addPrm(FORM_ID, 'f.akt.s.3');
-          $delLink->addPrm(DONT_USE_GLB_TPL, '1');
-          $delLink->addPrm('xmlHttp', '1');
-          $delLink->addPrm('tame_mat', $tameMaterial ?'1':'0');
-          //$delLink->addPrm('deleteId', $actWork['DRBI_ID']);
-          // delete button
-          $delButtonJs = "if(isDelete()) {
-                var rowId = document.forms['frmMaterialTab".(($tameMaterial ) ? 'T' : '')."']['id[" .$i. "]'];
-                eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
-              }";
-              $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
-              unset($delLink);
+          if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE || $tameMaterial ) {
+              // ajax handler link for delete
+              $delLink = new urlQuery();
+              $delLink->addPrm(FORM_ID, 'f.akt.s.3');
+              $delLink->addPrm(DONT_USE_GLB_TPL, '1');
+              $delLink->addPrm('xmlHttp', '1');
+              $delLink->addPrm('tame_mat', $tameMaterial ?'1':'0');
+              //$delLink->addPrm('deleteId', $actWork['DRBI_ID']);
+              // delete button
+              $delButtonJs = "if(isDelete()) {
+                    var rowId = document.forms['frmMaterialTab".(($tameMaterial ) ? 'T' : '')."']['id[" .$i. "]'];
+                    eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
+                  }";
+                  $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
+                  unset($delLink);
+          }
           $i++;
         }
         
