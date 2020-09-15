@@ -61,7 +61,7 @@ function projectTammeExcel($actId, $userId){
                                     )                               
                     ); 
             $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
-            $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
+            //$objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
             $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']); 
             $currentRow ++; 
 
@@ -205,7 +205,7 @@ function projectExportExcel($actId, $userId){
                                     )                               
                     ); 
             $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
-            $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
+            //$objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
             $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']); 
             $currentRow ++; 
 
