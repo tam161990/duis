@@ -979,6 +979,11 @@ if(true)
 
               if ($r )
               {
+
+                if($isAuto){
+                  // set darba, transporta un personala nodošanas datumu
+                  dbProc::setUnsetActItemsDate(addslashes($actId), true);                  
+                }
              
                 if($trase == 1 && $oForm->getValue('action')==OP_EXPORT)
                 {
@@ -1021,17 +1026,10 @@ if(true)
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_EXPORT);
 
-		                if($isAuto){
-                          // set darba, transporta un personala nodošanas datumu
-                          dbProc::setUnsetActItemsDate(addslashes($actId), true);
-                          
+                    if (!$r || !$r1)
+                    {
+                      $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                     }
-
-
-                  if (!$r || !$r1)
-                  {
-                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                  }
                 }
 
               }

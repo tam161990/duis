@@ -295,7 +295,7 @@ if ( $isAdmin || $isSystemUser)
               $r2 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '>');
               $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmauntKor_' . $i, 'group', $v1);
           } else {
-              if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE  ) {
+              if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE  ) {
                   $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
                   $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
                   $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
@@ -316,7 +316,7 @@ if ( $isAdmin || $isSystemUser)
           $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
 	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
 
-          if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE || $tameMaterial ) {
+          if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE || $tameMaterial ) {
               // ajax handler link for delete
               $delLink = new urlQuery();
               $delLink->addPrm(FORM_ID, 'f.akt.s.3');
