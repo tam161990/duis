@@ -980,10 +980,7 @@ if(true)
               if ($r )
               {
 
-                if($isAuto){
-                  // set darba, transporta un personala nodošanas datumu
-                  dbProc::setUnsetActItemsDate(addslashes($actId), true);                  
-                }
+                
              
                 if($trase == 1 && $oForm->getValue('action')==OP_EXPORT)
                 {
@@ -1021,6 +1018,12 @@ if(true)
                             			$oForm->getValue('toid'),
                                   $oForm->getValue('signature')
                                  );
+
+                      if($isAuto){
+                      // set darba, transporta un personala nodošanas datumu
+                      dbProc::setUnsetActItemsDate(addslashes($actId), true);                  
+                    }
+
                     // save status changed time
                     $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_ACCEPT);
                     // saglaba lietotaja darbiibu
