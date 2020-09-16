@@ -73,7 +73,7 @@
                 <?}?>
 				
              	<td>
-                    <? if(!$isReadonly && ( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE || $tameMaterial ))  {?>
+                    <? if(!$isReadonly && ( empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial ))  {?>
                     <?= $oFormMaterialTab->getElementHtml('mat_del['.$x.']'); ?>
                     <? } else{ ?>
                     &nbsp;
