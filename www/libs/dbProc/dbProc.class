@@ -8743,9 +8743,9 @@ class dbProc extends dbLayer
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NULL';
                 $result1 = $oDB -> makeQuery($query);
-                $query = 'UPDATE `MATERIALI` SET `MATR_APROVE_DATE` = now() 
+                $query = 'UPDATE `MATERIALI` SET `MATR_APPROVE_DATE` = now() 
                         WHERE `MATR_RAKT_ID` = ' .$actId. '
-                        AND `MATR_APROVE_DATE` IS NULL';
+                        AND `MATR_APPROVE_DATE` IS NULL';
                 $result1 = $oDB -> makeQuery($query);
                 
             } else {
@@ -8755,10 +8755,10 @@ class dbProc extends dbLayer
                         AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
                                                                 WHERE d.DRBI_RAKT_ID ='. $actId.')';
                 $result = $oDB -> makeQuery($query);
-                $query = 'UPDATE `MATERIALI` SET `MATR_APROVE_DATE` = "NULL"
+                $query = 'UPDATE `MATERIALI` SET `MATR_APPROVE_DATE` = "NULL"
                 WHERE `MATR_RAKT_ID` = ' .$actId. '
-                AND `MATR_APROVE_DATE` IS NOT NULL
-                AND `MATR_APROVE_DATE` = (SELECT MAX(m.MATR_WORK_APROVE_DATE) FROM MATERIALI m 
+                AND `MATR_APPROVE_DATE` IS NOT NULL
+                AND `MATR_APPROVE_DATE` = (SELECT MAX(m.MATR_APPROVE_DATE) FROM MATERIALI m 
                                                         WHERE m.MATR_RAKT_ID ='. $actId.')';
                 $result = $oDB -> makeQuery($query);
                 

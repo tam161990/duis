@@ -877,7 +877,7 @@ class toPdf {
 
 		$headers = array(
 			'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
-			'MATR_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
+			'MATR_APPROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
 			'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
 			'MATR_CENA' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
@@ -901,7 +901,7 @@ class toPdf {
 		  }
 		  $data[$i] = array(
 			'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
-			'MATR_APROVE_DATE'  => $material['MATR_APROVE_DATE'],
+			'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
 			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 50),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
 			'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
