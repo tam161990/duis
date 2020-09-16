@@ -29,7 +29,7 @@
 	  <?
         foreach ($aDayMaterial as $j => $actMaterial)
 		{
-           if($tameMaterial && $val['MATR_DAUDZUMS'] != $val['MATR_DAUDZUMS_KOR']) {
+           if($tameMaterial && $actMaterial['MATR_DAUDZUMS'] != $actMaterial['MATR_DAUDZUMS_KOR']) {
                 $changestyle = "font-weight:bold;"   ;
             } else {
                 $changestyle = "font-weight:normal;"   ;

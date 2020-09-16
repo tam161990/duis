@@ -867,7 +867,7 @@ class toPdf {
 		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
 
 		$width=array(15,15,75,15,20,20,20);
-		//$alignHeader=array('C','C','C','R','R','R');
+		$alignHeader=array('C','C','C','R','R','R');
 		$align=array('C','L','L','R','R','R');
 
 		$headers = array(
@@ -906,7 +906,7 @@ class toPdf {
 		  if($material['MATR_IS_WORKER'] == '1')
 			 $totalM +=  $mat_cena_kopa;
 		}
-		$pdf->FancyTable($headers,$data, $width, $align);
+		$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
 		
 		$pdf->SetFont('Arial','',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
