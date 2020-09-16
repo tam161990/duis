@@ -143,6 +143,7 @@ if ( $isAdmin || $isSystemUser)
                  $aMaterialFr[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');
                  $aMaterialFr[$i]['MATR_CENA'] = $oFormMaterialTab->getValue('price['.$i.']');                 
                  $aMaterialFr[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
+                 $aMaterialFr[$i]['MATR_APPROVE_DATE'] = $oFormMaterialTab->getValue('edited['.$i.']');
                  $aMaterialFr[$i]['MATR_WORK_APROVE_DATE'] = $oFormMaterialTab->getValue('work_aprove_date['.$i.']');
                  // validate work progress value
                  if($tameMaterial ){
@@ -205,6 +206,7 @@ if ( $isAdmin || $isSystemUser)
                     'amount_kor_mat' => ($oFormMaterialTab->getValue('tame_mat') == 1) ? $aMaterialFr[$i]['MATR_DAUDZUMS_KOR'] :'',
                     'total_mat' => $aMaterialFr[$i]['MATR_CENA_KOPA'],
                     'st' => $aMaterialFr[$i]['MATR_IS_WORKER'],
+                    'edited' => $aMaterialFr[$i]['MATR_APPROVE_DATE'],
                     'work_aprove_date' => $aMaterialFr[$i]['MATR_WORK_APROVE_DATE'],
                     'rowNum' => $i
                   );
@@ -276,6 +278,7 @@ if ( $isAdmin || $isSystemUser)
             $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
             $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
             $oFormMaterialTab->addElement('label', 'price['.$i.']', '', $actMaterial['MATR_CENA']);
+            $oFormMaterialTab->addElement('hidden', 'edited['.$i.']', '', $actMaterial['MATR_APPROVE_DATE']);
             $oFormMaterialTab->addElement('hidden', 'work_aprove_date['.$i.']', '', $actMaterial['MATR_WORK_APROVE_DATE']);
 
             if($tameMaterial || $oFormMaterialTab->getValue('tame_mat') == 1) {
@@ -295,7 +298,7 @@ if ( $isAdmin || $isSystemUser)
               $r2 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '>');
               $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmauntKor_' . $i, 'group', $v1);
           } else {
-              if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE  ) {
+              if( empty($actMaterial['MATR_APPROVE_DATE']) ) {
                   $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
                   $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
                   $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
@@ -316,7 +319,7 @@ if ( $isAdmin || $isSystemUser)
           $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
 	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
 
-          if( empty($actMaterial['MATR_WORK_APROVE_DATE']) || $actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE || $tameMaterial ) {
+          if( empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial ) {
               // ajax handler link for delete
               $delLink = new urlQuery();
               $delLink->addPrm(FORM_ID, 'f.akt.s.3');
@@ -398,7 +401,8 @@ if ( $isAdmin || $isSystemUser)
                                                   false,
                                                   false,
                                                   false,
-                                                  $row['work_aprove_date']
+                                                  $row['work_aprove_date'],
+                                                  $row['edited']
                                                 );
                           // if work not inserted in to the DB
                           // delete  task record and show error message
