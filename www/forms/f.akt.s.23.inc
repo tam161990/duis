@@ -189,16 +189,26 @@ if ( $isAdmin || $isProjector)
             $matrSubGroup = array();
             $matrGroup['']=text::get('ALL');
 
-            if ($oFormPop->isFormSubmitted() && $oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
-            {
-              $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
-              if (is_array($res))
+            if ($oFormPop->isFormSubmitted()) {
+              if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
+              {
+                  $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
+              }
+              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('category') != '')
+              {
+                $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
+              }
+              if (isset($res) && is_array($res))
               {
                   foreach ($res as $row)
-               	  {
-                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
+                  {
+                      $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
                   }
                   unset($res);
+              }
+              else
+              {
+                $oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
               }
             }
            
@@ -206,6 +216,7 @@ if ( $isAdmin || $isProjector)
 
       }
 
+      
       // form elements
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
@@ -235,6 +246,8 @@ if ( $isAdmin || $isProjector)
         $oFormPop -> addElement('select', 'mat_sub_group',  text::get('SUBGROUP_TITLE'), '', 
         ' tabindex=2 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&mat_sub_group=\'+this.value+\'\'))"', 
         '', '', $matrSubGroup);
+
+        $oFormPop->addElement('text', 'category', text::get('MATERIAL_CATEGORY_CODE'), '', 'maxlength="50"');
         
       }
       unset($oLink);
@@ -247,6 +260,9 @@ if ( $isAdmin || $isProjector)
       if (!$isReadonly)
       {
         $oFormPop -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+        if($catalog == KL_MATERIALS ){
+          $oFormPop -> addElement('submitImg', 'search', text::get('SEARCH'),'img/btn_meklet.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_SEARCH.'\');} else {return false;}"');
+        }
       }
     
       $oFormPop -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
