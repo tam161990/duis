@@ -3591,6 +3591,17 @@ class dbProc extends dbLayer
         return $oSQL -> makeQuery($query);
     }
 
+    function getMaterialByCategory($category){
+        
+        $query = 'select *
+        from `KL_MATERIALI`
+        WHERE `KMAT_KATEGORIJAS_KODS` = '.dbLayer::quote_smart($category).' 
+        order by `KMAT_KODS` asc';        
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
     function getMaterialGroup(){
         
         $query = 'select `KMAT_GRUPAS_KODS`, `KMAT_GRUPAS_NOSAUKUNS`,

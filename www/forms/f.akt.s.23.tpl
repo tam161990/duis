@@ -24,6 +24,14 @@
         <td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('mat_sub_group'); ?></td>    
     </tr>
     </table>
+    <hr>
+    <table cellpadding="5" cellspacing="1" border="0" width="100%">
+        <tr>
+            <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('category'); ?></td>
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('category'); ?></td> 
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('search'); ?></td>   
+        </tr>       
+        </table>
     <? } ?>
 
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
