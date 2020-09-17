@@ -5031,16 +5031,6 @@ class dbProc extends dbLayer
 
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
             $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
-<<<<<<< HEAD
-            $query .= " AND (
-                            (a.RAKT_IS_AUTO = 1 
-                            AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
-                                AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'
-                                AND  s.AAUD_ID =  ( SELECT MAX(AAUD_ID ) FROM AKTA_STATUSA_MAINA WHERE AAUD_RAKT_ID =a.RAKT_ID  AND AAUD_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ) 
-                            ))";
-            //$query .= " and s.AAUD_STATUS = 'CLOSE' ";
-            $query .= " AND a.RAKT_TRASE = ".$trase;
-=======
             $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
                                 AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
                                 AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."') 
@@ -5049,7 +5039,6 @@ class dbProc extends dbLayer
                                 AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) )
                        
                         )";
->>>>>>> DUIS-315
             $query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
             $query .= " GROUP BY ww.KWRC_TITLE, m.MATR_NOSAUKUMS, m.MATR_IS_WORKER ";
             $query .= " ORDER BY ww.KWRC_TITLE, m.MATR_IS_WORKER DESC";
