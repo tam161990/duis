@@ -325,26 +325,8 @@ unset($res);
         $trase = $act['RAKT_TRASE'];
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
-		$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
-
-// get act type
-        $acttype=array();
-        $acttype['']=text::get('EMPTY_SELECT_OPTION');
-        if($trase == 1) {
-		$res=dbProc::getActTraseTypeActivList();
-	} else {
-  		$res=dbProc::getActTypeActivList();
-	}
-        if (is_array($res))
-        {
-          foreach ($res as $row)
-          {
-            $acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
-          }
-        }
-	unset($res);
-
-
+        $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+        
         // get contract list
         $res=dbProc::getDuContractNo($act['RAKT_KWOI_KODS'], $trase, true);
         if (is_array($res))
@@ -676,7 +658,7 @@ if(true)
 }
 
   // form buttons
-  if (!$isReadonly || !$isReadonlyExceptAdmin)
+  if (!$isReadonly2 || !$isReadonlyExceptAdmin)
   {
     $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_UPDATE.'\');} else {setFormValue(\'frmMain\',\'action\',\''.OP_INSERT.'\');}"');
 
