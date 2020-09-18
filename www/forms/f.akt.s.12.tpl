@@ -164,7 +164,7 @@
 
 		<tr>
             <td width="12%" class="print_table_header"><?= text::get('CODE'); ?></td>
-			<td width="50%" class="print_table_header"><?= text::get('NAME'); ?></td>
+			      <td width="50%" class="print_table_header"><?= text::get('NAME'); ?></td>
             <td width="12%" class="print_table_header"><?=text::get('UNIT_OF_MEASURE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('PRICE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('AMOUNT');?></td>
@@ -181,9 +181,9 @@
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_KODS']; ?></td>
                 <td align="left" class="print_table_data">&nbsp;<?= $material['MATR_NOSAUKUMS']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_MERVIENIBA']; ?></td>
-                <td align="center" class="print_table_data">&nbsp;<?= (($material['MATR_IS_WORKER'] == '1' || $isMaterialPrice == 1)? $material['MATR_CENA'] : '') ?></td>
+                <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_CENA']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_DAUDZUMS']; ?></td>
-                <td align="center" class="print_table_data">&nbsp;<?= (($material['MATR_IS_WORKER'] == '1' || $isMaterialPrice == 1)? $material['MATR_CENA_KOPA']:'') ?></td>
+                <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_CENA_KOPA']; ?></td>
 			</tr>
 <?
 		}
