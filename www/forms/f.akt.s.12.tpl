@@ -183,9 +183,9 @@
                 <td align="left" class="print_table_data">&nbsp;<?= $material['MATR_WORK_APROVE_DATE']; ?></td>
                 <td align="left" class="print_table_data">&nbsp;<?= $material['MATR_NOSAUKUMS']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_MERVIENIBA']; ?></td>
-                <td align="center" class="print_table_data">&nbsp;<?= (($material['MATR_IS_WORKER'] == '1' || $isMaterialPrice == 1)? $material['MATR_CENA'] : '') ?></td>
+                <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_CENA']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_DAUDZUMS']; ?></td>
-                <td align="center" class="print_table_data">&nbsp;<?= (($material['MATR_IS_WORKER'] == '1' || $isMaterialPrice == 1)? $material['MATR_CENA_KOPA']:'') ?></td>
+                <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_CENA_KOPA']; ?></td>
 			</tr>
 <?
 		}

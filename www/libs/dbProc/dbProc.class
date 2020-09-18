@@ -4438,6 +4438,21 @@ class dbProc extends dbLayer
         
     }
 
+    function CheckQuiqStepUnique($code)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'select count(`RAKT_ID`) as `amount` from `AKTI`
+            where `RAKT_NUM_POSTFIX`="'.dbLayer::quote_smart($code).'"
+            AND `RAKT_STATUS` <> "'.STAT_DELETE.'"';	
+		
+		$res=$oSQL->makeQuery($sql);
+		if (!empty($res[0]['amount']) && $res[0]['amount'] > 0)
+		{
+			return false;
+		}
+		return true;
+	}
+
     // -----------------------------------------------------------------------------
 	// Atgriezh akta(-as). Ja dots ID, atdod to
 	// Ja doti, njem veeraa nobiidi un daudzumu.

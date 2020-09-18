@@ -65,7 +65,7 @@ if ( $isAdmin || $isSystemUser)
             }
     
 
-            if($material['MATR_IS_WORKER'] != '1' || $isMaterialPrice == 1)
+            //if($material['MATR_IS_WORKER'] != '1' || $isMaterialPrice == 1)
                   $materialTotal += $mat_cena_kopa;
         }
         $materialTotal = $materialTotal;

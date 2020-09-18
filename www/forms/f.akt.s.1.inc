@@ -272,35 +272,7 @@ unset($res);
         unset($res);
 
   }
-  if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
-  {
-
-          // get ED area list
-        // bojanums, defekts
-          if(($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID) || ($oForm -> getValue('type') == ACT_TYPE_DEFECT_ID ) )
-          {
-              $res=dbProc::getEDSectionListForWorker($act['RAKT_KWOI_KODS'], $act['RAKT_VV_NUMBER'], $trase);
-          }
-         if(($oForm -> getValue('type') == ACT_TYPE_STIHIJA_ID) || ($oForm -> getValue('type') == ACT_TYPE_STIHIJA_TR_ID))
-          {
-              $res=dbProc::getEDElementSectionList($trase);
-          }
-          else
-          {
-            //$res=dbProc::getEDAreaActivList();
-            $res=dbProc::getEDAreaNotElementActivList($trase);
-          }
-
-        if (is_array($res))
-        {
-         	foreach ($res as $row)
-         	{
-         	   $edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
-            }
-        }
-        unset($res);
-
-  }
+  
 
 		// URL  acta help
 	  $oLink = new urlQuery;
@@ -326,6 +298,25 @@ unset($res);
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
         $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+        $sign = $act['RAKT_SIGNATURE'];
+
+        // get act type
+        $acttype=array();
+        $acttype['']=text::get('EMPTY_SELECT_OPTION');
+        if($trase == 1) {
+          $res=dbProc::getActTraseTypeActivList();
+        } else {
+          $res=dbProc::getActTypeActivList();
+        }
+        if (is_array($res))
+        {
+          foreach ($res as $row)
+          {
+              if(($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) &&  !$isPlan) continue;
+              $acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+          }
+        }
+        unset($res);
         
         // get contract list
         $res=dbProc::getDuContractNo($act['RAKT_KWOI_KODS'], $trase, true);
@@ -342,6 +333,35 @@ unset($res);
 
         }
         unset($res);
+        if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
+        {
+
+                // get ED area list
+              // bojanums, defekts
+                if(($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID) || ($oForm -> getValue('type') == ACT_TYPE_DEFECT_ID ) )
+                {
+                    $res=dbProc::getEDSectionListForWorker($act['RAKT_KWOI_KODS'], $act['RAKT_VV_NUMBER'], $trase);
+                }
+              if(($oForm -> getValue('type') == ACT_TYPE_STIHIJA_ID) || ($oForm -> getValue('type') == ACT_TYPE_STIHIJA_TR_ID))
+                {
+                    $res=dbProc::getEDElementSectionList($trase);
+                }
+                else
+                {
+                  //$res=dbProc::getEDAreaActivList();
+                  $res=dbProc::getEDAreaNotElementActivList($trase);
+                }
+
+              if (is_array($res))
+              {
+                foreach ($res as $row)
+                {
+                  $edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
+                  }
+              }
+              unset($res);
+
+        }
 
         // get ED area list
         // plan        
@@ -585,7 +605,7 @@ unset($res);
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.(($isReadonlyExceptAdmin || !$isEconomist)?' disabled':'').'', '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin)?' ':'disabled').'', '', '', $ouner);
   //$oForm -> addElement('kls', 'ouner',  text::get('ACT_OUNER'), array('classifName'=>KL_USERS,'value'=>isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId,'readonly'=>false), (($isReadonlyExceptAdmin || !$isEconomist)?' disabled ':'').'maxlength="2000"');
   if (!$isReadonlyExceptAdmin)
   {
@@ -870,7 +890,15 @@ if(true)
             		$actNumPostfix = $oForm->getValue('numPostfix');
             	}
                 $check = true;
-           }		  
+           }
+           
+           // check quistep ir umikāls
+           if($oForm->getValue('action')==OP_INSERT && !dbProc::CheckQuiqStepUnique( $actNumPostfix ))
+           {
+               $oForm -> addError(text::get('ERROR_ACT_NUM_POSTFIX_NOT_UNOQUE'));
+                $check = false;
+
+           }
 
       // if all is ok, do operation
 		  if($check)
@@ -902,7 +930,7 @@ if(true)
                             false,
                             $oForm->getValue('toid'),
                             $oForm->getValue('signature'),
-							(dbProc::isActTypePlan($oForm -> getValue('type')))?1:0
+							            (dbProc::isActTypePlan($oForm -> getValue('type')))?1:0
     						);
 
                 // get inserted record ID
