@@ -272,37 +272,9 @@ unset($res);
         unset($res);
 
   }
-  if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
-  {
+ 
 
-          // get ED area list
-        // bojanums, defekts
-          if(($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID) || ($oForm -> getValue('type') == ACT_TYPE_DEFECT_ID ) )
-          {
-              $res=dbProc::getEDSectionListForWorker($act['RAKT_KWOI_KODS'], $act['RAKT_VV_NUMBER'], $trase);
-          }
-         if(($oForm -> getValue('type') == ACT_TYPE_STIHIJA_ID) || ($oForm -> getValue('type') == ACT_TYPE_STIHIJA_TR_ID))
-          {
-              $res=dbProc::getEDElementSectionList($trase);
-          }
-          else
-          {
-            //$res=dbProc::getEDAreaActivList();
-            $res=dbProc::getEDAreaNotElementActivList($trase);
-          }
-
-        if (is_array($res))
-        {
-         	foreach ($res as $row)
-         	{
-         	   $edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
-            }
-        }
-        unset($res);
-
-  }
-
-		// URL  acta help
+	 // URL  acta help
 	  $oLink = new urlQuery;
 	  $oLink -> addPrm(FORM_ID, 'f.rpt.e.1');
 		$oLink->addPrm('isTrase', $trase );
@@ -325,8 +297,57 @@ unset($res);
         $trase = $act['RAKT_TRASE'];
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
-        $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
-        
+	$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+	$sign = $act['RAKT_SIGNATURE'];
+
+	// get act type
+	$acttype=array();
+	$acttype['']=text::get('EMPTY_SELECT_OPTION');
+	if($trase == 1) {
+		$res=dbProc::getActTraseTypeActivList();
+	} else {
+		$res=dbProc::getActTypeActivList();
+	}
+	if (is_array($res))
+	{
+		foreach ($res as $row)
+		{
+				if(($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) &&  !$isPlan) continue;
+				$acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+		}
+	}
+	unset($res);
+
+	if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
+  	{
+
+          	// get ED area list
+        	// bojanums, defekts
+          	if(($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID) || ($oForm -> getValue('type') == ACT_TYPE_DEFECT_ID ) )
+          	{
+              		$res=dbProc::getEDSectionListForWorker($act['RAKT_KWOI_KODS'], $act['RAKT_VV_NUMBER'], $trase);
+          	}
+         	if(($oForm -> getValue('type') == ACT_TYPE_STIHIJA_ID) || ($oForm -> getValue('type') == ACT_TYPE_STIHIJA_TR_ID))
+          	{
+              		$res=dbProc::getEDElementSectionList($trase);
+          	}
+          	else
+          	{
+            		//$res=dbProc::getEDAreaActivList();
+            		$res=dbProc::getEDAreaNotElementActivList($trase);
+          	}
+
+        	if (is_array($res))
+        	{
+         		foreach ($res as $row)
+         		{
+         	   		$edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
+            		}
+        	}
+        	unset($res);
+
+  	}
+
         // get contract list
         $res=dbProc::getDuContractNo($act['RAKT_KWOI_KODS'], $trase, true);
         if (is_array($res))
