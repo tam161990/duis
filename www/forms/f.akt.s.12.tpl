@@ -123,7 +123,7 @@
 
 		<tr>
             <td width="12%" class="print_table_header"><?= text::get('CHIPHER'); ?></td>
-            <td width="12%" class="print_table_header"><?= text::get('FINISHING_DATE'); ?></td>
+            <td width="12%" class="print_table_header"><?= text::get('WORK_APPROVE_DATE'); ?></td>
 			      <td width="50%" class="print_table_header"><?= text::get('EXPORT_CALCULATION_NAME'); ?></td>
             <td width="12%" class="print_table_header"><?=text::get('UNIT_OF_MEASURE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('PRICE');?></td>
@@ -139,7 +139,7 @@
 ?>
 			<tr >
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_SHIFRS']; ?></td>
-                <td align="left" class="print_table_data">&nbsp;<?= $work['DRBI_PLAN_DATE']; ?></td>
+                <td align="left" class="print_table_data">&nbsp;<?= $work['DRBI_WORK_APROVE_DATE']; ?></td>
                 <td align="left" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_NOSAUKUMS']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_MERVIENIBA']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $work['DRBI_KKAL_NORMATIVS']; ?></td>
@@ -164,6 +164,7 @@
 
 		<tr>
             <td width="12%" class="print_table_header"><?= text::get('CODE'); ?></td>
+            <td width="12%" class="print_table_header"><?= text::get('WORK_APPROVE_DATE'); ?></td>
 			      <td width="50%" class="print_table_header"><?= text::get('NAME'); ?></td>
             <td width="12%" class="print_table_header"><?=text::get('UNIT_OF_MEASURE');?></td>
             <td width="12%" class="print_table_header"><?=text::get('PRICE');?></td>
@@ -179,6 +180,7 @@
 ?>
 			<tr >
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_KODS']; ?></td>
+                <td align="left" class="print_table_data">&nbsp;<?= $material['MATR_WORK_APROVE_DATE']; ?></td>
                 <td align="left" class="print_table_data">&nbsp;<?= $material['MATR_NOSAUKUMS']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_MERVIENIBA']; ?></td>
                 <td align="center" class="print_table_data">&nbsp;<?= $material['MATR_CENA']; ?></td>

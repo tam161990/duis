@@ -1019,6 +1019,8 @@ if(true)
 
               if ($r )
               {
+
+                
              
                 if($trase == 1 && $oForm->getValue('action')==OP_EXPORT)
                 {
@@ -1056,22 +1058,21 @@ if(true)
                             			$oForm->getValue('toid'),
                                   $oForm->getValue('signature')
                                  );
+
+                      if($isAuto){
+                      // set darba, transporta un personala nodošanas datumu
+                      dbProc::setUnsetActItemsDate(addslashes($actId), true);                  
+                    }
+
                     // save status changed time
                     $r1 = dbProc::saveAuditRecord($actId, $userId, STAT_ACCEPT);
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_EXPORT);
 
-		    if($isAuto){
-                          // set darba, transporta un personala nodošanas datumu
-                          dbProc::setUnsetActItemsDate(addslashes($actId), true);
-                          
-                        }
-
-
-                  if (!$r || !$r1)
-                  {
-                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                  }
+                    if (!$r || !$r1)
+                    {
+                      $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                    }
                 }
 
               }
@@ -1101,9 +1102,12 @@ if(true)
               break;
             case OP_EXPORT:
               $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
-                        $oLink->addPrm('tab', TAB_EXPORT);
+              $oLink->addPrm('tab', TAB_EXPORT);
               break;
-           
+            case OP_MIDLE_EXPORT:
+                $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
+                $oLink->addPrm('tab', TAB_EXPORT);
+                break;
               }
             RequestHandler::makeRedirect($oLink->getQuery());
         }
@@ -1326,10 +1330,10 @@ if(true)
                   $oLink=new urlQuery();
                   $oLink->addPrm(FORM_ID, 'f.akt.s.1');
                   $oLink->addPrm('actId', $actId);
-                        $oLink->addPrm('isTrase', $trase);
-                        $oLink->addPrm('isSearch', $isSearch);
-                        $oLink->addPrm('searchNum', $searchNum);
-                        $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+                  $oLink->addPrm('isTrase', $trase);
+                  $oLink->addPrm('isSearch', $isSearch);
+                  $oLink->addPrm('searchNum', $searchNum);
+                  $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
                   RequestHandler::makeRedirect($oLink->getQuery());
                 }

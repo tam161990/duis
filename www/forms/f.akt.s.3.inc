@@ -126,6 +126,7 @@ if ( $isAdmin || $isSystemUser)
       unset($oPopLink);
 
       $aMaterials = array();
+      $aMaterialkExist = false;
       if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false && $oFormMaterialTab->getValue('action')!=OP_EXPORT)
       {
         
@@ -133,55 +134,58 @@ if ( $isAdmin || $isSystemUser)
           $aCodes =  $oFormMaterialTab->getValue('code');
           if(is_array($aCodes) )
           {
+            $aMaterialFr = array();
             foreach ($aCodes as $i => $val)
             {
-                 $aMaterials[$i]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
-                 $aMaterials[$i]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
-                 $aMaterials[$i]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
-                 $aMaterials[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');
-                 $aMaterials[$i]['MATR_CENA'] = $oFormMaterialTab->getValue('price['.$i.']');                 
-                 $aMaterials[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
+                 $aMaterialFr[$i]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
+                 $aMaterialFr[$i]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
+                 $aMaterialFr[$i]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
+                 $aMaterialFr[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');
+                 $aMaterialFr[$i]['MATR_CENA'] = $oFormMaterialTab->getValue('price['.$i.']');                 
+                 $aMaterialFr[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
+                 $aMaterialFr[$i]['MATR_APPROVE_DATE'] = $oFormMaterialTab->getValue('edited['.$i.']');
+                 $aMaterialFr[$i]['MATR_WORK_APROVE_DATE'] = $oFormMaterialTab->getValue('work_aprove_date['.$i.']');
                  // validate work progress value
                  if($tameMaterial ){
 
-                    $aMaterials[$i]['MATR_DAUDZUMS_KOR'] = $oFormMaterialTab->getValue('amount_kor_mat['.$i.']');
+                    $aMaterialFr[$i]['MATR_DAUDZUMS_KOR'] = $oFormMaterialTab->getValue('amount_kor_mat['.$i.']');
 
                     // validate work progress value
-                    if (empty($aMaterials[$i]['MATR_DAUDZUMS_KOR'])) {
+                    if (empty($aMaterialFr[$i]['MATR_DAUDZUMS_KOR'])) {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_kor_mat[' . $i . ']', text::get('ERROR_REQUIRED_FIELD'));
                         $isRowValid = false;
                     } // validate work progress value
-                    elseif (!is_numeric($aMaterials[$i]['MATR_DAUDZUMS_KOR'])) {
+                    elseif (!is_numeric($aMaterialFr[$i]['MATR_DAUDZUMS_KOR'])) {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_kor_mat[' . $i . ']', text::get('ERROR_DOUBLE_VALUE'));
                         $isRowValid = false;
                     } // validate work progress value
-                    elseif ($aMaterials[$i]['MATR_DAUDZUMS_KOR'] >= 100000) {
+                    elseif ($aMaterialFr[$i]['MATR_DAUDZUMS_KOR'] >= 100000) {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_kor_mat[' . $i . ']', text::get('ERROR_AMOUNT_VALUE_100000'));
                         $isRowValid = false;
                     } else {
-                        $aMaterials[$i]['MATR_CENA_KOPA'] = number_format(($aMaterials[$i]['MATR_CENA'] * $aMaterials[$i]['MATR_DAUDZUMS_KOR']), 2, '.', '');
+                        $aMaterialFr[$i]['MATR_CENA_KOPA'] = number_format(($aMaterialFr[$i]['MATR_CENA'] * $aMaterialFr[$i]['MATR_DAUDZUMS_KOR']), 2, '.', '');
                     }
-                    $aMaterials[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_km['.$i.']');
+                    $aMaterialFr[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_km['.$i.']');
                 } else {
-                  $aMaterials[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
-                    if (empty($aMaterials[$i]['MATR_DAUDZUMS']))
+                  $aMaterialFr[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
+                    if (empty($aMaterialFr[$i]['MATR_DAUDZUMS']))
                     {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
                         $isRowValid = false;
                     }
                     // validate work progress value
-                    elseif (!is_numeric($aMaterials[$i]['MATR_DAUDZUMS']))
+                    elseif (!is_numeric($aMaterialFr[$i]['MATR_DAUDZUMS']))
                     {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
                         $isRowValid = false;
                     }
                     // validate work progress value
-                    elseif ($aMaterials[$i]['MATR_DAUDZUMS'] >= 100000)
+                    elseif ($aMaterialFr[$i]['MATR_DAUDZUMS'] >= 100000)
                     {
                         // assign error message
                         $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
@@ -189,22 +193,33 @@ if ( $isAdmin || $isSystemUser)
                     }
                     else
                     {
-                        $aMaterials[$i]['MATR_CENA_KOPA'] = number_format(($aMaterials[$i]['MATR_CENA']*$aMaterials[$i]['MATR_DAUDZUMS']), 2, '.', '');
+                        $aMaterialFr[$i]['MATR_CENA_KOPA'] = number_format(($aMaterialFr[$i]['MATR_CENA']*$aMaterialFr[$i]['MATR_DAUDZUMS']), 2, '.', '');
                     }
               }
               // prepare database record data
-  			      $aValidRows[] = array(
-                    'code' => $aMaterials[$i]['MATR_KODS'],
-                    'title' => $aMaterials[$i]['MATR_NOSAUKUMS'],
-                    'unit' => $aMaterials[$i]['MATR_MERVIENIBA'],
-                    'price' => $aMaterials[$i]['MATR_CENA'],
-                    'amount_mat' => $aMaterials[$i]['MATR_DAUDZUMS'],
-                    'amount_kor_mat' => ($oFormMaterialTab->getValue('tame_mat') == 1) ? $aMaterials[$i]['MATR_DAUDZUMS_KOR'] :'',
-                    'total_mat' => $aMaterials[$i]['MATR_CENA_KOPA'],
-                    'st' => $aMaterials[$i]['MATR_IS_WORKER'],
+  			      $aAllRows[] = array(
+                    'code' => $aMaterialFr[$i]['MATR_KODS'],
+                    'title' => $aMaterialFr[$i]['MATR_NOSAUKUMS'],
+                    'unit' => $aMaterialFr[$i]['MATR_MERVIENIBA'],
+                    'price' => $aMaterialFr[$i]['MATR_CENA'],
+                    'amount_mat' => $aMaterialFr[$i]['MATR_DAUDZUMS'],
+                    'amount_kor_mat' => ($oFormMaterialTab->getValue('tame_mat') == 1) ? $aMaterialFr[$i]['MATR_DAUDZUMS_KOR'] :'',
+                    'total_mat' => $aMaterialFr[$i]['MATR_CENA_KOPA'],
+                    'st' => $aMaterialFr[$i]['MATR_IS_WORKER'],
+                    'edited' => $aMaterialFr[$i]['MATR_APPROVE_DATE'],
+                    'work_aprove_date' => $aMaterialFr[$i]['MATR_WORK_APROVE_DATE'],
                     'rowNum' => $i
                   );
              }
+
+             foreach ($aAllRows as $i => $row){
+              $aValidRows[$i] = $row;
+            }
+
+            foreach ($aMaterialFr as $i=>$material)
+            {
+              $aMaterials[$material['MATR_WORK_APROVE_DATE']][] = $material;
+            }
            }
       }
       else
@@ -213,31 +228,31 @@ if ( $isAdmin || $isSystemUser)
         //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
         $aMaterialDb=dbProc::getActMaterialList($actId,  $tameMaterial );
 
+        
+        $aMaterialkExist = false;
         foreach ($aMaterialDb as $i => $material)
         {
-           if (isset($material['MATR_CENA_KOPA']))
-           {
-                $mat_cena_kopa = $material['MATR_CENA_KOPA'];
-           }
-           else
-           {
-                $mat_cena_kopa = number_format($material['MATR_CENA'] *  $material['MATR_DAUDZUMS'], 2, '.', '');
-           }
-
-           $aMaterials[$i]['MATR_ID'] = $material['MATR_ID'];
-           $aMaterials[$i]['MATR_KODS'] = $material['MATR_KODS'];
-           $aMaterials[$i]['MATR_NOSAUKUMS'] = $material['MATR_NOSAUKUMS'];
-           $aMaterials[$i]['MATR_MERVIENIBA'] = $material['MATR_MERVIENIBA'];
-           $aMaterials[$i]['MATR_CENA'] = $material['MATR_CENA'];
-           $aMaterials[$i]['MATR_DAUDZUMS'] = $material['MATR_DAUDZUMS'];
-           $aMaterials[$i]['MATR_CENA_KOPA'] = $mat_cena_kopa; 	//$material['MATR_CENA_KOPA'];
-           $aMaterials[$i]['MATR_IS_WORKER'] = $material['MATR_IS_WORKER'];
-           if($tameMaterial){
-                $aMaterials[$i]['MATR_DAUDZUMS_KOR'] = $material['MATR_DAUDZUMS_KOR'];
-           }
-
-        }
+            if(empty($material['MATR_WORK_APROVE_DATE'])) {
+              $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE;
+            }
+            if (empty($material['MATR_CENA_KOPA']))
+            {
+                $material['MATR_CENA_KOPA'] = number_format($material['MATR_CENA'] *  $material['MATR_DAUDZUMS'], 2, '.', '');
+            }
+            
+            $aMaterials[$material['MATR_WORK_APROVE_DATE']][$i] = $material;  
+            if($tameMaterial){
+                $aMaterials[$material['MATR_WORK_APROVE_DATE']][$i]['MATR_DAUDZUMS_KOR'] = $material['MATR_DAUDZUMS_KOR'];
+            }   
+            $aMaterialkExist = true;     
+          }
       }
+
+      if(!$aMaterialkExist) {
+        $aMaterials[0] = array();          
+      }
+      
+
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormMaterialTab->addElement('hidden','actId','',$actId);
@@ -247,65 +262,85 @@ if ( $isAdmin || $isSystemUser)
       $oFormMaterialTab->addElement('hidden','tame_mat','',($tameMaterial) ? 1 : 0);
 
       // form elements
+      $totalTime = array();
       $totalPrice = 0;
-      foreach ($aMaterials as $i => $actMaterial)
+      $workApproveDate = array();
+
+      $i = 0;
+      foreach ($aMaterials as $d => $aDayMaterial)
       {
-        $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
-        $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
-        $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
-        $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
-        $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
-        $oFormMaterialTab->addElement('label', 'price['.$i.']', '', $actMaterial['MATR_CENA']);
-
-        if($tameMaterial || $oFormMaterialTab->getValue('tame_mat') == 1) {
-
-          $oFormMaterialTab->addElement('label', 'amount_km['.$i.']', '', $actMaterial['MATR_DAUDZUMS']);  
-          $oFormMaterialTab->setNewValue('amount_km['.$i.']', number_format($actMaterial['MATR_DAUDZUMS'], 3, '.', '')); 
+        foreach ($aDayMaterial as $j => $actMaterial)
+        {      
           
-          $oFormMaterialTab->addElement('text', 'amount_kor_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS_KOR'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+            $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
+            $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
+            $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
+            $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
+            $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
+            $oFormMaterialTab->addElement('label', 'price['.$i.']', '', $actMaterial['MATR_CENA']);
+            $oFormMaterialTab->addElement('hidden', 'edited['.$i.']', '', $actMaterial['MATR_APPROVE_DATE']);
+            $oFormMaterialTab->addElement('hidden', 'work_aprove_date['.$i.']', '', $actMaterial['MATR_WORK_APROVE_DATE']);
 
-          $oFormMaterialTab->addRule('amount_kor_mat[' . $i . ']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-          $oFormMaterialTab->addRule('amount_kor_mat[' . $i . ']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-          // check Amaunt field
-          $v1 =& $oFormMaterialTab->createValidation('amauntKorValidation_' . $i, array('amount_kor_mat[' . $i . ']'), 'ifonefilled');
-          // ja Amount ir definēts un > 100000
-          $r1 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '<');
-          // ja Amount ir definēts un < 0
-          $r2 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '>');
-          $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmauntKor_' . $i, 'group', $v1);
-      } else {
-          $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
-          $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-          $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-          // check Amaunt field
-          $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
-          // ja Amount ir definēts un > 100000
-          $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-          // ja Amount ir definēts un < 0
-          $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-          $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+            if($tameMaterial || $oFormMaterialTab->getValue('tame_mat') == 1) {
+
+              $oFormMaterialTab->addElement('label', 'amount_km['.$i.']', '', $actMaterial['MATR_DAUDZUMS']);  
+              $oFormMaterialTab->setNewValue('amount_km['.$i.']', number_format($actMaterial['MATR_DAUDZUMS'], 3, '.', '')); 
+              
+              $oFormMaterialTab->addElement('text', 'amount_kor_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS_KOR'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+
+              $oFormMaterialTab->addRule('amount_kor_mat[' . $i . ']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+              $oFormMaterialTab->addRule('amount_kor_mat[' . $i . ']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+              // check Amaunt field
+              $v1 =& $oFormMaterialTab->createValidation('amauntKorValidation_' . $i, array('amount_kor_mat[' . $i . ']'), 'ifonefilled');
+              // ja Amount ir definēts un > 100000
+              $r1 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '<');
+              // ja Amount ir definēts un < 0
+              $r2 =& $oFormMaterialTab->createRule(array('amount_kor_mat[' . $i . ']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble', '>');
+              $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmauntKor_' . $i, 'group', $v1);
+          } else {
+              if( empty($actMaterial['MATR_APPROVE_DATE']) ) {
+                  $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+                  $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                  $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+                  // check Amaunt field
+                  $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
+                  // ja Amount ir definēts un > 100000
+                  $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+                  // ja Amount ir definēts un < 0
+                  $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+                  $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+              } else {
+                  $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
+              }
+          }
+
+          $oFormMaterialTab->addElement('label', 'total_mat['.$i.']', '', $actMaterial['MATR_CENA_KOPA'], ' disabled maxlength="13"');
+
+          $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
+	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
+
+          if( empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial ) {
+              // ajax handler link for delete
+              $delLink = new urlQuery();
+              $delLink->addPrm(FORM_ID, 'f.akt.s.3');
+              $delLink->addPrm(DONT_USE_GLB_TPL, '1');
+              $delLink->addPrm('xmlHttp', '1');
+              $delLink->addPrm('tame_mat', $tameMaterial ?'1':'0');
+              //$delLink->addPrm('deleteId', $actWork['DRBI_ID']);
+              // delete button
+              $delButtonJs = "if(isDelete()) {
+                    var rowId = document.forms['frmMaterialTab".(($tameMaterial ) ? 'T' : '')."']['id[" .$i. "]'];
+                    eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
+                  }";
+                  $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
+                  unset($delLink);
+          }
+          $i++;
+        }
+        
+        $totalTime[$d] = number_format($totalPrice, 2, '.', '');
       }
-
-      $oFormMaterialTab->addElement('label', 'total_mat['.$i.']', '', $actMaterial['MATR_CENA_KOPA'], ' disabled maxlength="13"');
-
-      $totalPrice += $actMaterial['MATR_CENA_KOPA'];
-
-      // ajax handler link for delete
-      $delLink = new urlQuery();
-      $delLink->addPrm(FORM_ID, 'f.akt.s.3');
-      $delLink->addPrm(DONT_USE_GLB_TPL, '1');
-      $delLink->addPrm('xmlHttp', '1');
-      $delLink->addPrm('tame_mat', $tameMaterial ?'1':'0');
-      //$delLink->addPrm('deleteId', $actWork['DRBI_ID']);
-      // delete button
-      $delButtonJs = "if(isDelete()) {
-            var rowId = document.forms['frmMaterialTab".(($tameMaterial ) ? 'T' : '')."']['id[" .$i. "]'];
-            eval(xmlHttpGetValue('" .$delLink -> getQuery() ."&deleteId='+rowId.value));
-          }";
-          $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
-          unset($delLink);
-      }
-      $totalPrice = number_format($totalPrice, 2, '.', '');
+      
       // form buttons
       if (!$isReadonly)
       {
@@ -362,7 +397,12 @@ if ( $isAdmin || $isSystemUser)
                                                   $row['amount_mat'],
                                                   $row['total_mat'],
                                                   $row['st'],
-                                                ($tameMaterial) ? $row['amount_kor_mat']:false);
+                                                  ($tameMaterial) ? $row['amount_kor_mat']:false,
+                                                  false,
+                                                  false,
+                                                  $row['work_aprove_date'],
+                                                  $row['edited']
+                                                );
                           // if work not inserted in to the DB
                           // delete  task record and show error message
                           if($r === false)

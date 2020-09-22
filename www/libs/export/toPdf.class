@@ -407,7 +407,6 @@ class toPdf {
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
 			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
 			'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-
 			'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
 			);
 
@@ -827,11 +826,11 @@ class toPdf {
 
 		$width=array(15,15,75,15,20,20,20);
 		$alignHeader=array('C','C','C','R','R','R');
-		$align=array('C','L','C','R','R','R');
+		$align=array('C','L','L','R','R','R');
 
 		$headers = array(
 			'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
-			'DRBI_WORK_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
+			'DRBI_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
 			'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
 			'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
@@ -846,8 +845,8 @@ class toPdf {
 		{
 		  $data[$i] = array(
 			'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-			'DRBI_WORK_APROVE_DATE'  => $work['DRBI_WORK_APROVE_DATE'],
-			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
+			'DRBI_APROVE_DATE'  => $work['DRBI_APROVE_DATE'],
+			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 50),
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
 			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
 			'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
@@ -872,11 +871,13 @@ class toPdf {
 		$pdf->SetFont('Arial','BI',10);
 		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get(TAB_MATERIAL)), 0,1);
 
-		$width=array(20,80,20,20,20,20);
-		$align=array('C','L','C','C','C','C');
+		$width=array(15,15,75,15,20,20,20);
+		$alignHeader=array('C','C','C','R','R','R');
+		$align=array('C','L','L','R','R','R');
 
 		$headers = array(
 			'MATR_KODS' => iconv('UTF-8', 'windows-1257',text::get('CODE')),
+			'MATR_APPROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
 			'MATR_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('NAME')),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
 			'MATR_CENA' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
@@ -884,7 +885,7 @@ class toPdf {
 			'MATR_CENA_KOPA' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
 			);
 
-		$aMaterialDb=dbProc::getActMaterialList($actId);
+		$aMaterialDb=dbProc::getActMaterialList($actId, false, ($type==OP_MIDLE_EXPORT)?true:false);
 		$data = array();
 		$totalM = 0;
 		$mat_cena_kopa = 0;
@@ -900,7 +901,8 @@ class toPdf {
 		  }
 		  $data[$i] = array(
 			'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
-			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  2, "\n", 60),
+			'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
+			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 50),
 			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
 			'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
 			'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
@@ -909,7 +911,7 @@ class toPdf {
 		  if($material['MATR_IS_WORKER'] == '1')
 			 $totalM +=  $mat_cena_kopa;
 		}
-		$pdf->FancyTable($headers,$data, $width, $align);
+		$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
 		
 		$pdf->SetFont('Arial','',8);
 		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
