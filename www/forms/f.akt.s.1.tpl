@@ -42,7 +42,7 @@
                     <tr><td><img src="img/0.gif" alt="" width="1" height="100" class="block"></td></tr>
                  <? } ?>
     
-                 <? if(!$isReadonly || !$isReadonlyExceptAdmin)  {?>
+                 <? if(!$isReadonly2 || !$isReadonlyExceptAdmin)  {?>
                     <tr><td><?= $oForm -> getElementHtml('save'); ?></td> </tr>
                  <? } ?>
     

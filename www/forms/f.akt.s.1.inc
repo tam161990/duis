@@ -498,7 +498,7 @@ unset($res);
       $isReadonly1   = false;
     }
     // labo autors,  administrators
-    if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO))
+    if((( ($act['RAKT_RLTT_ID'] == MAIN_ADMIN_ID || $act['RAKT_RLTT_ID'] == $userId ) && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO))
     {
       
       $isReadonly2   = false;
@@ -657,15 +657,15 @@ unset($res);
 
   
   $oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>(($trase== 1) ? KL_OBJECTS_TRASE : KL_OBJECTS),'value'=>isset($act['RAKT_KOBJ_ID'])?$act['RAKT_KOBJ_ID']:'','readonly'=>false), 'maxlength="2000"'.(( ($trase== 1 && $isReadonly2 ) || ($trase== 0 && $isReadonly2 && !$isCopy) )?' disabled':''));
-  if (!$isReadonly1 || ($isCopy && $trase == 0))
+  if (!$isReadonly2 || ($isCopy && $trase == 0))
   {
     $oForm -> addRule('object', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
   $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.(($isReadonly2 || $isCopy)?' disabled':''));
   
-  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.(($isReadonly1 || $isCopy)?' disabled':'').'', '', '', $signature);
-  if (!$isReadonly1 && !$isCopy)
+  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.(($isReadonly2 || $isCopy)?' disabled':'').'', '', '', $signature);
+  if (!$isReadonly2 && !$isCopy)
   {
     $oForm -> addRule('voltage', text::get('ERROR_REQUIRED_FIELD'), 'required');
     $oForm -> addRule('signature', text::get('ERROR_REQUIRED_FIELD'), 'required');
