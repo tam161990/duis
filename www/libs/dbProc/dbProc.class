@@ -4994,7 +4994,11 @@ class dbProc extends dbLayer
         
         )";
             $query .= " AND a.RAKT_TRASE = ".$trase;
-            $query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
+            if($sign == 'E') {
+				$query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
+			} else {
+				$query .= " and a.RAKT_SIGNATURE  IN ('P') ";
+            }
             $query .= " GROUP BY d.DRBI_ID ORDER BY ww.KWRC_ID, d.DRBI_KKAL_SHIFRS";
 
 
@@ -5539,7 +5543,9 @@ class dbProc extends dbLayer
              $searcCriteria['contract'] = $sCriteria[5];
           //(SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER <> 1)  AS `MATER_TOTAL` ,  
           //(SELECT ".dbLayer::sqlParseDate('AAUD_DATUMS')." FROM `AKTA_STATUSA_MAINA`  WHERE a.RAKT_ID = AAUD_RAKT_ID AND AAUD_STATUS = 'CLOSE' ORDER BY AAUD_DATUMS DESC LIMIT 1) AS `AAUD_DATUMS`
-          $query = " SELECT * FROM ( select *,
+          //(SELECT DATE_SUB(ADDDATE(LAST_DAY(MIN(DRBI_APPROVE_DATE)), INTERVAL 1 DAY), INTERVAL 1 MONTH) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_FROM`,
+          //(SELECT LAST_DAY(MAX(DRBI_APPROVE_DATE)) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_TO`   
+		  $query = " SELECT * FROM ( select *,
             e.KEDI_SECTION `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
@@ -5547,9 +5553,8 @@ class dbProc extends dbLayer
             ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
             e.KEDI_REGIONS AS `REGION` ,
             (SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER = 1)  AS `MATER_TOTAL` ,
-            (SELECT SUM(d.DRBI_CILVEKSTUNDAS) from `DARBI` d  WHERE d.DRBI_RAKT_ID = a.RAKT_ID)  AS `WORK_TOTAL`,
-            (SELECT DATE_SUB(ADDDATE(LAST_DAY(MIN(DRBI_APPROVE_DATE)), INTERVAL 1 DAY), INTERVAL 1 MONTH) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_FROM`,
-            (SELECT LAST_DAY(MAX(DRBI_APPROVE_DATE)) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_TO`                  
+            (SELECT SUM(d.DRBI_CILVEKSTUNDAS) from `DARBI` d  WHERE d.DRBI_RAKT_ID = a.RAKT_ID)  AS `WORK_TOTAL`,            
+			(SELECT MAX(DRBI_APPROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DRBI_APPROVE_DATE` 			
             from `AKTI` a
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
@@ -5572,10 +5577,10 @@ class dbProc extends dbLayer
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
             //$query .= " and k.KCNT_SECTION = '".$searcCriteria['section']."' ";
 
-            $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
+           // $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
 
-            //$query .= " and ( a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
-             //AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) ";
+           // $query .= " and ( a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
+          //   AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) ";
                         
             $query .= " AND a.RAKT_TRASE = ".$trase;
 			if($sign == 'E') {
@@ -5585,18 +5590,21 @@ class dbProc extends dbLayer
             }
             
             $query .= ") y ";
-            $query .= " WHERE (y.RAKT_IS_AUTO = 1 and (y.DATE_FROM IS NULL AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')OR (STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') BETWEEN  y.DATE_FROM AND y.DATE_TO)) 
-			or ( y.RAKT_IS_AUTO = 0 and y.AAUD_STATUS = 'CLOSE' AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
+            $query .= " WHERE (y.RAKT_IS_AUTO = 1 
+								and (y.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') 
+										AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') ) ) 
+							)
+						or ( y.RAKT_IS_AUTO = 0 
+								and y.AAUD_STATUS = 'CLOSE' 
+								AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
+								AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
             $query .= " GROUP BY  RAKT_ID ORDER BY WRITE_OFF_ID, RAKT_FULL_NUMBER";
 
-       // echo $query;
+        //echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
-
-
-
-
+    }
+    
     // -----------------------------------------------------------------------------
 	// Atgriezh kopeejo aktus skaitu.
 	// Author: Tatjana Fedorkova
