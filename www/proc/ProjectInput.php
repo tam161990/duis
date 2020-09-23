@@ -32,21 +32,28 @@
 	try
 	{
 		$data = json_decode(file_get_contents("php://input")) ? : 'nifiga net';	
+			/*issue_key			kods
+			issue_status		status
+			issue_type			tips
+			issue_summary		saturs
+			issue_designer		projketētājs
+			issue_invest_year	investīciju gads
+			issue_territory		atbildības teritorija*/
 
 		files::wh_log('New project input: ' .date("d.m.Y H:i:s").PHP_EOL. 
-									'year: '.$data->year.PHP_EOL.
-									'worker: '. (isset($data->worker) ? $data->worker : '').PHP_EOL.
-									'EDarea: '.(isset($data->EDarea) ? $data->EDarea : '').PHP_EOL.
-									'numPostfix:' .(isset($data->numPostfix) ? $data->numPostfix :'').PHP_EOL.
-									'worktitle:' .(isset($data->worktitle) ? $data->worktitle :'').PHP_EOL.
-									'type:' .(isset($data->type) ? $data->type :'').PHP_EOL
+									'issue_invest_year: '.$data->issue_invest_year.PHP_EOL.
+									'issue_designer: '. (isset($data->issue_designer) ? $data->issue_designer : '').PHP_EOL.
+									'issue_territory: '.(isset($data->issue_territory) ? $data->issue_territory : '').PHP_EOL.
+									'issue_key:' .(isset($data->issue_key) ? $data->issue_key :'').PHP_EOL.
+									'issue_summary:' .(isset($data->issue_summary) ? $data->issue_summary :'').PHP_EOL.
+									'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL
 							);						
 		//var_dump($data);
 		
 		$r=dbProc::saveAct(false,
 			false,
 			0,
-			date_create(isset($data->year) ? $data->year : date("Y").'-01-01')->format('d.m.Y'), 
+			date_create(isset($data->issue_invest_year) ? $data->issue_invest_year : date("Y").'-01-01')->format('d.m.Y'), 
 			0,
 			false,
 			false,
@@ -56,19 +63,19 @@
 			false,
 			false,
 			false,
-			isset($data->worker) ? $data->worker : false,
-			isset($data->worEDareaker) ? $data->EDarea : false,
+			isset($data->issue_designer) ? $data->issue_designer : false,
+			isset($data->issue_territory) ? $data->issue_territory : false,
 			1 ,
 			0,
-			isset($data->numPostfix) ? $data->numPostfix : false,
-			isset($data->worktitle) ? $data->worktitle : false,
+			isset($data->issue_key) ? $data->issue_key : false,
+			isset($data->issue_summary) ? $data->issue_summary : false,
 			false,
 			false,
 			false,
 			false,
 			1,
 			1,
-			isset($data->type) ? $data->type : false
+			isset($data->issue_type) ? $data->issue_type : false
 		  );	
 	}
 	catch(Throwable $e) {
