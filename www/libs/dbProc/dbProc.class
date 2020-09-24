@@ -4946,7 +4946,7 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActTotalWorkList($searchString, $trase = 0, $sign = 'P')
-	{
+{
             $sCriteria = explode("^", $searchString);
 
              $searcCriteria['year'] = $sCriteria[0];
@@ -4954,9 +4954,9 @@ class dbProc extends dbLayer
              $searcCriteria['worker'] = $sCriteria[2];
              $searcCriteria['edRegion'] = $sCriteria[3];
              $searcCriteria['section'] = $sCriteria[4];
-	          $searcCriteria['contract'] = $sCriteria[5];
+         $searcCriteria['contract'] = $sCriteria[5];
 
-		    $query = "select *,
+            $query = "select *,
             e.KEDI_SECTION `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
@@ -4969,7 +4969,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
             LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
             LEFT JOIN `AKTA_STATUSA_MAINA` s ON (a.RAKT_ID = s.AAUD_RAKT_ID)
- 	    
+     
             where 1 AND `RAKT_PROJECT` = '0' ";
 
 
@@ -4978,41 +4978,42 @@ class dbProc extends dbLayer
             //$query .= " and a.RAKT_MENESIS = '".$searcCriteria['month']."' ";
 
             $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
-	        $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
+            $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
             $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
 
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
-            $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
+            //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
+            $query .= " and a.RAKT_STATUS NOT IN ('DELETE') ";
+
            // $query .= " AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'";
            // $query .= " and s.AAUD_STATUS = 'CLOSE' ";
-           $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
-                                AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
-                                AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."') 
-                            OR ( a.RAKT_IS_AUTO = 1  
-                                    AND d.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') 
-                                AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) )
-                       
-                        )";
+           $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE'
+                    AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                    AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')
+                OR ( a.RAKT_IS_AUTO = 1  
+                        AND d.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')
+                    AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) )
+            
+            )";
             $query .= " AND a.RAKT_TRASE = ".$trase;
             if($sign == 'E') {
-				$query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
-			} else {
-				$query .= " and a.RAKT_SIGNATURE  IN ('P') ";
+                $query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
+            } else {
+                $query .= " and a.RAKT_SIGNATURE  IN ('P') ";
             }
             $query .= " GROUP BY d.DRBI_ID ORDER BY ww.KWRC_ID, d.DRBI_KKAL_SHIFRS";
 
 
-        //echo $query;
-		$oSQL = new dbLayer;
-		return $oSQL -> makeQuery($query);
-	}
-
+            //echo $query;
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+}
     // Atgriezh akta(-as). atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActTotalMaterialList($searchString, $trase = 0, $sign = 'P')
-	{
+{
             $sCriteria = explode("^", $searchString);
 
              $searcCriteria['year'] = $sCriteria[0];
@@ -5020,11 +5021,11 @@ class dbProc extends dbLayer
              $searcCriteria['worker'] = $sCriteria[2];
              $searcCriteria['edRegion'] = $sCriteria[3];
              $searcCriteria['section'] = $sCriteria[4];
- 	          $searcCriteria['contract'] = $sCriteria[5];
+           $searcCriteria['contract'] = $sCriteria[5];
 
             $query = "select *,
             SUM(m.MATR_DAUDZUMS) `DAUDZUMS`,
-	        SUM( IF (m.MATR_CENA_KOPA IS NULL, m.MATR_DAUDZUMS*m.MATR_CENA, m.MATR_CENA_KOPA) ) `CENA_KOPA`,
+            SUM( IF (m.MATR_CENA_KOPA IS NULL, m.MATR_DAUDZUMS*m.MATR_CENA, m.MATR_CENA_KOPA) ) `CENA_KOPA`,
             e.KEDI_SECTION `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
@@ -5037,7 +5038,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
             LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
              LEFT JOIN `AKTA_STATUSA_MAINA` s ON (a.RAKT_ID = s.AAUD_RAKT_ID)
-	    
+   
             where 1 AND `RAKT_PROJECT` = '0' AND `MATR_IS_WORKER` = 1 ";
 
            // $query .= " and a.RAKT_GADS = '".$searcCriteria['year']."' ";
@@ -5045,29 +5046,34 @@ class dbProc extends dbLayer
            // $query .= " and a.RAKT_MENESIS = '".$searcCriteria['month']."' ";
 
             $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
-	        $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
+            $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
             $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
 
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
-            $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
-            $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
-                                AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
-                                AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."') 
+            //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
+            $query .= " and a.RAKT_STATUS NOT IN ('DELETE') ";
+
+            $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE'
+                                AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                                AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')
                             OR ( a.RAKT_IS_AUTO = 1  
-                                    AND m.MATR_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') 
+                                    AND m.MATR_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')
                                 AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) )
                        
                         )";
-            $query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
+            if($sign == 'E') {
+                $query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
+            } else {
+                $query .= " and a.RAKT_SIGNATURE  IN ('P') ";
+            }
             $query .= " GROUP BY ww.KWRC_TITLE, m.MATR_NOSAUKUMS, m.MATR_IS_WORKER ";
             $query .= " ORDER BY ww.KWRC_TITLE, m.MATR_IS_WORKER DESC";
 
 
-        //echo $query;
-		$oSQL = new dbLayer;
-		return $oSQL -> makeQuery($query);
-	}
-
+            //echo $query;
+            $oSQL = new dbLayer;
+            return $oSQL -> makeQuery($query);
+}
    function getActDateFrom($month, $year)
   {
 	if($month == 1)
@@ -5532,7 +5538,7 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getActTotalReportList($searchString, $trase = 0, $sign= 'P')
-	{
+{
             $sCriteria = explode("^", $searchString);
 
              $searcCriteria['year'] = $sCriteria[0];
@@ -5544,8 +5550,8 @@ class dbProc extends dbLayer
           //(SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER <> 1)  AS `MATER_TOTAL` ,  
           //(SELECT ".dbLayer::sqlParseDate('AAUD_DATUMS')." FROM `AKTA_STATUSA_MAINA`  WHERE a.RAKT_ID = AAUD_RAKT_ID AND AAUD_STATUS = 'CLOSE' ORDER BY AAUD_DATUMS DESC LIMIT 1) AS `AAUD_DATUMS`
           //(SELECT DATE_SUB(ADDDATE(LAST_DAY(MIN(DRBI_APPROVE_DATE)), INTERVAL 1 DAY), INTERVAL 1 MONTH) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_FROM`,
-          //(SELECT LAST_DAY(MAX(DRBI_APPROVE_DATE)) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_TO`   
-		  $query = " SELECT * FROM ( select *,
+          //(SELECT LAST_DAY(MAX(DRBI_APPROVE_DATE)) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DATE_TO`  
+            $query = " SELECT * FROM ( select *,
             e.KEDI_SECTION `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
@@ -5554,7 +5560,7 @@ class dbProc extends dbLayer
             e.KEDI_REGIONS AS `REGION` ,
             (SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER = 1)  AS `MATER_TOTAL` ,
             (SELECT SUM(d.DRBI_CILVEKSTUNDAS) from `DARBI` d  WHERE d.DRBI_RAKT_ID = a.RAKT_ID)  AS `WORK_TOTAL`,            
-			(SELECT MAX(DRBI_APPROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DRBI_APPROVE_DATE` 			
+            (SELECT MAX(DRBI_APPROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DRBI_APPROVE_DATE`
             from `AKTI` a
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
@@ -5575,35 +5581,37 @@ class dbProc extends dbLayer
             $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
 
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
+            $query .= " and a.RAKT_STATUS NOT IN ('DELETE') ";
+
             //$query .= " and k.KCNT_SECTION = '".$searcCriteria['section']."' ";
 
            // $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
 
-           // $query .= " and ( a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE' 
+           // $query .= " and ( a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE'
           //   AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) ";
-                        
+                       
             $query .= " AND a.RAKT_TRASE = ".$trase;
-			if($sign == 'E') {
-				$query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
-			} else {
-				$query .= " and a.RAKT_SIGNATURE  IN ('P') ";
+            if($sign == 'E') {
+                $query .= " and a.RAKT_SIGNATURE  IN ('E', 'K') ";
+            } else {
+                $query .= " and a.RAKT_SIGNATURE  IN ('P') ";
             }
-            
+                    
             $query .= ") y ";
-            $query .= " WHERE (y.RAKT_IS_AUTO = 1 
-								and (y.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') 
-										AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') ) ) 
-							)
-						or ( y.RAKT_IS_AUTO = 0 
-								and y.AAUD_STATUS = 'CLOSE' 
-								AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' 
-								AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
+            $query .= " WHERE (y.RAKT_IS_AUTO = 1
+                and (y.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')
+                AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') ) )
+            )
+            or ( y.RAKT_IS_AUTO = 0
+                    and y.AAUD_STATUS = 'CLOSE'
+                    AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                    AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
             $query .= " GROUP BY  RAKT_ID ORDER BY WRITE_OFF_ID, RAKT_FULL_NUMBER";
 
-        //echo $query;
-		$oSQL = new dbLayer;
-		return $oSQL -> makeQuery($query);
-    }
+                //echo $query;
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+}
     
     // -----------------------------------------------------------------------------
 	// Atgriezh kopeejo aktus skaitu.
@@ -5986,8 +5994,8 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	function getFreeCalculationList($calcGroup, $actId, $trase = 0, $searchText = '')
-	{
-    	  $query = 'select e.KEDI_SECTION as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
+    {
+        $query = 'select e.KEDI_SECTION as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
           RAKT_KWOI_KODS as `WORKER`, RAKT_VV_NUMBER as `CONTRACT`
           FROM `AKTI` a
           LEFT JOIN `KL_AKTA_VEIDS` av ON (a.RAKT_KAKV_ID = av.KAKV_ID)
@@ -6007,15 +6015,15 @@ class dbProc extends dbLayer
         if($plan == 1)
         {
 
-            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, 
+            $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,
             `KKAL_PLANA` as `KKAL_NORMATIVS`,  `KKAL_NEPLANA` AS `KKAL_NORMATIVS_NP` from `KL_KALKULACIJA`
             where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
             and `KKAL_KWOI_KODS` =  "'.$worker.'"
             and `KKAL_VV_NUMBER` =  "'.$contract.'"
             and `KKAL_KEDI_SECTION` =  "'.$section.'"
             and  `KKAL_PLANA` IS NOT NULL
-            and KKAL_TRASE = '.$trase.' 
-            and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'             
+            and KKAL_TRASE = '.$trase.'
+            and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'            
             order by `KKAL_SHIFRS` asc';
 
         }
@@ -6025,8 +6033,8 @@ class dbProc extends dbLayer
           {
             if($trase==1)
             {
-                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, 
-                 `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,
+                 `KKAL_NEPLANA` as `KKAL_NORMATIVS`
                  from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
@@ -6035,7 +6043,7 @@ class dbProc extends dbLayer
               and  `KKAL_NEPLANA` IS NOT NULL
               and `KKAL_TRASE`  = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1
-              AND  KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
+              AND  KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'
               order by `KKAL_SHIFRS` asc';
             }
             else
@@ -6043,7 +6051,7 @@ class dbProc extends dbLayer
                 $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`,
 
                  IFNULL(
-                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 (SELECT MAX(kk.KKAL_NEPLANA)
                  FROM `KL_KALKULACIJA` kk
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
@@ -6055,7 +6063,7 @@ class dbProc extends dbLayer
                   AND  kk.KKAL_IS_ELEMENT = 1
                   and kk.KKAL_TRASE  = '.$trase.'
                  ),
-                 (SELECT MAX(kk.KKAL_NEPLANA) 
+                 (SELECT MAX(kk.KKAL_NEPLANA)
                  FROM `KL_KALKULACIJA` kk
                  WHERE kk.KKAL_GRUPAS_KODS =  k.KKAL_GRUPAS_KODS
                  AND kk.KKAL_SHIFRS = k.KKAL_SHIFRS
@@ -6073,8 +6081,8 @@ class dbProc extends dbLayer
             and k.KKAL_VV_NUMBER =  "'.$contract.'"
             and k.KKAL_NEPLANA IS NOT NULL
             and k.KKAL_IR_AKTIVS = 1
-            and k,KKAL_TRASE = '.$trase.'
-            AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
+            and k.KKAL_TRASE = '.$trase.'
+            AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .'
             GROUP BY `KKAL_SHIFRS`            
             order by `KKAL_SHIFRS` asc';           // and k.KKAL_KEDI_SECTION =  "'.$section.'"
            }
@@ -6083,7 +6091,7 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS`
                 from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
@@ -6091,12 +6099,12 @@ class dbProc extends dbLayer
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
               and  `KKAL_PLANA` IS NOT NULL
               and KKAL_TRASE = '.$trase.'
-              and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
+              and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'
               order by `KKAL_SHIFRS` asc';
             }
             else     // defects
             {
-                  $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                  $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS`
                   from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
@@ -6104,18 +6112,19 @@ class dbProc extends dbLayer
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
               and  `KKAL_NEPLANA` IS NOT NULL
               and KKAL_TRASE = '.$trase.'
-              and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
+              and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'
               order by `KKAL_SHIFRS` asc';
             }
 
           }
 
         }
-        // echo $query;
+         //echo $query;
 
-	   	$oSQL = new dbLayer;
-		return $oSQL -> makeQuery($query);
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
     }
+
     
     // -----------------------------------------------------------------------------
 	// Atgriezh kalkulācijas ierakstus no akta tames,
@@ -8763,35 +8772,42 @@ class dbProc extends dbLayer
 
         function setUnsetActItemsDate($actId, $set = false)
         {
-            $oDB = new dbLayer;
+           
             if($set) {
-                $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = now() 
+                $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = now()
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NULL';
+                $oDB = new dbLayer;
                 $result1 = $oDB -> makeQuery($query);
-                $query = 'UPDATE `MATERIALI` SET `MATR_APPROVE_DATE` = now() 
+
+                $query = 'UPDATE `MATERIALI` SET `MATR_APPROVE_DATE` = now()
                         WHERE `MATR_RAKT_ID` = ' .$actId. '
                         AND `MATR_APPROVE_DATE` IS NULL';
+                $oDB = new dbLayer;
                 $result1 = $oDB -> makeQuery($query);
-                
+               
             } else {
                 $query = 'UPDATE `DARBI` SET `DRBI_APPROVE_DATE` = "NULL"
                         WHERE `DRBI_RAKT_ID` = ' .$actId. '
                         AND `DRBI_APPROVE_DATE` IS NOT NULL
-                        AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d 
+                        AND `DRBI_APPROVE_DATE` = (SELECT MAX(d.DRBI_APPROVE_DATE) FROM darbi d
                                                                 WHERE d.DRBI_RAKT_ID ='. $actId.')';
+                $oDB = new dbLayer;
                 $result = $oDB -> makeQuery($query);
+
                 $query = 'UPDATE `MATERIALI` SET `MATR_APPROVE_DATE` = "NULL"
                 WHERE `MATR_RAKT_ID` = ' .$actId. '
                 AND `MATR_APPROVE_DATE` IS NOT NULL
-                AND `MATR_APPROVE_DATE` = (SELECT MAX(m.MATR_APPROVE_DATE) FROM MATERIALI m 
+                AND `MATR_APPROVE_DATE` = (SELECT MAX(m.MATR_APPROVE_DATE) FROM MATERIALI m
                                                         WHERE m.MATR_RAKT_ID ='. $actId.')';
+                $oDB = new dbLayer;
                 $result = $oDB -> makeQuery($query);
-                
+               
             }
            
             return ($result !== false);
         }
+
 
         //////////////////////////////
         // JOBI
