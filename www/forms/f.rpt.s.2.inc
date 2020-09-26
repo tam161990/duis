@@ -119,7 +119,7 @@ if(true/*$isEdUser || $isAdmin*/)
                 'miasure' => $row['DRBI_MERVIENIBA'],
                 'quantity' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['quantity'])?$area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['quantity']:0) + $row['DRBI_DAUDZUMS'],
                 'cena' => $row['DRBI_KKAL_NORMATIVS'],
-	'total' => number_format( (isset($area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['total'])?$area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['total']:0) + ( $row['DRBI_DAUDZUMS'] * $row['DRBI_KKAL_NORMATIVS']),2,'.','')
+	            'total' => number_format( (isset($area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['total'])?$area[$row['WRITE_OFF_ACCOUNT']]['work'][$row['DRBI_KKAL_SHIFRS']]['total']:0) + ( $row['DRBI_DAUDZUMS'] * $row['DRBI_KKAL_NORMATIVS']),2,'.','')
                
                );
             }
