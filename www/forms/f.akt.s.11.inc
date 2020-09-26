@@ -139,7 +139,7 @@ if ( $isAdmin || $isSystemUser)
               $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'),
                                                 $oFormPop->getValue('id_'.$r),
                                                 $oFormPop->getValue('amount_'.$r),
-                                                $oFormPop->getValue('price_'.$r),
+                                                (($oFormPop->getValue('st') == 1 ) ? $oFormPop->getValue('price'.$r) : $oFormPop->getValue('price_'.$r)),
                                                 $oFormPop->getValue('tame'),
                                                 (($oFormPop->getValue('st') == 1 ) ? 0 : 1));
               if(!$r)
@@ -206,15 +206,19 @@ if ( $isAdmin || $isSystemUser)
         {
           $oFormPop->addElement('label', 'title_'.$j, '', '');
           $oFormPop->addElement('hidden', 'id_'.$j, '', '');
+          $oFormPop->addElement('hidden', 'price'.$j, '', '');
           if($oFormPop->getValue('action')==OP_UPDATE )
           {
-                $oFormPop->addElement('text', 'amount_'.$j, '', '', (($isReadonly)?' disabled ':'').'maxlength="6"');       $oFormPop->addElement('text', 'price_'.$j, '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+                $oFormPop->addElement('text', 'amount_'.$j, '', '', (($isReadonly)?' disabled ':'').'maxlength="6"');       
+                $oFormPop->addElement('text', 'price_'.$j, '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
                 $oFormPop -> setNewValue('amount_'.$j,'');
                 $oFormPop -> setNewValue('price_'.$j, '');
           }
           else
           {
-            $oFormPop->addElement('text', 'amount_'.$j, '', '', (($isReadonly)?' disabled ':'').'maxlength="6"');       $oFormPop->addElement('text', 'price_'.$j, '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');
+            $oFormPop->addElement('text', 'amount_'.$j, '', '', (($isReadonly)?' disabled ':'').'maxlength="6"'); 
+            $oFormPop->addElement('text', 'price_'.$j, '', '', (($isReadonly || $st == 1)?' disabled ':'').'maxlength="6"');  
+            
           }
 
           // form buttons
@@ -234,10 +238,12 @@ if ( $isAdmin || $isSystemUser)
           {
             $oFormPop -> setNewValue('title_'.$j, $resMater[$j]['KMAT_KODS'] .' : '. $resMater[$j]['KMAT_NOSAUKUMS'].' : '. $resMater[$j]['KMAT_DAUDZUMS'].' '.$resMater[$j]['KMAT_MERVIENIBA'] );
             $oFormPop -> setNewValue('id_'.$j, $resMater[$j]['KMAT_ID']);
+            $oFormPop -> setNewValue('price'.$j, $resMater[$j]['KMAT_CENA']);
             if($isEDUser || $isAdmin)
             {
                 $oFormPop -> setNewValue('price_'.$j, $resMater[$j]['KMAT_CENA']);
-            }
+            }           
+
           }
        // }
 
