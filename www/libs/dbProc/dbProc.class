@@ -8420,6 +8420,14 @@ class dbProc extends dbLayer
                     if($status == STAT_CLOSE && $act['RAKT_TRASE'] == 1 ) {
                         toPdf::approvedTrasePdf($actId, MAIN_ADMIN_ID, FILE_ESTIMATE);
                     }
+
+                    if($status == STAT_CLOSE && $act['RAKT_PROJECT'] = 1 ) {
+                        $fileId = dbProc::getExcelId($actId);
+                        if($fileId !== false) {
+                            // sūta file link uz KvikStep                            
+                            RequestHandler::sentExcelToKvikStep($act['AAST_KODS'], $fileId);
+                        }
+                    }
                     
                     // save status changed time
                     $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
