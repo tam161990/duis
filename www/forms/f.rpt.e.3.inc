@@ -85,13 +85,13 @@
 		{
             foreach ($res as $i=>$row)
 			{
-              if($row['MATR_IS_WORKER'] == '0')
+             /* if($row['MATR_IS_WORKER'] == '0')
               {
                 $totalMaterialPrice = $row['CENA_KOPA'];              }
               else
               {
                 $totalMaterialPrice = 0;
-              }
+              }*/
 
                $pct =  ($totalMaterialPrice*(100+ $pvn )/ 100 ) - $totalMaterialPrice;
                $summa = ($totalMaterialPrice*(100+ $pvn )/ 100 );
@@ -151,7 +151,7 @@
                   $j = 0;
                   $y ++;
               }
-
+	      /*
               if($row['CENA_KOPA'] == '')
               {
                 $totalMaterialPrice =  $row['MATR_DAUDZUMS'] * $row['MATR_CENA'];
@@ -160,6 +160,7 @@
               {
                 $totalMaterialPrice = $row['CENA_KOPA'];
               }
+		*/
 		$totalMaterialPrice = $row['CENA_KOPA'];
 
               $writeof = $row['WRITE_OFF_ACCOUNT'];
@@ -173,8 +174,8 @@
                   'name' => $row['MATR_NOSAUKUMS'],
                   'miasure' => $row['MATR_MERVIENIBA'],
                   'quantity' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'] + $row['DAUDZUMS'] :$row['DAUDZUMS']),
-                  'cena' => (($row['MATR_IS_WORKER'] == '1')? '0.00' : $row['MATR_CENA']),
-                  'total' => (($row['MATR_IS_WORKER'] == '1')? '0.00' : (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['total'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['total'] + number_format($totalMaterialPrice,2,'.','') :number_format($totalMaterialPrice,2,'.',''))),
+                  'cena' => '0.00',
+                  'total' => '0.00',
                   'subtitle' => $subtitle
                  );
                  $subtitle = '';
