@@ -169,7 +169,7 @@ if(true/*$isEdUser || $isAdmin*/)
                   $j = 0;
                   $y ++;
               }
-
+	      /*
               if($row['CENA_KOPA'] == '')
               {
                 $totalMaterialPrice =  $row['MATR_DAUDZUMS'] * $row['MATR_CENA'];
@@ -178,7 +178,7 @@ if(true/*$isEdUser || $isAdmin*/)
               {
                 $totalMaterialPrice = $row['CENA_KOPA'];
               }
-
+	      */
               $writeof = $row['WRITE_OFF_ACCOUNT'];
              
               //$code =  isset($row['MATR_KODS']) ? $row['MATR_KODS'] : $row['MATR_ID'];
@@ -190,8 +190,8 @@ if(true/*$isEdUser || $isAdmin*/)
                   'name' => $row['MATR_NOSAUKUMS'],
                   'miasure' => $row['MATR_MERVIENIBA'],
                   'quantity' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'] + $row['DAUDZUMS'] :$row['DAUDZUMS']),
-                  'cena' => (($row['MATR_IS_WORKER'] == '1')? '0.00' : $row['MATR_CENA']),
-                  'total' => (($row['MATR_IS_WORKER'] == '1')? '0.00' : (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['total'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['total'] + number_format($totalMaterialPrice,2,'.','') :number_format($totalMaterialPrice,2,'.',''))),
+                  'cena' =>  '0.00' ,
+                  'total' =>  '0.00',
                   'subtitle' => $subtitle
                  );
                  $subtitle = '';
