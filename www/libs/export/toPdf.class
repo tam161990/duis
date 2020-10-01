@@ -11,6 +11,7 @@ class toPdf {
 		$regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
 		$departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
 		$engeneerName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'ENGINEER');
+		$depChifName = '';
 		$start_date = date('d.m.Y');
 		$pvn = PCT_21  ;
 		

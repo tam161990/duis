@@ -8330,7 +8330,7 @@ class dbProc extends dbLayer
                         $status = STAT_RETURN;
                         break;                   
                     case 'CLOSE':
-					    $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
+                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
                         break;       
                     case 'AUTO':
                         $status = $act['RAKT_STATUS'];
@@ -8387,16 +8387,7 @@ class dbProc extends dbLayer
                
 				if ($r1!==false) {				
 
-                    // ar pirmo INSERT jāielada materiālus
-                    if($status == STAT_INSERT && !TEST_MODE) {
-                            $r2 = dbProc::addAutoMaterialToAct($actId, $act['AAST_KODS']);
-                            if ($r2===false)    {        
-                                files::wh_log('ERROR addAutoMaterialToAct: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
-                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL
-							    );						
-
-                            }
-                    }
+                    
                     if($status == STAT_RETURN) {
                         $r2 = dbProc::setUnsetActItemsDate($actId, false);
                         if ($r2===false)    {        
@@ -8406,7 +8397,7 @@ class dbProc extends dbLayer
                         }
                     }
 
-					if(($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_WRETEDOFF || $act['RAKT_STATUS'] == STAT_CLOSE ) && $accept_date !== false) {
+                    if(($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_WRETEDOFF || $act['RAKT_STATUS'] == STAT_CLOSE ) && $accept_date !== false) {
                         $r2 = dbProc::setApproveDate($actId, $accept_date);
                         if ($r2===false)    {        
                             files::wh_log('ERROR setApproveDate: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
@@ -8423,7 +8414,7 @@ class dbProc extends dbLayer
 
                     if($status == STAT_CLOSE && $act['RAKT_PROJECT'] = 1 ) {
                         $fileId = dbProc::getExcelId($actId);
-                        if($fileId !== false) {
+                        if($fileId !== false && !TEST_MODE) {
                             // sūta file link uz KvikStep                            
                             RequestHandler::sentExcelToKvikStep($act['AAST_KODS'], $fileId);
                         }
@@ -8447,7 +8438,7 @@ class dbProc extends dbLayer
 
                     //echo $query;
                     $r = $oSQL -> makeQuery($query);
-                    if ($r===alse)    {        
+                    if ($r===false)    {        
                         files::wh_log('ERROR UPDATE `AUTO_ACT_STATUS`: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                             'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
                         );						
@@ -9140,6 +9131,56 @@ class dbProc extends dbLayer
 
         return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
     }
+
+    function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type) {
+
+        $oDB = new dbLayer;
+        $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.dbLayer::quote_smart($work_type).'%"';
+        $result = $oDB -> makeQuery($query);
+        $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;
+    
+        $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_KODS` = "'.dbLayer::quote_smart($ed_kods).'"';
+        $result = $oDB -> makeQuery($query);
+        $ed_id = isset($result[0]['KEDI_ID']) ? $result[0]['KEDI_ID'] : false;
+    
+        $query = 'SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE "%'.dbLayer::quote_smart($worker_title).'%"';
+        $result = $oDB -> makeQuery($query);
+        $worker_code = isset($result[0]['KWOI_KODS']) ? $result[0]['KWOI_KODS'] : false;
+    
+        $r=dbProc::saveAct(false,
+                false,
+                0,
+                date_create($year.'-01-01')->format('d.m.Y'), 
+                0,
+                false,
+                false,
+                false,
+                STAT_AUTO,
+                MAIN_ADMIN_ID,
+                false,
+                false,
+                false,
+                $worker_code,
+                $ed_id,
+                1 ,
+                0,
+                $key,
+                $work_title,
+                false,
+                false,
+                false,
+                false,
+                1,
+                1,
+                $type
+              );	
+    
+        }
+
+
+
+
+
 }
 
 ?>
