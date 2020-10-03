@@ -9028,6 +9028,9 @@ class dbProc extends dbLayer
         $result = $oDB -> makeQuery($query);
         $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;
     
+            files::wh_log('KL_REF_KODI: '.$query );
+    
+    
         $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_KODS` = "'.dbLayer::quote_smart($ed_kods).'"';
         $result = $oDB -> makeQuery($query);
         $ed_id = isset($result[0]['KEDI_ID']) ? $result[0]['KEDI_ID'] : false;
@@ -9035,6 +9038,18 @@ class dbProc extends dbLayer
         $query = 'SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE "%'.dbLayer::quote_smart($worker_title).'%"';
         $result = $oDB -> makeQuery($query);
         $worker_code = isset($result[0]['KWOI_KODS']) ? $result[0]['KWOI_KODS'] : false;
+    
+        files::wh_log('Act status from KS: ' .date("d.m.Y H:i:s").PHP_EOL. 
+                        'key: '.$key.PHP_EOL.
+                        'year: '. $year.PHP_EOL.
+                        'worker_title: '.$worker_title.PHP_EOL.
+                        'ed_kods:' .$ed_kods.PHP_EOL.
+                        'work_title:' .$work_title.PHP_EOL.
+                        'work_type:' .$work_type.PHP_EOL.
+                        'type:' .$type .PHP_EOL.
+                        'ed_id:' .$ed_id.PHP_EOL.
+                        'worker_code:' .$worker_code.PHP_EOL										
+                );						
     
         $r=dbProc::saveAct(false,
                 false,
@@ -9061,15 +9076,24 @@ class dbProc extends dbLayer
                 false,
                 1,
                 1,
-                $type
-              );	
+                'PT_EL'//$type
+              );
     
+             $actId=dbLayer::getInsertId();	
+    
+            // save status changed time
+             $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
+             VALUES 	('.$actId.', '.MAIN_ADMIN_ID.', "'.STAT_AUTO.'" )';
+    
+             $r = $oDB -> makeQuery($query);
+             if ($r===false)    
+             {        
+                files::wh_log('ERROR INSERT INTO `AKTA_STATUSA_MAINA`: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
+                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
+                );
+    
+            }
         }
-
-
-
-
-
 }
 
 
