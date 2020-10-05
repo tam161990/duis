@@ -619,7 +619,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     $fileId = dbProc::getExcelId($actId);
                     if($fileId !== false) {
                         // sūta file link uz KvikStep                            
-                        RequestHandler::sentExcelToKvikStep($oForm->getValue('numPostfix'), $fileId);
+                        //RequestHandler::sentExcelToKvikStep($oForm->getValue('numPostfix'), $fileId);
                     }
                 }
                 // if operation was compleated succefully, show success mesage and redirect current frame
