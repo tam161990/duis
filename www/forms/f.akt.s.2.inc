@@ -451,6 +451,9 @@ if ( $isAdmin || $isSystemUser)
                                                     $row['day_total'],
                                                     false, 
                                                     0,
+                                                    false,
+                                                    false,
+                                                    false,
                                                     $row['work_aprove_date']
                                                     );
                             		// if work not inserted in to the DB

@@ -252,7 +252,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 
                         'tabindex=6 maxlength="250"'.(($isReadonlyExceptAdmin)?' disabled':''));
   
-  $oForm -> addElement('text', 'year',  text::get('YEAR'), isset($act['RAKT_GADS'])?$act['RAKT_GADS']:'', 
+  $oForm -> addElement('text', 'year',  text::get('INVESTICION_DATE'), isset($act['RAKT_GADS'])?$act['RAKT_GADS']:'', 
                         'tabindex=6 maxlength="4"'.(($isReadonlyExceptAdmin)?' disabled':''));
   if (!$isReadonlyExceptAdmin)
   { 
@@ -619,7 +619,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     $fileId = dbProc::getExcelId($actId);
                     if($fileId !== false) {
                         // sūta file link uz KvikStep                            
-                        RequestHandler::sentExcelToKvikStep($oForm->getValue('numPostfix'), $fileId);
+                        //RequestHandler::sentExcelToKvikStep($oForm->getValue('numPostfix'), $fileId);
                     }
                 }
                 // if operation was compleated succefully, show success mesage and redirect current frame

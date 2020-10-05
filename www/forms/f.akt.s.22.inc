@@ -180,7 +180,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       {
 
         //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
-        $aMaterialDb=dbProc::getActMaterialList($actId, false, true);
+        $aMaterialDb=dbProc::getActMaterialList($actId, false, false, true);
 
         $aMaterialExist = false;
         foreach ($aMaterialDb as $material)
@@ -293,6 +293,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                 false,
                                                 $row['notes'],
                                                 ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
+                                                false,
+                                                false,
                                                 $row['export_type'],
                                               );
                           // if work not inserted in to the DB
