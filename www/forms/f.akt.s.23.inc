@@ -133,7 +133,7 @@ if ( $isAdmin || $isProjector)
             // set list title
             $title = text::toUpper(text::get('ST_WORK'));    
             // get grupas nokluseto vertibu 
-            $defaultWork = dbProc::getDefaultWork($actId);
+            $defaultWork = explode('^', dbProc::getDefaultWork($actId));
             // get grupas list           
             $res=dbProc::getWorkTypeList();
             if (is_array($res))
@@ -163,14 +163,14 @@ if ( $isAdmin || $isProjector)
             // set list title
             $title = text::toUpper(text::get('ST_MATERIAL'));   
              // get grupas nokluseto vertibu 
-             $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+            $defaultMaterial = dbProc::getDefaultMaterial($actId);  
             // get grupas list           
             $res=dbProc::getWorkTypeListByWork($actId);
             if (is_array($res))
             {
               foreach ($res as $row)
               {
-                $workType[$row['KLDV_ID']]=$row['KLDV_NOSAUKUMS'];
+                $workType[$row['KLDV_ID'].'^'.$row['DRBI_WORK_TYPE_TEXT']]=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
               }
             }
             unset($res);
@@ -189,16 +189,26 @@ if ( $isAdmin || $isProjector)
             $matrSubGroup = array();
             $matrGroup['']=text::get('ALL');
 
-            if ($oFormPop->isFormSubmitted() && $oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
-            {
-              $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
-              if (is_array($res))
+            if ($oFormPop->isFormSubmitted()) {
+              if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
+              {
+                  $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
+              }
+              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('category') != '')
+              {
+                $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
+              }
+              if (isset($res) && is_array($res))
               {
                   foreach ($res as $row)
-               	  {
-                	    $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
+                  {
+                      $aScope[$row['KMAT_ID']] = $row['KMAT_KATEGORIJAS_KODS'] .' : '. $row['KMAT_KATEGORIJAS_NOSAUKUNS'] ;
                   }
                   unset($res);
+              }
+              else
+              {
+                $oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
               }
             }
            
@@ -206,6 +216,7 @@ if ( $isAdmin || $isProjector)
 
       }
 
+      
       // form elements
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
@@ -224,7 +235,7 @@ if ( $isAdmin || $isProjector)
         array('classifName'=>KL_CALCULALATION_GROUP,'value'=>'','readonly'=>false), 
         'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&calc_group=\'+this.value+\'\'))"');
         
-        
+        $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
       }
       if($catalog == KL_MATERIALS )
       {
@@ -235,17 +246,23 @@ if ( $isAdmin || $isProjector)
         $oFormPop -> addElement('select', 'mat_sub_group',  text::get('SUBGROUP_TITLE'), '', 
         ' tabindex=2 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&mat_sub_group=\'+this.value+\'\'))"', 
         '', '', $matrSubGroup);
+
+        $oFormPop->addElement('text', 'category', text::get('MATERIAL_CATEGORY_CODE'), '', 'maxlength="50"');
         
       }
       unset($oLink);
 
-      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork : $defaultMaterial), 'tabindex=2', '', '', $workType);
-		  $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork[0] : $defaultMaterial), 'tabindex=2', '', '', $workType);
+      $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+      
 
       // form buttons
       if (!$isReadonly)
       {
         $oFormPop -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+        if($catalog == KL_MATERIALS ){
+          $oFormPop -> addElement('submitImg', 'search', text::get('SEARCH'),'img/btn_meklet.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_SEARCH.'\');} else {return false;}"');
+        }
       }
     
       $oFormPop -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
@@ -267,13 +284,12 @@ if ( $isAdmin || $isProjector)
                                   case  KL_CALCULALATION:
                                     $r = dbProc::saveProjectWorkRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
-                                                                      $oFormPop->getValue('work_type'));
+                                                                      $oFormPop->getValue('work_type'),
+                                                                      $oFormPop->getValue('work_type_text'));
                                     break;                          
                                   case  KL_MATERIALS:
-                                    $r = dbProc::saveActMaterialRecord($oFormPop->getValue('actId'), 
+                                    $r = dbProc::saveProjectMaterialRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
-                                                                      false, false, false,
-                                                                      0, '', '',
                                                                       $oFormPop->getValue('work_type')
                                                                     );
                                     break;

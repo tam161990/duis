@@ -50,8 +50,8 @@
 			$r = dbProc::saveKvikStepActStatus($data->issue_key, 
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
-										isset($data->issue_end_date) && !empty($data->issue_end_date) ? $data->issue_end_date : false,
-										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? $data->issue_accept_date : false
+										isset($data->issue_end_date) && !empty($data->issue_end_date) ? substr($data->issue_end_date, 0, 10) : false,
+										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false
 										);	
 			
 			$response = ob_get_clean();	

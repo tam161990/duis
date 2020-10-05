@@ -100,6 +100,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       unset($res);
+      $type=array();
+      $res = dbProc::getKrfkName('PROJECT_EXPORT');
+      $type['']=text::get('EMPTY_SELECT_OPTION');		
+      if (is_array($res))
+      {
+            foreach ($res as $row)
+            {
+                $type[$row['nosaukums']]=$row['nozime'];
+            }
+      }
+      unset($res);
 
 
       $aWorks = array();
@@ -124,28 +135,36 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                  $aWorkFr[$i]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
                  $aWorkFr[$i]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
                  $aWorkFr[$i]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
-                 $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                 $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
                  
-                 // validate work progress value
-                if (empty($aWorkFr[$i]['DRBI_DAUDZUMS']))
-                {
-                  // assign error message
-                  $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
-                  $isRowValid = false;
-                }
-                        // validate work progress value
-                elseif (!is_numeric($aWorkFr[$i]['DRBI_DAUDZUMS']))
-                {
-                  // assign error message
-                  $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
-                  $isRowValid = false;
-                }
-                        // validate work progress value
-                elseif ($aWorkFr[$i]['DRBI_DAUDZUMS'] >= 100000)
-                {
-                  // assign error message
-                  $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
-                  $isRowValid = false;
+                if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
+                  $isRowValid = true;
+                  $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
+                  $aWorkFr[$i]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                  $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] = $oFormWorkTab->getValue('export_type['.$i.']');
+                } else {
+                  $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                  // validate work progress value
+                  if (empty($aWorkFr[$i]['DRBI_DAUDZUMS']))
+                  {
+                    // assign error message
+                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
+                    $isRowValid = false;
+                  }
+                          // validate work progress value
+                  elseif (!is_numeric($aWorkFr[$i]['DRBI_DAUDZUMS']))
+                  {
+                    // assign error message
+                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
+                    $isRowValid = false;
+                  }
+                          // validate work progress value
+                  elseif ($aWorkFr[$i]['DRBI_DAUDZUMS'] >= 100000)
+                  {
+                    // assign error message
+                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
+                    $isRowValid = false;
+                  }
                 }
                   // prepare database record data
   			          $aValidRows[] = array(
@@ -158,25 +177,30 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     'notes' => $aWorkFr[$i]['DRBI_PIEZIMES'],
                     'st' => $aWorkFr[$i]['DRBI_IS_WORKER'],
                     'work_type' => $aWorkFr[$i]['DRBI_WORK_TYPE_ID'],
+                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],                    
+                    'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] : '',
                     'rowNum' => $i
   			          );
                 }
 
+                //print_r($aValidRows)."<hr>";
+                //print_r($aWorkFr);
+
             foreach ($aWorkFr as $i=>$work)
             {
-              $aWorks[$work['DRBI_WORK_TYPE_ID']][] = $work;              
+              $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;              
             }
            }
       }
       else
       {
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-        $aWorkDb=dbProc::getActWorkList($actId);      	
+        $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true);      	
         
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
-          $aWorks[$work['DRBI_WORK_TYPE_ID']][] = $work;     
+          $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;     
           $aWorkExist = true;     
         }
 
@@ -195,7 +219,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       foreach ($aWorks as $d => $aGroupWorks)
       {
         foreach ($aGroupWorks as $j => $actWork)
-        {          
+        {       
+          
 
           $oFormWorkTab->addElement('hidden', 'id['.$i.']', '', $actWork['DRBI_ID']);
           $oFormWorkTab->addElement('hidden', 'description['.$i.']', '', $actWork['KKAL_APRAKSTS']);
@@ -204,27 +229,38 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $oFormWorkTab->addElement('label', 'title['.$i.']', '', $actWork['DRBI_KKAL_NOSAUKUMS']);
           $oFormWorkTab->addElement('label', 'measure['.$i.']', '', $actWork['DRBI_MERVIENIBA']);
           $oFormWorkTab->addElement('hidden', 'st['.$i.']', '', $actWork['DRBI_IS_WORKER']);
-          $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
           
-          if(!empty($actWork['DRBI_KKAL_SHIFRS']))
-          {
-              
-                  $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-                  $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-                  // check Amaunt field
-                  $v1=&$oFormWorkTab->createValidation('amauntValidation_'.$i, array('amount['.$i.']'), 'ifonefilled');
-                  // ja Cilv?kstundas normat?vs ir defin?ts un > 100000
-                  $r1=&$oFormWorkTab->createRule(array('amount['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-                  // ja koeficent ir defin?ts un < 0
-                  $r2=&$oFormWorkTab->createRule(array('amount['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-                  $oFormWorkTab->addRule(array($r1, $r2), 'groupRuleAmaunt_'.$i, 'group', $v1);
-              
-          }       
-          $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
           
-          $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
-          $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
+          
+          
+          if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
+              $oFormWorkTab->addElement('label', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], ' maxlength="250"');
+              $oFormWorkTab->addElement('label', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS']); 
+              $oFormWorkTab->addElement('label', 'work_type['.$i.']', '', $actWork['KLDV_NOSAUKUMS']); 
+              $oFormWorkTab->addElement('hidden', 'work_type_id['.$i.']', '', $actWork['DRBI_WORK_TYPE_ID']);
+              $oFormWorkTab->addElement('label', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT']);
+              $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+          } else {
+            $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
+            $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required'); 
+            $oFormWorkTab->addElement('text', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT'], (($isReadonly)?' disabled ':'').'maxlength="50"');
+            $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+            if(!empty($actWork['DRBI_KKAL_SHIFRS']))
+            {                
+                    $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                    $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+                    // check Amaunt field
+                    $v1=&$oFormWorkTab->createValidation('amauntValidation_'.$i, array('amount['.$i.']'), 'ifonefilled');
+                    // ja Cilv?kstundas normat?vs ir defin?ts un > 100000
+                    $r1=&$oFormWorkTab->createRule(array('amount['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+                    // ja koeficent ir defin?ts un < 0
+                    $r2=&$oFormWorkTab->createRule(array('amount['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+                    $oFormWorkTab->addRule(array($r1, $r2), 'groupRuleAmaunt_'.$i, 'group', $v1);
+                
+            }  
+            $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
+            
+          }
 
           // ajax handler link for delete
           $delLink = new urlQuery();
@@ -243,15 +279,18 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       // form buttons
-      if (!$isReadonly)
+      if (!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))
       {
-        foreach ($calcGroups as $i => $group)
-        {
-           $oFormWorkTab->addElement('link', 'group['.$i.']', $group['TITLE'], '#', 'onClick="'.$group['URL'].'"', '');
+        if(!$isReadonly ) {
+          foreach ($calcGroups as $i => $group)
+          {
+            $oFormWorkTab->addElement('link', 'group['.$i.']', $group['TITLE'], '#', 'onClick="'.$group['URL'].'"', '');
+          }
         }
         $oFormWorkTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_work.gif', 'width="120" height="20" ');
         //$oFormWorkTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
       }
+      
 
       // if form iz submit (save button was pressed)
 	  if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
@@ -265,6 +304,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
 		   }
 		   else
 		   { 
+         
 		        if(isset($aValidRows) && is_array($aValidRows))
             { 
         	    	foreach($aValidRows as $i => $row)
@@ -283,7 +323,9 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                     false,
                                                     $row['notes'],
                                                     $row['st'],
-                                                    $row['work_type']
+                                                    $row['work_type'],
+                                                    $row['work_type_text'],
+                                                    $row['export_type'],
                                                     );
                             // if work not inserted in to the DB
                         // delete  task record and show error message

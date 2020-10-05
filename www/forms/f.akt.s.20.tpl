@@ -4,7 +4,7 @@
     <?= $oForm -> getFormHeader(); ?>
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-            <td><h1><?=text::toUpper(text::get('SINGLE_ACT'));?></h1></td>           
+            <td><h1><?=text::toUpper(text::get('PROJECT'));?></h1></td>           
         </tr>
     </table>
     
@@ -53,6 +53,9 @@
                  <? } ?>
                  <? if($actId != false)  {?>
                     <tr><td><?=$oForm->getElementHtml('back');?></td></tr>
+                 <? } ?>
+                 <? if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))  {?>
+                    <tr><td><?=$oForm->getElementHtml('make_excel');?></td></tr>
                  <? } ?>
                 </table>
             </td>

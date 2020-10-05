@@ -91,12 +91,17 @@ document.onmousemove=positiontip
 		   <tr class="table_head_2">
 
                 <th width="10%"><?=text::get('CHIPHER');?></th>
-                <th width="25%"><?=text::get('SINGLE_WORK_TYPE');?></th>
-				<th width="25%" ><?=text::get('NAME');?></th>
+                <th width="20%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+                <th width="15%"><?=text::get('PROJECT_OBJECT_TITLE');?></th>
+				<th width="20%" ><?=text::get('NAME');?></th>
                 <th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
 				<th  width="10%"><?=text::get('AMOUNT');?></th>                
-				<th  width="20%"><?=text::get('COMMENT');?></th>
-			 	<th width="3%">&nbsp;</th>
+                <th  width="15%"><?=text::get('COMMENT');?></th>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <? } else {?>
+                 <th width="3%">&nbsp;</th>
+                 <? } ?>
 			</tr>
 
 	  <?
@@ -123,24 +128,30 @@ document.onmousemove=positiontip
                     <?= $oFormWorkTab->getElementHtml('chipher['.$x.']'); ?>
                 </td>
                 <td><?= $oFormWorkTab->getElementHtml('work_type['.$x.']'); ?> </td>   
+                <td><?= $oFormWorkTab->getElementHtml('work_type_text['.$x.']'); ?> </td>   
 				<td><?= $oFormWorkTab->getElementHtml('title['.$x.']'); ?> </td>                
 				<td><?= $oFormWorkTab->getElementHtml('measure['.$x.']'); ?></td>
 				<td><?= $oFormWorkTab->getElementHtml('amount['.$x.']'); ?></td>                
-				<td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
-             	<td>
-                    <? if(!$isReadonly)  {?>
-                    <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
-                    <? } else{ ?>
-                    &nbsp;
-                    <? } ?>
-                </td>
+                <td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                    <td><?= $oFormWorkTab->getElementHtml('export_type['.$x.']'); ?></td>
+                <? } else {?>
+                    <td>
+                        <? if(!$isReadonly)  {?>
+                        <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
+                        <? } else{ ?>
+                        &nbsp;
+                        <? } ?>
+                    </td>
+                <? } ?>
+             	
 			</tr>
             <?
             $x++;
             }
             ?>
             <tr>
-                 <td align="right" colspan="7">&nbsp;</td>
+                 <td align="right" colspan="8">&nbsp;</td>
             </tr>
             <?
            
@@ -161,7 +172,7 @@ document.onmousemove=positiontip
             <br />
             <table cellpadding="5" cellspacing="0" border="0" align="center">
             <tr>
-             <? if(!$isReadonly)  {?>
+             <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
             	<td><?= $oFormWorkTab -> getElementHtml('save'); ?></td>
              <? } ?>
             

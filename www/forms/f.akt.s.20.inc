@@ -6,6 +6,7 @@ $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
+
 // act ID
 $actId  = reqVar::get('actId');
 // tab name
@@ -251,7 +252,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 
                         'tabindex=6 maxlength="250"'.(($isReadonlyExceptAdmin)?' disabled':''));
   
-  $oForm -> addElement('text', 'year',  text::get('YEAR'), isset($act['RAKT_GADS'])?$act['RAKT_GADS']:'', 
+  $oForm -> addElement('text', 'year',  text::get('INVESTICION_DATE'), isset($act['RAKT_GADS'])?$act['RAKT_GADS']:'', 
                         'tabindex=6 maxlength="4"'.(($isReadonlyExceptAdmin)?' disabled':''));
   if (!$isReadonlyExceptAdmin)
   { 
@@ -327,12 +328,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   {
     $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest_r.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
   }
+  if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))
+  {
+    $oForm -> addElement('submitImg', 'make_excel', text::get('EXPORT'), 'img/btn_make_excel.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') ) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
+  }
 
   if ($oForm -> isFormSubmitted())
   {
     if ($oForm->getValue('action')==OP_INSERT ||
         ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('actId'))) ||
-        ($oForm->getValue('action')==OP_EXPORT && is_numeric($oForm->getValue('actId'))) 
+        ($oForm->getValue('action')==OP_EXPORT && is_numeric($oForm->getValue('actId')))  ||
+        ($oForm->getValue('action')==OP_MIDLE_EXPORT && is_numeric($oForm->getValue('actId'))) 
         )
 	  {
          
@@ -342,7 +348,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $checkRequiredFields = false;
          
          $actNumber = false;
-         if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
+         if ( $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
              $oForm -> getValue('year')  &&  $oForm -> getValue('worker') &&  
              $oForm -> getValue('numPostfix')  && $oForm -> getValue('type') 
             )
@@ -506,6 +512,18 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               else
               {
                 $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+              }
+            }
+
+            // izveidot excel tikai ST darbiniekam
+            if($oForm->getValue('action')==OP_MIDLE_EXPORT )
+            {
+              $fileId = toExcel::projectExportExcel($actId, $userId);
+            
+              if( $fileId === false){
+                  $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+              } else {
+                $r = ture;
               }
             }
       }

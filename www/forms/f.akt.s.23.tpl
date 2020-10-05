@@ -24,6 +24,14 @@
         <td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('mat_sub_group'); ?></td>    
     </tr>
     </table>
+    <hr>
+    <table cellpadding="5" cellspacing="1" border="0" width="100%">
+        <tr>
+            <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('category'); ?></td>
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('category'); ?></td> 
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('search'); ?></td>   
+        </tr>       
+        </table>
     <? } ?>
 
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
@@ -34,9 +42,15 @@
 </table>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
     <tr>
-        <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('work_type'); ?></td>
-        <td class="table_cell_2" width="60%"><?= $oFormPop -> getElementHtml('work_type'); ?></td>    
+        <td class="table_cell_c" width="20%"><?= $oFormPop -> getElementLabel('work_type'); ?></td>
+        <td class="table_cell_2" width="80%"><?= $oFormPop -> getElementHtml('work_type'); ?></td>    
     </tr>
+    <?  if($catalog == KL_CALCULALATION ) { ?>
+    <tr>
+        <td class="table_cell_c" width="20%"><?= $oFormPop -> getElementLabel('work_type_text'); ?></td>
+        <td class="table_cell_2" width="80%"><?= $oFormPop -> getElementHtml('work_type_text'); ?></td>    
+    </tr>
+    <? } ?>
 </table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">

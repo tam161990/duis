@@ -14,13 +14,17 @@
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
 
-                <th width="10%"><?=text::get('CODE');?></th>
-                <th width="25%"><?=text::get('SINGLE_WORK_TYPE');?></th>
-				<th width="25%"><?=text::get('NAME');?></th>
+                <th width="5%"><?=text::get('CODE');?></th>
+                <th width="40%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+				<th width="20%"><?=text::get('NAME');?></th>
 				<th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
                 <th  width="10%"><?=text::get('AMOUNT');?></th>
-                <th  width="20%"><?=text::get('COMMENT');?></th>
-			 	<th width="3%">&nbsp;</th>
+                <th  width="15%"><?=text::get('COMMENT');?></th>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <? } else {?>
+                    <th width="3%">&nbsp;</th>
+                <? } ?>
 			</tr>
 
 	  <?
@@ -52,13 +56,17 @@
 				<td><?= $oFormMaterialTab->getElementHtml('unit['.$x.']'); ?></td>                
                 <td><?= $oFormMaterialTab->getElementHtml('amount_mat['.$x.']'); ?></td>
 				<td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>
-             	<td>
-                    <? if(!$isReadonly)  {?>
-                    <?= $oFormMaterialTab->getElementHtml('mat_del['.$x.']'); ?>
-                    <? } else{ ?>
-                    &nbsp;
-                    <? } ?>
-                </td>
+                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                    <td><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                <? } else {?>
+                    <td>
+                        <? if(!$isReadonly)  {?>
+                        <?= $oFormMaterialTab->getElementHtml('mat_del['.$x.']'); ?>
+                        <? } else{ ?>
+                        &nbsp;
+                        <? } ?>
+                    </td>
+                <? } ?>
 			</tr>
 
             <?
@@ -87,9 +95,9 @@
             <br />
             <table cellpadding="5" cellspacing="0" border="0" align="center">
             <tr>
-             <? if(!$isReadonly)  {?>
-            	<td><?= $oFormMaterialTab -> getElementHtml('save'); ?></td>
-             <? } ?>
+                <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+                    <td><?= $oFormMaterialTab -> getElementHtml('save'); ?></td>
+                 <? } ?>
 
              </tr>
             </table>

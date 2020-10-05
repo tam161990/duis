@@ -1069,10 +1069,17 @@ if(true)
                     // saglaba lietotaja darbiibu
                     dbProc::setUserActionDate($userId, ACT_EXPORT);
 
-                    if (!$r || !$r1)
-                    {
-                      $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                    }
+		                  if($isAuto){
+                          // set darba, transporta un personala nodošanas datumu
+                          dbProc::setUnsetActItemsDate(addslashes($actId), true);
+                          
+                        }
+
+
+                  if (!$r || !$r1)
+                  {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }
                 }
 
               }
