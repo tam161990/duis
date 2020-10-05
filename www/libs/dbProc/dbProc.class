@@ -364,7 +364,49 @@ class dbProc extends dbLayer
 		}
 
 		return false;
-	}
+    }
+    
+    
+
+    
+    function saveUserFromCsv($data, $user){
+        $isActive = 1;
+        $isAdmin = 0;
+        $password = '4c165f53a910a6a605c470bb2bd1debe';       
+        $oSQL=new dbLayer();       
+        $sql = 'INSERT into `LIETOTAJI`
+                    (`RLTT_USER_NAME`, 
+                    `RLTT_PAROLE`,
+                    `RLTT_VARDS`,
+                    `RLTT_UZVARDS`,
+                    `RLTT_IR_ADMINS`,
+                    `RLTT_IR_AKTIVS`, 
+                    `RLTT_KWOI_KODS`, 
+                    `RLTT_IR_TRASE`, 
+                    `RLTT_IR_LIGUMS`,
+                    `RLTT_PROJECTOR`)
+                SELECT
+                        "'.dbLayer::quote_smart($data[0]).'",
+                        "'.$password.'",
+						 "'.dbLayer::quote_smart($data[1]).'",
+                         "'.dbLayer::quote_smart($data[2]).'",
+                         '.$isAdmin.',
+                         '.$isActive.',
+						 "'.dbLayer::quote_smart($data[3]).'",
+                         '.dbLayer::quote_smart($data[4]).',
+                         '.dbLayer::quote_smart($data[5]).',
+                         '.dbLayer::quote_smart($data[6]).' FROM DUAL
+                         WHERE NOT EXISTS(SELECT 1 FROM `LIETOTAJI` 
+                         WHERE `RLTT_USER_NAME` = "'.dbLayer::quote_smart($data[0]).'") 
+                LIMIT 1';
+        echo $sql;
+		$res=$oSQL->makeQuery($sql);
+        if ($res!==false)
+		{
+			return true;
+		}
+		return false;
+    }
 
 
 

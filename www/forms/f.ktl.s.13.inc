@@ -136,9 +136,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                   $r2 = dbProc::saveEDAreaFromCsv($data, $userId);
                                   break; 
                                 // catalog saskaņotāji
-                              case 'HARMONIZED':
+                                case 'HARMONIZED':
                                 $r2 = dbProc::saveHarmonizedFromCsv($data, $userId);
                                 break; 
+                                // catalog sDU lietotāju
+                                case 'DUUSERS':
+                                  $r2 = dbProc::saveUserFromCsv($data, $userId);
+                                  break; 
                                   
                               }
                               if($r2 === false )
@@ -253,7 +257,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog saskaņotāji
                 case 'HARMONIZED':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
-                  break;                            
+                  break;     
+                // catalog sDU lietotāju
+                case 'DUUSERS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
+                  break;                      
                 
             }
             $listLink=$oLink ->getQuery();
@@ -286,7 +294,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog saskaņotāji
                 case 'HARMONIZED':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
-                  break;                    
+                  break;   
+                // catalog sDU lietotāju
+                 case 'DUUSERS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
+                  break;                                       
                 
             }
             $oLink->addPrm('editMode', '1');
