@@ -282,21 +282,21 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               {     //print_r($aValidRows);
                     foreach($aValidRows as $i => $row)
                     {                         
-                          $r=dbProc::writeActMaterial($actId,
-                                                $row['code'],
-                                                $row['title'],
-                                                $row['unit'],
-                                                false,
-                                                $row['amount_mat'],
-                                                false,
-                                                $row['st'],
-                                                false,
-                                                $row['notes'],
-                                                ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
-                                                false,
-                                                false,
-                                                $row['export_type'],
-                                              );
+                            $r=dbProc::writeActMaterial($actId,
+                                $row['code'],
+                                $row['title'],
+                                $row['unit'],
+                                false,
+                                $row['amount_mat'],
+                                false,
+                                $row['st'],
+                                false,
+                                $row['notes'],
+                                ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
+                                false,
+                                false,
+                                $row['export_type'],
+                          );
                           // if work not inserted in to the DB
                           // delete  task record and show error message
                           if($r === false)

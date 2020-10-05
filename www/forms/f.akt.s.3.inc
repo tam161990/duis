@@ -390,20 +390,19 @@ if ( $isAdmin || $isSystemUser)
                     foreach($aValidRows as $i => $row)
                     {                         
                           $r=dbProc::writeActMaterial($actId,
-                                                  $row['code'],
-                                                  $row['title'],
-                                                  $row['unit'],
-                                                  $row['price'],
-                                                  $row['amount_mat'],
-                                                  $row['total_mat'],
-                                                  $row['st'],
-                                                  ($tameMaterial) ? $row['amount_kor_mat']:false,
-                                                  false,
-                                                  false,
-                                                  false,
-                                                  $row['work_aprove_date'],
-                                                  $row['edited']
-                                                );
+                              $row['code'],
+                              $row['title'],
+                              $row['unit'],
+                              $row['price'],
+                              $row['amount_mat'],
+                              $row['total_mat'],
+                              $row['st'],
+                              ($tameMaterial) ? $row['amount_kor_mat']:false,
+                              false,
+                              false,
+                              $row['work_aprove_date'],
+                              $row['edited']
+                        );
                           // if work not inserted in to the DB
                           // delete  task record and show error message
                           if($r === false)
