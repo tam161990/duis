@@ -4477,6 +4477,7 @@ class dbProc extends dbLayer
 		return ($result !== false);
         
     }
+    
 
     // -----------------------------------------------------------------------------
 	// Atgriezh akta(-as). Ja dots ID, atdod to
