@@ -7487,11 +7487,15 @@ class dbProc extends dbLayer
 	// Saglabaa sist�mas inform�ciju.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveSystemInfo($warning = '', $link_tmpl = '')
+	function saveSystemInfo($warning = '', $link_tmpl = '', $superadmin_name  = '')
 	{
 		if($link_tmpl != '')
 		{
 			$query = 'update `SYSTEM_INFO` SET `SNFO_LINK_TMPL`="'.dbLayer::quote_smart($link_tmpl).'" where `SNFO_ID` = 1';
+        }
+        else if($superadmin_name != '')
+		{
+			$query = 'update `SYSTEM_INFO` SET `SNFO_SUPERADMIN`="'.dbLayer::quote_smart($superadmin_name).'" where `SNFO_ID` = 1';
 		}
 		else 
 		{
