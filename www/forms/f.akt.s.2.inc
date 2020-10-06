@@ -5,6 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
+$isSuperAdmin=userAuthorization::isSuperAdmin();
 
 // act ID
 $actId  = reqVar::get('actId');
@@ -69,7 +70,7 @@ if ( $isAdmin || $isSystemUser)
 
       $isReadonly   = true;
       // Ir pieejams main��anai, ja  AKTS:LIETOT�JS = �Teko�ais lietot�js� un lietot�ja loma ir �Ievad�tais� un AKTS:STATUS = �Izveide� vai �Atgriezts� vai �T�me�.
-      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist || $isSuperAdmin ) && 
         ((($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE) && $tameWork==0 )|| 
         ($status == STAT_AUTO && $tameWork==1 ))
       )
@@ -382,7 +383,7 @@ if ( $isAdmin || $isSystemUser)
 	        $workApproveDate[$d] =  $actWork['DRBI_WORK_APROVE_DATE'];
         
           // delete button
-          if( empty($aWorks[$i]['DRBI_APPROVE_DATE']) || $tameWork  ) {
+          if( !$isReadonly && (empty($aWorks[$i]['DRBI_APPROVE_DATE']) || $tameWork ) ) {
             // ajax handler link for delete
             $delLink = new urlQuery();
             $delLink->addPrm(FORM_ID, 'f.akt.s.2');

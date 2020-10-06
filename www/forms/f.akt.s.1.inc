@@ -2,6 +2,7 @@
 // Created by Tatjana Fedorkova
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
+$isSuperAdmin=userAuthorization::isSuperAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEdUser = dbProc::isExistsUserRole($userId);
@@ -35,6 +36,8 @@ if($tametab === false)
 $isAuto = reqVar::get('isAuto');
 $tame = false;
 $isProject = 0;
+
+
 
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
@@ -476,6 +479,7 @@ unset($res);
   $isReadonly1   = true;  
   $isReadonly2   = true;
   $isReadonlyExceptAdmin   = true;
+  $isReadonlyExceptSuperAdmin = true;
   $isReadonlyExceptEconomist   = true;
   $isAllowEstimate = false;
   $isAllowContinue = false;
@@ -507,6 +511,10 @@ unset($res);
     if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE))
     {	
       $isReadonlyExceptAdmin   = false;
+    }
+
+    if($isSuperAdmin && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO)){
+      $isReadonlyExceptSuperAdmin   = false;
     }
 	
     //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = �Ekonomists�  un AKTS:STATUS = �Saska?o?ana�.
@@ -553,12 +561,12 @@ unset($res);
         $isReadonly1   = false;
         $isReadonly2   = false;
      }
-	 if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN ))
-	 {	
-		$isReadonlyExceptAdmin   = false;
-		//echo "$isReadonlyExceptAdmin   = false";
-     }
-	 //echo "$isReadonlyExceptAdmin   = true";
+    if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN ))
+    {	
+      $isReadonlyExceptAdmin   = false;
+      //echo "$isReadonlyExceptAdmin   = false";
+      }
+    //echo "$isReadonlyExceptAdmin   = true";
   }
   
 
@@ -607,7 +615,7 @@ unset($res);
     $oForm -> addElement('label', 'writeoffAccount',  text::get('WRITE_OFF_ACCOUNT'), isset($act['WRITE_OFF_ACCOUNT'])?$act['WRITE_OFF_ACCOUNT']:'');
   }
   
-  $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'', ''.(($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').' onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"', '', '', $acttype);
+  $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'', ''.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').' onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"', '', '', $acttype);
   //$oForm -> addElement('kls', 'type',  text::get('SINGLE_ACT_TYPE'), array('classifName'=> (($trase== 1) ? KL_ACT_TYPE_TRASE : KL_ACT_TYPE),'value'=>isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'','readonly'=>false), (($isReadonly1 || $isCopy || $isAuto == 1)?' disabled ':'').'maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"');
   if (!$isReadonly1 && !$isCopy)
   {
@@ -623,48 +631,48 @@ unset($res);
       }
   }
 
-  $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').'', '', '', $edarea);
+  $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').'', '', '', $edarea);
   if (!$isReadonly1)
   {
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
  
-  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonly1 || $isCopy || $isAuto == 1)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
+  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', ($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
   if (!$isReadonly1 && !$isCopy)
   {
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin)?' ':'disabled').'', '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled').'', '', '', $ouner);
   //$oForm -> addElement('kls', 'ouner',  text::get('ACT_OUNER'), array('classifName'=>KL_USERS,'value'=>isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId,'readonly'=>false), (($isReadonlyExceptAdmin || !$isEconomist)?' disabled ':'').'maxlength="2000"');
   if (!$isReadonlyExceptAdmin)
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
+  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
 
   if (!$isReadonlyExceptAdmin)
   {
     $oForm -> addRule('worker', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('text', 'designation',  text::get('MAIN_DESIGNATION'), isset($act['RAKT_OPERATIVAS_APZIM'])?$act['RAKT_OPERATIVAS_APZIM']:'', 'maxlength="250"'.(($isReadonly1 || $isCopy)?' disabled':''));
+  $oForm -> addElement('text', 'designation',  text::get('MAIN_DESIGNATION'), isset($act['RAKT_OPERATIVAS_APZIM'])?$act['RAKT_OPERATIVAS_APZIM']:'', 'maxlength="250"'.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy)?' disabled':''));
   if (!$isReadonly1 && !$isCopy)
   {
     $oForm -> addRule('designation', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
   
-  $oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>(($trase== 1) ? KL_OBJECTS_TRASE : KL_OBJECTS),'value'=>isset($act['RAKT_KOBJ_ID'])?$act['RAKT_KOBJ_ID']:'','readonly'=>false), 'maxlength="2000"'.(( ($trase== 1 && $isReadonly2 ) || ($trase== 0 && $isReadonly2 && !$isCopy) )?' disabled':''));
+  $oForm -> addElement('kls', 'object',  text::get('SINGLE_OBJECT'), array('classifName'=>(($trase== 1) ? KL_OBJECTS_TRASE : KL_OBJECTS),'value'=>isset($act['RAKT_KOBJ_ID'])?$act['RAKT_KOBJ_ID']:'','readonly'=>false), 'maxlength="2000"'.($isReadonlyExceptSuperAdmin && ( ($trase== 1 && $isReadonly2 ) || ($trase== 0 && $isReadonly2 && !$isCopy) )?' disabled':''));
   if (!$isReadonly2 || ($isCopy && $trase == 0))
   {
     $oForm -> addRule('object', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.(($isReadonly2 || $isCopy)?' disabled':''));
+  $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>(($trase== 1) ? KL_VOLTAGE_TRASE : KL_VOLTAGE),'value'=>isset($act['RAKT_KSRG_ID'])?$act['RAKT_KSRG_ID']:'','readonly'=>false), 'maxlength="2000"'.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':''));
   
-  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.(($isReadonly2 || $isCopy)?' disabled':'').'', '', '', $signature);
+  $oForm -> addElement('select', 'signature',  text::get('SIGNATURE_TYPE'), isset($act['RAKT_SIGNATURE'])?$act['RAKT_SIGNATURE']:$sign, ''.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':'').'', '', '', $signature);
   if (!$isReadonly2 && !$isCopy)
   {
     $oForm -> addRule('voltage', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -674,18 +682,18 @@ unset($res);
   
   if( (isset($act['PLAN']) && $act['PLAN'] == 1) || dbProc::isActTypePlan($oForm -> getValue('type')))
   {
-        $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($act['RAKT_TO_ID'])?$act['RAKT_TO_ID']:'', ' tabindex=14  maxlength="6"'.(($isReadonly1 )?' disabled ' : ' '));
+        $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($act['RAKT_TO_ID'])?$act['RAKT_TO_ID']:'', ' tabindex=14  maxlength="6"'.($isReadonlyExceptSuperAdmin && ($isReadonly1 )?' disabled ' : ' '));
   }
   else
   {
-         $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($act['RAKT_TO_ID'])? $act['RAKT_TO_ID']:(( isset($act['RAKT_KAKV_ID']) &&  $act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID)? '---' : ''), ' tabindex=14  maxlength="6"'.(($isReadonly1)?' disabled':''));      
+         $oForm -> addElement('text', 'toid',  text::get('TO_ID'), isset($act['RAKT_TO_ID'])? $act['RAKT_TO_ID']:(( isset($act['RAKT_KAKV_ID']) &&  $act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID)? '---' : ''), ' tabindex=14  maxlength="6"'.($isReadonlyExceptSuperAdmin && ($isReadonly1)?' disabled':''));      
   }
 
   // akta instrukcija
   $oForm -> addElement('link', 'actHelp', text::get('ACT_HELP'), './img/instrukcija.pdf', ' target=new');
 
   //datums
-  $oForm -> addElement('date', 'proces_date',  text::get('DATE'), isset($act['RAKT_IZPILDES_DATUMS'])?$act['RAKT_IZPILDES_DATUMS']:dtime::now(), 'tabindex=4 maxlength="10"'.((($isReadonly1 && $isReadonlyExceptEconomist) || $isAuto == 1)?' disabled ':''));
+  $oForm -> addElement('date', 'proces_date',  text::get('DATE'), isset($act['RAKT_IZPILDES_DATUMS'])?$act['RAKT_IZPILDES_DATUMS']:dtime::now(), 'tabindex=4 maxlength="10"'.($isReadonlyExceptSuperAdmin && (($isReadonly1 && $isReadonlyExceptEconomist) || $isAuto == 1)?' disabled ':''));
   if (!$isReadonly || !$isReadonlyExceptEconomist)
   {
     $oForm -> addRule('proces_date', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -697,9 +705,9 @@ unset($res);
 
 if(true)
 { // !$isReadonly || $isActNumPrefix
-  $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16"'.((($isReadonly1 && !$isCopy ) || $isAuto == 1)?' disabled':''));
+  $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16"'.($isReadonlyExceptSuperAdmin && (($isReadonly1 && !$isCopy ) || $isAuto == 1)?' disabled':''));
 
-  $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 'tabindex=6 maxlength="250"'.(($isReadonly1)?' disabled':''));
+  $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 'tabindex=6 maxlength="250"'.($isReadonlyExceptSuperAdmin && ($isReadonly1)?' disabled':''));
    if (!$isReadonly)
     {
         $oForm -> addRule('numPostfix', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -708,12 +716,12 @@ if(true)
 }
 
   // form buttons
-  if (!$isReadonly2 || !$isReadonlyExceptAdmin)
+  if (!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)
   {
     $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_UPDATE.'\');} else {setFormValue(\'frmMain\',\'action\',\''.OP_INSERT.'\');}"');
 
   }
-  if (!$isReadonly)
+  if (!$isReadonly )
   {
 
     $oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshField();'));
@@ -744,7 +752,7 @@ if(true)
     
   }
   
-  if (!$isReadonlyExceptEconomist)
+  if (!$isReadonlyExceptEconomist )
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN.'\');} else {return false;}"');
     if($trase == 1)

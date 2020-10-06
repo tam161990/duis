@@ -46,7 +46,13 @@ class userAuthorization
 
 				if (count($rows)==1)
 				{
-				    dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
+					dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
+					$info = dbProc::getSystemInfo();
+					
+					if(count($info)>0 && trim($rows[0]['RLTT_USER_NAME']) == trim($info[0]['SNFO_SUPERADMIN']))
+					{	
+						session::set('isSuperAdmin',1);
+					}
 					session::set('isLogin',true);
 					session::set('userId',$rows[0]['RLTT_ID']);
 					session::set('login',$rows[0]['RLTT_USER_NAME']);
@@ -54,14 +60,14 @@ class userAuthorization
                     session::set('isTrase',$rows[0]['RLTT_IR_TRASE']);
                     
                     if($rows[0]['RLTT_KWOI_KODS'] != "")
-		        {
-                        session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
-			session::set('isContract', $rows[0]['RLTT_IR_LIGUMS'] );
-		        }
-		        else
-		        {
-			session::set('isContract', 1);
-		        }
+					{
+							session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
+							session::set('isContract', $rows[0]['RLTT_IR_LIGUMS'] );
+					}
+					else
+					{
+							session::set('isContract', 1);
+					}
 					return true;
 				}
 			}
@@ -84,7 +90,13 @@ class userAuthorization
 
 				if (count($rows)==1)
 				{
-				    dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
+					dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
+					$info = dbProc::getSystemInfo();
+					
+					if(count($info)>0 && trim($rows[0]['RLTT_USER_NAME']) == trim($info[0]['SNFO_SUPERADMIN']))
+					{	
+						session::set('isSuperAdmin',1);
+					}
 					session::set('isLogin',true);
 					session::set('userId',$rows[0]['RLTT_ID']);
 					session::set('login',$rows[0]['RLTT_USER_NAME']);
@@ -131,6 +143,14 @@ class userAuthorization
 	function isAdmin()
 	{
 		return session::get('isAdmin');
+	}
+
+	// -----------------------------------------------------------------------------
+	// is super admin user?
+	// -----------------------------------------------------------------------------
+	function isSuperAdmin()
+	{
+		return session::get('isSuperAdmin');
 	}
 
 	// -----------------------------------------------------------------------------
