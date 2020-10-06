@@ -4437,6 +4437,7 @@ class dbProc extends dbLayer
 		return ($result !== false);
         
     }
+    
 
     function CheckQuiqStepUnique($code)
 	{
