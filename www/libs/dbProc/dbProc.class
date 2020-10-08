@@ -6529,7 +6529,7 @@ class dbProc extends dbLayer
 	   	    $query = 'insert into `TAME_DARBI`
                 (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`,
                 `DRBI_DAUDZUMS`, `DRBI_DAUDZUMS_KOR`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
-                `DRBI_APPROVE_DATE`,  `DRBI_WORK_APROVE_DATE`, 
+                `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                 `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
                 `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
                 `DRBI_IMPORT_NO` )
@@ -6557,7 +6557,7 @@ class dbProc extends dbLayer
             $query = 'insert into `DARBI`
                             (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, 
                             `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
-                            `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`, 
+                            `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                             `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
                             `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
                             `DRBI_IMPORT_NO`)

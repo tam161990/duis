@@ -319,27 +319,26 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             { 
         	    	foreach($aValidRows as $i => $row)
                 { 
-                            $r=dbProc::writeActWork($actId,
-                                                    $row['kid'],
-                                                    isset($row['chipher'])?$row['chipher']:' ',
-                                                    $row['title'],
-                                                    false,
-                                                    $row['amount'],
-                                                    false,
-                                                    $row['measure'],
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    $row['notes'],
-                                                    $row['st'],
-                                                    false,
-                                                    $row['work_type'],
-                                                    $row['work_type_text'],
-                                                    $row['export_type'],
-                                                    false,
-                                                    $row['import_no'],
-                                                    );
+                        $r=dbProc::writeActWork($actId,
+                        $row['kid'],
+                        isset($row['chipher'])?$row['chipher']:' ',
+                        $row['title'],
+                        false,
+                        $row['amount'],
+                        false,
+                        $row['measure'],
+                        false,
+                        false,
+                        false,
+                        false,
+                        $row['notes'],
+                        $row['st'],
+                        $row['work_type'],
+                        $row['work_type_text'],
+                        $row['export_type'],
+                        false,
+                        $row['import_no'],
+                        );
                                                    
                             // if work not inserted in to the DB
                         // delete  task record and show error message
