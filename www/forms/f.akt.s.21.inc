@@ -73,7 +73,6 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $calcGroups[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
 
       unset($oPopLink);
-      unset($res);
       $j ++;
       //Popup saites sagatave
       $oPopLink=new urlQuery;
@@ -87,6 +86,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $calcGroups[$j]['TITLE'] = text::get('SEARCH_NEW');   ;
       $calcGroups[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
+      $j ++;
+      //Popup import no cita projekta
+      $oPopLink=new urlQuery;
+      $oPopLink->addPrm(FORM_ID, 'f.akt.s.24');
+      $oPopLink->addPrm('actId',$actId);
+ 
+      $calcGroups[$j]['TITLE'] = text::get('IMPORT_NO_PROJECT');
+      $calcGroups[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+ 
+       unset($oPopLink);
+       unset($res);
 
       // get grupas list
       $workType=array();
@@ -136,6 +146,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                  $aWorkFr[$i]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
                  $aWorkFr[$i]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
                  $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
+                 $aWorkFr[$i]['DRBI_IMPORT_NO'] = $oFormWorkTab->getValue('import_no['.$i.']');
                  
                 if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
                   $isRowValid = true;
@@ -177,7 +188,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     'notes' => $aWorkFr[$i]['DRBI_PIEZIMES'],
                     'st' => $aWorkFr[$i]['DRBI_IS_WORKER'],
                     'work_type' => $aWorkFr[$i]['DRBI_WORK_TYPE_ID'],
-                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],                    
+                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],    
+                    'import_no' => $aWorkFr[$i]['DRBI_IMPORT_NO'],                    
                     'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] : '',
                     'rowNum' => $i
   			          );
@@ -229,9 +241,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $oFormWorkTab->addElement('label', 'title['.$i.']', '', $actWork['DRBI_KKAL_NOSAUKUMS']);
           $oFormWorkTab->addElement('label', 'measure['.$i.']', '', $actWork['DRBI_MERVIENIBA']);
           $oFormWorkTab->addElement('hidden', 'st['.$i.']', '', $actWork['DRBI_IS_WORKER']);
-          
-          
-          
+          $oFormWorkTab->addElement('hidden', 'import_no['.$i.']', '', $actWork['DRBI_IMPORT_NO']);
           
           if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
               $oFormWorkTab->addElement('label', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], ' maxlength="250"');
@@ -327,6 +337,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                     $row['work_type'],
                                                     $row['work_type_text'],
                                                     $row['export_type'],
+                                                    false,
+                                                    $row['import_no'],
                                                     );
                                                    
                             // if work not inserted in to the DB

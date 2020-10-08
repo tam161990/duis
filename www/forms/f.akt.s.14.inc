@@ -96,7 +96,7 @@ if ( $isAdmin || $isEconomist)
 
       $oLink=new urlQuery();
       $oLink->addPrm('isSearch', '0');
-	  $oLink->addPrm(FORM_ID, 'f.akt.s.14');
+	    $oLink->addPrm(FORM_ID, 'f.akt.s.14');
       $searchLink = $oLink -> getQuery();
       unset($oLink);
 
