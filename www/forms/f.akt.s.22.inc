@@ -58,17 +58,17 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       {
         $isReadonly   = false;
       }
-
+      $j = 0;
       //Popup saites sagatave
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.23');
       $oPopLink->addPrm('actId',$actId);
       $oPopLink->addPrm('catalog',KL_MATERIALS);     
       $oPopLink->addPrm('st',1); 
-      $favorit[0]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
-      $favorit[0]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+      $favorit[$j]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
+      $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
-
+      $j ++;
       //Popup saites sagatave
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.13');
@@ -78,9 +78,19 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('isProject',1);
       $oPopLink->addPrm('st',0);
-      $favorit[1]['TITLE'] = text::get('SEARCH_NEW_FROM_LIST');   ;
-      $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+      $favorit[$j]['TITLE'] = text::get('SEARCH_NEW_FROM_LIST');   ;
+      $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
       unset($oPopLink);
+      $j ++;
+      //Popup import no cita projekta
+      $oPopLink=new urlQuery;
+      $oPopLink->addPrm(FORM_ID, 'f.akt.s.24');
+      $oPopLink->addPrm('actId',$actId); 
+      $favorit[$j]['TITLE'] = text::get('IMPORT_NO_PROJECT');
+      $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+ 
+       unset($oPopLink);
+       unset($res);
 
       // get grupas list
       $workType=array();
@@ -124,6 +134,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                  $aMaterialsFr[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
                  $aMaterialsFr[$i]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
                  $aMaterialsFr[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
+                 $aMaterialsFr[$i]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
                  // validate work progress value
                  if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
                   $isRowValid = true;
@@ -166,6 +177,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                         'notes' => $aMaterialsFr[$i]['MATR_PIEZIMES'],
                         'work_type' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
                         'work_type_id' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
+                        'import_no' => $aMaterialsFr[$i]['MATR_IMPORT_NO'],
                         'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aMaterialsFr[$i]['MATR_PROJECT_EXPORT'] : '',
                         'rowNum' => $i
                       );
@@ -212,6 +224,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
+          $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
           
           if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
             $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
@@ -296,6 +309,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                 false,
                                                 false,
                                                 $row['export_type'],
+                                                $row['import_no'],
                                               );
                           // if work not inserted in to the DB
                           // delete  task record and show error message

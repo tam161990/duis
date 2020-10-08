@@ -6498,7 +6498,8 @@ class dbProc extends dbLayer
                             $total = false, $measure, $amount_kor = false, $edited = false, 
                             $plan_date = false, $day_total = false, $notes = false,
                             $st = 0, $work_type = false, 
-                            $work_type_text = false, $export_type = false, $work_approve_date = false)
+                            $work_type_text = false, $export_type = false, $work_approve_date = false,
+                            $import_no = false)
 	{
 	    if($amount_kor !== false) {
 	   	    $query = 'insert into `TAME_DARBI`
@@ -6506,7 +6507,8 @@ class dbProc extends dbLayer
                 `DRBI_DAUDZUMS`, `DRBI_DAUDZUMS_KOR`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                 `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                 `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
-                `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT` )
+                `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
+                `DRBI_IMPORT_NO` )
                 values ( '.dbLayer::quote_smart($actId).',
 				"'.dbLayer::quote_smart($kid).'",
                 "'.dbLayer::quote_smart($chipher).'",
@@ -6524,7 +6526,8 @@ class dbProc extends dbLayer
                 '.dbLayer::quote_smart($st).',
                 '.(($work_type !== false) ? dbLayer::quote_smart($work_type) : '"NULL"').',
                 '.(($work_type !== false) ? '"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').',
-                '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
                 )';
         } else {
             $query = 'insert into `DARBI`
@@ -6532,7 +6535,8 @@ class dbProc extends dbLayer
                             `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, `DRBI_MERVIENIBA`,
                             `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                             `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
-                            `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`)
+                            `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
+                            `DRBI_IMPORT_NO`)
                             values ( '.dbLayer::quote_smart($actId).',
             				"'.dbLayer::quote_smart($kid).'",
                             "'.dbLayer::quote_smart($chipher).'",
@@ -6549,7 +6553,8 @@ class dbProc extends dbLayer
                             '.dbLayer::quote_smart($st).',
                             '.(($work_type !== false ) ? dbLayer::quote_smart($work_type ) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').',
-                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                            '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
                             )';
         }
         //echo ($query);
@@ -6881,7 +6886,7 @@ class dbProc extends dbLayer
     function writeActMaterial($actId, $code, $title, $unit, $price = false, $amount, 
                                 $total = false, $st = 0, $amount_kor = false, $notes = false,
                                 $work_type = false, $work_approve_date = false, $edited = false, 
-                                $export_type = false)
+                                $export_type = false, $import_no = false)
 	{
         
         $r_work_type = explode('^', $work_type);
@@ -6892,7 +6897,8 @@ class dbProc extends dbLayer
                             `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, 
                             `MATR_IS_WORKER`, `MATR_PIEZIMES`,  `MATR_APPROVE_DATE`,
                             `MATR_WORK_APROVE_DATE`, `MATR_WORK_TYPE_ID`,
-                             `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` )                           
+                             `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,
+                             `MATR_IMPORT_NO` )                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -6907,7 +6913,8 @@ class dbProc extends dbLayer
                             '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).',
                             '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
-                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                            '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
                             )';
         } else {
             $query = 'insert into `MATERIALI`
@@ -6915,7 +6922,8 @@ class dbProc extends dbLayer
                     `MATR_CENA`, `MATR_DAUDZUMS`,  `MATR_CENA_KOPA`, 
                     `MATR_IS_WORKER`, `MATR_PIEZIMES`,  `MATR_APPROVE_DATE`,
                     `MATR_WORK_APROVE_DATE`, `MATR_WORK_TYPE_ID`,
-                    `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` )          
+                    `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,
+                    `MATR_IMPORT_NO` )          
                     values ( '.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
@@ -6929,7 +6937,8 @@ class dbProc extends dbLayer
                     '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).',
                     '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                     '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
-                    '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'
+                    '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
+                    '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
                     )';
         }
         //echo  $query;
@@ -9200,6 +9209,131 @@ class dbProc extends dbLayer
                 );
     
             }
+        }
+
+        function getSTworkerCode() {
+            $oDB = new dbLayer;
+            $query =  'SELECT `KWOI_KODS`  FROM `kl_work_owners` WHERE `KWOI_ID` = '. ST;
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['KWOI_KODS']) ? $result[0]['KWOI_KODS'] : true;
+        }
+
+        function getProjectImportList($actId, $worker) {
+
+            $st_code = dbProc::getSTworkerCode();
+            $query = 'SELECT `RAKT_ID`, `RAKT_NUM_POSTFIX`, `RAKT_WORK_TITLE`, `KWOI_NOSAUKUMS`
+                        FROM `AKTI`
+                        INNER JOIN `kl_work_owners` ON `RAKT_KWOI_KODS` = `KWOI_KODS`
+                        WHERE `RAKT_PROJECT` = 1
+                        AND `RAKT_KWOI_KODS` IN ("'.$worker.'", "'.(($st_code !== false) ? $st_code : $worker).'")
+                        AND `RAKT_STATUS` = "' . STAT_CLOSE . '"
+                        AND NOT EXISTS (SELECT 1 FROM `darbi` WHERE 
+                            `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId) .'
+                            AND `DRBI_IMPORT_NO` = `RAKT_ID`)
+                        AND NOT EXISTS (SELECT 1 FROM `materiali` WHERE 
+                        `MATR_RAKT_ID` = '.dbLayer::quote_smart($actId) .'
+                        AND `MATR_IMPORT_NO` = `RAKT_ID`) ';
+            //echo $query;
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+    
+            return $result;
+        }
+
+        function importProjectWorkMaterial($actId, $acts) {
+            $actString = "";
+            if (is_array($acts) && count($acts) > 0)
+            {
+                foreach ($acts as $i => $act)
+                {
+                        $actString .= "'". $act ."',";
+                }
+                $actString  = substr($actString, 0, -1);
+                //echo $actString;
+            }
+
+            $query = "INSERT INTO `darbi` (
+                                            `DRBI_KKAL_SHIFRS`,
+                                            `DRBI_KKAL_NOSAUKUMS`,
+                                            `DRBI_KKAL_NORMATIVS`,
+                                            `DRBI_RAKT_ID`,
+                                            `DRBI_DAUDZUMS`,
+                                            `DRBI_CILVEKSTUNDAS`,
+                                            `DRBI_MERVIENIBA`,
+                                            `DRBI_KKAL_ID`,
+                                            `DRBI_IS_WORKER`,
+                                            `DRBI_APPROVE_DATE`,
+                                            `DRBI_PLAN_DATE`,
+                                            `DRBI_DAY_TOTAL`,
+                                            `DRBI_PIEZIMES`,
+                                            `DRBI_WORK_APROVE_DATE`,
+                                            `DRBI_WORK_TYPE_ID`,
+                                            `DRBI_WORK_TYPE_TEXT`,
+                                            `DRBI_PROJECT_EXPORT`,
+                                            `DRBI_IMPORT_NO` )  
+                    SELECT 
+                            `DRBI_KKAL_SHIFRS`,
+                            `DRBI_KKAL_NOSAUKUMS`,
+                            `DRBI_KKAL_NORMATIVS`,
+                            ".dbLayer::quote_smart($actId) .",
+                            `DRBI_DAUDZUMS`,
+                            `DRBI_CILVEKSTUNDAS`,
+                            `DRBI_MERVIENIBA`,
+                            `DRBI_KKAL_ID`,
+                            `DRBI_IS_WORKER`,
+                            `DRBI_APPROVE_DATE`,
+                            `DRBI_PLAN_DATE`,
+                            `DRBI_DAY_TOTAL`,
+                            `DRBI_PIEZIMES`,
+                            `DRBI_WORK_APROVE_DATE`,
+                            `DRBI_WORK_TYPE_ID`,
+                            `DRBI_WORK_TYPE_TEXT`,
+                            `DRBI_PROJECT_EXPORT`, 
+                            `DRBI_RAKT_ID`
+                    FROM `darbi` WHERE `DRBI_RAKT_ID` IN (".$actString.")";
+            //echo $query;
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+
+            $query = "INSERT INTO `materiali` (
+                                    `MATR_RAKT_ID`,
+                                    `MATR_KODS`,
+                                    `MATR_NOSAUKUMS`,
+                                    `MATR_MERVIENIBA`,
+                                    `MATR_CENA`,
+                                    `MATR_DAUDZUMS`,
+                                    `MATR_CENA_KOPA`,
+                                    `MATR_IS_WORKER`,
+                                    `MATR_IS_WRITEDOFF`,
+                                    `MATR_PIEZIMES`,
+                                    `MATR_WORK_TYPE_ID`,
+                                    `MATR_WORK_TYPE_TEXT`,
+                                    `MATR_PROJECT_EXPORT`,
+                                    `MATR_WORK_APROVE_DATE`,
+                                    `MATR_APPROVE_DATE`,
+                                    `MATR_IMPORT_NO`)  
+                        SELECT 
+                                    ".dbLayer::quote_smart($actId) .",
+                                    `MATR_KODS`,
+                                    `MATR_NOSAUKUMS`,
+                                    `MATR_MERVIENIBA`,
+                                    `MATR_CENA`,
+                                    `MATR_DAUDZUMS`,
+                                    `MATR_CENA_KOPA`,
+                                    `MATR_IS_WORKER`,
+                                    `MATR_IS_WRITEDOFF`,
+                                    `MATR_PIEZIMES`,
+                                    `MATR_WORK_TYPE_ID`,
+                                    `MATR_WORK_TYPE_TEXT`,
+                                    `MATR_PROJECT_EXPORT`,
+                                    `MATR_WORK_APROVE_DATE`,
+                                    `MATR_APPROVE_DATE`,
+                                    `MATR_RAKT_ID`
+                                FROM `materiali` WHERE `MATR_RAKT_ID` IN (".$actString.")";
+                //echo $query;
+                $oDB = new dbLayer;
+                $result = $oDB -> makeQuery($query);
         }
 }
 
