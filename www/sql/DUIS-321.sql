@@ -15,3 +15,5 @@ ALTER TABLE `tame_materiali`
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
 ('IMPORT_NO_PROJECT', 'Imports no cita Projekta');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('ERROR_NOT_CHECKED', 'Neviens ieraksts nav atzīmēts.');

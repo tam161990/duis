@@ -6,13 +6,10 @@
             eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&act=' + act + '&op=' + op));
         }
     
-        function imports()
-        {
-            eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&import=1&act=<?= $actId; ?>'));
-            
-        }
+        
     </script>
 <?= $oFormPop -> getFormHeader(); ?>
+<?=$oFormPop->getElementHtml('jsRefresh2');?>
 <h1><?=$title;?></h1>
 <div align=center><?= $oFormPop -> getMessage(); ?></div>
 
@@ -48,12 +45,8 @@
         ?>
           <tr>
               <td>&nbsp;</td>
-              <td align="right">
-                  <input type="image" src="img/btn_saglabat.gif" alt="<?= text::get('SAVE'); ?>" width="70" height="20" onClick="imports(); window.opener.location.replace( '<?= $redirectUrl; ?>' ); window.close();" name="save" border=0/>
-              </td>
-              <td align="left">
-                  <input type="button" class="btn70" value="<?= text::get('CLOSE'); ?>" alt="<?= text::get('CLOSE'); ?>" onClick="javascript:window.close();return false;" name="close" border=0/>
-            </td>
+              <td align="right"><?= $oFormPop -> getElementHtml('save'); ?></td>
+              <td align="left"><?=$oFormPop->getElementHtml('close');?></td>
             <td>&nbsp;</td>
           </tr>
         <?

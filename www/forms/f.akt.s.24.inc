@@ -17,34 +17,6 @@ if (isset($_GET['xml']) && isset($_GET['act']) && isset($_GET['op']))
   exit;
 }
 
-// writeoff
-if (isset($_GET['xml']) && isset($_GET['import']) && $_GET['import'] == 1 && isset($_GET['act']) )
-{
-  // get acts array
-  $acts = array();
-  $r = false;
-  foreach ($_SESSION as $key => $val)
-  {
-    if(substr($key, 0, 10) == 'IMPORT_ACT')
-    {
-       $acts[] = $val;
-    }
-  }
-  //print_r($acts);
-  if(count($acts) > 0)
-  {
-     $r=dbProc::importProjectWorkMaterial($_GET['act'], $acts);
-  }
-  if($r)
-  {
-    foreach($acts as $a)
-    {
-          session::del('IMPORT_ACT_'.$a);
-    }
-  }
-  
- // exit;
-}
 
 // Created by Tatjana Fedorkova
 $userId = userAuthorization::getUserId();
@@ -56,11 +28,13 @@ $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 // act ID
 $actId  = reqVar::get('actId');
 
+
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isProjector)
 {
     $oLink=new urlQuery();
     $oLink->addPrm(FORM_ID, 'f.akt.s.24');
+    $oLink->addPrm('actId', $actId);
     $oFormPop = new Form('frmMainTab','post',$oLink->getQuery());
     unset($oLink);
 
@@ -70,13 +44,6 @@ if ( $isAdmin || $isProjector)
 	    $oLink->addPrm(FORM_ID, 'f.akt.s.24');
       $searchLink = $oLink -> getQuery();
       unset($oLink);
-
-      $oRedirectLink=new urlQuery();
-      $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');
-      $oRedirectLink->addPrm('actId', $actId);
-      $oRedirectLink->addPrm('tab', TAB_WORKS);
-      $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
-      $redirectUrl = $oRedirectLink->getQuery().'#tab';
 
       // get info about act
       $actInfo = dbProc::getActInfo($actId);
@@ -95,11 +62,65 @@ if ( $isAdmin || $isProjector)
         $isReadonly   = false;
       }
       
+         // if operation
+    	if ($oFormPop -> isFormSubmitted())
+    	{
+          // get acts array
+          $acts = array();
+          $r = false;
+          foreach ($_SESSION as $key => $val)
+          {
+            if(substr($key, 0, 10) == 'IMPORT_ACT')
+            {
+              $acts[] = $val;
+            }
+          }
+          //print_r($acts);
+          if(count($acts) > 0)
+          {
+            $r=dbProc::importProjectWorkMaterial($actId, $acts);
+          }
+          else {
+            $oFormPop->addError(text::get('ERROR_NOT_CHECKED'));
+          }
+          if($r !== false)
+          {
+            foreach($acts as $a)
+            {
+                  session::del('IMPORT_ACT_'.$a);
+            }
+          }
+      }
       $title = text::toUpper(text::get('IMPORT_NO_PROJECT'));    
        // get grupas list           
       $res=dbProc::getProjectImportList($actId, $worker);
       //print_r($res);
-      
+
+      $oFormPop -> addElement('hidden', 'action', '');
+      $oFormPop -> addElement('hidden', 'actId', '', $actId);
+
+      if (!$isReadonly)
+      {
+        $oFormPop -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+       
+      }    
+      $oFormPop -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
+
+      if ($oFormPop -> isFormSubmitted())
+    	{
+          $oRedirectLink=new urlQuery();
+          $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');
+          $oRedirectLink->addPrm('actId', $actId);
+          $oRedirectLink->addPrm('tab', TAB_WORKS);
+          $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
+          if(count($res) == 0) {
+            requestHandler::makeParentReplace($oRedirectLink->getQuery().'#tab');
+          } else {
+            $oFormPop->addElement('static','jsRefresh2','','<script>window.opener.location.replace( "'.$oRedirectLink->getQuery().'#tab'.'" );</script>');
+          }
+          
+          unset($oRedirectLink);
+      }
 
       $oFormPop -> makeHtml();
       include('f.akt.s.24.tpl');
