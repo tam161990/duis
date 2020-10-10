@@ -9355,8 +9355,9 @@ class dbProc extends dbLayer
                                     `MATR_RAKT_ID`
                                 FROM `materiali` WHERE `MATR_RAKT_ID` IN (".$actString.")";
                 //echo $query;
-                $oDB = new dbLayer;
+                $oDB = new dbLayer;                           
                 $result = $oDB -> makeQuery($query);
+                return true;
         }
 }
 

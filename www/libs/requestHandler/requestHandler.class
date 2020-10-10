@@ -34,6 +34,7 @@ class RequestHandler
 
 	}
 
+	
 	// -----------------------------------------------------------------------------
 	// show error message and die
 	// if this is xmlHTTP query - return null
