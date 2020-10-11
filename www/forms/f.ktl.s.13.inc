@@ -199,9 +199,36 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 $r2 = dbProc::saveCalculationFromCsv($data, $userId);
                                 
                               }
-                            }
-                            
-                          break;
+                            }                            
+                            break;
+                            // DU lietotāji
+                          case 'DUUSERS':                           
+                            $j = 0;
+                            foreach ($objWorksheet->getRowIterator() as $row)
+                            {
+                                $cellIterator = $row->getCellIterator();
+                                $cellIterator->setIterateOnlyExistingCells(true);
+  
+                                $i = 0;    
+                                foreach ($cellIterator as $cell)
+                                {
+                                  if(!is_null($cell))
+                                  {                                      
+                                      $j++;
+                                      if($j == 1)
+                                          break 1;
+                                      $data[$i] =  $cell->getValue();
+                                      $i++;                                      
+                                    }
+                                }
+                                // save kalkulācijas record
+                                if($j > 1)
+                                {
+                                  $r2 = dbProc::saveUserFromCsv($data, $userId);
+                                  
+                                }
+                              }                            
+                              break;
                       }
                   }
               } 
