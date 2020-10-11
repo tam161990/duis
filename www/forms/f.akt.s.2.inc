@@ -122,7 +122,7 @@ if ( $isAdmin || $isSystemUser)
 
       $aWorks = array();
       $aWorkExist = false;
-      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
+      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false && $oFormWorkTab->getValue('action')!=OP_EXPORT)
       {
           
           $isRowValid = true;
@@ -415,98 +415,119 @@ if ( $isAdmin || $isSystemUser)
         $oFormWorkTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_work.gif', 'width="120" height="20" ');
         //$oFormWorkTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
       }
+      if($tameWork) {
+        $oFormWorkTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMaterialTabT\',\'actId\') ) {setFormValue(\'frmMaterialTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+     }
+
 
       // if form iz submit (save button was pressed)
       if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
       { 
 		if($oFormWorkTab ->isValid()  && $isRowValid)
 		{ 
-      
-		   $r=dbProc::deleteActWorks($actId, $tameWork);
-		   if ($r === false)
-		   {
-		   	$oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-		   }
-		   else
-		   {
-		        if(isset($aValidRows) && is_array($aValidRows))
-            		{
-              
-                  		foreach($aValidRows as $i => $row)
-                  		{
-                    
-                      			//if(!empty($row['edited'])) continue;
+      if($tameWork && $oFormWorkTab->getValue('action')==OP_EXPORT)
+      {
+          // akta sagatavi (tab tamme)
+          $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
+          if($idFile !== false) {
+            $oLink=new urlQuery();
+            $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+            $oLink->addPrm('actId', $actId);
+            $oLink->addPrm('tab', TAB_ESTIMATE);
+            RequestHandler::makeRedirect($oLink->getQuery());
+        }
+        else {
+          $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+        }
+      } 
+      else {
+
+        $r=dbProc::deleteActWorks($actId, $tameWork);
+        if ($r === false)
+        {
+          $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+        }
+        else
+        {
+              if(isset($aValidRows) && is_array($aValidRows))
+                  {
+                
+                        foreach($aValidRows as $i => $row)
+                        {
                       
-                      			$r=dbProc::writeActWork($actId,
-                                                    $row['kid'],
-                                                    $row['chipher'],
-                                                    $row['title'],
-                                                    $row['standart'],
-                                                    $row['amount'],
-                                                    $row['total'],
-                                                    $row['measure'],
-                                                    ($tameWork) ? $row['amount_kor']:false,
-                                                    $row['edited'],
-                                                    ($tameWork) ? false : $row['plan_date'],
-                                                    $row['day_total']
-                                                    );
-                            		// if work not inserted in to the DB
-                      			// delete  task record and show error message
-                      			if($r === false)
-                      			{
-                        			//dbProc::deleteActWorks($actId, $tameWork);
-                        			$oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                        			break;
-                      			}
-                      			else
-                      			{
-                           			$Id=dbLayer::getInsertId();
-                           			$oFormWorkTab -> setNewValue('id['.$row['rowNum'].']', $Id);
-                           			$oFormWorkTab -> setNewValue('total['.$row['rowNum'].']', $row['total']);
-                           			$oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
-                           
-                           			$oLink=new urlQuery();
-                		       		  $oLink->addPrm(FORM_ID, 'f.akt.s.1');
-                		       		  $oLink->addPrm('actId', $actId);
-                          			$oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
-                           			$oLink->addPrm('isNew', RequestHandler::getMicroTime());
-                           			$oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
-                           			$oLink->addPrm('isTrase', $trase );
-               		   			//RequestHandler::makeRedirect($oLink->getQuery());
-                      			}
-                    	}
-                    	//pie saglab��anas fon� p�rr��ina kopsummas un materi�lu apjomus
-                    	dbProc::updateWorkSumms($actId, $tameWork);
-	
-              if($tameWork == 1) {
-                  // iztirit mat�ri�la tame
-                  dbProc::deleteAutoActMaterial($actId);
-                  // p�rr��inat materi�la tame
-                  dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
-		      	}
-                   	
-			// �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
-			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
-                    	// saglaba lietotaja darbiibu
-                    	dbProc::setUserActionDate($userId, ACT_UPDATE);
-
-
-                      if($trase == 1) {
-                            //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
-                            foreach ($aWorkSums as $d => $aSum)
+                              //if(!empty($row['edited'])) continue;
+                        
+                              $r=dbProc::writeActWork($actId,
+                                                      $row['kid'],
+                                                      $row['chipher'],
+                                                      $row['title'],
+                                                      $row['standart'],
+                                                      $row['amount'],
+                                                      $row['total'],
+                                                      $row['measure'],
+                                                      ($tameWork) ? $row['amount_kor']:false,
+                                                      $row['edited'],
+                                                      ($tameWork) ? false : $row['plan_date'],
+                                                      $row['day_total']
+                                                      );
+                                  // if work not inserted in to the DB
+                              // delete  task record and show error message
+                              if($r === false)
                               {
-                          
-                                  $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
-                                  $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
-                                  $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
-                                  $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
-                                  //break;
+                                //dbProc::deleteActWorks($actId, $tameWork);
+                                $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                                break;
                               }
-                      }
-
-                    	$tameWork = 0;
+                              else
+                              {
+                                  $Id=dbLayer::getInsertId();
+                                  $oFormWorkTab -> setNewValue('id['.$row['rowNum'].']', $Id);
+                                  $oFormWorkTab -> setNewValue('total['.$row['rowNum'].']', $row['total']);
+                                  $oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
+                            
+                                  $oLink=new urlQuery();
+                                  $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                                  $oLink->addPrm('actId', $actId);
+                                  $oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
+                                  $oLink->addPrm('isNew', RequestHandler::getMicroTime());
+                                  $oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
+                                  $oLink->addPrm('isTrase', $trase );
+                            //RequestHandler::makeRedirect($oLink->getQuery());
+                              }
+                        }
+                        //pie saglab��anas fon� p�rr��ina kopsummas un materi�lu apjomus
+                        dbProc::updateWorkSumms($actId, $tameWork);
+    
+                if($tameWork == 1) {
+                    // iztirit mat�ri�la tame
+                    dbProc::deleteAutoActMaterial($actId);
+                    // p�rr��inat materi�la tame
+                    dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
                 }
-             }
+                      
+                    // �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
+                    dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
+                        // saglaba lietotaja darbiibu
+                        dbProc::setUserActionDate($userId, ACT_UPDATE);
+
+
+                        if($trase == 1) {
+                              //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+                              foreach ($aWorkSums as $d => $aSum)
+                                {
+                            
+                                    $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+                                    $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+                                    $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+                                    $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+                                    //break;
+                                }
+                        }
+
+                        $tameWork = 0;
+                  }
+              }
+            }
           }
       }
        $oFormWorkTab -> makeHtml();
