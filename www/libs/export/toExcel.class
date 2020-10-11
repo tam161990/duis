@@ -1,7 +1,7 @@
 <?
 class toExcel {	
 
-function acceptProjectReport($actId, $userId){
+function projectTammeExcel($actId, $userId){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
     if(count($actInfo)>0)
@@ -16,23 +16,31 @@ function acceptProjectReport($actId, $userId){
 
     // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
+	
+	$sheet = $objPHPExcel->getActiveSheet();
 
-    $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
-    $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+    $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
+    $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
 
-    $objPHPExcel->getActiveSheet()->getDefaultColumnDimension()->setWidth(15);
-    $objPHPExcel->getActiveSheet()->getDefaultRowDimension()->setRowHeight(15);
+    $sheet->getDefaultColumnDimension()->setWidth(15);
+    $sheet->getDefaultRowDimension()->setRowHeight(15);
 
-    $objPHPExcel->getActiveSheet()->setShowGridlines(true);
+    $sheet->setShowGridlines(true);
 
-    $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setName('Arial');
-    $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setSize(9);
+    $sheet->getDefaultStyle()->getFont()->setName('Arial');
+    $sheet->getDefaultStyle()->getFont()->setSize(9);
 
-    $objPHPExcel->getActiveSheet()->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+    $sheet->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
 
-    $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
-    $currentRow = 1;     
-    $styleArray = array(
+    $sheet->getColumnDimension('B')->setWidth(55);
+    $currentRow = 1; 
+    
+    $res=dbProc::getWorkTypeListByWork($actId);
+    if (is_array($res))
+    {
+        foreach ($res as $group)
+        {
+            $styleArray = array(
                     'font'    => array(
                                     'bold'      => true,
                                     'italic' => false ,
@@ -46,56 +54,75 @@ function acceptProjectReport($actId, $userId){
                                         'startcolor' => array(
                                             'argb' => 'EEEEEE',
                                         ),                                        
-                                    ),                                
+                                    ), 
+                                    'borders' => array(
+                                        'allborders' => array(
+                                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                            'color' => array('rgb' => 'CCCCCC')
+                                        )
+                                    )                               
                     ); 
-    $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
-    $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
-    $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('WORK_COAST')); 
-    $currentRow ++; 
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']); 
+            $currentRow ++; 
 
-    $aWorkDb=dbProc::getActWorkList($actId);
-    $data = array();
-    foreach ($aWorkDb as $i => $row)
-    {
-        $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
-        $objPHPExcel->getActiveSheet()->setCellValue('D'.$currentRow, $row['DRBI_MERVIENIBA']);
-        $objPHPExcel->getActiveSheet()->setCellValueExplicit('E'.$currentRow, $row['DRBI_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $objPHPExcel->getActiveSheet()->setCellValue('F'.$currentRow, $row['DRBI_PIEZIMES']);
-        $currentRow ++; 
-    }
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, text::get('WORK_COAST')); 
+            $currentRow ++; 
 
-    $styleArray = array(
-        'font'    => array(
-                        'bold'      => true,
-                        'italic' => false ,
-                        'size' => 9
-                        ),
-                        'alignment' => array(
-                            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
-                        ),
-                        'fill' => array(
-                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                            'startcolor' => array(
-                                'argb' => 'EEEEEE',
-                            ),                                        
-                        ),                                
-        ); 
-    $objPHPExcel->getActiveSheet()->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
-    $objPHPExcel->getActiveSheet()->mergeCells('A'.$currentRow.':F'.$currentRow);
-    $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('MATERIAL_COAST')); 
-    $currentRow ++; 
+            $aWorkDb=dbProc::getActWorkList($actId, false, false, $group['KLDV_ID'], true, $group['DRBI_WORK_TYPE_TEXT']);
+            $data = array();
+            foreach ($aWorkDb as $i => $row)
+            {
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
+                $sheet->setCellValue('D'.$currentRow, $row['DRBI_MERVIENIBA']);
+                $sheet->setCellValueExplicit('E'.$currentRow, $row['DRBI_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $sheet->setCellValue('F'.$currentRow, $row['DRBI_PIEZIMES']);
+                $currentRow ++; 
+            }
 
-    $aMaterialDb=dbProc::getProjectMaterialList($actId);
-    $data = array();
-    foreach ($aMaterialDb as $i => $row)
-    {
-        $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['GROUP'], PHPExcel_Cell_DataType::TYPE_STRING); 
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
-        $objPHPExcel->getActiveSheet()->setCellValue('D'.$currentRow, $row['MATR_MERVIENIBA']);
-        $objPHPExcel->getActiveSheet()->setCellValueExplicit('E'.$currentRow, $row['MATR_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $objPHPExcel->getActiveSheet()->setCellValue('F'.$currentRow, $row['MATR_PIEZIMES']);
-        $currentRow ++; 
+            $styleArray = array(
+                'font'    => array(
+                                'bold'      => true,
+                                'italic' => false ,
+                                'size' => 9
+                                ),
+                                'alignment' => array(
+                                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                                ),
+                                'fill' => array(
+                                    'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                    'startcolor' => array(
+                                        'argb' => 'EEEEEE',
+                                    ),                                        
+                                ),
+                                'borders' => array(
+                                    'allborders' => array(
+                                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                        'color' => array('rgb' => 'CCCCCC')
+                                    )
+                                )                                
+                ); 
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, text::get('MATERIAL_COAST')); 
+            $currentRow ++; 
+
+            $aMaterialDb=dbProc::getProjectMaterialList($actId, $group['KLDV_ID'],$group['DRBI_WORK_TYPE_TEXT']);
+            $data = array();
+            foreach ($aMaterialDb as $i => $row)
+            {
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
+                $sheet->setCellValue('D'.$currentRow, $row['MATR_MERVIENIBA']);
+                $sheet->setCellValueExplicit('E'.$currentRow, $row['MATR_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $sheet->setCellValue('F'.$currentRow, $row['MATR_PIEZIMES']);
+                $currentRow ++; 
+            }
+        }
     }
     
     $filename = $act['RAKT_NUM_POSTFIX'].'.'.EXCEL_FILE_EXTENTION;
@@ -120,6 +147,159 @@ function acceptProjectReport($actId, $userId){
     return $idFile;
 }
 
+function projectExportExcel($actId, $userId){
+    // get info about voltage
+    $actInfo = dbProc::getActInfo($actId);
+    if(count($actInfo)>0)
+    {
+        $act = $actInfo[0];
+    }
+    
+    $start_date = date('d.m.Y');
+    $cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;
+    $cacheSettings = array( 'memoryCacheSize ' => '8MB');
+    PHPExcel_Settings::setCacheStorageMethod($cacheMethod, $cacheSettings);
+
+    // Create new PHPExcel object
+    $objPHPExcel = new PHPExcel();
+	
+	$sheet = $objPHPExcel->getActiveSheet();
+
+    $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
+    $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+
+    $sheet->getDefaultColumnDimension()->setWidth(15);
+    $sheet->getDefaultRowDimension()->setRowHeight(15);
+
+    $sheet->setShowGridlines(true);
+
+    $sheet->getDefaultStyle()->getFont()->setName('Arial');
+    $sheet->getDefaultStyle()->getFont()->setSize(9);
+
+    $sheet->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+
+    $sheet->getColumnDimension('B')->setWidth(55);
+    $currentRow = 1; 
+    
+    $res=dbProc::getWorkTypeListByWork($actId);
+    if (is_array($res))
+    {
+        foreach ($res as $group)
+        {
+            $styleArray = array(
+                    'font'    => array(
+                                    'bold'      => true,
+                                    'italic' => false ,
+                                    'size' => 9
+                                    ),
+                                    'alignment' => array(
+                                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                                    ),
+                                    'fill' => array(
+                                        'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                        'startcolor' => array(
+                                            'argb' => 'EEEEEE',
+                                        ),                                        
+                                    ), 
+                                    'borders' => array(
+                                        'allborders' => array(
+                                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                            'color' => array('rgb' => 'CCCCCC')
+                                        )
+                                    )                               
+                    ); 
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, $group['KLDV_NOSAUKUMS'] .' '. $group['DRBI_WORK_TYPE_TEXT']); 
+            $currentRow ++; 
+
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, text::get('WORK_COAST')); 
+            $currentRow ++; 
+
+            $aWorkDb=dbProc::getActWorkList($actId, false, false, $group['KLDV_ID'], true, $group['DRBI_WORK_TYPE_TEXT']);
+            $data = array();
+            foreach ($aWorkDb as $i => $row)
+            {
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
+                $sheet->setCellValue('C'.$currentRow, 
+                (($row['DRBI_PROJECT_EXPORT'] == 'MAN' ) ? dbProc::getKrfkTextByName($row['DRBI_PROJECT_EXPORT']) : '')); 
+                $sheet->setCellValue('D'.$currentRow, $row['DRBI_MERVIENIBA']);
+                $sheet->setCellValueExplicit('E'.$currentRow, $row['DRBI_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $sheet->setCellValue('F'.$currentRow, 
+                (($row['DRBI_PROJECT_EXPORT'] == 'ST_DELIVER' ) ? dbProc::getKrfkTextByName($row['DRBI_PROJECT_EXPORT']) : '')); 
+                $currentRow ++; 
+            }
+
+            $styleArray = array(
+                'font'    => array(
+                                'bold'      => true,
+                                'italic' => false ,
+                                'size' => 9
+                                ),
+                                'alignment' => array(
+                                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                                ),
+                                'fill' => array(
+                                    'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                    'startcolor' => array(
+                                        'argb' => 'EEEEEE',
+                                    ),                                        
+                                ),
+                                'borders' => array(
+                                    'allborders' => array(
+                                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                                        'color' => array('rgb' => 'CCCCCC')
+                                    )
+                                )                                
+                ); 
+            $sheet->getStyle('A'.$currentRow.':F'.$currentRow)->applyFromArray($styleArray);
+            //$sheet->mergeCells('A'.$currentRow.':F'.$currentRow);
+            $sheet->setCellValue('A'.$currentRow, text::get('MATERIAL_COAST')); 
+            $currentRow ++; 
+
+            $aMaterialDb=dbProc::getProjectMaterialList($actId, $group['KLDV_ID'],$group['DRBI_WORK_TYPE_TEXT']);
+            $data = array();
+            foreach ($aMaterialDb as $i => $row)
+            {
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
+                $sheet->setCellValue('C'.$currentRow, 
+                (($row['MATR_PROJECT_EXPORT'] == 'MAN' ) ? dbProc::getKrfkTextByName($row['MATR_PROJECT_EXPORT']) : '')); 
+                $sheet->setCellValue('D'.$currentRow, $row['MATR_MERVIENIBA']);
+                $sheet->setCellValueExplicit('E'.$currentRow, $row['MATR_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $sheet->setCellValue('F'.$currentRow, 
+                (($row['MATR_PROJECT_EXPORT'] == 'ST_DELIVER' ) ? dbProc::getKrfkTextByName($row['MATR_PROJECT_EXPORT']) : '')); 
+                $currentRow ++; 
+            }
+        }
+    }
+    
+    $filename = $act['RAKT_NUM_POSTFIX'].'.'.EXCEL_FILE_EXTENTION;
+    $res=dbProc::replaceExcelFile( $filename, $userId, $actId, EXCEL_FILE_MIMETYPE);                
+    
+    if ($res)
+    {
+        $idFile=dbLayer::getInsertId();
+    }
+    else
+    {
+        return false;				
+    }
+                
+    if ($idFile!==false)
+    {
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+        $objWriter->setOffice2003Compatibility(true);
+        $objWriter->save(PROJECT_FILES_STORE_PATH."/".$idFile);  
+        						
+    }
+    return $idFile;
+}
+
+
 function exportTameMaterial($actId, $userId, $type){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
@@ -135,26 +315,28 @@ function exportTameMaterial($actId, $userId, $type){
 
      // Create new PHPExcel object
      $objPHPExcel = new PHPExcel();
+	 
+	 $sheet = $objPHPExcel->getActiveSheet();
 
-     $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
-     $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+     $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+     $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
 
-     $objPHPExcel->getActiveSheet()->getDefaultColumnDimension()->setWidth(15);
-     $objPHPExcel->getActiveSheet()->getDefaultRowDimension()->setRowHeight(15);
+     $sheet->getDefaultColumnDimension()->setWidth(15);
+     $sheet->getDefaultRowDimension()->setRowHeight(15);
 
-     $objPHPExcel->getActiveSheet()->setShowGridlines(true);
+     $sheet->setShowGridlines(true);
 
-     $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setName('Arial');
-     $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setSize(9);
+     $sheet->getDefaultStyle()->getFont()->setName('Arial');
+     $sheet->getDefaultStyle()->getFont()->setSize(9);
 
-     $objPHPExcel->getActiveSheet()->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+     $sheet->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
 
-     $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(35);
-     $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
+     $sheet->getColumnDimension('A')->setWidth(35);
+     $sheet->getColumnDimension('B')->setWidth(55);
 
      $currentRow = 1;
 
-     $objPHPExcel->getActiveSheet()->duplicateStyleArray(
+     $sheet->duplicateStyleArray(
         array(
        'font'    => array(
                        'bold'      => true,
@@ -168,34 +350,34 @@ function exportTameMaterial($actId, $userId, $type){
      
      
 
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']);
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['WORK_TITLE']);
+     $sheet->setCellValue('A'.$currentRow, text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']);
+     $sheet->setCellValue('B'.$currentRow, $act['WORK_TITLE']);
      $currentRow ++;
 
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_ACT_TYPE'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['TYPE']);
+     $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_ACT_TYPE'));
+     $sheet->setCellValue('B'.$currentRow, $act['TYPE']);
      $currentRow ++;
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_OBJECT'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['OBJECT']);
+     $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_OBJECT'));
+     $sheet->setCellValue('B'.$currentRow, $act['OBJECT']);
      $currentRow ++;
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_VOLTAGE'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['SPRIEGUMS']);
+     $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_VOLTAGE'));
+     $sheet->setCellValue('B'.$currentRow, $act['SPRIEGUMS']);
      $currentRow ++;
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('EXPORT_MAIN_DESIGNATION'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_OPERATIVAS_APZIM']);
+     $sheet->setCellValue('A'.$currentRow, text::get('EXPORT_MAIN_DESIGNATION'));
+     $sheet->setCellValue('B'.$currentRow, $act['RAKT_OPERATIVAS_APZIM']);
      $currentRow ++;
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('COMMENT'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_PIEZIMES']);
+     $sheet->setCellValue('A'.$currentRow, text::get('COMMENT'));
+     $sheet->setCellValue('B'.$currentRow, $act['RAKT_PIEZIMES']);
      $currentRow ++;
-     $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('TO_ID'));
-     $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_TO_ID']);
-     $currentRow ++;
-
-
-     $currentRow ++;
+     $sheet->setCellValue('A'.$currentRow, text::get('TO_ID'));
+     $sheet->setCellValue('B'.$currentRow, $act['RAKT_TO_ID']);
      $currentRow ++;
 
-     $objPHPExcel->getActiveSheet()->duplicateStyleArray(
+
+     $currentRow ++;
+     $currentRow ++;
+
+     $sheet->duplicateStyleArray(
                array(
               'font'    => array(
                               'bold'      => true,
@@ -206,35 +388,35 @@ function exportTameMaterial($actId, $userId, $type){
                               'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
                           )
                       ),  'A'.$currentRow.':F'.$currentRow   ); 
-        $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('CODE'));
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, text::get('NAME'));
-        $objPHPExcel->getActiveSheet()->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
-        $objPHPExcel->getActiveSheet()->setCellValue('D'.$currentRow, text::get('AMOUNT'));
-        $objPHPExcel->getActiveSheet()->setCellValue('E'.$currentRow, text::get('PRICE'));
-        $objPHPExcel->getActiveSheet()->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
+        $sheet->setCellValue('A'.$currentRow, text::get('CODE'));
+        $sheet->setCellValue('B'.$currentRow, text::get('NAME'));
+        $sheet->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
+        $sheet->setCellValue('D'.$currentRow, text::get('AMOUNT'));
+        $sheet->setCellValue('E'.$currentRow, text::get('PRICE'));
+        $sheet->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
        
         $currentRow ++; 
 
         $aMaterialDb=dbProc::getActMaterialList($actId,  true );
         foreach ($aMaterialDb as $i=>$row)
         {							 
-            $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
-            $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
-            $objPHPExcel->getActiveSheet()->setCellValue('C'.$currentRow, $row['MATR_MERVIENIBA']);
-            $objPHPExcel->getActiveSheet()->setCellValueExplicit('D'.$currentRow, $row['MATR_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
-            $objPHPExcel->getActiveSheet()->setCellValueExplicit('E'.$currentRow, number_format($row['MATR_CENA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
-            $objPHPExcel->getActiveSheet()->setCellValueExplicit('F'.$currentRow, number_format($row['MATR_CENA_KOPA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+            $sheet->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+            $sheet->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
+            $sheet->setCellValue('C'.$currentRow, $row['MATR_MERVIENIBA']);
+            $sheet->setCellValueExplicit('D'.$currentRow, $row['MATR_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+            $sheet->setCellValueExplicit('E'.$currentRow, number_format($row['MATR_CENA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+            $sheet->setCellValueExplicit('F'.$currentRow, number_format($row['MATR_CENA_KOPA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
             
             $currentRow ++; 
            
         }
 
         $currentRow ++;
-        $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('ACT_CREATER'));
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['AUTORS']);
+        $sheet->setCellValue('A'.$currentRow, text::get('ACT_CREATER'));
+        $sheet->setCellValue('B'.$currentRow, $act['AUTORS']);
         $currentRow ++;
-        $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('DATE'));
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, date('d.m.Y'));
+        $sheet->setCellValue('A'.$currentRow, text::get('DATE'));
+        $sheet->setCellValue('B'.$currentRow, date('d.m.Y'));
         $currentRow ++;
        
         $filename = 'Material_'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.EXCEL_FILE_EXTENTION;
@@ -259,8 +441,8 @@ function exportTameMaterial($actId, $userId, $type){
         return $idFile;
 
     }
-
-    function exportTameWork($actId, $userId, $type){
+	
+	function exportTameWork($actId, $userId, $type){
         // get info about voltage
         $actInfo = dbProc::getActInfo($actId);
         if(count($actInfo)>0)
@@ -275,26 +457,28 @@ function exportTameMaterial($actId, $userId, $type){
     
          // Create new PHPExcel object
          $objPHPExcel = new PHPExcel();
+		 
+		 $sheet = $objPHPExcel->getActiveSheet();
     
-         $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
-         $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+         $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+         $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
     
-         $objPHPExcel->getActiveSheet()->getDefaultColumnDimension()->setWidth(15);
-         $objPHPExcel->getActiveSheet()->getDefaultRowDimension()->setRowHeight(15);
+         $sheet->getDefaultColumnDimension()->setWidth(15);
+         $sheet->getDefaultRowDimension()->setRowHeight(15);
     
-         $objPHPExcel->getActiveSheet()->setShowGridlines(true);
+         $sheet->setShowGridlines(true);
     
-         $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setName('Arial');
-         $objPHPExcel->getActiveSheet()->getDefaultStyle()->getFont()->setSize(9);
+         $sheet->getDefaultStyle()->getFont()->setName('Arial');
+         $sheet->getDefaultStyle()->getFont()->setSize(9);
     
-         $objPHPExcel->getActiveSheet()->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+         $sheet->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
     
-         $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(35);
-         $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
+         $sheet->getColumnDimension('A')->setWidth(35);
+         $sheet->getColumnDimension('B')->setWidth(55);
     
          $currentRow = 1;
     
-         $objPHPExcel->getActiveSheet()->duplicateStyleArray(
+         $sheet->duplicateStyleArray(
             array(
            'font'    => array(
                            'bold'      => true,
@@ -308,34 +492,34 @@ function exportTameMaterial($actId, $userId, $type){
          
          
     
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']);
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['WORK_TITLE']);
+         $sheet->setCellValue('A'.$currentRow, text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']);
+         $sheet->setCellValue('B'.$currentRow, $act['WORK_TITLE']);
          $currentRow ++;
     
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_ACT_TYPE'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['TYPE']);
+         $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_ACT_TYPE'));
+         $sheet->setCellValue('B'.$currentRow, $act['TYPE']);
          $currentRow ++;
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_OBJECT'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['OBJECT']);
+         $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_OBJECT'));
+         $sheet->setCellValue('B'.$currentRow, $act['OBJECT']);
          $currentRow ++;
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('SINGLE_VOLTAGE'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['SPRIEGUMS']);
+         $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_VOLTAGE'));
+         $sheet->setCellValue('B'.$currentRow, $act['SPRIEGUMS']);
          $currentRow ++;
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('EXPORT_MAIN_DESIGNATION'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_OPERATIVAS_APZIM']);
+         $sheet->setCellValue('A'.$currentRow, text::get('EXPORT_MAIN_DESIGNATION'));
+         $sheet->setCellValue('B'.$currentRow, $act['RAKT_OPERATIVAS_APZIM']);
          $currentRow ++;
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('COMMENT'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_PIEZIMES']);
+         $sheet->setCellValue('A'.$currentRow, text::get('COMMENT'));
+         $sheet->setCellValue('B'.$currentRow, $act['RAKT_PIEZIMES']);
          $currentRow ++;
-         $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('TO_ID'));
-         $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['RAKT_TO_ID']);
-         $currentRow ++;
-    
-    
-         $currentRow ++;
+         $sheet->setCellValue('A'.$currentRow, text::get('TO_ID'));
+         $sheet->setCellValue('B'.$currentRow, $act['RAKT_TO_ID']);
          $currentRow ++;
     
-         $objPHPExcel->getActiveSheet()->duplicateStyleArray(
+    
+         $currentRow ++;
+         $currentRow ++;
+    
+         $sheet->duplicateStyleArray(
                    array(
                   'font'    => array(
                                   'bold'      => true,
@@ -346,35 +530,35 @@ function exportTameMaterial($actId, $userId, $type){
                                   'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
                               )
                           ),  'A'.$currentRow.':F'.$currentRow   ); 
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('CHIPHER'));
-            $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, text::get('NAME'));
-            $objPHPExcel->getActiveSheet()->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
-            $objPHPExcel->getActiveSheet()->setCellValue('D'.$currentRow, text::get('AMOUNT'));
-            $objPHPExcel->getActiveSheet()->setCellValue('E'.$currentRow, text::get('PRICE'));
-            $objPHPExcel->getActiveSheet()->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
+            $sheet->setCellValue('A'.$currentRow, text::get('CHIPHER'));
+            $sheet->setCellValue('B'.$currentRow, text::get('NAME'));
+            $sheet->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
+            $sheet->setCellValue('D'.$currentRow, text::get('AMOUNT'));
+            $sheet->setCellValue('E'.$currentRow, text::get('PRICE'));
+            $sheet->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
            
             $currentRow ++; 
     
             $aWorkDb=dbProc::getActWorkList($actId,true);
             foreach ($aWorkDb as $i=>$row)
             {							 
-                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
-                $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
-                $objPHPExcel->getActiveSheet()->setCellValue('C'.$currentRow, $row['DRBI_MERVIENIBA']);
-                $objPHPExcel->getActiveSheet()->setCellValueExplicit('D'.$currentRow, $row['DRBI_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
-                $objPHPExcel->getActiveSheet()->setCellValueExplicit('E'.$currentRow, number_format($row['DRBI_KKAL_NORMATIVS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
-                $objPHPExcel->getActiveSheet()->setCellValueExplicit('F'.$currentRow, number_format($row['DRBI_CILVEKSTUNDAS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
+                $sheet->setCellValue('C'.$currentRow, $row['DRBI_MERVIENIBA']);
+                $sheet->setCellValueExplicit('D'.$currentRow, $row['DRBI_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('E'.$currentRow, number_format($row['DRBI_KKAL_NORMATIVS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('F'.$currentRow, number_format($row['DRBI_CILVEKSTUNDAS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
                 
                 $currentRow ++; 
                
             }
     
             $currentRow ++;
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('ACT_CREATER'));
-            $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, $act['AUTORS']);
+            $sheet->setCellValue('A'.$currentRow, text::get('ACT_CREATER'));
+            $sheet->setCellValue('B'.$currentRow, $act['AUTORS']);
             $currentRow ++;
-            $objPHPExcel->getActiveSheet()->setCellValue('A'.$currentRow, text::get('DATE'));
-            $objPHPExcel->getActiveSheet()->setCellValue('B'.$currentRow, date('d.m.Y'));
+            $sheet->setCellValue('A'.$currentRow, text::get('DATE'));
+            $sheet->setCellValue('B'.$currentRow, date('d.m.Y'));
             $currentRow ++;
            
             $filename = 'Darbi_'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.EXCEL_FILE_EXTENTION;

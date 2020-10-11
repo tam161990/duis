@@ -284,6 +284,7 @@ if ( $isAdmin || $isSystemUser)
       $oFormWorkTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormWorkTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormWorkTab->addElement('hidden','actId','',$actId);
+      $oFormWorkTab->addElement('hidden','action','','');
       $oFormWorkTab->addElement('hidden','isTrase','',$trase);
       $oFormWorkTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormWorkTab->addElement('hidden','minAmaunt','','0.00');
@@ -416,39 +417,38 @@ if ( $isAdmin || $isSystemUser)
         //$oFormWorkTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
       }
       if($tameWork) {
-        $oFormWorkTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMaterialTabT\',\'actId\') ) {setFormValue(\'frmMaterialTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+        $oFormWorkTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmWorkTabT\',\'actId\') ) {setFormValue(\'frmWorkTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
      }
 
 
       // if form iz submit (save button was pressed)
       if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
       { 
-		if($oFormWorkTab ->isValid()  && $isRowValid)
-		{ 
-      if($tameWork && $oFormWorkTab->getValue('action')==OP_EXPORT)
-      {
-          // akta sagatavi (tab tamme)
-          $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
-          if($idFile !== false) {
-            $oLink=new urlQuery();
-            $oLink->addPrm(FORM_ID, 'f.akt.s.1');
-            $oLink->addPrm('actId', $actId);
-            $oLink->addPrm('tab', TAB_ESTIMATE);
-            RequestHandler::makeRedirect($oLink->getQuery());
-        }
-        else {
-          $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-        }
-      } 
-      else {
-
-        $r=dbProc::deleteActWorks($actId, $tameWork);
-        if ($r === false)
-        {
-          $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-        }
-        else
-        {
+        if($tameWork && $oFormWorkTab->getValue('action')==OP_EXPORT)
+          {
+              // akta sagatavi (tab tamme)
+              $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
+              if($idFile !== false) {
+                $oLink=new urlQuery();
+                $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                $oLink->addPrm('actId', $actId);
+                $oLink->addPrm('tab', TAB_ESTIMATE);
+                RequestHandler::makeRedirect($oLink->getQuery());
+            }
+            else {
+              $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+            }
+          } 
+          else {
+        if($oFormWorkTab ->isValid()  && $isRowValid)
+        { 
+            $r=dbProc::deleteActWorks($actId, $tameWork);
+            if ($r === false)
+            {
+              $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+            }
+            else
+            {
               if(isset($aValidRows) && is_array($aValidRows))
                   {
                 
