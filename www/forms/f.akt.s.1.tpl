@@ -1,6 +1,6 @@
 ﻿
 <body class="frame_1">
-    <?=$oForm->getElementHtml('jsRefresh2');?>
+    
     <?= $oForm -> getFormHeader(); ?>
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
@@ -158,5 +158,6 @@
     <?= $oForm -> getFormBottom(); ?>
     <?=$oForm->getElementHtml('jsButtonsControl');?>
     <?=$oForm->getElementHtml('jsBackButtons');?>
+    <?=$oForm->getElementHtml('jsRefresh2');?>
     </body>
     

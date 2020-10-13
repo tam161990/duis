@@ -4481,6 +4481,18 @@ class dbProc extends dbLayer
         
     }
 
+    function deleteAct($actId)
+    {    
+        $query = 'DELETE FROM `AKTI`  WHERE `RAKT_ID` = '.$actId; 
+        //echo $query;       
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+        
+    }
+    
+
     function CheckQuiqStepUnique($code)
 	{
 		$oSQL=new dbLayer();
@@ -6136,7 +6148,7 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS`
                 from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
@@ -6291,12 +6303,12 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_PLANA` IS NOT NULL
+                and  `KKAL_NEPLANA` IS NOT NULL
                 and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
@@ -7367,6 +7379,14 @@ class dbProc extends dbLayer
                     LEFT JOIN `LIETOTAJI` lt ON (a.AAUD_RLTT_ID=lt.RLTT_ID )
 					where   a.AAUD_RAKT_ID='.dbLayer::quote_smart($actId).'
                     order by a.AAUD_DATUMS desc';
+
+		return $oSQL -> makeQuery($sql);
+    }
+    
+    function deleteAuditInfo($actId)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'DELETE from `AKTA_STATUSA_MAINA` where AAUD_RAKT_ID='.dbLayer::quote_smart($actId);
 
 		return $oSQL -> makeQuery($sql);
 	}
