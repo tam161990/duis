@@ -136,9 +136,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                   $r2 = dbProc::saveEDAreaFromCsv($data, $userId);
                                   break; 
                                 // catalog saskaņotāji
-                              case 'HARMONIZED':
+                                case 'HARMONIZED':
                                 $r2 = dbProc::saveHarmonizedFromCsv($data, $userId);
                                 break; 
+                                // catalog sDU lietotāju
+                                case 'DUUSERS':
+                                  $r2 = dbProc::saveUserFromCsv($data, $userId);
+                                  break; 
                                   
                               }
                               if($r2 === false )
@@ -195,9 +199,36 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 $r2 = dbProc::saveCalculationFromCsv($data, $userId);
                                 
                               }
-                            }
-                            
-                          break;
+                            }                            
+                            break;
+                            // DU lietotāji
+                          case 'DUUSERS':                           
+                            $j = 0;
+                            foreach ($objWorksheet->getRowIterator() as $row)
+                            {
+                                $cellIterator = $row->getCellIterator();
+                                $cellIterator->setIterateOnlyExistingCells(true);
+  
+                                $i = 0;    
+                                foreach ($cellIterator as $cell)
+                                {
+                                  if(!is_null($cell))
+                                  {                                      
+                                      $j++;
+                                      if($j == 1)
+                                          break 1;
+                                      $data[$i] =  $cell->getValue();
+                                      $i++;                                      
+                                    }
+                                }
+                                // save kalkulācijas record
+                                if($j > 1)
+                                {
+                                  $r2 = dbProc::saveUserFromCsv($data, $userId);
+                                  
+                                }
+                              }                            
+                              break;
                       }
                   }
               } 
@@ -253,7 +284,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog saskaņotāji
                 case 'HARMONIZED':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
-                  break;                            
+                  break;     
+                // catalog sDU lietotāju
+                case 'DUUSERS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
+                  break;                      
                 
             }
             $listLink=$oLink ->getQuery();
@@ -286,7 +321,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog saskaņotāji
                 case 'HARMONIZED':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.4');
-                  break;                    
+                  break;   
+                // catalog sDU lietotāju
+                 case 'DUUSERS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
+                  break;                                       
                 
             }
             $oLink->addPrm('editMode', '1');
