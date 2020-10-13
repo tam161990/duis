@@ -242,6 +242,9 @@ if ($isAdmin || $isAuditUser || $isEdUser)
 					if (dbProc::calculationWithChipherExists(
 						$oForm->getValue('chipher'),
 						$oForm->getValue('isEpla',0),
+						$oForm->getValue('edArea'),
+						$oForm->getValue('worker'),
+						$oForm->getValue('contract'),
 						($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('calcId'):false)
 						)
 					{

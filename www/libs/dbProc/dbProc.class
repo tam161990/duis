@@ -3001,14 +3001,17 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function calculationWithChipherExists($code,  $trase = 0, $ID = false)
+	function calculationWithChipherExists($code,  $trase = 0, $edarea, $worker, $contract, $ID = false)
 	{
 		$query = 'select `KKAL_ID` from `KL_KALKULACIJA`
             where `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
-            AND `KKAL_TRASE` = "'.dbLayer::quote_smart($trase).'"';
+            AND `KKAL_TRASE` = "'.dbLayer::quote_smart($trase).'"
+            AND `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($edarea).'"
+            AND `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"
+            AND `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"';	
 		if ($ID)
 		{
-			$query .= ' and `KKAL_ID` != "'.dbLayer::quote_smart($ID).'"';
+			$query .= ' and `KKAL_ID` != '.dbLayer::quote_smart($ID).'';
 		}
         //echo $query;
 		$oDB = new dbLayer;
@@ -4430,6 +4433,17 @@ class dbProc extends dbLayer
     function updateActStatus($actId, $status)
     {    
         $query = 'UPDATE `AKTI` SET `RAKT_STATUS`  = "' .$status .'" WHERE `RAKT_ID` = '.$actId; 
+        //echo $query;       
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+        
+    }
+
+    function deleteAct($actId)
+    {    
+        $query = 'DELETE FROM `AKTI`  WHERE `RAKT_ID` = '.$actId; 
         //echo $query;       
         $oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
@@ -6109,13 +6123,13 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS`
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS`
                 from `KL_KALKULACIJA`
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
               and `KKAL_KEDI_SECTION` =  "'.$section.'"
-              and  `KKAL_PLANA` IS NOT NULL
+              and  `KKAL_NEPLANA` IS NOT NULL
               and KKAL_TRASE = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'
               order by `KKAL_SHIFRS` asc';
@@ -6265,12 +6279,12 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_PLANA` IS NOT NULL
+                and  `KKAL_NEPLANA` IS NOT NULL
                 and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
@@ -7330,6 +7344,14 @@ class dbProc extends dbLayer
                     LEFT JOIN `LIETOTAJI` lt ON (a.AAUD_RLTT_ID=lt.RLTT_ID )
 					where   a.AAUD_RAKT_ID='.dbLayer::quote_smart($actId).'
                     order by a.AAUD_DATUMS desc';
+
+		return $oSQL -> makeQuery($sql);
+    }
+    
+    function deleteAuditInfo($actId)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'DELETE from `AKTA_STATUSA_MAINA` where AAUD_RAKT_ID='.dbLayer::quote_smart($actId);
 
 		return $oSQL -> makeQuery($sql);
 	}
