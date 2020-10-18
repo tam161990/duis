@@ -2955,9 +2955,11 @@ class dbProc extends dbLayer
     
     function getCalculationByText($text){
         
-        $query = 'select *
+        $query = 'select `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, MAX(KKAL_ID) as KKAL_ID
         from `KL_KALKULACIJA`
         WHERE UPPER(KKAL_NOSAUKUMS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        AND `KKAL_IR_AKTIVS` = 1
+        group by `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`
         order by `KKAL_SHIFRS` asc';        
 
         $oSQL = new dbLayer;
@@ -3658,9 +3660,10 @@ class dbProc extends dbLayer
 
     function getMaterialByText($text){
         
-        $query = 'select *
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
         WHERE UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KODS` asc';        
 
         $oSQL = new dbLayer;

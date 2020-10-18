@@ -153,7 +153,7 @@ if ( $isAdmin || $isProjector)
               {
                 $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
               }
-              if (is_array($res))
+              if (isset($res) && is_array($res))
               {
                   foreach ($res as $row)
                   {
