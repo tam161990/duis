@@ -31,8 +31,17 @@
             <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('category'); ?></td> 
             <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('search'); ?></td>   
         </tr>       
-        </table>
+    </table>
     <? } ?>
+
+    <hr>
+    <table cellpadding="5" cellspacing="1" border="0" width="100%">
+        <tr>
+            <td class="table_cell_c" width="40%"><?= $oFormPop -> getElementLabel('text_part'); ?></td>
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('text_part'); ?></td> 
+            <td class="table_cell_2" width="30%"><?= $oFormPop -> getElementHtml('search_by_text'); ?></td>   
+        </tr>       
+    </table>
 
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 <tr>

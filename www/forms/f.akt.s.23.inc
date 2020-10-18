@@ -144,17 +144,28 @@ if ( $isAdmin || $isProjector)
               }
             }
             unset($res);
-            if ($oFormPop->isFormSubmitted() && $oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
-            {
-              $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'));
+            if($oFormPop->isFormSubmitted() ) {
+              if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
+              {
+                $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'));
+              }
+              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
+              {
+                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
+              }
               if (is_array($res))
               {
                   foreach ($res as $row)
-               	  {
-                	    $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] ;
+                  {
+                      $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] ;
                   }
                   unset($res);
               }
+              else
+              {
+                $oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
+              }
+              
             }
             break;
          
@@ -198,6 +209,10 @@ if ( $isAdmin || $isProjector)
               {
                 $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
               }
+              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
+              {
+                $res = dbProc::getMaterialByText($oFormPop->getValue('text_part'));
+              }
               if (isset($res) && is_array($res))
               {
                   foreach ($res as $row)
@@ -221,7 +236,7 @@ if ( $isAdmin || $isProjector)
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
       $oFormPop -> addElement('hidden', 'catalog', '', $catalog);
-      $oFormPop -> addElement('multiple_select', 'scope', '', '', (($isReadonly)?' disabled ':'').' size="19" ', '', '', $aScope);
+      $oFormPop -> addElement('multiple_select', 'scope', '', '', (($isReadonly)?' disabled ':'').' size="15" ', '', '', $aScope);
       
       // xmlHttp link
   		$oLink=new urlQuery();
@@ -252,6 +267,8 @@ if ( $isAdmin || $isProjector)
       }
       unset($oLink);
 
+      $oFormPop->addElement('text', 'text_part', text::get('CONTAIN_TEXT'), '', 'maxlength="50"');
+
       $oFormPop -> addElement('select', 'work_type',  text::get('SINGLE_WORK_TYPE'), (($catalog == KL_CALCULALATION) ? $defaultWork[0] : $defaultMaterial), 'tabindex=2', '', '', $workType);
       $oFormPop -> addRule('work_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
       
@@ -260,6 +277,7 @@ if ( $isAdmin || $isProjector)
       if (!$isReadonly)
       {
         $oFormPop -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+        $oFormPop -> addElement('submitImg', 'search_by_text', text::get('SEARCH'),'img/btn_meklet.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_SEARCH.'\');} else {return false;}"');
         if($catalog == KL_MATERIALS ){
           $oFormPop -> addElement('submitImg', 'search', text::get('SEARCH'),'img/btn_meklet.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMainTab\',\'actId\')) {setValue(\'action\',\''.OP_SEARCH.'\');} else {return false;}"');
         }
