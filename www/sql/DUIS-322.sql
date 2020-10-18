@@ -1,0 +1,2 @@
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('CONTAIN_TEXT', 'Satur tekstu');

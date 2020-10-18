@@ -2951,7 +2951,18 @@ class dbProc extends dbLayer
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
-	}
+    }
+    
+    function getCalculationByText($text){
+        
+        $query = 'select *
+        from `KL_KALKULACIJA`
+        WHERE UPPER(KKAL_NOSAUKUMS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        order by `KKAL_SHIFRS` asc';        
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
 
 	// -----------------------------------------------------------------------------
 	// Saglabaa kalkul�cijas. Ja dots ID, izmaina esosho ierakstu, ja ne -
@@ -3639,6 +3650,17 @@ class dbProc extends dbLayer
         $query = 'select *
         from `KL_MATERIALI`
         WHERE `KMAT_KATEGORIJAS_KODS` = '.dbLayer::quote_smart($category).' 
+        order by `KMAT_KODS` asc';        
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getMaterialByText($text){
+        
+        $query = 'select *
+        from `KL_MATERIALI`
+        WHERE UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
         order by `KMAT_KODS` asc';        
 
         $oSQL = new dbLayer;
