@@ -87,7 +87,7 @@ if (reqVar::get('xmlHttp') == 1)
          $usersList = array();
          if(isset($user['RLTT_KEDI_SECTION']) && !$isEdUser)
          {
-            $res=dbProc::getUserSectionList($user['RLTT_KEDI_SECTION'], false);
+            $res=dbProc::getUserSectionList($user['RLTT_KEDI_SECTION']);
             if (is_array($res))
             {
               $usersList['-1']=text::get('ALL');
@@ -99,7 +99,7 @@ if (reqVar::get('xmlHttp') == 1)
          }
          elseif(isset($user['RLTT_REGIONS']) && !$isEdUser)
          {
-            $res=dbProc::getUserRegionList($user['RLTT_REGIONS'], false);
+            $res=dbProc::getUserRegionList($user['RLTT_REGIONS']);
             if (is_array($res))
             {
               $usersList['-1']=text::get('ALL');
@@ -111,7 +111,7 @@ if (reqVar::get('xmlHttp') == 1)
          }
          elseif(isset($user['RLTT_KWOI_KODS']) && !$isEdUser)
          {
-            $res=dbProc::getUserWorkerList($user['RLTT_KWOI_KODS'], false);
+            $res=dbProc::getUserWorkerList($user['RLTT_KWOI_KODS']);
             if (is_array($res))
             {
               $usersList['-1']=text::get('ALL');
@@ -129,7 +129,9 @@ if (reqVar::get('xmlHttp') == 1)
               $usersList['-1']=text::get('ALL');
               foreach ($res as $row)
               {
-                $usersList[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
+                if($row['RLTT_IR_AKTIVS'] == 1) {
+                  $usersList[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
+                }
               }
             }
          }

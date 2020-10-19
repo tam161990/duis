@@ -261,17 +261,19 @@ class dtime
 	// public
 	// ---------------------------
 
-  /*  function getYearArray()
+    function get5YearsInFromtArray()
     {
       $yearList = array();
-      for($i = 2009; $i < 2016; $i ++)
+      $current_year = dtime::getSmartCurrentYear();
+
+      for($i = $current_year; $i <= $current_year + 5; $i ++)
       {
           $yearList[$i] = $i;
       }
       return $yearList;
 
     }
-*/
+
 // returns current year, from user defined date from config file
     function getSmartCurrentYear()
     {

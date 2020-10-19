@@ -3651,9 +3651,10 @@ class dbProc extends dbLayer
 
     function getMaterialByCategory($category){
         
-        $query = 'select *
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
         WHERE `KMAT_KATEGORIJAS_KODS` = '.dbLayer::quote_smart($category).' 
+        group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KODS` asc';        
 
         $oSQL = new dbLayer;
@@ -3697,9 +3698,10 @@ class dbProc extends dbLayer
 
     function getMaterialBySubGroup($group){
         
-        $query = 'select *
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
         WHERE `KMAT_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group).' 
+        group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KODS` asc';
 
         $oSQL = new dbLayer;
