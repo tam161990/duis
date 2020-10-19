@@ -139,11 +139,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('usrId'))))
 				{
 					// chech that user with same login name not set
-                   /*	if (dbProc::isHasUserWithThisLogin($oForm->getValue('login'), ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('usrId'):false))
+                   	if (dbProc::isHasUserWithThisLogin($oForm->getValue('login'), ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('usrId'):false))
 					{
 						$oForm->addError(text::get('ERROR_EXISTS_USER_LOGIN'));
 						$check = false;
-					}*/
+					}
 
 					// chech that both psssword fields is not empty & are equal
 					if(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))

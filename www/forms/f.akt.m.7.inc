@@ -159,7 +159,7 @@ if (reqVar::get('xmlHttp') == 1)
         }
 
         $oForm -> addElement('label', 'year',  text::get('YEAR'), '');
-        $oForm -> addElement('select', 'yearFrom',  text::get('FROM'), $searcCriteria['yearFrom'], 'style="width:50;"', '', '', dtime::getYearArray());
+        $oForm -> addElement('select', 'yearFrom',  text::get('FROM'), $searcCriteria['yearFrom'], 'style="width:50;"', '', '', dtime::get5YearsInFromtArray());
         
         // xmlHttp link
         $oLink=new urlQuery();
