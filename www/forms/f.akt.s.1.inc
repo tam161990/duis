@@ -860,7 +860,7 @@ if(true)
           $checkRequiredFields = false;
 
          $actNumber = false;
-         if (($isEditor ||$isAdmin) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
+         if (($isEditor ||$isAdmin || $isEconomist) && $oForm -> getValue('status') && $oForm -> getValue('EDarea') &&
             $oForm -> getValue('type') && $oForm -> getValue('contract') &&
             $oForm -> getValue('designation') && $oForm -> getValue('voltage') &&
             $oForm -> getValue('object') && //$oForm -> getValue('toid') && 
