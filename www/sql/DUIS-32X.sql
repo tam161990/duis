@@ -1,0 +1,11 @@
+CREATE TABLE `lietotaja_iestatijumi` (
+        RAKT_ID INT(11) NOT NULL,
+        RLTT_ID INT(11) NOT NULL,
+        KKAL_ID INT(11),
+        KMAT_GRUPAS_KODS CHAR(2),
+        KMAT_APAKSGRUPAS_KODS CHAR(4),
+	UNIQUE INDEX `RAKT_RLTT_ID` (RAKT_ID, RLTT_ID)
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=MyISAM
+;

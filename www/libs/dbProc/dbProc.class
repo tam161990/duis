@@ -9401,6 +9401,55 @@ class dbProc extends dbLayer
                 $result = $oDB -> makeQuery($query);
 				return true;
         }
+
+        //
+        function getUserPreferences($actId = false, $userId = false)
+        {
+                     
+            $query = 'SELECT KKAL_ID, KMAT_GRUPAS_KODS, KMAT_APAKSGRUPAS_KODS
+                from lietotaja_iestatijumi e
+                where `RAKT_ID` = '.dbLayer::quote_smart($actId).' 
+                and  `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"';
+
+            //echo $query;
+            $oSQL = new dbLayer;
+            $result = $oSQL -> makeQuery($query);
+            return $result;
+        }
+
+        function saveUserPreferences($actId = false, 
+                                    $userId = false, 
+                                    $calk_id  = false, 
+                                    $matr_gr_id  = false, 
+                                    $matr_subgroup_id  = false)
+        {
+            $query = 'INSERT INTO lietotaja_iestatijumi
+                        (RAKT_ID,
+                        RLTT_ID,
+                        KKAL_ID,
+                        KMAT_GRUPAS_KODS,
+                        KMAT_APAKSGRUPAS_KODS)
+                VALUES
+                    ('.dbLayer::quote_smart($actId).' ,
+                    '.dbLayer::quote_smart($userId).' ,
+                    '.dbLayer::quote_smart($calk_id).' ,
+                    "'.dbLayer::quote_smart($matr_gr_id).'" ,
+                    "'.dbLayer::quote_smart($matr_subgroup_id).'" )
+                ON DUPLICATE KEY UPDATE
+                        KKAL_ID = '.(($calk_id == false) ? 'KKAL_ID' : dbLayer::quote_smart($calk_id)).' ,
+                        KMAT_GRUPAS_KODS = '.(($matr_gr_id == false) ? 'KMAT_GRUPAS_KODS' : '"'.dbLayer::quote_smart($matr_gr_id).'"').' ,
+                        KMAT_APAKSGRUPAS_KODS = '.(($matr_subgroup_id == false) ? 'KMAT_APAKSGRUPAS_KODS' : '"'.dbLayer::quote_smart($matr_subgroup_id).'"');
+
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+    
+            return ($result !== false);
+
+        }
+
+        
+
+        
 }
 
 ?>
