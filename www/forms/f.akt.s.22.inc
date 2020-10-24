@@ -23,10 +23,10 @@ if (reqVar::get('xmlHttp') == 1)
     if (reqVar::get('deleteId')!='')
 	{
 	   dbProc::deleteActMaterialRecord(reqVar::get('deleteId'));
-       ?>
+      ?>
 	    rowNode = this.parentNode.parentNode;
 		  rowNode.parentNode.removeChild(rowNode);
-		<?
+		  <?
     }
     exit();
 }
@@ -122,44 +122,46 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       {
           $isRowValid = true;
           $aCodes =  $oFormMaterialTab->getValue('code');
+          //print_r($aCodes);
           if(is_array($aCodes) )
           {
             $aMaterialsFr = array();
+            $j = 0;
             foreach ($aCodes as $i => $val)
             {
-                 $aMaterialsFr[$i]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
-                 $aMaterialsFr[$i]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
-                 $aMaterialsFr[$i]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
-                 $aMaterialsFr[$i]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
-                 $aMaterialsFr[$i]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
-                 $aMaterialsFr[$i]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
-                 $aMaterialsFr[$i]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
-                 $aMaterialsFr[$i]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
+                 $aMaterialsFr[$j]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
+                 $aMaterialsFr[$j]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
+                 $aMaterialsFr[$j]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
+                 $aMaterialsFr[$j]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
+                 $aMaterialsFr[$j]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
+                 $aMaterialsFr[$j]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
+                 $aMaterialsFr[$j]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
+                 $aMaterialsFr[$j]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
                  // validate work progress value
                  if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
                   $isRowValid = true;
-                  $aMaterialsFr[$i]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type_id['.$i.']');
-                  $aMaterialsFr[$i]['KLDV_NOSAUKUMS'] = $oFormMaterialTab->getValue('work_type['.$i.']');
-                  $aMaterialsFr[$i]['MATR_PROJECT_EXPORT'] = $oFormMaterialTab->getValue('export_type['.$i.']');
+                  $aMaterialsFr[$j]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type_id['.$i.']');
+                  $aMaterialsFr[$j]['KLDV_NOSAUKUMS'] = $oFormMaterialTab->getValue('work_type['.$i.']');
+                  $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] = $oFormMaterialTab->getValue('export_type['.$i.']');
                 } else {
                  
-                  $aMaterialsFr[$i]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type['.$i.']');
+                  $aMaterialsFr[$j]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type['.$i.']');
                   
-                  if (empty($aMaterialsFr[$i]['MATR_DAUDZUMS']))
+                  if (empty($aMaterialsFr[$j]['MATR_DAUDZUMS']))
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
                       $isRowValid = false;
                   }
                   // validate work progress value
-                  elseif (!is_numeric($aMaterialsFr[$i]['MATR_DAUDZUMS']))
+                  elseif (!is_numeric($aMaterialsFr[$j]['MATR_DAUDZUMS']))
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
                       $isRowValid = false;
                   }
                   // validate work progress value
-                  elseif ($aMaterialsFr[$i]['MATR_DAUDZUMS'] >= 100000)
+                  elseif ($aMaterialsFr[$j]['MATR_DAUDZUMS'] >= 100000)
                   {
                       // assign error message
                       $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
@@ -169,23 +171,25 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               
                   // prepare database record data
                   $aValidRows[] = array(
-                        'code' => $aMaterialsFr[$i]['MATR_KODS'],
-                        'title' => $aMaterialsFr[$i]['MATR_NOSAUKUMS'],
-                        'unit' => $aMaterialsFr[$i]['MATR_MERVIENIBA'],
-                        'amount_mat' => $aMaterialsFr[$i]['MATR_DAUDZUMS'],                        
-                        'st' => $aMaterialsFr[$i]['MATR_IS_WORKER'],
-                        'notes' => $aMaterialsFr[$i]['MATR_PIEZIMES'],
-                        'work_type' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
-                        'work_type_id' => $aMaterialsFr[$i]['MATR_WORK_TYPE'],
-                        'import_no' => $aMaterialsFr[$i]['MATR_IMPORT_NO'],
-                        'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aMaterialsFr[$i]['MATR_PROJECT_EXPORT'] : '',
-                        'rowNum' => $i
+                        'code' => $aMaterialsFr[$j]['MATR_KODS'],
+                        'title' => $aMaterialsFr[$j]['MATR_NOSAUKUMS'],
+                        'unit' => $aMaterialsFr[$j]['MATR_MERVIENIBA'],
+                        'amount_mat' => $aMaterialsFr[$j]['MATR_DAUDZUMS'],                        
+                        'st' => $aMaterialsFr[$j]['MATR_IS_WORKER'],
+                        'notes' => $aMaterialsFr[$j]['MATR_PIEZIMES'],
+                        'work_type' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
+                        'work_type_id' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
+                        'import_no' => $aMaterialsFr[$j]['MATR_IMPORT_NO'],
+                        'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] : '',
+                        'rowNum' => $j
                       );
+                      $j++;
                 }
                 foreach ($aMaterialsFr as $i=>$material)
                 {
                   $aMaterials[$material['MATR_WORK_TYPE']][] = $material;              
                 }
+                //print_r($aMaterialsFr);
            }
       }
       else
@@ -211,7 +215,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $oFormMaterialTab->addElement('hidden','actId','',$actId);
       $oFormMaterialTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormMaterialTab->addElement('hidden','minAmaunt','','0.00');
-      
+      //print_r($aMaterials);
       $i = 0;
       // form elements
       foreach ($aMaterials as $d => $aGroupMaterials)
@@ -248,7 +252,19 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
 
             $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
             $oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
+            if ($oFormMaterialTab -> isFormSubmitted()){
+              $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
+              $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);
+              $oFormMaterialTab->setNewValue('unit['.$i.']',$actMaterial['MATR_MERVIENIBA']);
+              $oFormMaterialTab->setNewValue('import_no['.$i.']',$actMaterial['MATR_IMPORT_NO']);        
+              $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);        
+              $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
+              $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);        
+            }
         }
+
+        
 
           // ajax handler link for delete
           $delLink = new urlQuery();

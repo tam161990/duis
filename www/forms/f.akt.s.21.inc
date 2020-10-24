@@ -128,49 +128,50 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
-          $aKids =  $oFormWorkTab->getValue('kid');
+          $aKids =  $oFormWorkTab->getValue('chipher');
+          //print_r($aKids);
           if(is_array($aKids) )
           {
             $aWorkFr = array();
-            
+            $j = 0;
             foreach ($aKids as $i => $val)
             {
                 
-                 $aWorkFr[$i]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
-                 $aWorkFr[$i]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
-                 $aWorkFr[$i]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
-                 $aWorkFr[$i]['DRBI_KKAL_NOSAUKUMS'] = $oFormWorkTab->getValue('title['.$i.']');
-                 $aWorkFr[$i]['DRBI_DAUDZUMS'] = $oFormWorkTab->getValue('amount['.$i.']');
-                 $aWorkFr[$i]['DRBI_MERVIENIBA'] = $oFormWorkTab->getValue('measure['.$i.']');
-                 $aWorkFr[$i]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
-                 $aWorkFr[$i]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
-                 $aWorkFr[$i]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
-                 $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
-                 $aWorkFr[$i]['DRBI_IMPORT_NO'] = $oFormWorkTab->getValue('import_no['.$i.']');
+                 $aWorkFr[$j]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
+                 $aWorkFr[$j]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
+                 $aWorkFr[$j]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
+                 $aWorkFr[$j]['DRBI_KKAL_NOSAUKUMS'] = $oFormWorkTab->getValue('title['.$i.']');
+                 $aWorkFr[$j]['DRBI_DAUDZUMS'] = $oFormWorkTab->getValue('amount['.$i.']');
+                 $aWorkFr[$j]['DRBI_MERVIENIBA'] = $oFormWorkTab->getValue('measure['.$i.']');
+                 $aWorkFr[$j]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
+                 $aWorkFr[$j]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
+                 $aWorkFr[$j]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
+                 $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
+                 $aWorkFr[$j]['DRBI_IMPORT_NO'] = $oFormWorkTab->getValue('import_no['.$i.']');
                  
                 if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
                   $isRowValid = true;
-                  $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
-                  $aWorkFr[$i]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
-                  $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] = $oFormWorkTab->getValue('export_type['.$i.']');
+                  $aWorkFr[$j]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
+                  $aWorkFr[$j]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                  $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] = $oFormWorkTab->getValue('export_type['.$i.']');
                 } else {
-                  $aWorkFr[$i]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
+                  $aWorkFr[$j]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
                   // validate work progress value
-                  if (empty($aWorkFr[$i]['DRBI_DAUDZUMS']))
+                  if (empty($aWorkFr[$j]['DRBI_DAUDZUMS']))
                   {
                     // assign error message
                     $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
                     $isRowValid = false;
                   }
                           // validate work progress value
-                  elseif (!is_numeric($aWorkFr[$i]['DRBI_DAUDZUMS']))
+                  elseif (!is_numeric($aWorkFr[$j]['DRBI_DAUDZUMS']))
                   {
                     // assign error message
                     $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
                     $isRowValid = false;
                   }
                           // validate work progress value
-                  elseif ($aWorkFr[$i]['DRBI_DAUDZUMS'] >= 100000)
+                  elseif ($aWorkFr[$j]['DRBI_DAUDZUMS'] >= 100000)
                   {
                     // assign error message
                     $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
@@ -179,20 +180,21 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                 }
                   // prepare database record data
   			          $aValidRows[] = array(
-                    'kid' => $aWorkFr[$i]['DRBI_KKAL_ID'],
-                    'chipher' => $aWorkFr[$i]['DRBI_KKAL_SHIFRS'],
-                    'title' => $aWorkFr[$i]['DRBI_KKAL_NOSAUKUMS'],
-                    'amount' => $aWorkFr[$i]['DRBI_DAUDZUMS'],
-                    'measure' => $aWorkFr[$i]['DRBI_MERVIENIBA'],
-                    'description' => $aWorkFr[$i]['KKAL_APRAKSTS'],
-                    'notes' => $aWorkFr[$i]['DRBI_PIEZIMES'],
-                    'st' => $aWorkFr[$i]['DRBI_IS_WORKER'],
-                    'work_type' => $aWorkFr[$i]['DRBI_WORK_TYPE_ID'],
-                    'work_type_text' => $aWorkFr[$i]['DRBI_WORK_TYPE_TEXT'],    
-                    'import_no' => $aWorkFr[$i]['DRBI_IMPORT_NO'],                    
-                    'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$i]['DRBI_PROJECT_EXPORT'] : '',
-                    'rowNum' => $i
-  			          );
+                    'kid' => $aWorkFr[$j]['DRBI_KKAL_ID'],
+                    'chipher' => $aWorkFr[$j]['DRBI_KKAL_SHIFRS'],
+                    'title' => $aWorkFr[$j]['DRBI_KKAL_NOSAUKUMS'],
+                    'amount' => $aWorkFr[$j]['DRBI_DAUDZUMS'],
+                    'measure' => $aWorkFr[$j]['DRBI_MERVIENIBA'],
+                    'description' => $aWorkFr[$j]['KKAL_APRAKSTS'],
+                    'notes' => $aWorkFr[$j]['DRBI_PIEZIMES'],
+                    'st' => $aWorkFr[$j]['DRBI_IS_WORKER'],
+                    'work_type' => $aWorkFr[$j]['DRBI_WORK_TYPE_ID'],
+                    'work_type_text' => $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'],    
+                    'import_no' => $aWorkFr[$j]['DRBI_IMPORT_NO'],                    
+                    'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] : '',
+                    'rowNum' => $j
+                  );
+                  $j++;
                 }
 
                 //print_r($aValidRows)."<hr>";
@@ -269,7 +271,15 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                 
             }  
             $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
-            
+            if ($oFormWorkTab -> isFormSubmitted()){
+              $oFormWorkTab->setNewValue('chipher['.$i.']',$actWork['DRBI_KKAL_SHIFRS']);
+              $oFormWorkTab->setNewValue('title['.$i.']',$actWork['DRBI_KKAL_NOSAUKUMS']);
+              $oFormWorkTab->setNewValue('measure['.$i.']',$actWork['DRBI_MERVIENIBA']);
+              $oFormWorkTab->setNewValue('import_no['.$i.']',$actWork['DRBI_IMPORT_NO']);        
+              $oFormWorkTab->setNewValue('notes['.$i.']',$actWork['DRBI_PIEZIMES']);        
+              $oFormWorkTab->setNewValue('amount['.$i.']',$actWork['DRBI_DAUDZUMS']);        
+              $oFormWorkTab->setNewValue('work_type['.$i.']',$actWork['DRBI_WORK_TYPE_ID']);        
+            }
           }
 
           // ajax handler link for delete
