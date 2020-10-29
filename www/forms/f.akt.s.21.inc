@@ -278,7 +278,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               $oFormWorkTab->setNewValue('import_no['.$i.']',$actWork['DRBI_IMPORT_NO']);        
               $oFormWorkTab->setNewValue('notes['.$i.']',$actWork['DRBI_PIEZIMES']);        
               $oFormWorkTab->setNewValue('amount['.$i.']',$actWork['DRBI_DAUDZUMS']);        
-              $oFormWorkTab->setNewValue('work_type['.$i.']',$actWork['DRBI_WORK_TYPE_ID']);        
+              $oFormWorkTab->setNewValue('work_type['.$i.']',$actWork['DRBI_WORK_TYPE_ID']);  
+              $oFormWorkTab->setNewValue('work_type_text['.$i.']',$actWork['DRBI_WORK_TYPE_TEXT']);        
             }
           }
 

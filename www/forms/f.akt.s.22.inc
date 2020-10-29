@@ -53,7 +53,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       }
 
       $isReadonly   = true;
-      // Ir pieejams main��anai, ja  AKTS:LIETOT�JS = �Teko�ais lietot�js� un lietot�ja loma ir �Ievad�tais� un AKTS:STATUS = �Izveide� vai �Atgriezts� vai �T�me�.
+      // Ir pieejams main  anai, ja  AKTS:LIETOT JS =  Teko ais lietot js  un lietot ja loma ir  Ievad tais  un AKTS:STATUS =  Izveide  vai  Atgriezts  vai  T me .
       if(($act['RAKT_RLTT_ID'] == $userId && $isProjector || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN ) )
       {
         $isReadonly   = false;
@@ -100,10 +100,11 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       {
         foreach ($res as $row)
         {
-          $workType[$row['KLDV_ID'].'^'.$row['DRBI_WORK_TYPE_TEXT']]=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+          $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? $row['DRBI_WORK_TYPE_TEXT'] : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
         }
       }
       unset($res);
+	  //print_r($workType);
       $type=array();
       $res = dbProc::getKrfkName('PROJECT_EXPORT');
       $type['']=text::get('EMPTY_SELECT_OPTION');		
@@ -260,7 +261,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               $oFormMaterialTab->setNewValue('import_no['.$i.']',$actMaterial['MATR_IMPORT_NO']);        
               $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);        
               $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
-              $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);        
+              $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
+			  $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  			  
             }
         }
 
