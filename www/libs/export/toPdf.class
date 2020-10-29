@@ -841,8 +841,13 @@ class toPdf {
 		{
 		  $data[$i] = array(
 			'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+<<<<<<< HEAD
 			'DRBI_APROVE_DATE'  => $work['DRBI_APROVE_DATE'],
 			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 60),
+=======
+			'DRBI_APROVE_DATE'  => $work['DRBI_APPROVE_DATE'],
+			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 50),
+>>>>>>> DUIS-32X
 			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
 			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
 			'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
