@@ -112,6 +112,18 @@ if ( $isAdmin || $isProjector)
         $status = $act['RAKT_STATUS'];
       }
 
+      $default_kalk_gr_id = '';
+      $default_matr_gr_id = '';
+      $default_matr_subgr_id = '';
+      $userPreferences = dbProc::getUserPreferences($actId, $userId);
+      //print_r($userPreferences);
+      if(is_array($userPreferences) && count($userPreferences)>0)
+      {
+        $default_kalk_gr_id = $userPreferences[0]['KKAL_ID'];
+        $default_matr_gr_id = $userPreferences[0]['KMAT_GRUPAS_KODS'];
+        $default_matr_subgr_id = $userPreferences[0]['KMAT_APAKSGRUPAS_KODS'];      
+      }
+
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
       if(($act['RAKT_RLTT_ID'] == $userId && $isProjector || $isAdmin) && ($status == STAT_INSERT || $status == STAT_RETURN ) )
@@ -149,9 +161,16 @@ if ( $isAdmin || $isProjector)
               {
                 $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'));
               }
+	     
+
               if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
               {
                 $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
+              }
+	      }
+	       if(isset($default_kalk_gr_id)) 
+              {
+                $res=dbProc::getCalculationByGroupList($default_kalk_gr_id);
               }
               if (isset($res) && is_array($res))
               {
@@ -163,10 +182,10 @@ if ( $isAdmin || $isProjector)
               }
               else
               {
-                $oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
+                //$oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
               }
               
-            }
+            
             break;
          
         case  KL_MATERIALS:
@@ -196,8 +215,23 @@ if ( $isAdmin || $isProjector)
               }
             }
             unset($res);
-    
+
             $matrSubGroup = array();
+            if(isset($default_matr_gr_id )) {
+              
+              $res=dbProc::getMaterialSubGroup($default_matr_gr_id);
+              
+              if (is_array($res))
+              {
+                $matrSubGroup['']=text::get('ALL');
+                foreach ($res as $row)
+                {
+                  $matrSubGroup[$row['KMAT_APAKSGRUPAS_KODS']]=$row['APAKSGRUPAS_KODS'].' : '.$row['KMAT_APAKSGRUPAS_NOSAUKUNS'];
+                }
+              }
+              unset($res);
+            }
+            
             $matrGroup['']=text::get('ALL');
 
             if ($oFormPop->isFormSubmitted()) {
@@ -213,6 +247,12 @@ if ( $isAdmin || $isProjector)
               {
                 $res = dbProc::getMaterialByText($oFormPop->getValue('text_part'));
               }
+	      }
+              if(isset($default_matr_subgr_id)) 
+              {
+                  $res=dbProc::getMaterialBySubGroup($default_matr_subgr_id);
+              }
+
               if (isset($res) && is_array($res))
               {
                   foreach ($res as $row)
@@ -223,9 +263,9 @@ if ( $isAdmin || $isProjector)
               }
               else
               {
-                $oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
+                //$oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
               }
-            }
+            
            
             break;
 
@@ -235,6 +275,7 @@ if ( $isAdmin || $isProjector)
       // form elements
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
+      $oFormPop -> addElement('hidden', 'userId', '', $userId);
       $oFormPop -> addElement('hidden', 'catalog', '', $catalog);
       $oFormPop -> addElement('multiple_select', 'scope', '', '', (($isReadonly)?' disabled ':'').' size="15" ', '', '', $aScope);
       
@@ -247,18 +288,18 @@ if ( $isAdmin || $isProjector)
       {
 
         $oFormPop -> addElement('kls', 'calc_group',  text::get('SINGL_CALCULATION_GROUP'), 
-        array('classifName'=>KL_CALCULALATION_GROUP,'value'=>'','readonly'=>false), 
+        array('classifName'=>KL_CALCULALATION_GROUP,'value'=>$default_kalk_gr_id,'readonly'=>false), 
         'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&calc_group=\'+this.value+\'\'))"');
         
         $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
       }
       if($catalog == KL_MATERIALS )
       {
-        $oFormPop -> addElement('select', 'mat_group',  text::get('MATERIAL_GROUP'), '', 
+        $oFormPop -> addElement('select', 'mat_group',  text::get('MATERIAL_GROUP'), $default_matr_gr_id, 
         ' tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&mat_group=\'+this.value+\'\'))"', 
         '', '', $matrGroup);
 
-        $oFormPop -> addElement('select', 'mat_sub_group',  text::get('SUBGROUP_TITLE'), '', 
+        $oFormPop -> addElement('select', 'mat_sub_group',  text::get('SUBGROUP_TITLE'), $default_matr_subgr_id, 
         ' tabindex=2 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&mat_sub_group=\'+this.value+\'\'))"', 
         '', '', $matrSubGroup);
 
@@ -313,6 +354,11 @@ if ( $isAdmin || $isProjector)
                                     break;
 
                                 }
+                                $r = dbProc::saveUserPreferences($oFormPop->getValue('actId'), 
+                                                                  $oFormPop->getValue('userId'), 
+                                                                  $oFormPop->getValue('calc_group'), 
+                                                                  $oFormPop->getValue('mat_group'),
+                                                                  $oFormPop->getValue('mat_sub_group'));
                                 if(!$r)
                                 {
                                   $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
