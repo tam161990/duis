@@ -25,6 +25,12 @@ if (reqVar::get('xmlHttp') == 1)
 		  rowNode.parentNode.removeChild(rowNode);
 	<?
     }
+
+    // if operation is SAVE , save daudzumu in DB
+    if (reqVar::get('saveId')!='' && reqVar::get('val')!='')
+	  {
+	    dbProc::updateWorkDaudzums(reqVar::get('saveId'), reqVar::get('val'));
+    }
     exit();
 }
 
@@ -256,9 +262,39 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
             $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required'); 
             $oFormWorkTab->addElement('text', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT'], (($isReadonly)?' disabled ':'').'maxlength="50"');
-            $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
-            if(!empty($actWork['DRBI_KKAL_SHIFRS']))
-            {                
+             // ajax handler link for delete
+             $saveLink = new urlQuery();
+             $saveLink->addPrm(FORM_ID, 'f.akt.s.21');
+             $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
+             $saveLink->addPrm('xmlHttp', '1');    
+              // save button
+             $saveJs = "var amount = isDoubleAuto(this.value,3); 
+              function savedField (el, color) { 
+                el.style.borderColor = color; 
+                parent = el.parentNode;
+                parent.removeChild(parent.childNodes[0]); 
+              }
+             if(amount != '') { 
+               this.value = amount;
+               var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+               eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&val='+this.value+'&saveId='+rowId.value));
+               this.style.background = '#ffffff'; this.style.borderColor = '#16bb24cc'; 
+               var sp1 = document.createElement('span');
+                sp1.append('Saglabāts');
+                sp1.style.color = 'green';
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+             } else { 
+               this.value = ''; 
+               alert('".text::get('ERROR_DOUBLE_VALUE')."')
+             }";
+
+            $oFormWorkTab->addElement('text', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"'.
+            ((isset($actWork['DRBI_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
+            unset($saveLink);
+            if(!empty($actWork['DRBI_KKAL_SHIFRS']))            {   
+                
                     $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
                     $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
                     // check Amaunt field

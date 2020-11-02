@@ -550,3 +550,8 @@ z-index: 100;
 filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 }
 
+.empty_fild{
+	background-color: #16bb24cc;
+	border: 1px solid black;
+}
+
