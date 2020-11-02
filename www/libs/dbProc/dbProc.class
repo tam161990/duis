@@ -6057,7 +6057,25 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
-	}
+    }
+    
+     // -----------------------------------------------------------------------------
+	// Saglabat konkr�tu materiala ieraksta daudzumu p�c ieraksta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function updateWorkDaudzums($ID, $amount, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
+        $query = "UPDATE ".$table_name." SET  `DRBI_DAUDZUMS` = ".dbLayer::quote_smart($amount)."
+                WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
+
+
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta darba ierakstu p�c akta ID.
@@ -6528,7 +6546,7 @@ class dbProc extends dbLayer
     }
     
     function getDefaultWork($actId) {
-        $query = 'select CONCAT(DRBI_WORK_TYPE_ID, \'^\', NVL(DRBI_WORK_TYPE_TEXT, \'X\')) AS DRBI_WORK_TYPE
+        $query = 'select CONCAT(DRBI_WORK_TYPE_ID, \'^\', NVL(DRBI_WORK_TYPE_TEXT, \'\')) AS DRBI_WORK_TYPE
             from `DARBI` 
             where `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId).'
             order by `DRBI_ID` desc
@@ -6780,6 +6798,23 @@ class dbProc extends dbLayer
     {
         $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
         $query = "delete from ".$table_name."
+                WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
+
+
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+	// Saglabat konkr�tu materiala ieraksta daudzumu p�c ieraksta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function updateMaterialDaudzums($ID, $amount, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "UPDATE ".$table_name." SET  `MATR_DAUDZUMS` = ".dbLayer::quote_smart($amount)."
                 WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
 
 

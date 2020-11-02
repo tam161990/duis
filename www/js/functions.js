@@ -415,7 +415,6 @@ function isDouble(strString, fractionAmount)
 
 	var whole='';
 	var fraction='';
-
 	var pos=strString.indexOf('.')
 	if (pos==-1)
 	{
@@ -433,6 +432,39 @@ function isDouble(strString, fractionAmount)
 	}
 
 	return false;
+} 
+
+function isDoubleAuto(strString, fractionAmount)
+{
+	
+	if (strString.length == 0) return '';
+
+	var whole='';
+	var fraction='';
+	var coma=strString.indexOf(',')
+	
+	if (coma >-1) {
+		strString = strString.replace(/,/g, '.')
+	}
+	var pos=strString.indexOf('.')
+	
+	if (pos==-1)
+	{
+		whole=strString;
+	}
+	else
+	{
+		whole=strString.substring(0,pos);
+		fraction=strString.substring(pos+1);
+	}
+
+	
+	if (isInt(whole) && isInt(fraction) && fraction.length<=fractionAmount)
+	{
+		
+		return strString;
+	}
+	return '';
 } 
 
 function isNumeric(strString)
@@ -1522,5 +1554,27 @@ function setPosition1(divName) {
 
   //loading.style.left = (IpopLeft - loading.offsetWidth) + "px";
 
+}
+
+function onlyDecimal(evt)
+{ alert();
+    var e = evt ? evt : window.event; // for trans-browser compatibility
+    var charCode = e.keyCode ? e.keyCode : e.charCode
+    //alert(charCode);
+    if (charCode == 46 || charCode == 44 )
+      return true;
+    if (charCode == 13 || (charCode > 31 && (charCode < 48 || charCode > 57)))
+    {
+        e.returnValue = false;
+        e.cancel = true;
+        return false;
+    }
+    if (e.shiftkey)
+    {
+        e.returnValue = false;
+        e.cancel = true;
+        return false;
+    }
+    return true;
 }
 

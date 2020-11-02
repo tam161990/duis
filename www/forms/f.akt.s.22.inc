@@ -21,12 +21,18 @@ if (reqVar::get('xmlHttp') == 1)
 {
     // if operation is DELETE , delete record from DB
     if (reqVar::get('deleteId')!='')
-	{
-	   dbProc::deleteActMaterialRecord(reqVar::get('deleteId'));
+	  {
+	    dbProc::deleteActMaterialRecord(reqVar::get('deleteId'));
       ?>
 	    rowNode = this.parentNode.parentNode;
 		  rowNode.parentNode.removeChild(rowNode);
 		  <?
+    }
+
+    // if operation is SAVE , save daudzumu in DB
+    if (reqVar::get('saveId')!='' && reqVar::get('val')!='')
+	  {
+	    dbProc::updateMaterialDaudzums(reqVar::get('saveId'), reqVar::get('val'));
     }
     exit();
 }
@@ -238,7 +244,36 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
             $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
         } else {
-            $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"');
+          // ajax handler link for delete
+          $saveLink = new urlQuery();
+          $saveLink->addPrm(FORM_ID, 'f.akt.s.22');
+          $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
+          $saveLink->addPrm('xmlHttp', '1');
+          // save button
+          $saveJs = "var amount = isDoubleAuto(this.value,3); 
+              function savedField (el, color) { 
+                el.style.borderColor = color; 
+                parent = el.parentNode;
+                parent.removeChild(parent.childNodes[0]); 
+              }
+              if(amount != '') { 
+                this.value = amount;
+                var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&val='+this.value+'&saveId='+rowId.value));
+                this.style.background = '#ffffff'; this.style.borderColor = '#16bb24cc'; 
+                var sp1 = document.createElement('span');
+                sp1.append('Saglabāts');
+                sp1.style.color = 'green';
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              } else { 
+                this.value = ''; 
+                alert('".text::get('ERROR_DOUBLE_VALUE')."')
+              }";
+            $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"'.
+            ((isset($actMaterial['MATR_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
+            unset($saveLink);
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
             // check Amaunt field
