@@ -156,6 +156,10 @@ if ( $isAdmin || $isProjector)
               }
             }
             unset($res);
+            if(isset($default_kalk_gr_id)) 
+            {
+                $res=dbProc::getCalculationByGroupList($default_kalk_gr_id);
+            }
             if($oFormPop->isFormSubmitted() ) {
               if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
               {
@@ -165,25 +169,24 @@ if ( $isAdmin || $isProjector)
 
               if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
               {
+                
                 $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
+                
               }
-	      }
-	       if(isset($default_kalk_gr_id)) 
-              {
-                $res=dbProc::getCalculationByGroupList($default_kalk_gr_id);
-              }
-              if (isset($res) && is_array($res))
-              {
+	          }
+	          
+            if (isset($res) && is_array($res))
+            {
                   foreach ($res as $row)
                   {
                       $aScope[$row['KKAL_ID']] = $row['KKAL_SHIFRS'] .' : '. $row['KKAL_NOSAUKUMS'] ;
                   }
                   unset($res);
-              }
-              else
-              {
-                //$oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
-              }
+            }
+            else
+            {
+              //$oFormPop->addError(text::get('NO_SEARCH_RESULTS'));
+            }
               
             
             break;
@@ -234,24 +237,26 @@ if ( $isAdmin || $isProjector)
             
             $matrGroup['']=text::get('ALL');
 
+            if(isset($default_matr_subgr_id)) 
+            {
+                $res=dbProc::getMaterialBySubGroup($default_matr_subgr_id);
+            }
+
             if ($oFormPop->isFormSubmitted()) {
-              if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
-              {
-                  $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
-              }
-              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('category') != '')
-              {
-                $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
-              }
-              if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
-              {
-                $res = dbProc::getMaterialByText($oFormPop->getValue('text_part'));
-              }
-	      }
-              if(isset($default_matr_subgr_id)) 
-              {
-                  $res=dbProc::getMaterialBySubGroup($default_matr_subgr_id);
-              }
+                if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
+                {
+                    $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
+                }
+                if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('category') != '')
+                {
+                  $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
+                }
+                if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
+                {
+                  $res = dbProc::getMaterialByText($oFormPop->getValue('text_part'));
+                }
+	          }
+              
 
               if (isset($res) && is_array($res))
               {

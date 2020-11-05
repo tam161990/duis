@@ -1,4 +1,19 @@
-﻿<h1><?=text::toUpper(text::get(TAB_MATERIAL));?></h1>
+﻿<script type="text/javascript">
+function savedField (el, color) { 
+    el.style.borderColor = color; 
+    parent = el.parentNode;
+    parent.removeChild(parent.childNodes[0]); 
+}
+// succsess
+var sp1 = document.createElement('span');
+sp1.append('Saglabāts');
+sp1.style.color = 'green';
+// error
+var sp2 = document.createElement('span');
+sp2.append('<?=text::get('ERROR_DOUBLE_VALUE');?>');
+sp2.style.color = 'red';
+</script>
+<h1><?=text::toUpper(text::get(TAB_MATERIAL));?></h1>
 <?= $oFormMaterialTab -> getFormHeader(); ?>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 	<tr>

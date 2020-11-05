@@ -70,6 +70,20 @@ tipobj.style.width=''
 }
 }
 
+function savedField (el, color) { 
+    el.style.borderColor = color; 
+    parent = el.parentNode;
+    parent.removeChild(parent.childNodes[0]); 
+}
+// succsess
+var sp1 = document.createElement('span');
+sp1.append('Saglabāts');
+sp1.style.color = 'green';
+// error
+var sp2 = document.createElement('span');
+sp2.append('<?=text::get('ERROR_DOUBLE_VALUE');?>');
+sp2.style.color = 'red';
+
 document.onmousemove=positiontip
 
 </script>

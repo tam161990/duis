@@ -6083,6 +6083,23 @@ class dbProc extends dbLayer
 		return ($result !== false);
     }
 
+     // -----------------------------------------------------------------------------
+	// Saglabat konkr�tu materiala ieraksta komentaru p�c ieraksta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function updateWorkComment($ID, $comment, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
+        $query = "UPDATE ".$table_name." SET  `DRBI_PIEZIMES` = '".dbLayer::quote_smart($comment)."'
+                WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
+
+
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta darba ierakstu p�c akta ID.
@@ -6831,6 +6848,24 @@ class dbProc extends dbLayer
 
 		return ($result !== false);
     }
+
+    // -----------------------------------------------------------------------------
+	// Saglabat konkr�tu materiala ieraksta daudzumu p�c ieraksta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function updateMaterialComment($ID, $comment, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "UPDATE ".$table_name." SET  `MATR_PIEZIMES` = '".dbLayer::quote_smart($comment)."'
+                WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
+
+        //echo $query;
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta materiala ierakstu p�c akta ID.
