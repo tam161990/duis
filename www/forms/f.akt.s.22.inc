@@ -30,9 +30,16 @@ if (reqVar::get('xmlHttp') == 1)
     }
 
     // if operation is SAVE , save daudzumu in DB
-    if (reqVar::get('saveId')!='' && reqVar::get('val')!='')
+    if (reqVar::get('saveId')!='' )
 	  {
-	    dbProc::updateMaterialDaudzums(reqVar::get('saveId'), reqVar::get('val'));
+	    if (reqVar::get('amount')!='')
+      {
+        dbProc::updateMaterialDaudzums(reqVar::get('saveId'), reqVar::get('amount'));
+      }
+      if (reqVar::get('notes')!='')
+      {
+        dbProc::updateMaterialComment(reqVar::get('saveId'), reqVar::get('notes'));
+      }
     }
     exit();
 }
@@ -236,44 +243,38 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
-          
+          // ajax handler link for delete
+          $saveLink = new urlQuery();
+          $saveLink->addPrm(FORM_ID, 'f.akt.s.22');
+          $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
+          $saveLink->addPrm('xmlHttp', '1');
+
           if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
             $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
             $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
             $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'].' '.explode('^', $actMaterial['MATR_WORK_TYPE'])[0] ); 
             $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
             $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
-        } else {
-          // ajax handler link for delete
-          $saveLink = new urlQuery();
-          $saveLink->addPrm(FORM_ID, 'f.akt.s.22');
-          $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
-          $saveLink->addPrm('xmlHttp', '1');
-          // save button
+        } else {         
+          // save amount
           $saveJs = "var amount = isDoubleAuto(this.value,3); 
-              function savedField (el, color) { 
-                el.style.borderColor = color; 
-                parent = el.parentNode;
-                parent.removeChild(parent.childNodes[0]); 
-              }
               if(amount != '') { 
+                if(this.parentNode.firstChild.nodeName == 'SPAN') {
+                  this.parentNode.removeChild(sp2);
+                 }
                 this.value = amount;
                 var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&val='+this.value+'&saveId='+rowId.value));
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&amount='+this.value+'&saveId='+rowId.value));
                 this.style.background = '#ffffff'; this.style.borderColor = '#16bb24cc'; 
-                var sp1 = document.createElement('span');
-                sp1.append('Saglabāts');
-                sp1.style.color = 'green';
                 this.parentNode.prepend(sp1);
                 setTimeout(savedField, 3000, this, '#8c8c8c'); 
               } else { 
-                this.value = ''; 
-                alert('".text::get('ERROR_DOUBLE_VALUE')."')
+                this.parentNode.prepend(sp2);
               }";
             $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"'.
             ((isset($actMaterial['MATR_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
-            unset($saveLink);
+           
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
             // check Amaunt field
@@ -284,11 +285,21 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
             $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
         
-            $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"');
+            // save notes
+            $saveJs = "if(this.value != '') { 
+              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+this.value+'&saveId='+rowId.value));
+              this.style.borderColor = '#16bb24cc'; 
+              this.parentNode.prepend(sp1);
+              setTimeout(savedField, 3000, this, '#8c8c8c'); 
+            }";
+            $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
 
             $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
             $oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
+            unset($saveLink);
+            
             if ($oFormMaterialTab -> isFormSubmitted()){
               $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
               $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);
@@ -297,7 +308,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
               $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);        
               $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
               $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
-			  $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  			  
+			        $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  			  
             }
         }
 
