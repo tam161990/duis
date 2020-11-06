@@ -122,7 +122,7 @@ if ( $isAdmin || $isSystemUser)
 
       $aWorks = array();
       $aWorkExist = false;
-      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
+      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false && $oFormWorkTab->getValue('action')!=OP_EXPORT)
       {
           
           $isRowValid = true;
@@ -284,6 +284,7 @@ if ( $isAdmin || $isSystemUser)
       $oFormWorkTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormWorkTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormWorkTab->addElement('hidden','actId','',$actId);
+      $oFormWorkTab->addElement('hidden','action','','');
       $oFormWorkTab->addElement('hidden','isTrase','',$trase);
       $oFormWorkTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormWorkTab->addElement('hidden','minAmaunt','','0.00');
@@ -415,27 +416,44 @@ if ( $isAdmin || $isSystemUser)
         $oFormWorkTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_work.gif', 'width="120" height="20" ');
         //$oFormWorkTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
       }
+      if($tameWork) {
+        $oFormWorkTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmWorkTabT\',\'actId\') ) {setFormValue(\'frmWorkTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+     }
+
 
       // if form iz submit (save button was pressed)
       if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
       { 
-		if($oFormWorkTab ->isValid()  && $isRowValid)
-		{ 
-      
-		   $r=dbProc::deleteActWorks($actId, $tameWork);
-		   if ($r === false)
-		   {
-		   	$oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-		   }
-		   else
-		   {
-		        if(isset($aValidRows) && is_array($aValidRows))
-            		{
-              
-                  		foreach($aValidRows as $i => $row)
-                  		{
-                    
-                      			//if(!empty($row['edited'])) continue;
+        if($tameWork && $oFormWorkTab->getValue('action')==OP_EXPORT)
+          {
+              // akta sagatavi (tab tamme)
+              $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
+              if($idFile !== false) {
+                $oLink=new urlQuery();
+                $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+                $oLink->addPrm('actId', $actId);
+                $oLink->addPrm('tab', TAB_ESTIMATE);
+                RequestHandler::makeRedirect($oLink->getQuery());
+            }
+            else {
+              $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+            }
+          } 
+          else {
+        if($oFormWorkTab ->isValid()  && $isRowValid)
+        { 
+            $r=dbProc::deleteActWorks($actId, $tameWork);
+            if ($r === false)
+            {
+              $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+            }
+            else
+            {
+              if(isset($aValidRows) && is_array($aValidRows))
+              {
+                
+                        foreach($aValidRows as $i => $row)
+                        {
                       
                       			$r=dbProc::writeActWork($actId,
                                                     $row['kid'],
@@ -489,30 +507,32 @@ if ( $isAdmin || $isSystemUser)
                   dbProc::deleteAutoActMaterial($actId);
                   // p�rr��inat materi�la tame
                   dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
-		      	}
+		      	    }
                    	
-			// �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
-			dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
-                    	// saglaba lietotaja darbiibu
-                    	dbProc::setUserActionDate($userId, ACT_UPDATE);
-                      if($trase == 1) {
-                            //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
-                            foreach ($aWorkSums as $d => $aSum)
-                              {
-                          
-                                  $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
-                                  $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
-                                  $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
-                                  $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
-                                  //break;
-                              }
-                    
+		
+                    // �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
+                    dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
+                        // saglaba lietotaja darbiibu
+                        dbProc::setUserActionDate($userId, ACT_UPDATE);
 
-                      }
 
-                    	$tameWork = 0;
-                }
-             }
+                        if($trase == 1) {
+                              //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
+                              foreach ($aWorkSums as $d => $aSum)
+                                {
+                            
+                                    $oFormWorkTab->setNewValue('sum_m3', 'M3', $aSum['m3']);
+                                    $oFormWorkTab->setNewValue('sum_ha', 'HA', $aSum['ha']);
+                                    $oFormWorkTab->setNewValue('sum_km', 'KM', $aSum['km']);
+                                    $oFormWorkTab->setNewValue('sum_gab', 'GAB', $aSum['gab']);
+                                    //break;
+                                }
+                        }
+
+                        $tameWork = 0;
+                  }
+              }
+            }
           }
       }
        $oFormWorkTab -> makeHtml();
