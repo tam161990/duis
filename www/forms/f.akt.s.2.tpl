@@ -168,7 +168,7 @@ document.onmousemove=positiontip
 				<? } ?> 
 				<td><?= $oFormWorkTab->getElementHtml('total['.$x.']'); ?></td>
              	<td>
-                    <? if(empty($actWork['DRBI_APPROVE_DATE']) || $tame)  {?>
+                    <? if(!$isReadonly &&  (empty($actWork['DRBI_APPROVE_DATE']) || $tame))  {?>
                     <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
                     <? } else{ ?>
                     &nbsp;

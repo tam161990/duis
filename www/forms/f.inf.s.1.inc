@@ -382,6 +382,13 @@ if ( $isAdmin || $isSystemUser)
 	$kvikStepLink=$oLink ->getQuery();
 	unset($oLink);
 
+	// superadmin
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.adm.s.5');
+	$superadminLink=$oLink ->getQuery();
+	unset($oLink);
+
+
 	// list of jobs
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');

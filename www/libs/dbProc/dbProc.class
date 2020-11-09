@@ -4510,6 +4510,18 @@ class dbProc extends dbLayer
         
     }
 
+    function deleteAct($actId)
+    {    
+        $query = 'DELETE FROM `AKTI`  WHERE `RAKT_ID` = '.$actId; 
+        //echo $query;       
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+        
+    }
+    
+
     function CheckQuiqStepUnique($code)
 	{
 		$oSQL=new dbLayer();
@@ -6377,12 +6389,12 @@ class dbProc extends dbLayer
           {
             if($defect)
             {
-                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_PLANA` as `KKAL_NORMATIVS` 
+                $query = 'select `KKAL_ID`,`KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_NEPLANA` as `KKAL_NORMATIVS` 
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
                 and `KKAL_KEDI_SECTION` =  "'.$section.'"
-                and  `KKAL_PLANA` IS NOT NULL
+                and  `KKAL_NEPLANA` IS NOT NULL
                 and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
                 order by `KKAL_SHIFRS` asc';
@@ -7488,6 +7500,14 @@ class dbProc extends dbLayer
                     order by a.AAUD_DATUMS desc';
 
 		return $oSQL -> makeQuery($sql);
+    }
+    
+    function deleteAuditInfo($actId)
+	{
+		$oSQL=new dbLayer();
+		$sql = 'DELETE from `AKTA_STATUSA_MAINA` where AAUD_RAKT_ID='.dbLayer::quote_smart($actId);
+
+		return $oSQL -> makeQuery($sql);
 	}
 
     // SEARCH RESULTS
@@ -7644,11 +7664,15 @@ class dbProc extends dbLayer
 	// Saglabaa sist�mas inform�ciju.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveSystemInfo($warning = '', $link_tmpl = '')
+	function saveSystemInfo($warning = '', $link_tmpl = '', $superadmin_name  = '')
 	{
 		if($link_tmpl != '')
 		{
 			$query = 'update `SYSTEM_INFO` SET `SNFO_LINK_TMPL`="'.dbLayer::quote_smart($link_tmpl).'" where `SNFO_ID` = 1';
+        }
+        else if($superadmin_name != '')
+		{
+			$query = 'update `SYSTEM_INFO` SET `SNFO_SUPERADMIN`="'.dbLayer::quote_smart($superadmin_name).'" where `SNFO_ID` = 1';
 		}
 		else 
 		{

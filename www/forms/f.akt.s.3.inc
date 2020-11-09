@@ -6,6 +6,7 @@ $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isEDUser = dbProc::isExistsUserRole($userId);
 $isSystemUser = $isEDUser || $isEditor;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
+$isSuperAdmin=userAuthorization::isSuperAdmin();
 
 // act ID
 $actId  = reqVar::get('actId');
@@ -58,7 +59,7 @@ if ( $isAdmin || $isSystemUser)
 
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
-      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist || $isSuperAdmin) && 
       ((($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE) && $tameMaterial==0 )|| 
       ($status == STAT_AUTO && $tameMaterial==1 ))
       )
@@ -319,7 +320,7 @@ if ( $isAdmin || $isSystemUser)
           $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
 	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
 
-          if( empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial ) {
+          if( !$isReadonly && (empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial) ) {
               // ajax handler link for delete
               $delLink = new urlQuery();
               $delLink->addPrm(FORM_ID, 'f.akt.s.3');
