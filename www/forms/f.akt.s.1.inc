@@ -755,22 +755,25 @@ if(true)
   if (!$isReadonlyExceptEconomist )
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN.'\');} else {return false;}"');
-    if($trase == 1)
-    {
-       //Popup saites sagatave
-      $oPopLink=new urlQuery;
-      $oPopLink->addPrm(FORM_ID, 'f.akt.s.17');
-      $oPopLink->addPrm('actId',$actId);
-      $oPopLink->addPrm('isTrase', $trase );
+  }
+  if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist)) {
+    
+      if($trase == 1)
+      {
+        //Popup saites sagatave
+        $oPopLink=new urlQuery;
+        $oPopLink->addPrm(FORM_ID, 'f.akt.s.17');
+        $oPopLink->addPrm('actId',$actId);
+        $oPopLink->addPrm('isTrase', $trase );
 
-      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {'.RequestHandler::popupHref($oPopLink -> getQuery().'&toid=\'+document.all[\'toid\'].value+\'&numPostfix=\'+document.all[\'numPostfix\'].value+\'').' } return false;"');
-      unset($oPopLink);
-    }
-    else
-    {         
-      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
-    }
-
+        $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {'.RequestHandler::popupHref($oPopLink -> getQuery().'&toid=\'+document.all[\'toid\'].value+\'&numPostfix=\'+document.all[\'numPostfix\'].value+\'').' } return false;"');
+        unset($oPopLink);
+      }
+      else
+      {         
+        $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+      }
+    
   }
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
