@@ -30,7 +30,8 @@ if (reqVar::get('xmlHttp') == 1)
        ?>
 	    rowNode = this.parentNode.parentNode;
 		  rowNode.parentNode.removeChild(rowNode);
-		<?
+    <?
+    //dbProc::updateMaterialSumms(reqVar::get('actId'), reqVar::get('tame'));
     }
     exit();
 }
@@ -327,6 +328,7 @@ if ( $isAdmin || $isSystemUser)
               $delLink->addPrm(DONT_USE_GLB_TPL, '1');
               $delLink->addPrm('xmlHttp', '1');
               $delLink->addPrm('tame_mat', $tameMaterial ?'1':'0');
+              $delLink->addPrm('actId', $actId);
               //$delLink->addPrm('deleteId', $actWork['DRBI_ID']);
               // delete button
               $delButtonJs = "if(isDelete()) {

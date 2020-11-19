@@ -37,7 +37,8 @@ if (reqVar::get('xmlHttp') == 1)
     ?>
 	    rowNode = this.parentNode.parentNode;
 		  rowNode.parentNode.removeChild(rowNode);
-		<?
+    <?
+    dbProc::updateWorkSumms(reqVar::get('actId'), reqVar::get('tame'));
     }
     exit();
 }
@@ -391,6 +392,7 @@ if ( $isAdmin || $isSystemUser)
             $delLink->addPrm(DONT_USE_GLB_TPL, '1');
             $delLink->addPrm('tame', $tameWork ?'1':'0');
             $delLink->addPrm('isTrase', $trase );
+            $delLink->addPrm('actId', $actId);
             $delLink->addPrm('xmlHttp', '1');
 
             $delButtonJs = "if(isDelete()) { 

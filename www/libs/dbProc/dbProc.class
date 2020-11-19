@@ -6030,9 +6030,11 @@ class dbProc extends dbLayer
         $oSQL = new dbLayer;
         $r1 = false;
         $r2 = false;
-		$query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" WHERE `DRBI_RAKT_ID` = '.$actId;  		
+        $query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" 
+        WHERE `DRBI_RAKT_ID` = '.$actId .' AND `DRBI_WORK_APROVE_DATE` IS NULL';  		
         $r1 = $oSQL -> makeQuery($query);	
-        $query = 'UPDATE `materiali` SET  `MATR_WORK_APROVE_DATE`  = "' .$date .'" WHERE `MATR_RAKT_ID` = '.$actId;  		
+        $query = 'UPDATE `materiali` SET  `MATR_WORK_APROVE_DATE`  = "' .$date .'" 
+        WHERE `MATR_RAKT_ID` = '.$actId .' AND `MATR_WORK_APROVE_DATE` IS NULL';  				
 		$r2 = $oSQL -> makeQuery($query);	
         return ($r1 && $r2);
     }
@@ -6842,6 +6844,40 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
+    }
+
+    function updateMaterialSumms($actId, $tame = false){
+
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+
+        $query = "SELECT SUM(MATR_CENA_KOPA) as CENA_KOPA, `MATR_WORK_APROVE_DATE`
+                    FROM ".$table_name." 
+                    WHERE `MATR_RAKT_ID` = " . dbLayer::quote_smart($actId) . "
+                    GROUP BY `MATR_WORK_APROVE_DATE`";
+
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+
+        if ($result !== false)
+        {
+            foreach($result as $i => $row)
+            {
+                if(empty($row['MATR_WORK_APROVE_DATE'])) {
+                    $query = 'UPDATE ' . $table_name .' SET `MATR_CENA_KOPA` = '.$row['CENA_KOPA'].'
+                    WHERE `MATR_RAKT_ID` = ' . dbLayer::quote_smart($actId);
+
+                } else {
+                    $query = 'UPDATE ' . $table_name .' SET `MATR_CENA_KOPA` = '.$row['CENA_KOPA'].'
+                    WHERE `MATR_RAKT_ID` = ' . dbLayer::quote_smart($actId) . '
+                    AND  `MATR_WORK_APROVE_DATE` = "' . $row['MATR_WORK_APROVE_DATE']. '"';
+
+                }
+               
+                
+                $result = $oDB -> makeQuery($query);
+            }
+        }
+
     }
 
     // -----------------------------------------------------------------------------
@@ -8476,13 +8512,14 @@ class dbProc extends dbLayer
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
-                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`
+                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
                                 AND `AAST_STATUS` IS NOT NULL
                                 AND `RAKT_IS_AUTO` = 1
-                                AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'", "'.STAT_WRETEDOFF.'" )
+                                AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'", 
+                                "'.STAT_WRETEDOFF.'", "'.STAT_CLOSE.'" )
                                 ORDER BY AAST_CREATED';
             //echo $query;
            // files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. $query);						
@@ -8498,29 +8535,14 @@ class dbProc extends dbLayer
               foreach ($res as $i => $act)
               {	    
                 files::wh_log('Update act status AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
-                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL  );				
-                switch ($act['AAST_STATUS']) {
-                    case 'INSERT':
-                        $status = STAT_INSERT;
-                        break;
-                    case 'RETURN':
-                        $status = STAT_RETURN;
-                        break;                   
-                    case 'CLOSE':
-                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
-                        break;       
-                    case 'AUTO':
-                        $status = $act['RAKT_STATUS'];
-                        break;                               
-                }
-                //files::wh_log('Update act status AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
-                //                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL.
-                //                    'status:' .$status.PHP_EOL  );				
+                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL  );		
+                                    
                 $user_id = false;
                 $place = false;
                 $end_date = false;
                 $accept_date = false;
 				$actId = $act['RAKT_ID'];
+                $cur_user_id = $act['RAKT_RLTT_ID'];
 
                 if(isset($act['USER_NAME'])){
                     $userInfo = dbProc::getUserInfo('', $act['USER_NAME']);
@@ -8541,7 +8563,26 @@ class dbProc extends dbLayer
                     $accept_date = $act['ACCEPT_DATE'];
                 }
 
-		
+                switch ($act['AAST_STATUS']) {
+                    /*Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + cits lietotājs  tad uz Ievadu nepāriet un nomainās tikai lietotājs
+                    Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + tas pats lietotājs  tad uz Ievadu pāriet;
+                    KS statusi ir primāri, ja atnāk no KS statuss ar datumu un DUISā jau manuāli ir šis statuss, tad jāpārraksta 
+                    tukšajām rindiņām datumu (tikai CLOSE)
+                    */
+                    case 'INSERT':
+                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT && $user_id !== false && $user_id != $cur_user_id) ? 
+                            $act['RAKT_STATUS'] : STAT_INSERT );
+                        break;
+                    case 'RETURN':
+                        $status = STAT_RETURN;
+                        break;                   
+                    case 'CLOSE':
+                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
+                        break;       
+                    case 'AUTO':
+                        $status = $act['RAKT_STATUS'];
+                        break;                               
+                }
 
                 files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
 									'AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.

@@ -52,7 +52,7 @@
                  <? if($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))  {?>
                     <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
                  <? } ?>
-                 <? if(!$isReadonlyExceptEconomist)  {?>
+                 <?if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist))  {?>
                     <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
                  <? } ?>
                 
