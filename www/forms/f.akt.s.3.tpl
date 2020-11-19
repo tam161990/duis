@@ -122,7 +122,7 @@
 
              </tr>
              <tr>
-                <? if(  $tameMaterial)  {?>
+                <? if( $tameMaterial)  {?>
                    <td><?= $oFormMaterialTab -> getElementHtml('export'); ?></td>
                 <? } ?>
    
