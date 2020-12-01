@@ -5114,8 +5114,8 @@ class dbProc extends dbLayer
            $searcCriteria['contract'] = $sCriteria[5];
 
             $query = "select *,
-             SUM(m.MATR_DAUDZUMS) `DAUDZUMS`, 
-            SUM( IF (m.MATR_CENA_KOPA IS NULL, m.MATR_DAUDZUMS*m.MATR_CENA, m.MATR_CENA_KOPA) ) `CENA_KOPA`,
+             m.MATR_DAUDZUMS `DAUDZUMS`, 
+             IF (m.MATR_CENA_KOPA IS NULL, m.MATR_DAUDZUMS*m.MATR_CENA, m.MATR_CENA_KOPA)  `CENA_KOPA`,
             e.KEDI_SECTION `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
@@ -5127,8 +5127,9 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
             LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
-            LEFT JOIN 
-		(SELECT MAX(AAUD_STATUS) AAUD_STATUS, MAX(AAUD_DATUMS) AAUD_DATUMS, AAUD_RAKT_ID FROM `AKTA_STATUSA_MAINA` GROUP BY AAUD_RAKT_ID, AAUD_STATUS)  s ON (a.RAKT_ID = s.AAUD_RAKT_ID)    
+            LEFT JOIN (SELECT AAUD_STATUS, AAUD_DATUMS, AAUD_RAKT_ID FROM `AKTA_STATUSA_MAINA`
+					WHERE AAUD_ID IN (SELECT MAX(AAUD_ID) AAUD_ID FROM `AKTA_STATUSA_MAINA` GROUP BY AAUD_RAKT_ID) ) s 
+				ON (a.RAKT_ID = s.AAUD_RAKT_ID)     
             where 1 AND `RAKT_PROJECT` = '0' AND `MATR_IS_WORKER` = 0 ";
 
            // $query .= " and a.RAKT_GADS = '".$searcCriteria['year']."' ";
@@ -5156,14 +5157,14 @@ class dbProc extends dbLayer
             } else {
                 $query .= " and a.RAKT_SIGNATURE  IN ('P') ";
             }
-            $query .= " GROUP BY ww.KWRC_TITLE, m.MATR_NOSAUKUMS, m.MATR_IS_WORKER ";
-            $query .= " ORDER BY ww.KWRC_TITLE, m.MATR_IS_WORKER DESC";
+            //$query .= " GROUP BY ww.KWRC_TITLE, m.MATR_NOSAUKUMS, m.MATR_IS_WORKER ";
+            $query .= " ORDER BY ww.KWRC_TITLE, m.MATR_IS_WORKER DESC, m.MATR_KODS";
 
 
             //echo $query;
             $oSQL = new dbLayer;
             return $oSQL -> makeQuery($query);
-}
+        }
 
    function getActDateFrom($month, $year)
   {

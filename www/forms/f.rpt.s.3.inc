@@ -182,7 +182,7 @@ if(true/*$isEdUser || $isAdmin*/)
               $writeof = $row['WRITE_OFF_ACCOUNT'];
              
               //$code =  isset($row['MATR_KODS']) ? $row['MATR_KODS'] : $row['MATR_ID'];
-		$code =  $row['MATR_ID'];
+		          $code =  $row['MATR_KODS'];
 
               $area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]  = array (
                   'worker' => $row['MATR_IS_WORKER'],
