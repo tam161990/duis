@@ -85,13 +85,21 @@
 		{
             foreach ($res as $i=>$row)
 			{
-             /* if($row['MATR_IS_WORKER'] == '0')
-              {
-                $totalMaterialPrice = $row['CENA_KOPA'];              }
-              else
-              {
-                $totalMaterialPrice = 0;
-              }*/
+                if($row['MATR_IS_WORKER'] == '1')
+                {
+                  if($row['CENA_KOPA'] == '')
+                  {
+                    $totalMaterialPrice =  $row['MATR_DAUDZUMS'] * $row['MATR_CENA'];
+                  }
+                  else
+                  {
+                    $totalMaterialPrice = $row['CENA_KOPA'];
+                  }
+                }
+                else
+                {
+                  $totalMaterialPrice = 0;
+                }
 
                $pct =  ($totalMaterialPrice*(100+ $pvn )/ 100 ) - $totalMaterialPrice;
                $summa = ($totalMaterialPrice*(100+ $pvn )/ 100 );
@@ -139,18 +147,18 @@
                   $y = 0;
               }
 		*/
-		if($row['MATR_IS_WORKER']  == 1 && ($j == 0 || $writeof != $row['WRITE_OFF_ACCOUNT']))
-              {
-                 $subtitle = text::get('ST_COMPANY_NAME').' '.text::get('MATERIALS');
-                 $j++;
-                 
-              }
-              elseif($row['MATR_IS_WORKER']  == 0 && ($j > 0  || ($y == 0 && $writeof != $row['WRITE_OFF_ACCOUNT'])))
-              {
-                  $subtitle = $row['WORKER'].' '.text::get('MATERIALS');
-                  $j = 0;
-                  $y ++;
-              }
+            if($row['MATR_IS_WORKER']  == 0 && ($j == 0 || $writeof != $row['WRITE_OFF_ACCOUNT']))
+            {
+            $subtitle = text::get('ST_COMPANY_NAME').' '.text::get('MATERIALS');
+            $j++;
+            
+            }
+            elseif($row['MATR_IS_WORKER']  == 1 && ($j > 0  || ($y == 0 && $writeof != $row['WRITE_OFF_ACCOUNT'])))
+            {
+                $subtitle = $row['WORKER'].' '.text::get('MATERIALS');
+                $j = 0;
+                $y ++;
+            }
 	      /*
               if($row['CENA_KOPA'] == '')
               {
@@ -161,7 +169,7 @@
                 $totalMaterialPrice = $row['CENA_KOPA'];
               }
 		*/
-		$totalMaterialPrice = $row['CENA_KOPA'];
+		//$totalMaterialPrice = $row['CENA_KOPA'];
 
               $writeof = $row['WRITE_OFF_ACCOUNT'];
              

@@ -5080,8 +5080,14 @@ class dbProc extends dbLayer
             $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
            // $query .= " AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'";
            // $query .= " and s.AAUD_STATUS = 'CLOSE' ";
-           $query .= " AND ((d.DRBI_WORK_APROVE_DATE IS NULL AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."') OR ( d.DRBI_APPROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') AND 
-                LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) ))";
+           $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE'
+                    AND s.AAUD_DATUMS BETWEEN '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                    AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')
+                OR ( a.RAKT_IS_AUTO = 1  
+                        AND d.DRBI_WORK_APROVE_DATE BETWEEN '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                    AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )
+            
+            )";
             $query .= " AND a.RAKT_TRASE = ".$trase;
             $query .= " and a.RAKT_SIGNATURE  = '".$sign."'";
             $query .= " GROUP BY d.DRBI_ID ORDER BY ww.KWRC_ID, d.DRBI_KKAL_SHIFRS";
@@ -5138,11 +5144,11 @@ class dbProc extends dbLayer
             $query .= " and a.RAKT_STATUS NOT IN ('DELETE') ";
 
             $query .= " AND (  (  a.RAKT_IS_AUTO = 0 and s.AAUD_STATUS = 'CLOSE'
-                                AND s.AAUD_DATUMS >= '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
-                                AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')
+                                AND s.AAUD_DATUMS BETWEEN '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')
                             OR ( a.RAKT_IS_AUTO = 1  
-                                    AND m.MATR_WORK_APROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')
-                                AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d')) )
+                                    AND m.MATR_WORK_APROVE_DATE BETWEEN '" . dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )
                        
                         )";
             if($sign == 'E') {
@@ -5684,8 +5690,15 @@ class dbProc extends dbLayer
             }
             
             $query .= ") y ";
-            $query .= " WHERE ((y.DATE_FROM IS NULL AND y.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND y.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."')OR (STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') BETWEEN  y.DATE_FROM AND y.DATE_TO)) ";
-            $query .= " GROUP BY  RAKT_ID ORDER BY WRITE_OFF_ID, RAKT_FULL_NUMBER";
+            $query .= " WHERE (y.RAKT_IS_AUTO = 1            
+            AND y.DRBI_APPROVE_DATE BETWEEN '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'            
+        )
+        or ( y.RAKT_IS_AUTO = 0
+                and y.AAUD_STATUS = 'CLOSE'
+                AND y.AAUD_DATUMS BETWEEN '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
+        $query .= " GROUP BY  RAKT_ID ORDER BY WRITE_OFF_ID, RAKT_FULL_NUMBER";
 
        // echo $query;
 		$oSQL = new dbLayer;
@@ -7515,7 +7528,7 @@ class dbProc extends dbLayer
                     LEFT JOIN `KL_REF_KODI` k ON (a.AAUD_STATUS = k.KRFK_VERTIBA AND k.KRFK_NOSAUKUMS = "STATUS" )
                     LEFT JOIN `LIETOTAJI` lt ON (a.AAUD_RLTT_ID=lt.RLTT_ID )
 					where   a.AAUD_RAKT_ID='.dbLayer::quote_smart($actId).'
-                    order by a.AAUD_DATUMS desc';
+                    order by a.AAUD_ID desc';
 
 		return $oSQL -> makeQuery($sql);
     }
