@@ -1126,7 +1126,7 @@ if(true)
                 $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
                 $oLink->addPrm('tab', TAB_EXPORT);
                 break;
-              }
+           }
             RequestHandler::makeRedirect($oLink->getQuery());
         }
     }

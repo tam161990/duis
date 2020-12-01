@@ -141,7 +141,7 @@ if ( $isAdmin || $isSystemUser)
             } else {
 
                 $searcCriteria['yearFrom'] = isset($critery['yearFrom'])? $critery['yearFrom'] :dtime::getCurrentYear();              
-                $searcCriteria['worker'] = isset($critery['worker'])? $critery['worker'] :$user['RLTT_KWOI_KODS'];
+                $searcCriteria['worker'] = isset($critery['worker'])? $critery['worker'] :((isset($user['RLTT_KWOI_KODS'])) ? $user['RLTT_KWOI_KODS'] : -1 );
                 $searcCriteria['edRegion'] = isset($critery['edRegion'])? $critery['edRegion'] :'-1';
                 $searcCriteria['ouner'] = isset($critery['ouner'])? $critery['ouner'] :(($isEconomist || $isEditor) ? -1 : $userId);
                 $searcCriteria['status']  = isset($critery['status'])? $critery['status'] : 'STAT_CLOSE';
@@ -168,7 +168,7 @@ if ( $isAdmin || $isSystemUser)
        	// inicialising of listing object
         $amount= (($isNumber == 0) ? 
                     (($isProject == 0 ) ? dbProc::getActCount($sCriteria) : dbProc::getProjectCount($sCriteria)) : 
-                    dbProc::getActByNumberCount($sCriteria, userAuthorization::getWorker()));
+                    dbProc::getActByNumberCount($sCriteria, (($isAdmin ) ? false : userAuthorization::getWorker())));
 		$listing=new listing();
 		$listing->setAmount($amount);
 
@@ -200,7 +200,8 @@ if ( $isAdmin || $isSystemUser)
             $res = dbProc::getActByNumberList( $listing->getStartPosition(),
                                         $listing->getAmountOnPage(),
                                         $sCriteria,
-                                        userAuthorization::getWorker());
+                                        (($isAdmin ) ? false : userAuthorization::getWorker())
+                                    );
             $oLink->addPrm('isSearch', 2 );
         }
 

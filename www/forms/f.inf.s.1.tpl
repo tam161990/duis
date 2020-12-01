@@ -144,8 +144,10 @@ if($isAdmin || $isSystemUser)
             if($isAdmin || $isEconomist || $isAuditor || $isEditor )
             {
             ?>
-            <td class="menu_cell<?= (!$isAdmin && !$isEditor && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
-            <?
+            <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
+            
+            <?          			
+           
             }
             if((($isAdmin || $isEditor) && $isContractUser ))
             {

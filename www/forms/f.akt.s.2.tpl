@@ -215,7 +215,7 @@ document.onmousemove=positiontip
              <? } ?>
             
              </tr>
-             <tr>
+			 <tr>
                 <? if( $tameWork)  {?>
                    <td><?= $oFormWorkTab -> getElementHtml('export'); ?></td>
                 <? } ?>

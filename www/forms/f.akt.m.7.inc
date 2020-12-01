@@ -100,7 +100,7 @@ if (reqVar::get('xmlHttp') == 1)
     	if ($oForm -> isFormSubmitted())
     	{
            $searcCriteria['yearFrom'] = $oForm->getValue('yearFrom');
-           $searcCriteria['worker'] = (($isProjector)? (!empty($workerCode) ? $workerCode : '') : $oForm->getValue('worker'));
+           $searcCriteria['worker'] = (($isProjector)? ((!empty($workerCode)) ? $workerCode : -1) : $oForm->getValue('worker'));
            $searcCriteria['edRegion'] = $oForm->getValue('edRegion');
            $searcCriteria['ouner'] = $oForm->getValue('ouner');
            $searcCriteria['status']  = $oForm->getValue('status');
