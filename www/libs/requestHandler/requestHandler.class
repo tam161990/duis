@@ -3,7 +3,17 @@
 
 class RequestHandler
 {
-	
+	public static $success;
+	public static $error;
+
+	public static function addSuccess($value)
+	{
+		self::$success=$value;
+	}
+	public static function addError($value)
+	{
+		self::$error=$value;
+	}
 	
 	// -----------------------------------------------------------------------------
 	// add a javascript window open code to a href string
@@ -44,6 +54,22 @@ class RequestHandler
 		include_once(RequestHandler::getFormPath('fmk_header'));
 		include(RequestHandler::getFormPath('fmk_critical_error'));
 		include_once(RequestHandler::getFormPath('fmk_footer'));
+		RequestHandler::save_event_log('W', $errorMessage);
+
+		exit;
+	}
+
+	// -----------------------------------------------------------------------------
+	// show error message and die
+	// if this is xmlHTTP query - return null
+	// -----------------------------------------------------------------------------
+	function showCriticalErrorAndDie( $errorMessage , $debugInfo = false)
+	{
+		include_once(RequestHandler::getFormPath('fmk_header'));
+		include(RequestHandler::getFormPath('fmk_critical_error'));
+		include_once(RequestHandler::getFormPath('fmk_footer'));
+		RequestHandler::save_event_log('C', (($debugInfo) ? $debugInfo : '' ).$errorMessage);
+
 		exit;
 	}
 
@@ -139,7 +165,8 @@ class RequestHandler
 	// make redirect
 	// -----------------------------------------------------------------------------
 	function makeRedirect($url)
-	{
+	{	
+		RequestHandler::save_event_log();
 		header('Location: '.$url);
 		exit;
 	}
@@ -213,6 +240,39 @@ class RequestHandler
 		}
 	}
 
+	function save_event_log($type = false, $description = false) {
+		//echo $url22;
+		$url = $_SERVER['REQUEST_URI'];
+		foreach (getallheaders() as $name => $value) {
+			if($name == 'Referer' && $url == false ) {
+				//$url = $value;				
+			}	
+		}
+		
+		$parts = parse_url($url, PHP_URL_QUERY);
+
+		parse_str($parts, $query);
+		$formId = (isset($_REQUEST['formId'] ) ? $_REQUEST['formId'] : '');
+		$ok = (isset($query['successMessage']) ? $query['successMessage'] : self::$success);
+		$err = (isset($query['errorMessage'] ) ? $query['successMessage']  : self::$error);
+		$trase = (isset($_REQUEST['isTrase'] ) ? $_REQUEST['isTrase'] : (isset($query['trase'] ) ? $query['trase'] : 0));
+		$action = (isset($_REQUEST['action'] ) ? $_REQUEST['action'] : '');
+		$description = (($description == false) ? (isset($ok) ? $ok : $err) : $description);
+		$type = (($type == false ) ? (isset($err) ? 'W' : 'A') : $type);				
+
+		if($formId !== '' && $formId !== 'blank' &&  $formId != 'fmk_main') {
+			dbProc::saveEvent($type, 
+									$formId, 
+									$action, 
+									(isset($trase) ? $trase :false), 
+									userAuthorization::getUserId(), 
+									json_encode($_REQUEST),
+									$_SERVER['REQUEST_URI'], 
+									$description);
+		}		
+		
+	}
+
 	// -----------------------------------------------------------------------------
 	// ZR application start
 	// -----------------------------------------------------------------------------
@@ -243,8 +303,8 @@ class RequestHandler
 		// get all TEXT label
 		text::getDataFromMySQL();
         //echo $_SERVER["REMOTE_ADDR"];
-//        print_r($_POST) ;
-// print_r($_REQUEST) ;
+		//print_r($_POST) ;
+		// print_r($_REQUEST) ;
 		// -----------------------------------------------------------------------------
 		// Authorization proccess
 		// -----------------------------------------------------------------------------
@@ -342,9 +402,9 @@ class RequestHandler
 			$formPath=RequestHandler::getFormPath($formId);
             //echo $formPath;
 			if ($formPath!==false)
-			{
-			  
+			{			  
 				include($formPath);
+				RequestHandler::save_event_log('A');				
 			}
 			else
 			{

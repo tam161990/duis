@@ -56,7 +56,7 @@ class dbLayer
 		}
 		else
 		{
-			RequestHandler::showErrorAndDie(text::get('ERROR_DB_CONNECT').$this->getError(false));
+			RequestHandler::showCriticalErrorAndDie(text::get('ERROR_DB_CONNECT').$this->getError(false));
 			return false;
 		}
 	}
@@ -156,7 +156,7 @@ class dbLayer
 
 		if ($r===false)
 		{
-		   	RequestHandler::showErrorAndDie(text::get('ERROR_IN_DB_QUERY').(dbProc::getError()));
+		   	RequestHandler::showCriticalErrorAndDie(text::get('ERROR_IN_DB_QUERY').dbProc::getError(), $this->debugInfo);
 		}
 
 		return $r;

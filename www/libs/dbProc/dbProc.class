@@ -9576,6 +9576,46 @@ class dbProc extends dbLayer
 
         }
 
+    // =============================================================================
+    // EVENT_LOG
+    // =============================================================================
+
+    // -----------------------------------------------------------------------------
+    // Saglabaa notikuma info
+    // Author: Tatjana Fedorkova
+    // -----------------------------------------------------------------------------
+    function saveEvent($type, $form, $op, $isEpla = 0, $user, $request, $uri = false, $description = false)
+    {
+
+        $query = 'insert into `event_log`
+            (
+                `EVNT_TYPE`,
+                `EVNT_FORM_ID`,
+                `EVNT_OP_ID`,
+                `EVNT_IS_EPLA`,
+                `EVNT_USER`,
+                `EVNT_REQUEST_URI`,
+                `EVNT_DESCRIPTION`,
+                `EVNT_REQUEST`
+            )
+            values
+            ("'.dbLayer::quote_smart($type).'",
+            "'.dbLayer::quote_smart($form).'",
+            "'.dbLayer::quote_smart($op).'",
+            "'.dbLayer::quote_smart($isEpla).'",
+            "'.dbLayer::quote_smart($user).'",
+            "'.dbLayer::quote_smart($uri).'",
+            "'.dbLayer::quote_smart($description).'",
+            "'.dbLayer::quote_smart($request).'"
+            )';
+        
+        echo $query;
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+
+        return ($result !== false);
+    }
+
         
 
         
