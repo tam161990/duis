@@ -98,7 +98,7 @@ class dbLayer
 		// Quote if not integer
 		if (is_string($value)) 
 		{
-			$value = mysqli_real_escape_string($GLOBALS['sql_connect'],$value);
+			$value = mysqli_real_escape_string($GLOBALS['sql_connect'], $value);
 		}
 		return $value;
 	}
