@@ -8,6 +8,7 @@ require_once(dirname(__FILE__).'/../libs/process/Process.class');
 require_once(dirname(__FILE__).'/../libs/files/files.class');
 require_once(dirname(__FILE__).'/../libs/fpdf/fpdf.php');
 require_once(dirname(__FILE__).'/../libs/export/toPdf.class');
+require_once(dirname(__FILE__).'/../libs/export/toExcel.class');
 require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
 require_once(dirname(__FILE__).'/../libs/errorhandling.php');
 

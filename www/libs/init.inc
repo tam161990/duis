@@ -1,5 +1,5 @@
 <?
-	require_once(dirname(__FILE__).'/../config/main.conf');
+	require_once(dirname(__FILE__).'/../config/main.conf.php');
   
 	require_once(ZR_LIBS_DIR.'/functions.inc');
 	require_once(ZR_LIBS_DIR.'/dbLayer/dbLayer.class');

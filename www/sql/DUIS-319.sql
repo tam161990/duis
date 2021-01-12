@@ -19,7 +19,6 @@ COLLATE='utf8_latvian_ci'
 ENGINE=InnoDB
 AUTO_INCREMENT=1147
 ;
-ALTER TABLE  FOREIGN KEY (`async_task_id`) REFERENCES `async_task`(`idasync_task`);
 
 CREATE TABLE `event_modules` (
     `EVMD_MODULE` VARCHAR(50) NOT NULL  COMMENT 'Sistēmas daļa' COLLATE 'utf8_latvian_ci',
@@ -75,7 +74,7 @@ INSERT INTO  `event_modules` (`EVMD_MODULE`,`EVMD_FORM_NAME`,`EVMD_FORM_ID`) VAL
 ('PROJECT', 'PROJECTS', 'f.akt.s.20'),
 ('PROJECT', 'WORK_MATERIAL_ADD', 'f.akt.s.23'),
 ('PROJECT', 'IMPORT_NO_PROJECT', 'f.akt.s.24'),
-('SYSTEM', 'CORE', 'class'), //!
+('SYSTEM', 'CORE', 'class'), 
 ('SYSTEM', 'CORE', 'php');
 
 ALTER TABLE `event_modules` ADD COLUMN `EVMD_CHECK_SECTION` SMALLINT NOT NULL DEFAULT 0 COMMENT 'Pārbaudīt saturu event_log.evnt_section kolonnā';
@@ -190,4 +189,4 @@ INSERT INTO  `event_modules` (`EVMD_MODULE`,`EVMD_FORM_NAME`,`EVMD_FORM_ID`) VAL
 ('OPTIONS', 'EVENT_LOG', 'f.adm.s.6');
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
-('EVENT_LOG_DELETE_INFO', 'Dzēst notikumus vecākus par šodienu.'),
+('EVENT_LOG_DELETE_INFO', 'Dzēst notikumus vecākus par šodienu.');

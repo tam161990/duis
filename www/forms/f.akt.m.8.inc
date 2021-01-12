@@ -73,7 +73,7 @@
             }
 
         }
-        $searcCriteria['ouner'] = (($isEditor)? $workerCode : (isset($critery['ouner']) ? $critery['ouner'] : '-1'));
+        $searcCriteria['ouner'] = isset($critery['ouner']) ? $critery['ouner'] : '-1';
         $searcCriteria['type'] = isset($critery['type'])? $critery['type'] :'-1';
         $searcCriteria['section']  = isset($critery['section'])? $critery['section'] : '-1';
 

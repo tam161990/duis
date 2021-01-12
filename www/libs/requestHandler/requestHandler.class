@@ -268,7 +268,7 @@ class RequestHandler
 			dbProc::saveEvent($type, 
 									$formId, 
 									$action, 
-									(isset($trase) ? $trase :false), 
+									(isset($trase) ? $trase : 0), 
 									userAuthorization::getUserId(), 
 									json_encode($_REQUEST),
 									(isset($section) ? $section : (isset($catalog) ? $catalog : null)), 
