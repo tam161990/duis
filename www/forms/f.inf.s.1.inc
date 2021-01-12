@@ -401,6 +401,19 @@ if ( $isAdmin || $isSystemUser)
 	$oLink->addPrm('editMode', '1');
 	$editJobLink = $oLink->getQuery();
 	unset($oLink);
+
+	// event log
+	$oLink=new urlQuery();
+	$oLink->addPrm('isSearch', '1');
+	$oLink->addPrm(FORM_ID, 'f.adm.s.6');
+	$eventSearchLink=$oLink ->getQuery();
+	unset($oLink);
+    // list of acts
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'blank');
+	$eventListLink=$oLink ->getQuery();
+	unset($oLink);
 }
 else
 {

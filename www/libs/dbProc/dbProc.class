@@ -6220,7 +6220,7 @@ class dbProc extends dbLayer
             and k.KKAL_VV_NUMBER =  "'.$contract.'"
             and k.KKAL_NEPLANA IS NOT NULL
             and k.KKAL_IR_AKTIVS = 1
-            and k,KKAL_TRASE = '.$trase.'
+            and k.KKAL_TRASE = '.$trase.'
             AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
             GROUP BY `KKAL_SHIFRS`            
             order by `KKAL_SHIFRS` asc';           // and k.KKAL_KEDI_SECTION =  "'.$section.'"
@@ -9575,6 +9575,117 @@ class dbProc extends dbLayer
             return ($result !== false);
 
         }
+
+    // =============================================================================
+    // EVENT_LOG
+    // =============================================================================
+
+    // -----------------------------------------------------------------------------
+    // Saglabaa notikuma info
+    // Author: Tatjana Fedorkova
+    // -----------------------------------------------------------------------------
+    function saveEvent($type, $form, $op, $isEpla = 0, $user, $request, $section = false, $description = false)
+    {
+
+        $query = 'insert into `event_log`
+            (
+                `EVNT_TYPE`,
+                `EVNT_FORM_ID`,
+                `EVNT_OP_ID`,
+                `EVNT_IS_EPLA`,
+                `EVNT_USER`,
+                `EVNT_SECTION`,
+                `EVNT_DESCRIPTION`,
+                `EVNT_REQUEST`
+            )
+            values
+            ("'.dbLayer::quote_smart($type).'",
+            "'.dbLayer::quote_smart($form).'",
+            "'.dbLayer::quote_smart($op).'",
+            "'.dbLayer::quote_smart($isEpla).'",
+            "'.dbLayer::quote_smart($user).'",
+            "'.dbLayer::quote_smart($section).'",
+            "'.dbLayer::quote_smart($description).'",
+            "'.dbLayer::quote_smart($request).'"
+            )';
+        
+       // echo $query;
+        $oDB = new dbLayer;
+        $result = $oDB -> makeQuery($query);
+
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+	// Pārbaude, vai eksistē modulis pēc file_id
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+    function isModuleExist($file_id)
+	{
+		$oSQL=new dbLayer();
+        $sql = 'select * from `event_modules` where `EVMD_FORM_ID` = "'.dbLayer::quote_smart($file_id).'"';
+
+		$res=$oSQL->makeQuery($sql);
+
+		if (is_array($res) && count($res)==1)
+		{
+			return true;
+		}
+		return false;
+    }
+    
+    // -----------------------------------------------------------------------------
+	// Atlasa visus iespējamus moduļa nosaukumus
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+    function getAllModules()
+	{
+		$oSQL=new dbLayer();
+        $sql = 'select DISTINCT `EVMD_MODULE` from `event_modules` ';
+
+		$result=$oSQL->makeQuery($sql);
+
+		return $result;
+	}
+
+    // Atgriezh notikumus rādīt vakardienas un šodienas notikumus
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getEventList($searchString)
+	{
+        $sCriteria = explode("^", $searchString);
+
+        $searcCriteria['type'] = $sCriteria[0];
+        $searcCriteria['section'] = $sCriteria[1];
+        $searcCriteria['ouner'] = $sCriteria[2];
+
+        $query = " SELECT  *, ".dbLayer::sqlParseDateTime('EVNT_TIMESTAMP')."
+        FROM `v_event_log` l
+        WHERE 1  ";  
+        if($searcCriteria['type'] != -1) { 
+            $query .= " and l.`EVNT_TYPE` = '".$searcCriteria['type']."' ";
+        }
+        if($searcCriteria['section'] != -1) { 
+            $query .= " and l.`EVMD_MODULE` = '".$searcCriteria['section']."' ";
+        }
+        if($searcCriteria['ouner'] != -1) { 
+            $query .= " and l.`EVNT_USER` = '".$searcCriteria['ouner']."' ";
+        }
+        $query .= " and l.`EVNT_TIMESTAMP` > DATE_SUB(NOW(), INTERVAL 2 DAY) ";
+        $query .= "ORDER BY `EVNT_TIMESTAMP` DESC";
+
+        // echo $query;
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+    
+    function deleteEventLog() {
+        $query = 'DELETE FROM `event_log` WHERE `EVNT_TIMESTAMP` < CURDATE()';        
+        $oDB = new dbLayer;
+        return  $oDB -> makeQuery($query);
+    }
+
+
 
         
 

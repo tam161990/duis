@@ -3,7 +3,17 @@
 
 class RequestHandler
 {
-	
+	public static $success;
+	public static $error;
+
+	public static function addSuccess($value)
+	{
+		self::$success=$value;
+	}
+	public static function addError($value)
+	{
+		self::$error=$value;
+	}
 	
 	// -----------------------------------------------------------------------------
 	// add a javascript window open code to a href string
@@ -44,6 +54,22 @@ class RequestHandler
 		include_once(RequestHandler::getFormPath('fmk_header'));
 		include(RequestHandler::getFormPath('fmk_critical_error'));
 		include_once(RequestHandler::getFormPath('fmk_footer'));
+		RequestHandler::save_event_log('W', $errorMessage);
+
+		exit;
+	}
+
+	// -----------------------------------------------------------------------------
+	// show error message and die
+	// if this is xmlHTTP query - return null
+	// -----------------------------------------------------------------------------
+	function showCriticalErrorAndDie( $errorMessage , $debugInfo = false)
+	{
+		include_once(RequestHandler::getFormPath('fmk_header'));
+		include(RequestHandler::getFormPath('fmk_critical_error'));
+		include_once(RequestHandler::getFormPath('fmk_footer'));
+		RequestHandler::save_event_log('C', (($debugInfo) ? $debugInfo : '' ).$errorMessage);
+
 		exit;
 	}
 
@@ -139,7 +165,8 @@ class RequestHandler
 	// make redirect
 	// -----------------------------------------------------------------------------
 	function makeRedirect($url)
-	{
+	{	
+		RequestHandler::save_event_log();
 		header('Location: '.$url);
 		exit;
 	}
@@ -213,6 +240,43 @@ class RequestHandler
 		}
 	}
 
+	function save_event_log($type = false, $description = false) {
+		//echo $url22;
+		$url = $_SERVER['REQUEST_URI'];
+		foreach (getallheaders() as $name => $value) {
+			if($name == 'Referer' && $url == false ) {
+				//$url = $value;				
+			}	
+		}
+		
+		$parts = parse_url($url, PHP_URL_QUERY);
+
+		parse_str($parts, $query);
+		$formId = (isset($_REQUEST['formId'] ) ? $_REQUEST['formId'] : '');
+		$ok = (isset($query['successMessage']) ? $query['successMessage'] : self::$success);
+		$err = (isset($query['errorMessage'] ) ? $query['successMessage']  : self::$error);
+		$trase = (isset($_REQUEST['isTrase'] ) ? $_REQUEST['isTrase'] : (isset($query['trase'] ) ? $query['trase'] : 0));
+		$action = (isset($_REQUEST['action'] ) ? $_REQUEST['action'] : null);
+		$description = (($description == false) ? (isset($ok) ? $ok : (isset($err) ? $err : null)) : $description);
+		$type = (($type == false ) ? (isset($err) ? 'W' : 'A') : $type);
+		$section = (isset($_REQUEST['tab'] ) ? $_REQUEST['tab'] : null);
+		$catalog = (isset($_REQUEST['catalog'] ) ? $_REQUEST['catalog'] : null);
+		
+		if($formId !== '' && $formId !== 'blank' &&  $formId != 'fmk_main' 
+			&& (isset($action) || isset($description) || isset($catalog))
+			) {
+			dbProc::saveEvent($type, 
+									$formId, 
+									$action, 
+									(isset($trase) ? $trase :false), 
+									userAuthorization::getUserId(), 
+									json_encode($_REQUEST),
+									(isset($section) ? $section : (isset($catalog) ? $catalog : null)), 
+									$description);
+		}		
+		
+	}
+
 	// -----------------------------------------------------------------------------
 	// ZR application start
 	// -----------------------------------------------------------------------------
@@ -243,8 +307,8 @@ class RequestHandler
 		// get all TEXT label
 		text::getDataFromMySQL();
         //echo $_SERVER["REMOTE_ADDR"];
-//        print_r($_POST) ;
-// print_r($_REQUEST) ;
+		//print_r($_POST) ;
+		// print_r($_REQUEST) ;
 		// -----------------------------------------------------------------------------
 		// Authorization proccess
 		// -----------------------------------------------------------------------------
@@ -256,7 +320,7 @@ class RequestHandler
                 if (userAuthorization::login(reqVar::get('login'),reqVar::get('password')))
 				{
 					setcookie(COOKIE_LOGIN,reqVar::get('login'),time()+60*60*24*30);
-
+					RequestHandler::checkProcess();
 					$url=new urlQuery();
 					$url->addPrm(FORM_ID,'fmk_main');
 					RequestHandler::makeRedirect($url->getQuery());
@@ -342,9 +406,9 @@ class RequestHandler
 			$formPath=RequestHandler::getFormPath($formId);
             //echo $formPath;
 			if ($formPath!==false)
-			{
-			  
+			{			  
 				include($formPath);
+				RequestHandler::save_event_log('A');				
 			}
 			else
 			{
@@ -454,53 +518,92 @@ class RequestHandler
 		
 	}
 
-		// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-		function sentExcelToKvikStep ($mms_kods, $fileId) 
+	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+	function sentExcelToKvikStep ($mms_kods, $fileId) 
+	{
+			
+		// get file link
+		$oLinkFile=new urlQuery();
+		$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
+		$oLinkFile->addPrm(GET_FILE_VARIABLE,$fileId);
+		$link = $oLinkFile ->getQuery();
+
+		unset($oLinkFile);
+		// The data to send to the API		
+		files::wh_log('sentExcelToKvikStep REM issue_key:'.$mms_kods.PHP_EOL.
+				'file_id: '.$fileId.PHP_EOL.
+				'link:' .$link.PHP_EOL.
+				'issue_material_sum:' .$materialTotal.PHP_EOL  );	
+		$postData = [
+		"issue_key" => $mms_kods,
+		"issue_link" => $materialTotal
+		];
+		
+		// Setup cURL
+		$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
+
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);			
+		//echo $response;
+		if (curl_errno($ch)) {
+			files::wh_log('sentExcelToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, TRUE);
+			files::wh_log('sentExcelToKvikStep RESPONSE:'.PHP_EOL.
+					'status:'.$responseData['status'] .PHP_EOL.
+					'code:' .$responseData['code'].PHP_EOL.
+					'details:' .$responseData['details'].PHP_EOL  );          	 	
+			curl_close($ch);
+		}		
+
+	}
+
+	// -----------------------------------------------------------------------------
+	// funkcija pārbauda palaistus procesus, un, gadijumā, jka process apstajas, palaiž viņu
+	// -----------------------------------------------------------------------------
+	function checkProcess()
+	{
+		$res = dbProc::getJobList(0);
+
+		if (is_array($res))
 		{
-			
-			// get file link
-			$oLinkFile=new urlQuery();
-			$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
-			$oLinkFile->addPrm(GET_FILE_VARIABLE,$fileId);
-			$link = $oLinkFile ->getQuery();
+			foreach ($res as $i=>$row)
+			{
+				$job = $res[$i];
 
-			unset($oLinkFile);
-			// The data to send to the API		
-			files::wh_log('sentExcelToKvikStep REM issue_key:'.$mms_kods.PHP_EOL.
-					'file_id: '.$fileId.PHP_EOL.
-					'link:' .$link.PHP_EOL.
-					'issue_material_sum:' .$materialTotal.PHP_EOL  );	
-			$postData = [
-			"issue_key" => $mms_kods,
-			"issue_link" => $materialTotal
-			];
-			
-			// Setup cURL
-			$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
+				$proc_status = false;
+				if(isset($job['PROC_PID']))
+				{
+					$proc = new Process();
+					$proc->setPid($job['PROC_PID']); 
+					$proc_status = $proc->status(); // возвращает true или false
+					// ja prosecc apstajas, dzēšam info
+					if(!$proc_status) {
+						$r=dbProc::saveJob( $job['PROC_KODS'],false,0 );
 
-			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			//Attach our encoded JSON string to the POST fields.
-			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
-
-			//Set the content type to application/json
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
-
-			// Send the request
-			$response = curl_exec($ch);			
-			//echo $response;
-			if (curl_errno($ch)) {
-				files::wh_log('sentExcelToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
-			} else { 
-				// Decode the response
-				$responseData = json_decode($response, TRUE);
-				files::wh_log('sentExcelToKvikStep RESPONSE:'.PHP_EOL.
-						'status:'.$responseData['status'] .PHP_EOL.
-						'code:' .$responseData['code'].PHP_EOL.
-						'details:' .$responseData['details'].PHP_EOL  );          	 	
-				curl_close($ch);
-			}		
-
+						// tad laižam procesu no jaunas
+						$command = $job['PROC_KOMANDA'];
+						$process = new Process($command);
+						$processId = $process->getPid();
+						$status = $process->status(); // возвращает true или false
+						if($status) {
+							$r=dbProc::saveJob( $job['PROC_KODS'], $processId, 1);
+						}
+					}
+					
+				}
+			}
+		}		
+		
 	}
 }
 

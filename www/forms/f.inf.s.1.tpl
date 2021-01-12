@@ -118,7 +118,8 @@ if($isAdmin)
            <td class="menu_cell" nowrap><a target="frame_1" href="<?=$warningLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('WARNING');?></a></td>
 		   <td class="menu_cell" nowrap><a target="frame_1" href="<?=$kvikStepLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('ACT_NUMBER_TEMPLATE');?></a></td>
 		   <td class="menu_cell" nowrap><a target="frame_1" href="<?=$superadminLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('SUPERADMIN');?></a></td>
-		   <td class="menu_cell_2" ><a  target="frame_1" href="<?=$jobListLink;?>" onclick="reloadFrame(2,'<?=$editJobLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('SYSTEM_PROCESS');?></a></td>	
+		   <td class="menu_cell" nowrap><a  target="frame_1" href="<?=$jobListLink;?>" onclick="reloadFrame(2,'<?=$editJobLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('SYSTEM_PROCESS');?></a></td>	
+		   <td class="menu_cell_2" nowrap><a  target="frame_1" href="<?=$eventSearchLink;?>" onclick="reloadFrame(2,'<?=$eventListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('EVENT_LOG');?></a></td>
 		</tr>
 
 	</table>
@@ -231,11 +232,12 @@ if($isAdmin || $isSystemUser)
 					<td nowrap id="tdCatalog" class="menu_cell_top" <?=($isAdmin || $isEdUser|| $isAuditor)?'':'disabled';?>><?=($isAdmin || $isEdUser|| $isAuditor)?'<a onclick="subMenu(\'catalogSubMenuDiv\',\'tdCatalog\');return false;" href="#">':'';?><?=text::get('CATALOGS');?><?=($isAdmin || $isEdUser|| $isAuditor)?'</a>':'';?></td>
 
 
-                    <td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
-					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
-                    	<td nowrap id="tdGps" class="menu_cell_top" <?=($isEditor || $isEdUser || $isAdmin)?'':'disabled';?>><?=($isEditor || $isEdUser || $isAdmin)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cGpsMain.'" target="frame_1">':'';?><?=text::get('GPS');?><?=($isEditor || $isEdUser || $isAdmin)?'</a>':'';?></td>
-					<td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
+					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
 					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $isEconomist)?'':'disabled';?>><?=($isAdmin ||  $isProjector || $isEconomist)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
+					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
+                    <td nowrap id="tdGps" class="menu_cell_top" <?=($isEditor || $isEdUser || $isAdmin)?'':'disabled';?>><?=($isEditor || $isEdUser || $isAdmin)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cGpsMain.'" target="frame_1">':'';?><?=text::get('GPS');?><?=($isEditor || $isEdUser || $isAdmin)?'</a>':'';?></td>
+					<td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
+					
 					<td nowrap class="menu_cell_right">&nbsp;</td>
 				</tr>
 			</table>

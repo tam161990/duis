@@ -179,6 +179,7 @@ class form
 			$aGlobalErrors[]=$value;
 		}
 		session::set('glb_form_errors',$aGlobalErrors);
+		RequestHandler::addError($value);
 	}
 
 	// -----------------------------------------------------------------------------
@@ -190,6 +191,8 @@ class form
         $aGlobalSuccess=array();
 		$aGlobalSuccess[]=$value;
 		session::set('glb_form_success',$aGlobalSuccess);
+		RequestHandler::addSuccess($value);
+		
 	}
 
 
