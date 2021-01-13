@@ -438,11 +438,12 @@ class RequestHandler
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
 
 		// Send the request
-		$response = curl_exec($ch);			
+		//$response = curl_exec($ch);	
+		$response = null;		
 		//echo $response;
 		if (curl_errno($ch)) {
             		files::wh_log('sentDataToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
-        	} else { 
+        } else { 
 			// Decode the response
 			$responseData = json_decode($response, TRUE);
 			files::wh_log('sentDataToKvikStep RESPONSE:'.PHP_EOL.
@@ -450,7 +451,7 @@ class RequestHandler
 									'code:' .$responseData['code'].PHP_EOL.
 									'details:' .$responseData['details'].PHP_EOL  );          	 	
            	 	curl_close($ch);
-        	}		
+        }		
 		
 	}
 
@@ -487,7 +488,7 @@ class RequestHandler
 			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
 
 			// Send the request
-			$response = curl_exec($ch);			
+			//$response = curl_exec($ch);			
 			//echo $response;
 			if (curl_errno($ch)) {
 				files::wh_log('sentExcelToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
