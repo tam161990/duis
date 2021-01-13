@@ -421,28 +421,36 @@ if ( $isAdmin || $isSystemUser)
       }
       if($tameWork) {
         $oFormWorkTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmWorkTabT\',\'actId\') ) {setFormValue(\'frmWorkTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+        $oFormWorkTab -> addElement('submitImg', 'export_all', text::get('EXPORT'), 'img/export_all_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmWorkTabT\',\'actId\') ) {setFormValue(\'frmWorkTabT\',\'action\',\''.OP_EXPORT_ALL.'\');} else {return false;}"');
      }
 
 
       // if form iz submit (save button was pressed)
-      if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
+      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
       { 
-        if($tameWork && $oFormWorkTab->getValue('action')==OP_EXPORT)
-          {
-              // akta sagatavi (tab tamme)
-              $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
-              if($idFile !== false) {
-                $oLink=new urlQuery();
-                $oLink->addPrm(FORM_ID, 'f.akt.s.1');
-                $oLink->addPrm('actId', $actId);
-                $oLink->addPrm('tab', TAB_ESTIMATE);
-                RequestHandler::makeRedirect($oLink->getQuery());
+        if($tameWork && 
+              (  $oFormWorkTab->getValue('action')==OP_EXPORT_ALL || $oFormWorkTab->getValue('action')==OP_EXPORT))
+        {
+            $idFile = false;
+            if($oFormWorkTab->getValue('action')==OP_EXPORT ) {
+                $idFile = toExcel::exportTameWork($actId, $userId, FILE_ESTIMATE);
             }
-            else {
-              $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+            if($oFormWorkTab->getValue('action')==OP_EXPORT_ALL ) {
+              $idFile = toExcel::exportTameAll($actId, $userId, FILE_ESTIMATE);
             }
-          } 
+            if($idFile !== false) {
+              $oLink=new urlQuery();
+              $oLink->addPrm(FORM_ID, 'f.akt.s.1');
+              $oLink->addPrm('actId', $actId);
+              $oLink->addPrm('tab', TAB_ESTIMATE);
+              RequestHandler::makeRedirect($oLink->getQuery());
+          }
           else {
+            $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+          }
+      } 
+      else 
+      {
         if($oFormWorkTab ->isValid()  && $isRowValid)
         { 
             $r=dbProc::deleteActWorks($actId, $tameWork);

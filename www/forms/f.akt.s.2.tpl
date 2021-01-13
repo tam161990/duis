@@ -215,12 +215,14 @@ document.onmousemove=positiontip
              <? } ?>
             
              </tr>
-			 <tr>
-                <? if( $tameWork)  {?>
+             <? if( $tameWork)  {?>
+			 <tr>                
                    <td><?= $oFormWorkTab -> getElementHtml('export'); ?></td>
-                <? } ?>
-   
-                </tr>
+              </tr>
+              <tr>                
+                <td><?= $oFormWorkTab -> getElementHtml('export_all'); ?></td>
+           </tr>
+            <? } ?>
             </table>
         </td>
 	</tr>

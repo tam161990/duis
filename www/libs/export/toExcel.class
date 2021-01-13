@@ -583,6 +583,180 @@ function exportTameMaterial($actId, $userId, $type){
             return $idFile;
     
         }
+
+        function exportTameAll($actId, $userId, $type){
+            // get info about voltage
+            $actInfo = dbProc::getActInfo($actId);
+            if(count($actInfo)>0)
+            {
+                $act = $actInfo[0];
+            }
+            
+            $start_date = date('d.m.Y');
+            $cacheMethod = PHPExcel_CachedObjectStorageFactory:: cache_to_phpTemp;
+            $cacheSettings = array( 'memoryCacheSize ' => '8MB');
+            PHPExcel_Settings::setCacheStorageMethod($cacheMethod, $cacheSettings);
+        
+             // Create new PHPExcel object
+             $objPHPExcel = new PHPExcel();
+             
+             $sheet = $objPHPExcel->getActiveSheet();
+        
+             $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
+             $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
+        
+             $sheet->getDefaultColumnDimension()->setWidth(15);
+             $sheet->getDefaultRowDimension()->setRowHeight(15);
+        
+             $sheet->setShowGridlines(true);
+        
+             $sheet->getDefaultStyle()->getFont()->setName('Arial');
+             $sheet->getDefaultStyle()->getFont()->setSize(9);
+        
+             $sheet->getDefaultStyle()->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        
+             $sheet->getColumnDimension('A')->setWidth(35);
+             $sheet->getColumnDimension('B')->setWidth(55);
+        
+             $currentRow = 1;
+        
+             $sheet->duplicateStyleArray(
+                array(
+               'font'    => array(
+                               'bold'      => true,
+                               'italic' => false ,
+                               'size' => 9
+                           ),
+                           'alignment' => array(
+                                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+                           )
+                       ),  'A'.$currentRow.':A7' ); 
+             
+             
+        
+             $sheet->setCellValue('A'.$currentRow, text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']);
+             $sheet->setCellValue('B'.$currentRow, $act['WORK_TITLE']);
+             $currentRow ++;
+        
+             $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_ACT_TYPE'));
+             $sheet->setCellValue('B'.$currentRow, $act['TYPE']);
+             $currentRow ++;
+             $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_OBJECT'));
+             $sheet->setCellValue('B'.$currentRow, $act['OBJECT']);
+             $currentRow ++;
+             $sheet->setCellValue('A'.$currentRow, text::get('SINGLE_VOLTAGE'));
+             $sheet->setCellValue('B'.$currentRow, $act['SPRIEGUMS']);
+             $currentRow ++;
+             $sheet->setCellValue('A'.$currentRow, text::get('EXPORT_MAIN_DESIGNATION'));
+             $sheet->setCellValue('B'.$currentRow, $act['RAKT_OPERATIVAS_APZIM']);
+             $currentRow ++;
+             $sheet->setCellValue('A'.$currentRow, text::get('COMMENT'));
+             $sheet->setCellValue('B'.$currentRow, $act['RAKT_PIEZIMES']);
+             $currentRow ++;
+             $sheet->setCellValue('A'.$currentRow, text::get('TO_ID'));
+             $sheet->setCellValue('B'.$currentRow, $act['RAKT_TO_ID']);
+             $currentRow ++;
+             $currentRow ++;
+
+             $sheet->duplicateStyleArray(
+                array(
+               'font'    => array(
+                               'bold'      => true,
+                               'italic' => false ,
+                               'size' => 9
+                           ),
+                           'alignment' => array(
+                               'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                           )
+                       ),  'A'.$currentRow.':F'.$currentRow   ); 
+            $sheet->setCellValue('A'.$currentRow, text::get('CHIPHER'));
+            $sheet->setCellValue('B'.$currentRow, text::get('NAME'));
+            $sheet->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
+            $sheet->setCellValue('D'.$currentRow, text::get('AMOUNT'));
+            $sheet->setCellValue('E'.$currentRow, text::get('PRICE'));
+            $sheet->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
+            
+            $currentRow ++; 
+    
+            $aWorkDb=dbProc::getActWorkList($actId,true);
+            foreach ($aWorkDb as $i=>$row)
+            {							 
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['DRBI_KKAL_SHIFRS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
+                $sheet->setCellValue('C'.$currentRow, $row['DRBI_MERVIENIBA']);
+                $sheet->setCellValueExplicit('D'.$currentRow, $row['DRBI_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('E'.$currentRow, number_format($row['DRBI_KKAL_NORMATIVS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('F'.$currentRow, number_format($row['DRBI_CILVEKSTUNDAS'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 				
+                
+                $currentRow ++; 
+                
+            }
+             $currentRow ++;
+        
+             $sheet->duplicateStyleArray(
+                       array(
+                      'font'    => array(
+                                      'bold'      => true,
+                                      'italic' => false ,
+                                      'size' => 9
+                                  ),
+                                  'alignment' => array(
+                                      'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+                                  )
+                              ),  'A'.$currentRow.':F'.$currentRow   ); 
+            $sheet->setCellValue('A'.$currentRow, text::get('CODE'));
+            $sheet->setCellValue('B'.$currentRow, text::get('NAME'));
+            $sheet->setCellValue('C'.$currentRow, text::get('UNIT_OF_MEASURE'));
+            $sheet->setCellValue('D'.$currentRow, text::get('AMOUNT'));
+            $sheet->setCellValue('E'.$currentRow, text::get('PRICE'));
+            $sheet->setCellValue('F'.$currentRow, text::get('PRICE_TOTAL'));
+            
+            $currentRow ++; 
+    
+            $aMaterialDb=dbProc::getActMaterialList($actId,  true );
+            foreach ($aMaterialDb as $i=>$row)
+            {							 
+                $sheet->setCellValueExplicit('A'.$currentRow, $row['MATR_KODS'], PHPExcel_Cell_DataType::TYPE_STRING); 
+                $sheet->setCellValue('B'.$currentRow, $row['MATR_NOSAUKUMS']); 
+                $sheet->setCellValue('C'.$currentRow, $row['MATR_MERVIENIBA']);
+                $sheet->setCellValueExplicit('D'.$currentRow, $row['MATR_DAUDZUMS_KOR'],PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('E'.$currentRow, number_format($row['MATR_CENA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                $sheet->setCellValueExplicit('F'.$currentRow, number_format($row['MATR_CENA_KOPA'],2,'.',''),PHPExcel_Cell_DataType::TYPE_NUMERIC); 					
+                
+                $currentRow ++; 
+                
+            }
+    
+            $currentRow ++;
+            $sheet->setCellValue('A'.$currentRow, text::get('ACT_CREATER'));
+            $sheet->setCellValue('B'.$currentRow, $act['AUTORS']);
+            $currentRow ++;
+            $sheet->setCellValue('A'.$currentRow, text::get('DATE'));
+            $sheet->setCellValue('B'.$currentRow, date('d.m.Y'));
+            $currentRow ++;
+            
+            
+            $filename = 'Darbi_Materiali'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.EXCEL_FILE_EXTENTION;
+            $res=dbProc::replaceExcelFile( $filename, $userId, $actId, EXCEL_FILE_MIMETYPE);                
+            
+            if ($res)
+            {
+                $idFile=dbLayer::getInsertId();
+            }
+            else
+            {
+                return false;				
+            }
+                        
+            if ($idFile!==false)
+            {
+                $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+                $objWriter->setOffice2003Compatibility(true);
+                $objWriter->save(EXCEL_FILES_STORE_PATH."/".$idFile);                                              
+            }
+            return $idFile;        
+        }
+           
    
 
 }
