@@ -64,7 +64,7 @@ function mylog($error, $errlvl, $filePath)
     dbProc::saveEvent((($errlvl == "fatal") ? 'C' : 'W'), 
                         ((dbProc::isModuleExist($filenameParts[0])) ? $filenameParts[0] : $filenameParts[1]), 
                         false, 
-                        false, 
+                        0, 
                         userAuthorization::getUserId(), 
                         $filePath,
                         false, 
