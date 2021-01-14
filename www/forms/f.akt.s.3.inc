@@ -356,25 +356,35 @@ if ( $isAdmin || $isSystemUser)
       }
       if($tameMaterial) {
         $oFormMaterialTab -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/export_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMaterialTabT\',\'actId\') ) {setFormValue(\'frmMaterialTabT\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+        $oFormMaterialTab -> addElement('submitImg', 'export_all', text::get('EXPORT'), 'img/export_all_to_excel.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMaterialTabT\',\'actId\') ) {setFormValue(\'frmMaterialTabT\',\'action\',\''.OP_EXPORT_ALL.'\');} else {return false;}"');
      }
 
       // if form iz submit (save button was pressed)
 	  if ($oFormMaterialTab -> isFormSubmitted()&& $isNew === false)
 	  {
-      if($tameMaterial && $oFormMaterialTab->getValue('action')==OP_EXPORT)
+      if($tameMaterial && 
+        ($oFormMaterialTab->getValue('action')==OP_EXPORT_ALL || $oFormMaterialTab->getValue('action')==OP_EXPORT))
       {
-          // akta sagatavi (tab tamme)
+        
+        $idFile = false;
+        if($oFormMaterialTab->getValue('action') == OP_EXPORT) {
           $idFile = toExcel::exportTameMaterial($actId, $userId, FILE_ESTIMATE);
+        }
+        if($oFormMaterialTab->getValue('action') == OP_EXPORT_ALL) {
+          
+          $idFile = toExcel::exportTameAll($actId, $userId, FILE_ESTIMATE);
+        }
+        
           if($idFile !== false) {
             $oLink=new urlQuery();
             $oLink->addPrm(FORM_ID, 'f.akt.s.1');
             $oLink->addPrm('actId', $actId);
             $oLink->addPrm('tab', TAB_ESTIMATE);
             RequestHandler::makeRedirect($oLink->getQuery());
-        }
-        else {
-          $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-        }
+          }
+          else {
+            $oFormMaterialTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+          }   
       } 
       else 
       {

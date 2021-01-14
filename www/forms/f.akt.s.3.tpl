@@ -121,12 +121,14 @@
              <? } ?>
 
              </tr>
-             <tr>
-                <? if( $tameMaterial)  {?>
-                   <td><?= $oFormMaterialTab -> getElementHtml('export'); ?></td>
-                <? } ?>
-   
-                </tr>
+             <? if( $tameMaterial)  {?>
+             <tr>                
+                   <td><?= $oFormMaterialTab -> getElementHtml('export'); ?></td> 
+            </tr>
+            <tr>              
+                   <td><?= $oFormMaterialTab -> getElementHtml('export_all'); ?></td> 
+            </tr>
+            <? } ?>
             </table>
         </td>
 	</tr>
