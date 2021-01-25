@@ -316,7 +316,7 @@
                         ),
                     array(
                     iconv('UTF-8', 'windows-1257', ''),
-                    iconv('UTF-8', 'windows-1257', $edRegion .' '.text::get('REPORT_OUNER_CHIF'))
+                    iconv('UTF-8', 'windows-1257', text::get('RBF_REPORT_OUNER_CHIF'))
                         ),
                     array(
                     iconv('UTF-8', 'windows-1257','_____________________'),
