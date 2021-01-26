@@ -8612,7 +8612,8 @@ class dbProc extends dbLayer
                         }
                     }
 
-                    if(($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_WRETEDOFF || $act['RAKT_STATUS'] == STAT_CLOSE ) && $accept_date !== false) {
+                    if(($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_WRETEDOFF || $act['RAKT_STATUS'] == STAT_CLOSE ||
+                         $act['RAKT_STATUS'] == STAT_INSERT ) && $accept_date !== false) {
                         $r2 = dbProc::setApproveDate($actId, $accept_date);
                         if ($r2===false)    {        
                             files::wh_log('ERROR setApproveDate: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
