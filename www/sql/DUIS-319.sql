@@ -124,7 +124,6 @@ INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALU
 ('OP', 'L', 'Dzēst rindu'),
 ('OP', 'N', 'Noraidīt projektu')
 ;
-
 CREATE OR REPLACE VIEW v_event_log
 AS
 SELECT * FROM (
