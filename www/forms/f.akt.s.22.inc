@@ -99,8 +99,8 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.24');
       $oPopLink->addPrm('actId',$actId); 
-      $favorit[$j]['TITLE'] = text::get('IMPORT_NO_PROJECT');
-      $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
+     // $favorit[$j]['TITLE'] = text::get('IMPORT_NO_PROJECT');
+     // $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
  
        unset($oPopLink);
        unset($res);
@@ -119,6 +119,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       unset($res);
 	  //print_r($workType);
       $type=array();
+      $type_code = array();
       $res = dbProc::getKrfkName('PROJECT_EXPORT');
       $type['']=text::get('EMPTY_SELECT_OPTION');		
       if (is_array($res))
@@ -126,6 +127,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             foreach ($res as $row)
             {
                 $type[$row['nosaukums']]=$row['nozime'];
+                $type_code[] = $row['nosaukums'];
             }
       }
       unset($res);
@@ -224,6 +226,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $aMaterials[0] = array();          
         }    
       }
+      
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormMaterialTab->addElement('hidden','actId','',$actId);
@@ -237,6 +240,11 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         foreach ($aGroupMaterials as $j => $actMaterial)
         {          
           //print_r($actMaterial);
+          $export_type_string = false;
+          if (!empty($actMaterial['MATR_PROJECT_EXPORT']) && !in_array( $actMaterial['MATR_PROJECT_EXPORT'],  $type_code))
+          {
+            $export_type_string = true;
+          }
           $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
           $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
           $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
@@ -254,7 +262,11 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
             $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
             $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'].' '.explode('^', $actMaterial['MATR_WORK_TYPE'])[0] ); 
             $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
-            $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+            if($export_type_string) {
+              $oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
+            } else {
+              $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+            }
         } else {         
           // save amount
           $saveJs = "var amount = isDoubleAuto(this.value,3); 

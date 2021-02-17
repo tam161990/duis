@@ -178,7 +178,7 @@ if($isAdmin || $isSystemUser)
 }
 ?>
 </div>
-<div id="projectSubMenuDiv"  class="sub_menu" style="position: absolute;left: 300px;top: 26px;visibility:hidden;">
+<div id="projectSubMenuDiv"  class="sub_menu" style="position: absolute;left: 150px;top: 26px;visibility:hidden;">
 	<?
 	if($isAdmin || $isSystemUser)
 	{

@@ -37,6 +37,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateWorkComment(reqVar::get('saveId'), reqVar::get('notes'));
       }
+      if (reqVar::get('work_type_text')!='')
+      {
+        dbProc::updateWorkTypeText(reqVar::get('saveId'), reqVar::get('work_type_text'));
+      }
     }
     exit();
 }
@@ -274,7 +278,16 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           } else {
             $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
             $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required'); 
-            $oFormWorkTab->addElement('text', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT'], (($isReadonly)?' disabled ':'').'maxlength="50"');
+             // save work_type_text
+             $saveJs = "if(this.value != '') { 
+              var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type_text='+this.value+'&saveId='+rowId.value));
+              this.style.borderColor = '#16bb24cc'; 
+              this.parentNode.prepend(sp1);
+              setTimeout(savedField, 3000, this, '#8c8c8c'); 
+            }";
+            $oFormWorkTab->addElement('text', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT'], (($isReadonly)?' disabled ':'').'maxlength="50"'.'
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
             
               // save button
              $saveJs = "var amount = isDoubleAuto(this.value,3);               

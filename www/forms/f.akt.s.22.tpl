@@ -2,7 +2,10 @@
 function savedField (el, color) { 
     el.style.borderColor = color; 
     parent = el.parentNode;
-    parent.removeChild(parent.childNodes[0]); 
+    if(parent.firstChild.nodeName == 'SPAN') {
+        parent.removeChild(sp1);
+    }
+    //parent.removeChild(parent.childNodes[0]); 
 }
 // succsess
 var sp1 = document.createElement('span');

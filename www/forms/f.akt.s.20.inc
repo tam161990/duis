@@ -245,7 +245,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   array('classifName'=>KL_WORK_OWNERS,
         'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:'',
         'readonly'=>false), 
-        (($isReadonlyExceptAdmin) ? ' disabled' : '') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
+        ((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
 
   $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16" '.(($isReadonlyExceptAdmin )?' disabled':''));
 
@@ -273,7 +273,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   
   if (!$isReadonly1 && ($actId != false))
   {
-    $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn20_120_nodot_saskanosanai.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
   }
   
   if (!$isReadonlyExceptEconomist)
