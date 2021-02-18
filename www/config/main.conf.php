@@ -4,9 +4,17 @@
 # =============================================================================
 
 // MySQL: login
+<<<<<<< HEAD
 define ('MYSQL_USER','root');
 
 // MySQL: password
+=======
+//define ('MYSQL_USER','rcd');
+define ('MYSQL_USER','root');
+
+// MySQL: password
+//define ('MYSQL_PASSWORD','pass@word1');
+>>>>>>> origin/DUIS-319
 define ('MYSQL_PASSWORD','');
 
 // MySQL: host
@@ -15,19 +23,20 @@ define ('MYSQL_HOST','localhost');
 // MySQL DB name
 define ('MYSQL_DB','duistst');
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/DUIS-319
 # =============================================================================
 # LDAP configuration
 # =============================================================================
 
 // The base dn for  domain
 define ('LDAP_BASE_DIR','OU=LK,DC=energo,DC=lv');
-// OU=AdminiUnTehLiet
+
 // Array of domain controllers.
-//define ('LDAP_DOMAIN1','10.20.15.5');
-//define ('LDAP_DOMAIN2','10.20.15.2');
-//define ('LDAP_DOMAIN','10.20.15.14');
-define ('LDAP_DOMAIN','leldap.energo.lv');
+define ('LDAP_DOMAIN1','10.20.15.1');
+define ('LDAP_DOMAIN2','10.20.15.2');
 
 // The account suffix for domain
 define ('LDAP_ACCOUNT_SUFFIX','@energo.lv');
@@ -61,18 +70,27 @@ define ('ZR_SERVER_PATH',preg_replace('/config$/','',dirname(__FILE__)));
 
 // LOG stored dir
 define ('LOG_STORE_PATH', ZR_SERVER_PATH.'/logs');
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/DUIS-319
 // Files stored dir
 define ('FILES_STORE_PATH', ZR_SERVER_PATH.'/files');
 // GPS files stored dir
 define ('GPS_FILES_STORE_PATH', ZR_SERVER_PATH.'/gps_files');
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/DUIS-319
 //  file stored dir
 define ('EXCEL_FILES_STORE_PATH', ZR_SERVER_PATH.'/files/excel');
 //  project file stored dir
 define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/DUIS-319
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
 
@@ -104,7 +122,15 @@ define ('DEBUG_MODE',true);
 define ('CURRENT_YEAR','current_year');
 
 // SOA service for KvikStep act status
+<<<<<<< HEAD
 define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+=======
+define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+
+// project file type
+define('PROJECT_FILE_TYPE', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+>>>>>>> origin/DUIS-319
 
 
 # =============================================================================
@@ -120,6 +146,10 @@ define ('MAX_SHOW_TEXT_LENGTH',200);
 
 define ('MAIN_ADMIN_ID',197);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/DUIS-319
 # =============================================================================
 # GET variables name
 # =============================================================================
@@ -133,6 +163,7 @@ define ('IS_GET_EXCEL_FILE_VARIABLE','get_excel_file');
 // getting project excel file - flag
 define ('IS_GET_PEXCEL_FILE_VARIABLE','get_excel_file');
 
+<<<<<<< HEAD
 
 // getting gps file - flag
 define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
@@ -144,6 +175,14 @@ define ('GET_FILE_VARIABLE','idFile');
 // get GPS file variable name
 define ('GET_GPS_FILE_VARIABLE','idFile');
 
+=======
+// getting gps file - flag
+define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
+
+// get file variable name
+define ('GET_FILE_VARIABLE','idFile');
+
+>>>>>>> origin/DUIS-319
 // get file variable name
 define ('GET_EXEL_FILE_VARIABLE','idFile');
 
@@ -159,9 +198,12 @@ define('EXCEL_FILE_MIMETYPE', 'application/vnd.openxmlformats-officedocument.spr
 // excel file extentions
 define('EXCEL_FILE_EXTENTION', 'xlsx');
 
+<<<<<<< HEAD
 // project file type
 define('PROJECT_FILE_TYPE', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
+=======
+>>>>>>> origin/DUIS-319
 // form id 
 define ('FORM_ID', 'formId');
 
@@ -186,11 +228,20 @@ define ('URL_QUERY_IS_HASH',false);
 # =============================================================================
 # Date interval
 # =============================================================================
+<<<<<<< HEAD
 define ('NEXT_YEAR_START',20181227);
 define ('PREV_YEAR_END',20190101);
 // default datums
 define ('DEFAULT_DATE', '2000-01-01 00:00:00');
 
+=======
+define ('NEXT_YEAR_START',20141215);
+define ('PREV_YEAR_END',20150101);
+// default datums
+define ('DEFAULT_DATE', '2000-01-01 00:00:00');
+
+
+>>>>>>> origin/DUIS-319
 # =============================================================================
 # Klasifikatori
 # =============================================================================
@@ -216,7 +267,11 @@ define ('KL_CALCULALATION_TR','KL_KALKULACIJA_TRASE');
 define ('KL_MATERIALS','KL_MATERIALI');
 define ('KL_MMS_WORKS','KL_MMS_DARBI');
 define ('KL_WRITEOFF','KL_WRITEOFF_CODE');
+<<<<<<< HEAD
 define ('KL_REGIONS','KL_REGIONI');   
+=======
+define ('KL_REGIONS','KL_REGIONI');
+>>>>>>> origin/DUIS-319
 define ('KL_MMS_WORK_CALCULALATION','KL_MMS_KALKULACIJA');
 define ('KL_CALCULALATION_MATERIAL','KL_KALKULACIJA_MATERIALI');
 define ('KL_SYSTEM_PROCESS','KL_SISTEMAS_PROCESI');
@@ -236,7 +291,11 @@ define('KRFK_ROLE', 'ROLE');
 define('KRFK_STATUS', 'STATUS');
 define('KRFK_IMPORT', 'IMPORTS');
 define('KRFK_FAVORIT', 'FAVORITS');
+<<<<<<< HEAD
 define('KRFK_IMPORT_K', 'IMPORT');  
+=======
+define('KRFK_IMPORT_K', 'IMPORT');
+>>>>>>> origin/DUIS-319
 define('KRFK_POSITION', 'POSITION');
 
 # =============================================================================
@@ -246,8 +305,13 @@ define('KRFK_POSITION', 'POSITION');
 define ('ROLE_VIEWER', 'VIEWER');
 define ('ROLE_ECONOMIST', 'ECONOMIST');
 define ('ROLE_ED_USER', 'ED_USER');
+<<<<<<< HEAD
 define ('ROLE_AUDIT_USER', 'AUDITOR');
 define ('ROLE_TR_USER', 'TRASE_EDIT'); 
+=======
+define ('ROLE_TR_USER', 'TRASE_EDIT');
+define ('ROLE_AUDIT_USER', 'AUDITOR'); 
+>>>>>>> origin/DUIS-319
 define ('ROLE_PROJ_APPROVER', 'PROJ_APPROVER'); 
 
 # =============================================================================
@@ -288,7 +352,10 @@ define('TAB_ESTIMATE', 'TAB_ESTIMATE');
 define('TAB_WORKS_T', 'TAB_WORKS_T');
 define('TAB_MATERIAL_T', 'TAB_MATERIAL_T');
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/DUIS-319
 # =============================================================================
 # message types
 # =============================================================================
@@ -327,19 +394,32 @@ define ('OP_PAY','P');
 define ('OP_RETURN_CONFIRMED','X');
 // delete  confirmed by admin
 define ('OP_DELETE_CONFIRMED','Y');
+<<<<<<< HEAD
 // dzest rindu
 define ('OP_DELETE_ROW', 'L');
+=======
+>>>>>>> origin/DUIS-319
 // run job
 define ('OP_JOB_RUN','J');
 // kill job
 define ('OP_JOB_KILL','K');
 // straprezultāti
 define ('OP_MIDLE_EXPORT', 'M');
+<<<<<<< HEAD
 // statusa maina no generets to ievads
 define ('OP_CH_TO_INSERT', 'H');
 // noraidit projektu, nomainit statusu no ACCEPT to RETURN
 define ('OP_DECLINE', 'N');
 // eksportet darbus un materialus
+=======
+// dzēst rindu
+define ('OP_DELETE_ROW', 'L');
+// statusa maina no generets to ievads
+define ('OP_CH_TO_INSERT', 'H');
+// noraidit projektu, nomainīt statusu no ACCEPT to RETURN
+define ('OP_DECLINE', 'N');
+// eksportēt darbus un materialus
+>>>>>>> origin/DUIS-319
 define ('OP_EXPORT_ALL','Z');
 
 # =============================================================================
@@ -363,15 +443,26 @@ define ('ACT_CLOSE', 'ACT_CLOSE');
 # ACT TYPE ID
 # =============================================================================
 
+<<<<<<< HEAD
 define ('ACT_TYPE_DAMAGE_ID', 6);
 define ('ACT_TYPE_DEFECT_ID', 3);
 define ('ACT_TYPE_STIHIJA_ID', 7);
 define ('ACT_TYPE_DAMAGE_TR_ID', 11);
+=======
+define ('ACT_TYPE_DAMAGE_ID', 10);
+define ('ACT_TYPE_DEFECT_ID', 3);
+define ('ACT_TYPE_STIHIJA_ID', 7);
+define ('ACT_TYPE_DAMAGE_TR_ID', 6);
+>>>>>>> origin/DUIS-319
 define ('ACT_TYPE_DEFECT_TR_ID', 3);
 define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);
 define ('ACT_TYPE_PLAN_TR_ID', 9);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/DUIS-319
 # =============================================================================
 # PCT
 # =============================================================================
@@ -380,6 +471,14 @@ define ('PCT_22', 22);
 define ('PCT_21', 21);
 
 # =============================================================================
+<<<<<<< HEAD
+=======
+# WORKER
+# =============================================================================
+define ('ST', 58);
+
+# =============================================================================
+>>>>>>> origin/DUIS-319
 # VOLTAGE
 # =============================================================================
 
@@ -393,6 +492,7 @@ define ('VOLTAGE04KV', 6);
 define ('OBJECT20KV', 12);
 define ('OBJECT04KV', 11);
 
+<<<<<<< HEAD
 # =============================================================================
 # WORKER
 # =============================================================================
@@ -401,6 +501,10 @@ define ('ST', 66);
 
 #=================================================
 #  priek� Eltel Networks AS
+=======
+#=================================================
+#  priek? Eltel Networks AS
+>>>>>>> origin/DUIS-319
 #=================================================
 define('WORKER_CODE_ENA','10722319');
 define('SECTION_CODE_ENA','31011,31012,31013,31014,31015,31016,31019');
@@ -415,5 +519,9 @@ define('WORKER_CODE_EPW','50003563201');
 define('CALC_GROUP_CODE_EPW','21,22,23,24,25,26,27,28,29,31');
 define('WORKER_TAX_EPW','300000/13-208');
 define('WORKER_SECTION_EPW','Daugavpils,Preili,Ludza,Kraslava,Rezekne');
+<<<<<<< HEAD
 
 ?>
+=======
+?>
+>>>>>>> origin/DUIS-319

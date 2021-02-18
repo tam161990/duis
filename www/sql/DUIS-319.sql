@@ -111,11 +111,12 @@ INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALU
 ('OP', 'U', 'Atjaunot'),
 ('OP', 'E', 'Eksportēt'),
 ('OP', 'T', 'Eksportēt tame'),
+('OP', 'R', 'Atgriezt'),
 ('OP', 'A', 'Apstiprināt'),
 ('OP', 'C', 'Kopēt'),
 ('OP', 'S', 'Meklēt'),
 ('OP', 'P', 'Nodot apmaksai'),
-('OP', 'X', 'Apstiprinats ar administrātoru'),
+('OP', 'X', 'Atgriezts ar administrātoru'),
 ('OP', 'Y', 'Dzēsts ar administrātoru'),
 ('OP', 'J', 'Palaist process'),
 ('OP', 'K', 'Pabeigt process'),
@@ -123,7 +124,6 @@ INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALU
 ('OP', 'L', 'Dzēst rindu'),
 ('OP', 'N', 'Noraidīt projektu')
 ;
-
 CREATE OR REPLACE VIEW v_event_log
 AS
 SELECT * FROM (
