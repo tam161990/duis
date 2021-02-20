@@ -67,9 +67,31 @@ if (reqVar::get('xmlHttp') == 1)
      /* } */
 
     }     
-	/*
+  
+  $ouner[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
 	if(reqVar::get('worker'))
     {
+        $res = dbProc::getUserWorkerList(reqVar::get('worker'));
+        if (is_array($res))
+        {
+			 ?>
+			  document.all['ouner'].disabled = false;
+			  for(i=document.all["ouner"].length; i>=0; i--)
+			  {
+				document.all["ouner"].options[i] = null;
+			  }
+			  <?
+			    $i = 1;
+				foreach ($res as $row)
+				{					 
+					  ?>
+					  document.all["ouner"].options[<?=$i;?>] = new Option( '<?=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];?>', '<?=$row['RLTT_ID'];?>');
+					  <?
+					  $i++;
+				}	
+        }
+        unset($res);
+       /*
         $res=dbProc::getDuContractNo(reqVar::get('worker'), $trase, true);
         if (is_array($res))
         {
@@ -90,9 +112,9 @@ if (reqVar::get('xmlHttp') == 1)
 				}	
         }
         unset($res);
-
+        */
 	}
-	*/
+	
     
     if(reqVar::get('type') && reqVar::get('contract'))
     {
@@ -643,7 +665,7 @@ unset($res);
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled').'', '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled').'  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"', '', '', $ouner);
   //$oForm -> addElement('kls', 'ouner',  text::get('ACT_OUNER'), array('classifName'=>KL_USERS,'value'=>isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId,'readonly'=>false), (($isReadonlyExceptAdmin || !$isEconomist)?' disabled ':'').'maxlength="2000"');
   if ($isReadonlyExceptSuperAdmin && !$isReadonlyExceptAdmin)
   {

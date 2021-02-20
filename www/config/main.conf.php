@@ -15,19 +15,16 @@ define ('MYSQL_HOST','localhost');
 // MySQL DB name
 define ('MYSQL_DB','duistst');
 
-
 # =============================================================================
 # LDAP configuration
 # =============================================================================
 
 // The base dn for  domain
 define ('LDAP_BASE_DIR','OU=LK,DC=energo,DC=lv');
-// OU=AdminiUnTehLiet
+
 // Array of domain controllers.
-//define ('LDAP_DOMAIN1','10.20.15.5');
-//define ('LDAP_DOMAIN2','10.20.15.2');
-//define ('LDAP_DOMAIN','10.20.15.14');
-define ('LDAP_DOMAIN','leldap.energo.lv');
+define ('LDAP_DOMAIN1','10.20.15.1');
+define ('LDAP_DOMAIN2','10.20.15.2');
 
 // The account suffix for domain
 define ('LDAP_ACCOUNT_SUFFIX','@energo.lv');
@@ -61,17 +58,14 @@ define ('ZR_SERVER_PATH',preg_replace('/config$/','',dirname(__FILE__)));
 
 // LOG stored dir
 define ('LOG_STORE_PATH', ZR_SERVER_PATH.'/logs');
-
 // Files stored dir
 define ('FILES_STORE_PATH', ZR_SERVER_PATH.'/files');
 // GPS files stored dir
 define ('GPS_FILES_STORE_PATH', ZR_SERVER_PATH.'/gps_files');
-
 //  file stored dir
 define ('EXCEL_FILES_STORE_PATH', ZR_SERVER_PATH.'/files/excel');
 //  project file stored dir
 define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
-
 
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
@@ -104,7 +98,7 @@ define ('DEBUG_MODE',true);
 define ('CURRENT_YEAR','current_year');
 
 // SOA service for KvikStep act status
-define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
 
 
 # =============================================================================
@@ -133,16 +127,11 @@ define ('IS_GET_EXCEL_FILE_VARIABLE','get_excel_file');
 // getting project excel file - flag
 define ('IS_GET_PEXCEL_FILE_VARIABLE','get_excel_file');
 
-
 // getting gps file - flag
 define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
 
-
 // get file variable name
 define ('GET_FILE_VARIABLE','idFile');
-
-// get GPS file variable name
-define ('GET_GPS_FILE_VARIABLE','idFile');
 
 // get file variable name
 define ('GET_EXEL_FILE_VARIABLE','idFile');
@@ -288,7 +277,6 @@ define('TAB_ESTIMATE', 'TAB_ESTIMATE');
 define('TAB_WORKS_T', 'TAB_WORKS_T');
 define('TAB_MATERIAL_T', 'TAB_MATERIAL_T');
 
-
 # =============================================================================
 # message types
 # =============================================================================
@@ -337,9 +325,9 @@ define ('OP_JOB_KILL','K');
 define ('OP_MIDLE_EXPORT', 'M');
 // statusa maina no generets to ievads
 define ('OP_CH_TO_INSERT', 'H');
-// noraidit projektu, nomainit statusu no ACCEPT to RETURN
+// noraidit projektu, nomainīt statusu no ACCEPT to RETURN
 define ('OP_DECLINE', 'N');
-// eksportet darbus un materialus
+// eksportēt darbus un materialus
 define ('OP_EXPORT_ALL','Z');
 
 # =============================================================================
@@ -363,10 +351,10 @@ define ('ACT_CLOSE', 'ACT_CLOSE');
 # ACT TYPE ID
 # =============================================================================
 
-define ('ACT_TYPE_DAMAGE_ID', 6);
+define ('ACT_TYPE_DAMAGE_ID', 10);
 define ('ACT_TYPE_DEFECT_ID', 3);
 define ('ACT_TYPE_STIHIJA_ID', 7);
-define ('ACT_TYPE_DAMAGE_TR_ID', 11);
+define ('ACT_TYPE_DAMAGE_TR_ID', 6);
 define ('ACT_TYPE_DEFECT_TR_ID', 3);
 define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);
@@ -378,6 +366,11 @@ define ('ACT_TYPE_PLAN_TR_ID', 9);
 
 define ('PCT_22', 22);
 define ('PCT_21', 21);
+
+# =============================================================================
+# WORKER
+# =============================================================================
+define ('ST', 58);
 
 # =============================================================================
 # VOLTAGE
@@ -393,14 +386,8 @@ define ('VOLTAGE04KV', 6);
 define ('OBJECT20KV', 12);
 define ('OBJECT04KV', 11);
 
-# =============================================================================
-# WORKER
-# =============================================================================
-define ('ST', 66);
-
-
 #=================================================
-#  priek� Eltel Networks AS
+#  priek? Eltel Networks AS
 #=================================================
 define('WORKER_CODE_ENA','10722319');
 define('SECTION_CODE_ENA','31011,31012,31013,31014,31015,31016,31019');

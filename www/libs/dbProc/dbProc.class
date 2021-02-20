@@ -8939,7 +8939,6 @@ class dbProc extends dbLayer
                         {   
                                                    
                                 $aWorks[$work['KKAL_SHIFRS']]['DAUDZUMS'] += $work['DAUDZUMS'];
-                                $aWorks[$work['KKAL_SHIFRS']]['KMKL_APJOMS_ROUND'] = $work['KMKL_APJOMS_ROUND'];
                             
                         } else {
                            $aWorks[$work['KKAL_SHIFRS']]  = array (
