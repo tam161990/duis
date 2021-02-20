@@ -835,30 +835,44 @@ class toPdf {
 			);
 
 		$aWorkDb=dbProc::getActWorkList($actId, false, ($type==OP_MIDLE_EXPORT)?true:false);
-		$data = array();
-		$totalD = 0;
-		foreach ($aWorkDb as $i => $work)
-		{
-		  $data[$i] = array(
-			'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
-			'DRBI_APROVE_DATE'  => $work['DRBI_APPROVE_DATE'],
-			'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 50),
-			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
-			'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
-			'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
-			'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
-			);
-
-		  $totalD +=  $work['DRBI_CILVEKSTUNDAS'];
-		}
-		$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
-
-		$pct =  ($totalD*(100+ PCT_21 )/ 100 ) - $totalD;
-		$summa = ($totalD*(100+ PCT_21 )/ 100 );
-
+	    foreach ($aWorkDb as $work)
+        {
+          $aWorks[$work['DRBI_PLAN_DATE']][] = $work;
+        }
 		
+		$totalD = 0;
+		foreach ($aWorks as $d => $aDayWorks)
+		{
+			$total = 0;
+			$data = array();
+			$i = 0;
+			foreach ($aDayWorks as $j => $work)
+			{          
+				$data[$i] = array(
+					'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+					'DRBI_APROVE_DATE'  => $work['DRBI_APPROVE_DATE'],
+					'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']),  2, "\n", 50),
+					'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
+					'DRBI_KKAL_NORMATIVS' => $work['DRBI_KKAL_NORMATIVS'],
+					'DRBI_DAUDZUMS' => $work['DRBI_DAUDZUMS'],
+					'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
+					);
+				$i++;
+			}
+
+			$total +=  $work['DRBI_CILVEKSTUNDAS'];
+			$totalD +=  $work['DRBI_CILVEKSTUNDAS'];
+
+			$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
+			$pdf->SetFont('Arial','',8);
+			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+			$pdf->SetFont('Arial','B',8);
+			$pdf->Cell(20,6,number_format($total, 2), 0,1,'R');
+		}
+		
+
 		$pdf->SetFont('Arial','',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
 		$pdf->Cell(20,6,number_format($totalD, 2), 0,1,'R');
 
@@ -882,40 +896,59 @@ class toPdf {
 			);
 
 		$aMaterialDb=dbProc::getActMaterialList($actId, false, false, ($type==OP_MIDLE_EXPORT)?true:false);
-		$data = array();
+		foreach ($aMaterialDb as $i => $material)
+        {
+            if(empty($material['MATR_WORK_APROVE_DATE'])) {
+              $material['MATR_WORK_APROVE_DATE'] = DEFAULT_DATE;
+            }            
+            $aMaterials[$material['MATR_WORK_APROVE_DATE']][$i] = $material;             
+        }
+		
 		$totalM = 0;
 		$mat_cena_kopa = 0;
-		foreach ($aMaterialDb as $i => $material)
+		foreach ($aMaterials as $d => $aDayMaterial)
 		{
-		  if (isset($material['MATR_CENA_KOPA']))
-		  {
-			 $mat_cena_kopa = $material['MATR_CENA_KOPA'];
-		  }
-		  else
-		  {
-			$mat_cena_kopa = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
-		  }
-		  $data[$i] = array(
-			'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
-			'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
-			'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 60),
-			'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
-			'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
-			'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
-			'MATR_CENA_KOPA' => (($material['MATR_IS_WORKER'] == '1')? $mat_cena_kopa : '' )
-			);
-		  if($material['MATR_IS_WORKER'] == '1')
-			 $totalM +=  $mat_cena_kopa;
+			$data = array();
+			$total = 0;
+			$i = 0;
+			foreach ($aDayMaterial as $j => $material)
+			{      
+				if (isset($material['MATR_CENA_KOPA']))
+				{
+					$mat_cena_kopa = $material['MATR_CENA_KOPA'];
+				}
+				else
+				{
+					$mat_cena_kopa = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
+				}
+				$data[$i] = array(
+					'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
+					'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
+					'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 60),
+					'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+					'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
+					'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
+					'MATR_CENA_KOPA' => (($material['MATR_IS_WORKER'] == '1')? $mat_cena_kopa : '' )
+					);
+				$i++;
+				if($material['MATR_IS_WORKER'] == '1') {
+					$total +=  $mat_cena_kopa;
+					$totalM +=  $mat_cena_kopa;
+				}
+			}
+			$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);			
+			$pdf->SetFont('Arial','',8);
+			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+			$pdf->SetFont('Arial','B',8);
+			$pdf->Cell(20,6,number_format($total , 2), 0,1,'R');
 		}
-		$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
-		
 		$pdf->SetFont('Arial','',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
 		$pdf->Cell(20,6,number_format($totalM , 2), 0,1,'R');
 
 		$pdf->SetFont('Arial','',8);
-		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
+		$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
 		$pdf->SetFont('Arial','B',8);
 		$pdf->Cell(20,6,number_format($totalD + $totalM , 2), 0,1,'R');
 
