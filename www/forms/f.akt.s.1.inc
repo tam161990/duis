@@ -665,7 +665,7 @@ unset($res);
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled').'  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"', '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled'), '', '', $ouner);
   //$oForm -> addElement('kls', 'ouner',  text::get('ACT_OUNER'), array('classifName'=>KL_USERS,'value'=>isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId,'readonly'=>false), (($isReadonlyExceptAdmin || !$isEconomist)?' disabled ':'').'maxlength="2000"');
   if ($isReadonlyExceptSuperAdmin && !$isReadonlyExceptAdmin)
   {
