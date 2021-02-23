@@ -858,10 +858,9 @@ class toPdf {
 					'DRBI_CILVEKSTUNDAS' => $work['DRBI_CILVEKSTUNDAS']
 					);
 				$i++;
+				$total +=  $work['DRBI_CILVEKSTUNDAS'];
+				$totalD +=  $work['DRBI_CILVEKSTUNDAS'];
 			}
-
-			$total +=  $work['DRBI_CILVEKSTUNDAS'];
-			$totalD +=  $work['DRBI_CILVEKSTUNDAS'];
 
 			$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);
 			$pdf->SetFont('Arial','',8);
