@@ -5171,11 +5171,11 @@ class dbProc extends dbLayer
   {
 	if($month == 1)
 	{
-		return dblayer::parseDate(date("d.m.Y", strtotime("28.12.".($year-1))));
+		return dblayer::parseDate(date("d.m.Y", strtotime("26.12.".($year-1))));
 	}
 	else
 	{
-		return dblayer::parseDate(date("d.m.Y", strtotime("28.".($month-1).".".$year)));
+		return dblayer::parseDate(date("d.m.Y", strtotime("26.".($month-1).".".$year)));
 	}
   }
   function getActDateTo($month, $year)
