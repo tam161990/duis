@@ -5171,11 +5171,11 @@ class dbProc extends dbLayer
   {
 	if($month == 1)
 	{
-		return dblayer::parseDate(date("d.m.Y", strtotime("26.12.".($year-1))));
+		return dblayer::parseDate(date("d.m.Y", strtotime("28.12.".($year-1))));
 	}
 	else
 	{
-		return dblayer::parseDate(date("d.m.Y", strtotime("26.".($month-1).".".$year)));
+		return dblayer::parseDate(date("d.m.Y", strtotime("28.".($month-1).".".$year)));
 	}
   }
   function getActDateTo($month, $year)
@@ -5650,10 +5650,14 @@ class dbProc extends dbLayer
             ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
             e.KEDI_REGIONS AS `REGION` ,
              NVL((SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER = 1
-		AND ((a.RAKT_IS_AUTO = 1 and ( MATR_WORK_APROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') ) ) 
+		AND ((a.RAKT_IS_AUTO = 1 and ( MATR_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) ) , 0) AS `MATER_TOTAL`,        
 	    (SELECT SUM(d.DRBI_CILVEKSTUNDAS) from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
-		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') AND LAST_DAY(STR_TO_DATE('".$searcCriteria['year']."-".$searcCriteria['month']."-01','%Y-%m-%d') ) ) 
+		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) )  AS `WORK_TOTAL`,              
             (SELECT MAX(DRBI_WORK_APROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID ) as `DRBI_APPROVE_DATE`
             from `AKTI` a
@@ -5678,7 +5682,7 @@ class dbProc extends dbLayer
             $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
             //$query .= " and k.KCNT_SECTION = '".$searcCriteria['section']."' ";
 
-            $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
+            //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
 
             //$query .= " and s.AAUD_STATUS = 'CLOSE' "; 
 
@@ -8074,13 +8078,12 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function mmsCalculationWithChipherExists($requirement, $code, $is_epla, $dvd, $ID = false)
+	function mmsCalculationWithChipherExists($requirement, $code, $is_epla,  $ID = false)
 	{
 		$query = 'select `KMKL_ID` from `KL_MMS_KALKULACIJA`
             where `KMKL_KMSD_NOSACIJUMA_KODS` = "'.dbLayer::quote_smart($requirement).'"
             AND `KMKL_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
-            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'
-            AND `KMKL_DVD` = '.dbLayer::quote_smart($dvd).'';
+            AND `KMKL_TRASE` = '.dbLayer::quote_smart($is_epla).'';
 		if ($ID)
 		{
 			$query .= ' and `KMKL_ID` != "'.dbLayer::quote_smart($ID).'"';
@@ -9359,9 +9362,16 @@ class dbProc extends dbLayer
     }
 
     function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type) {
-
+        files::wh_log('Act status from KS 2: ' .date("d.m.Y H:i:s").PHP_EOL. 
+                        'key: '.$key.PHP_EOL.
+                        'year: '. $year.PHP_EOL.
+                        'worker_title: '.$worker_title.PHP_EOL.
+                        'ed_kods:' .$ed_kods.PHP_EOL.
+                        'work_title:' .$work_title.PHP_EOL.
+                        'work_type:' .$work_type.PHP_EOL.PHP_EOL										
+                );						
         $oDB = new dbLayer;
-        $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.dbLayer::quote_smart($work_type).'%"';
+        $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.stripslashes($work_type).'%"';
         $result = $oDB -> makeQuery($query);
         $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;
     
