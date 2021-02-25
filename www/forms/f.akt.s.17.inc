@@ -121,6 +121,13 @@ if ( $isAdmin || $isEconomist)
     					);
                 if($r)
                 {
+                  $idFile = toPdf::approvedTrasePdf($actId, 
+                                          $userId, 
+                                          FILE_ESTIMATE,
+                                          $oFormPop -> getValue('master'), 
+                                          $oFormPop -> getValue('engineer'),
+                                          $oFormPop -> getValue('start_date'));
+                   /*
                    // get info about voltage
                     $actInfo = dbProc::getActInfo($oFormPop->getValue('actId'));
                     if(count($actInfo)>0)
@@ -374,10 +381,11 @@ if ( $isAdmin || $isEconomist)
     		        else
     		        {
     		        	$oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-    		        }
+                  }
+                  */
                   if ($idFile!==false)
 		            {
-                        $pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
+                        //$pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
                         // save status changed time
                         $r1 = dbProc::saveAuditRecord($actId, $userId,  STAT_CLOSE);
                         dbProc::setUserActionDate($userId,  ACT_CLOSE);
@@ -394,6 +402,8 @@ if ( $isAdmin || $isEconomist)
                               $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                         }
                     }
+                    
+
                 }
                 else
                 {

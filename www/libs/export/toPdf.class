@@ -1,7 +1,7 @@
 <?
 class toPdf {	
 
-	function approvedTrasePdf($actId, $userId, $type){
+	function approvedTrasePdf($actId, $userId, $type, $master = false, $engineer = false, $date = false){
 		// get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
 		if(count($actInfo)>0)
@@ -11,7 +11,8 @@ class toPdf {
 		$regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
 		$departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
 		$engeneerName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'ENGINEER');
-		$depChifName = '';
+		$depChifName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'DEPARTMENT_CHIF');
+		$masterName = dbProc::GetMasterName($act['RAKT_KEDI_ID'], 'MASTER');      
 		$start_date = date('d.m.Y');
 		$pvn = PCT_21  ;
 		
@@ -42,7 +43,7 @@ class toPdf {
 				) ,
 		array(
 
-			array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty($start_date)), 'L', '', 8),
+			array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(($date == false) ? $start_date : $date)), 'L', '', 8),
 			array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
 				),
 		array(
@@ -178,8 +179,8 @@ class toPdf {
 			iconv('UTF-8', 'windows-1257',text::get('SIGN_HEADER'))
 			),
 		array(
-			iconv('UTF-8', 'windows-1257',text::get('DATE').': '.($start_date)),
-			iconv('UTF-8', 'windows-1257', $act['KEDI_SECTION'] )
+			iconv('UTF-8', 'windows-1257',text::get('DATE').': '.(($date == false) ? $start_date : $date)),
+			iconv('UTF-8', 'windows-1257', $act['KEDI_SECTION'] . ', '. text::get('OUNER_MASTER').' '.(($master == false) ? $masterName : $master))
 			),
 		array(
 			iconv('UTF-8', 'windows-1257',''),
@@ -191,7 +192,7 @@ class toPdf {
 			),
 		array(
 			iconv('UTF-8', 'windows-1257',''),
-			iconv('UTF-8', 'windows-1257', $engeneerName )
+			iconv('UTF-8', 'windows-1257', (($engineer == false) ? $engeneerName : $engineer ))
 			),
 		array(
 			iconv('UTF-8', 'windows-1257',text::get('REPORT_WORKER_FINISHED').': '),
@@ -257,6 +258,7 @@ class toPdf {
 		{
 			$pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');						
 		}
+		return $idFile;
 	}
 
 	function estimateTrasePdf($actId, $userId, $type) {
