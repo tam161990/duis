@@ -46,7 +46,7 @@ if (reqVar::get('xmlHttp') == 1)
 
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
-if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
+if ( $isAdmin || $isProjector ||  $projectApprover)
 {
     if($actId !== false )
     {
@@ -152,7 +152,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                  $aMaterialsFr[$j]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
                  $aMaterialsFr[$j]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
                  // validate work progress value
-                 if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
+                 if(($status == STAT_CLOSE && ($isAdmin ||  $projectApprover))) {
                   $isRowValid = true;
                   $aMaterialsFr[$j]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type_id['.$i.']');
                   $aMaterialsFr[$j]['KLDV_NOSAUKUMS'] = $oFormMaterialTab->getValue('work_type['.$i.']');
@@ -194,7 +194,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                         'work_type' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
                         'work_type_id' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
                         'import_no' => $aMaterialsFr[$j]['MATR_IMPORT_NO'],
-                        'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] : '',
+                        'export_type' => ($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)) ? $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] : '',
                         'rowNum' => $j
                       );
                       $j++;
@@ -249,7 +249,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
           $saveLink->addPrm('xmlHttp', '1');
 
-          if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
+          if($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)){
             $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
             $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
             $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'].' '.explode('^', $actMaterial['MATR_WORK_TYPE'])[0] ); 
@@ -331,7 +331,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       // form buttons
-      if (!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))
+      if (!$isReadonly || ($status == STAT_CLOSE && ($isAdmin )))
       {
         if (!$isReadonly)
         {
@@ -369,7 +369,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                                                 $row['st'],
                                                 false,
                                                 $row['notes'],
-                                                ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
+                                                ($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)) ? $row['work_type_id'] : $row['work_type'],
                                                 false,
                                                 false,
                                                 $row['export_type'],

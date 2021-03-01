@@ -178,7 +178,7 @@ if($isAdmin || $isSystemUser)
 }
 ?>
 </div>
-<div id="projectSubMenuDiv"  class="sub_menu" style="position: absolute;left: 300px;top: 26px;visibility:hidden;">
+<div id="projectSubMenuDiv"  class="sub_menu" style="position: absolute;left: 150px;top: 26px;visibility:hidden;">
 	<?
 	if($isAdmin || $isSystemUser)
 	{
@@ -189,13 +189,13 @@ if($isAdmin || $isSystemUser)
 				
 				<?
 				
-				if($isAdmin ||  $isProjector || $isEconomist)
+				if($isAdmin ||  $isProjector || $projectApprover)
 				{
 				?>
 				<td class="menu_cell<?= (!$isAdmin && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$projectSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_PROJECT_SEARCH');?></a></td>
 				<?
 				}			
-				if((($isAdmin || $isEconomist || $isAuditor ) && !$isEditor ) || $isProjector)
+				if($isAdmin ||  $isProjector || $projectApprover)
 				{
 				?>
 				<td class="menu_cell<?= (!$isAdmin && !$isEditor && !$isProjector)? '_2': '';?>" nowrap><a  target="frame_1" href="<?=$actSearchByNumberLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('SEARCH_BY_NUMBER');?></a></td>
@@ -233,7 +233,7 @@ if($isAdmin || $isSystemUser)
 
 
 					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
-					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $isEconomist)?'':'disabled';?>><?=($isAdmin ||  $isProjector || $isEconomist)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
+					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $projectApprover)?'':'disabled';?>><?=($isAdmin ||  $isProjector ||  $projectApprover)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
 					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
                     <td nowrap id="tdGps" class="menu_cell_top" <?=($isEditor || $isEdUser || $isAdmin)?'':'disabled';?>><?=($isEditor || $isEdUser || $isAdmin)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cGpsMain.'" target="frame_1">':'';?><?=text::get('GPS');?><?=($isEditor || $isEdUser || $isAdmin)?'</a>':'';?></td>
 					<td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
