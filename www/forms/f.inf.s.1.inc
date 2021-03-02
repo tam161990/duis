@@ -11,7 +11,7 @@ $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $isAuditor = dbProc::isUserInRole($userId, ROLE_AUDIT_USER);
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
-
+$projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 
 if($isContractUser)
     $isRight = true;
@@ -37,10 +37,8 @@ else
 {
     RequestHandler::showErrorAndDie(text::get('NO_RESULT_FOUND'));
 }
-
-
 // jalietotajam nav lomas sist�m�, tad vinam nav tiesibas redzet si formu
-if ( $isAdmin || $isSystemUser)
+if ( $isAdmin || $isSystemUser )
 {
     // menu ACT
 	// act main form
