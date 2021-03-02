@@ -8536,7 +8536,6 @@ class dbProc extends dbLayer
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
                                 AND `AAST_STATUS` IS NOT NULL
-                                AND `RAKT_IS_AUTO` = 1
                                 AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'", 
                                 "'.STAT_WRETEDOFF.'", "'.STAT_CLOSE.'" )
                                 ORDER BY AAST_CREATED';
