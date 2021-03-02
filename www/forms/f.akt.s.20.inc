@@ -58,7 +58,7 @@ $isProject = 1;
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
+if ( $isAdmin || $isProjector || $projectApprover )
 {
   $oLink=new urlQuery();
   $oLink->addPrm(FORM_ID, 'f.akt.s.20');
@@ -180,7 +180,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
       $isReadonly   = false;
     }
     // labo autors, inženieris, administrators
-    if( ($isProjector || $isAdmin)  && ($status == STAT_INSERT || $status == STAT_RETURN ) )
+    if( ($isProjector || $isAdmin) && !$projectApprover  && ($status == STAT_INSERT || $status == STAT_RETURN ) )
     {      
       $isReadonly1   = false;
     }
@@ -191,7 +191,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
     }
 	
     //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = �Ekonomists�  un AKTS:STATUS = �Saska?o?ana�.
-    if($isEconomist && $status == STAT_ACCEPT )
+    if($projectApprover && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
     {
       $isReadonlyExceptEconomist   = false;
     }
@@ -268,7 +268,6 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   if (!$isReadonlyExceptAdmin || !$isReadonly)
   {
     $oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat_g.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {setValue(\'action\',\''.OP_INSERT.'\');}"');
-
   }
   
   if (!$isReadonly1 && ($actId != false))
@@ -278,12 +277,12 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   
   if (!$isReadonlyExceptEconomist)
   {
-    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
+    if($status == STAT_ACCEPT) {
+      $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
     $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
-  }
-
-  if($projectApprover && $status == STAT_ACCEPT) {
-    $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
+    }
+    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
+    
   }
 
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
@@ -328,7 +327,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
   {
     $oForm -> addElement('submitImg', 'delete', text::get('DELETE'), 'img/btn_dzest_r.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
   }
-  if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))
+  if($status == STAT_CLOSE && ($isAdmin || $projectApprover || $projectApprover))
   {
     $oForm -> addElement('submitImg', 'make_excel', text::get('EXPORT'), 'img/btn_make_excel.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') ) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
   }
@@ -564,7 +563,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
           $r = false;
           $r1 = true;
           $checkRequiredFields = false;
-          if ($isEconomist )
+          if ($projectApprover )
           {
                 $checkRequiredFields = true;
                 $returnStatus  = STAT_RETURN;

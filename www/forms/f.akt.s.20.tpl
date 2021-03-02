@@ -34,20 +34,16 @@
                  <? if(!$isReadonly || !$isReadonlyExceptAdmin)  {?>
                     <tr><td><?= $oForm -> getElementHtml('save'); ?></td> </tr>
                  <? } ?>
-    
-                 <? if(!$isReadonlyExceptEconomist)  {?>
-                    <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
-                 <? } ?>
                  <? if($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))  {?>
                     <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
                  <? } ?>
                  <? if(!$isReadonlyExceptEconomist)  {?>
-                    <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
+                    <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
+                    <? if($status == STAT_ACCEPT) {?>
+                        <tr><td><?=$oForm->getElementHtml('decline');?></td></tr>
+                        <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
+                     <? } ?>                    
                  <? } ?>
-                 <? if($projectApprover && $status == STAT_ACCEPT) {?>
-                    <tr><td><?=$oForm->getElementHtml('decline');?></td></tr>
-                 <? } ?>
-                 
                  <? if($isDelete)  {?>
                     <tr><td><?=$oForm->getElementHtml('delete');?></td></tr>
                  <? } ?>

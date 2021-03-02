@@ -47,7 +47,7 @@ if (reqVar::get('xmlHttp') == 1)
 
 
 // tikai  sist?mas lietotajam vai administr?toram ir pieeja!
-if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
+if ( $isAdmin || $isProjector ||  $projectApprover)
 {
     if($actId !== false )
     {
@@ -166,7 +166,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                  $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
                  $aWorkFr[$j]['DRBI_IMPORT_NO'] = $oFormWorkTab->getValue('import_no['.$i.']');
                  
-                if(($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))) {
+                if(($status == STAT_CLOSE && ($isAdmin ||  $projectApprover))) {
                   $isRowValid = true;
                   $aWorkFr[$j]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
                   $aWorkFr[$j]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
@@ -208,7 +208,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
                     'work_type' => $aWorkFr[$j]['DRBI_WORK_TYPE_ID'],
                     'work_type_text' => $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'],    
                     'import_no' => $aWorkFr[$j]['DRBI_IMPORT_NO'],                    
-                    'export_type' => ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)) ? $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] : '',
+                    'export_type' => ($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)) ? $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] : '',
                     'rowNum' => $j
                   );
                   $j++;
@@ -268,7 +268,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
            $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
            $saveLink->addPrm('xmlHttp', '1');    
 
-          if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)){
+          if($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)){
               $oFormWorkTab->addElement('label', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], ' maxlength="250"');
               $oFormWorkTab->addElement('label', 'amount['.$i.']', '', $actWork['DRBI_DAUDZUMS']); 
               $oFormWorkTab->addElement('label', 'work_type['.$i.']', '', $actWork['KLDV_NOSAUKUMS']); 
@@ -363,7 +363,7 @@ if ( $isAdmin || $isProjector || $isEconomist || $projectApprover)
         }
       }
       // form buttons
-      if (!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))
+      if (!$isReadonly || ($status == STAT_CLOSE && ($isAdmin )))
       {
         if(!$isReadonly ) {
           foreach ($calcGroups as $i => $group)
