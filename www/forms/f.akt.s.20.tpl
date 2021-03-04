@@ -34,11 +34,10 @@
                  <? if(!$isReadonly || !$isReadonlyExceptAdmin)  {?>
                     <tr><td><?= $oForm -> getElementHtml('save'); ?></td> </tr>
                  <? } ?>
-                 <? if($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))  {?>
+                 <? if(!$isReadonlyExceptEconomist && ($status == STAT_DELETE || $status == STAT_CLOSE))  {?>
                     <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
                  <? } ?>
-                 <? if(!$isReadonlyExceptEconomist)  {?>
-                    <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
+                 <? if(!$isReadonlyExceptEconomist)  {?>                    
                     <? if($status == STAT_ACCEPT) {?>
                         <tr><td><?=$oForm->getElementHtml('decline');?></td></tr>
                         <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>

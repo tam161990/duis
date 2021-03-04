@@ -14,9 +14,17 @@ $catalog  = reqVar::get('catalog');
 // Main form with XMLHTTP method load this code:
   if (reqVar::get('xmlHttp') == 1)
   {
-    if (reqVar::get('calc_group') !== false )
+    if (reqVar::get('calc_group') !== false && reqVar::get('act') !== false )
     {
   
+      // get info about act
+      $actInfo = dbProc::getActInfo(reqVar::get('act'));
+      //print_r($actInfo);
+      if(count($actInfo)>0)
+      {
+        $act = $actInfo[0];
+        $status = $act['RAKT_STATUS'];
+      }
       // unset previouse values of section
       ?>
       for(i=document.all["scope[]"].length; i>=0; i--)
@@ -24,7 +32,11 @@ $catalog  = reqVar::get('catalog');
         document.all["scope[]"].options[i] = null;
       }
       <?
-      $res=dbProc::getCalculationByGroupList(reqVar::get('calc_group'));
+      $res=dbProc::getCalculationByGroupList(reqVar::get('calc_group'),
+                                              true,
+                                              $act['RAKT_KWOI_KODS'],
+                                              $act['RAKT_KEDI_ID']
+                                            );
       if (is_array($res) && count($res)>0)
       {
         $i = 1;
@@ -38,7 +50,7 @@ $catalog  = reqVar::get('catalog');
         }
       }
     }
-
+    $matr_group_all = false;
     if (reqVar::get('mat_group') !== false )
     {
   
@@ -49,9 +61,12 @@ $catalog  = reqVar::get('catalog');
         document.all["mat_sub_group"].options[i] = null;
       }
       <?
-      $res=dbProc::getMaterialSubGroup(reqVar::get('mat_group'));
+      $res=dbProc::getMaterialSubGroup(reqVar::get('mat_group'));      
       if (is_array($res) && count($res)>0)
       {
+        ?>
+          document.all["mat_sub_group"].options[0] = new Option( '<?=text::get('ALL');?>', '');
+        <?
         $i = 1;
         foreach ($res as $row)
         {
@@ -62,11 +77,12 @@ $catalog  = reqVar::get('catalog');
           $i++;
         }
       }
+      $matr_group_all = true;
     }
 
-    if (reqVar::get('mat_sub_group') !== false )
+    if (reqVar::get('mat_sub_group') !== false || $matr_group_all)
     {
-  
+      $mat_sub_group = ((reqVar::get('mat_sub_group') !== false) ? reqVar::get('mat_sub_group') : '');
       // unset previouse values of section
       ?>
       for(i=document.all["scope[]"].length; i>=0; i--)
@@ -74,7 +90,7 @@ $catalog  = reqVar::get('catalog');
         document.all["scope[]"].options[i] = null;
       }
       <?
-      $res=dbProc::getMaterialBySubGroup(reqVar::get('mat_sub_group'));
+      $res=dbProc::getMaterialBySubGroup($mat_sub_group);
       if (is_array($res) && count($res)>0)
       {
         $i = 1;
@@ -103,12 +119,13 @@ if ( $isAdmin || $isProjector)
 
     if($actId !== false  && ($catalog == KL_CALCULALATION  || $catalog == KL_MATERIALS) )
     {
+     
       // get info about act
       $actInfo = dbProc::getActInfo($actId);
       //print_r($actInfo);
       if(count($actInfo)>0)
       {
-      	$act = $actInfo[0];
+        $act = $actInfo[0];
         $status = $act['RAKT_STATUS'];
       }
 
@@ -158,19 +175,27 @@ if ( $isAdmin || $isProjector)
             unset($res);
             if(isset($default_kalk_gr_id)) 
             {
-                $res=dbProc::getCalculationByGroupList($default_kalk_gr_id);
+                $res=dbProc::getCalculationByGroupList($default_kalk_gr_id, 
+                                                      true,
+                                                      $act['RAKT_KWOI_KODS'],
+                                                      $act['RAKT_KEDI_ID']);
             }
             if($oFormPop->isFormSubmitted() ) {
               if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
               {
-                $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'));
+                $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'),
+                                                      true,
+                                                      $act['RAKT_KWOI_KODS'],
+                                                      $act['RAKT_KEDI_ID']);
               }
 	     
 
               if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
               {
                 
-                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
+                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'),
+													                            $act['RAKT_KWOI_KODS'],
+                                                      $act['RAKT_KEDI_ID']);
                 
               }
 	          }
@@ -214,7 +239,7 @@ if ( $isAdmin || $isProjector)
               $matrGroup['']=text::get('ALL');
               foreach ($res as $row)
               {
-                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
+                $matrGroup[$row['KMAT_GRUPAS_KODS']]=$row['KMAT_GRUPAS_KODS'].' : '.$row['KMAT_GRUPAS_NOSAUKUNS'];
               }
             }
             unset($res);
@@ -294,7 +319,7 @@ if ( $isAdmin || $isProjector)
 
         $oFormPop -> addElement('kls', 'calc_group',  text::get('SINGL_CALCULATION_GROUP'), 
         array('classifName'=>KL_CALCULALATION_GROUP,'value'=>$default_kalk_gr_id,'readonly'=>false), 
-        'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&calc_group=\'+this.value+\'\'))"');
+        'tabindex=1 maxlength="2000" onChange="alert(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&act='.$actId.'&calc_group=\'+this.value+\'\'))"');
         
         $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
       }

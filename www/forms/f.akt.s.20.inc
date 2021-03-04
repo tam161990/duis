@@ -191,7 +191,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
     }
 	
     //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = �Ekonomists�  un AKTS:STATUS = �Saska?o?ana�.
-    if($projectApprover && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
+    if(($projectApprover || $isAdmin) && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
     {
       $isReadonlyExceptEconomist   = false;
     }
@@ -281,11 +281,9 @@ if ( $isAdmin || $isProjector || $projectApprover )
       $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
     $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
     }
-    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
-    
   }
 
-  if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
+  if (!$isReadonlyExceptEconomist && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
   }
