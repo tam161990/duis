@@ -643,7 +643,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
         	// nomainit akta statusu uz dz?sts
           if (($oForm->getValue('action')==OP_DECLINE && is_numeric($oForm->getValue('actId'))) )
           {      
-             if($projectApprover && $status = STAT_ACCEPT )
+            if(($projectApprover ||  $isAdmin ) && $status = STAT_ACCEPT )
              {       
                   $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_RETURN);  
                   if($r)
