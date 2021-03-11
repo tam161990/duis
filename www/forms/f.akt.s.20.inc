@@ -560,17 +560,14 @@ if ( $isAdmin || $isProjector || $projectApprover )
     {
           $r = false;
           $r1 = true;
-          $checkRequiredFields = false;
+          $checkRequiredFields = true;
           if ($projectApprover )
           {
-                $checkRequiredFields = true;
                 $returnStatus  = STAT_RETURN;
                 $returnAction =  STAT_RETURN;
           }
           if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE || $oForm -> getValue('status') == STAT_CLOSE) )
           {
-                $checkRequiredFields = true;
-
                 if($oForm -> getValue('status') == STAT_DELETE)
                 {
                   $returnStatus  = STAT_INSERT;

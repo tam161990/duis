@@ -33,9 +33,7 @@ $catalog  = reqVar::get('catalog');
       }
       <?
       $res=dbProc::getCalculationByGroupList(reqVar::get('calc_group'),
-                                              true,
-                                              $act['RAKT_KWOI_KODS'],
-                                              $act['RAKT_KEDI_ID']
+                                              true
                                             );
       if (is_array($res) && count($res)>0)
       {
@@ -176,26 +174,20 @@ if ( $isAdmin || $isProjector)
             if(isset($default_kalk_gr_id)) 
             {
                 $res=dbProc::getCalculationByGroupList($default_kalk_gr_id, 
-                                                      true,
-                                                      $act['RAKT_KWOI_KODS'],
-                                                      $act['RAKT_KEDI_ID']);
+                                                      true);
             }
             if($oFormPop->isFormSubmitted() ) {
               if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('calc_group'))
               {
                 $res=dbProc::getCalculationByGroupList($oFormPop->getValue('calc_group'),
-                                                      true,
-                                                      $act['RAKT_KWOI_KODS'],
-                                                      $act['RAKT_KEDI_ID']);
+                                                      true);
               }
 	     
 
               if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
               {
                 
-                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'),
-													                            $act['RAKT_KWOI_KODS'],
-                                                      $act['RAKT_KEDI_ID']);
+                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
                 
               }
 	          }
