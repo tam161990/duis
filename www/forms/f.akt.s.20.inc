@@ -568,7 +568,6 @@ if ( $isAdmin || $isProjector || $projectApprover )
           }
           if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE || $oForm -> getValue('status') == STAT_CLOSE) )
           {
-
                 if($oForm -> getValue('status') == STAT_DELETE)
                 {
                   $returnStatus  = STAT_INSERT;
