@@ -2941,16 +2941,14 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus vai neaktivus kalkul�cijas.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getCalculationByGroupList($calc_group, $activ = true, $worker = false, $kedi = false)
+	function getCalculationByGroupList($calc_group, $activ = true)
 	{
             $column = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
             $query = 'SELECT KKAL_SHIFRS, KKAL_NOSAUKUMS, MAX(KKAL_ID) as KKAL_ID 
             from `KL_KALKULACIJA`
-            INNER JOIN kl_ed_iecirkni ON KEDI_SECTION = KKAL_KEDI_SECTION
             where `KKAL_GRUPAS_KODS` = '.dbLayer::quote_smart($calc_group).
-            ((!$worker) ? '' : ' AND `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker)).'"'.
-            ((!$kedi) ? '' : ' AND `KEDI_ID` = '.dbLayer::quote_smart($kedi)).
             ' AND `KKAL_IR_AKTIVS` = '.(($activ) ? 1 : 0).
+            ' AND `KKAL_TRASE` = 0'.
             ' group by KKAL_SHIFRS, KKAL_NOSAUKUMS
             order by '.dbLayer::quote_smart($column).' asc';
 	        //echo $query;
@@ -2958,15 +2956,13 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
     }
     
-    function getCalculationByText($text, $worker = false, $kedi = false){
+    function getCalculationByText($text){
         
         $query = 'SELECT KKAL_SHIFRS, KKAL_NOSAUKUMS, MAX(KKAL_ID) as KKAL_ID
         from `KL_KALKULACIJA`
-        INNER JOIN kl_ed_iecirkni ON KEDI_SECTION = KKAL_KEDI_SECTION
         WHERE UPPER(KKAL_NOSAUKUMS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")'.
-         ((!$worker) ? '' : ' AND `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker)).'"'.
-         ((!$kedi) ? '' : ' AND `KEDI_ID` = '.dbLayer::quote_smart($kedi)).
-         ' AND `KKAL_IR_AKTIVS` = 1'
+         ' AND `KKAL_IR_AKTIVS` = 1'.
+         ' AND `KKAL_TRASE` = 0'.
          ' group by KKAL_SHIFRS, KKAL_NOSAUKUMS '; 
 		//echo $query;
         $oSQL = new dbLayer;
