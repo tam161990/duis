@@ -311,7 +311,7 @@ if ( $isAdmin || $isProjector)
 
         $oFormPop -> addElement('kls', 'calc_group',  text::get('SINGL_CALCULATION_GROUP'), 
         array('classifName'=>KL_CALCULALATION_GROUP,'value'=>$default_kalk_gr_id,'readonly'=>false), 
-        'tabindex=1 maxlength="2000" onChange="alert(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&act='.$actId.'&calc_group=\'+this.value+\'\'))"');
+        'tabindex=1 maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&act='.$actId.'&calc_group=\'+this.value+\'\'))"');
         
         $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
       }
@@ -363,6 +363,13 @@ if ( $isAdmin || $isProjector)
                                 switch ($catalog)
                                 {
                                   case  KL_CALCULALATION:
+                                    if(dbProc::isProjectWorkRecord ($oFormPop->getValue('actId'), 
+                                                            $cValue, 
+                                                            $oFormPop->getValue('work_type'),
+                                                            $oFormPop->getValue('work_type_text'))
+                                      ) {
+                                      continue;
+                                    }
                                     $r = dbProc::saveProjectWorkRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
                                                                       $oFormPop->getValue('work_type'),
