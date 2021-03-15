@@ -6580,6 +6580,20 @@ class dbProc extends dbLayer
 
 		return ($result !== false);
     }
+
+    function isProjectWorkRecord($actId, $ID, $work_type, $work_type_text)
+	{
+        $query = 'SELECT COUNT(*) as cnt FROM `DARBI`
+        WHERE `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId).'
+        AND `DRBI_KKAL_ID` = '.dbLayer::quote_smart($ID).'
+        AND  `DRBI_WORK_TYPE_ID` = '.dbLayer::quote_smart($work_type).'
+        AND `DRBI_WORK_TYPE_TEXT` = "'.dbLayer::quote_smart($work_type_text).'" ';
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return (isset($result[0]['cnt']) && $result[0]['cnt'] > 0) ? true : false;
+    }
     
     function getDefaultWork($actId) {
         $query = 'select CONCAT(DRBI_WORK_TYPE_ID, \'^\', NVL(DRBI_WORK_TYPE_TEXT, \'\')) AS DRBI_WORK_TYPE
