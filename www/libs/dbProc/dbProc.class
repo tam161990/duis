@@ -6842,7 +6842,7 @@ class dbProc extends dbLayer
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND `MATR_DAUDZUMS` IS NOT NULL     
                 " . (($group_id !== false) ? " AND `MATR_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ." 
-                " . (($type_text !== false) ? (empty($type_text) ? " AND `MATR_WORK_TYPE_TEXT` IS NULL " : " AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($type_text)."'" ) : "" ) ."          
+                " . (($type_text !== false) ? ((empty($type_text) || $type_text == 'NULL') ? " AND `MATR_WORK_TYPE_TEXT` = 'X' " : " AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($type_text)."'" ) : "" ) ."           
                 ORDER BY `MATR_IS_WORKER` DESC, `MATR_KODS`";
         
 		$oSQL = new dbLayer;
