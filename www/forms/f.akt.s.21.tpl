@@ -70,6 +70,7 @@ tipobj.style.width=''
 }
 }
 
+
 function savedField (el, color) { 
     el.style.borderColor = color; 
     parent = el.parentNode;
@@ -87,6 +88,7 @@ sp1.style.color = 'green';
 var sp2 = document.createElement('span');
 sp2.append('<?=text::get('ERROR_DOUBLE_VALUE');?>');
 sp2.style.color = 'red';
+
 
 document.onmousemove=positiontip
 
