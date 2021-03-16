@@ -117,7 +117,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         }
       }
       unset($res);
-	  //print_r($workType);
+	    //print_r($workType);
       $type=array();
       $type_code = array();
       $res = dbProc::getKrfkName('PROJECT_EXPORT');
@@ -260,7 +260,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           if($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)){
             $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
             $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
-            $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $actMaterial['KLDV_NOSAUKUMS'].' '.explode('^', $actMaterial['MATR_WORK_TYPE'])[0] ); 
+            $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $workType[$actMaterial['MATR_WORK_TYPE']]);  
             $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
             if($export_type_string) {
               $oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
