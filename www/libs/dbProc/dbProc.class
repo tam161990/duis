@@ -9623,8 +9623,8 @@ class dbProc extends dbLayer
             "'.dbLayer::quote_smart($isEpla).'",
             "'.dbLayer::quote_smart($user).'",
             "'.dbLayer::quote_smart($section).'",
-            "'.dbLayer::quote_smart($description).'",
-            "'.dbLayer::quote_smart($request).'"
+            "'.dbLayer::quote_smart(substr($description, 0, 4000)).'",
+            "'.dbLayer::quote_smart(substr($request, 0, 4000)calculationTrWithChipherExists).'"
             )';
         
        // echo $query;

@@ -502,8 +502,8 @@ class RequestHandler
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
 
 		// Send the request
-		//$response = curl_exec($ch);	
-		$response = null;		
+		$response = curl_exec($ch);	
+		//$response = null;		
 		//echo $response;
 		if (curl_errno($ch)) {
             		files::wh_log('sentDataToKvikStep RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
