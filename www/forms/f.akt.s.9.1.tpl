@@ -18,14 +18,12 @@
 	<thead>
 		<tr class="table_head_2">
 			<td width="5%"><?= text::get('CURRENT_NUMBER'); ?></td>
-			<td align="left"><?= text::get('ACT_NUMBER'); ?></td>
-            <td align="left"><?= text::get('MONTH'); ?></td>
+			<td align="left"><?= text::get('ACT_NUMBER'); ?></td>           
             <td align="left"><?= text::get('YEAR'); ?></td>
             <td align="left"><?= text::get('STATUS'); ?></td>
-            <td align="left"><?= text::get('SINGLE_ACT_TYPE'); ?></td>
+            <td align="left"><?= text::get('PRINT_WORK_TITLE'); ?></td>
             <td align="left"><?= text::get('ED_SECTION'); ?></td>
             <td align="left"><?= text::get('SINGL_WORK_OWNER'); ?></td>
-            <td align="left"><?= text::get('MAIN_DESIGNATION'); ?></td>
             <td align="left"><?= text::get('USER'); ?></td>
 		</tr>
 	</thead>
@@ -50,14 +48,12 @@
                 }
                 ?>
                 <td><?= $number++; ?></td>
-				<td align="left"><?= $row['NUMURS']; ?></td>
-                <td align="left"><?= dtime::getMonthName($row['RAKT_MENESIS']); ?></td>
-                <td align="left"><?= $row['RAKT_GADS']; ?></td>
+				<td align="left"><?= $row['NUMURS']; ?></td> 
+                <td align="left"><?= $row['RAKT_GADS']; ?></td> 
                 <td align="left"><?= $row['STATUS_NAME']; ?></td>
-                <td align="left"><?= $row['TYPE']; ?></td>
+                <td align="left"><?= $row['RAKT_WORK_TITLE']; ?></td>
                 <td align="left"><?= $row['ED']; ?></td>
-                <td align="left"><?= $row['WORKER']; ?></td>
-                <td align="left"><?= $row['RAKT_OPERATIVAS_APZIM']; ?></td>
+                <td align="left"><?= $row['WORKER']; ?></td>               
                 <td align="left"><?= $row['AUTORS']; ?></td>
 			</tr>
 <?
