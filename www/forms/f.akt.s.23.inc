@@ -187,7 +187,7 @@ if ( $isAdmin || $isProjector)
               if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
               {
                 
-                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'));
+                $res = dbProc::getCalculationByText($oFormPop->getValue('text_part'), $oFormPop->getValue('calc_group'));
                 
               }
 	          }
@@ -270,7 +270,7 @@ if ( $isAdmin || $isProjector)
                 }
                 if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
                 {
-                  $res = dbProc::getMaterialByText($oFormPop->getValue('text_part'));
+                  $res = dbProc::getMaterialByText($oFormPop->getValue('text_part') );
                 }
 	          }
               

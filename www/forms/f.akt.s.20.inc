@@ -185,7 +185,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
       $isReadonly1   = false;
     }
     // Ir pieejams main??anai, ja  �Teko?ais lietot?js� ir Sist?mas administrators 
-    if($isAdmin && ($status == STAT_INSERT || $status == STAT_RETURN ) )
+    if($isAdmin && ($status == STAT_AUTO  || $status == STAT_INSERT || $status == STAT_RETURN ) )
     {	
       $isReadonlyExceptAdmin   = false;
     }
@@ -235,8 +235,8 @@ if ( $isAdmin || $isProjector || $projectApprover )
   $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:'', ''.((!$isReadonlyExceptAdmin || !$isReadonly)? '' :' disabled').'', '', '', $ouner);
   
   $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_PROJECT_TYPE'])?$act['RAKT_PROJECT_TYPE']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $type);
-    
-  if (!$isReadonlyExceptAdmin || !$isReadonly)
+  
+  if ($isReadonlyExceptAdmin)
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
@@ -353,7 +353,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
             $checkRequiredFields = true;
         }
 
-        if ($isAdmin  && !$oForm -> getValue('ouner')  )
+        if (!$isAdmin  && !$oForm -> getValue('ouner')  )
         {
               $checkRequiredFields = false;
         }
