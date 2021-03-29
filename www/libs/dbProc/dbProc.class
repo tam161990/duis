@@ -8613,6 +8613,9 @@ class dbProc extends dbLayer
                         $status = STAT_RETURN;
                         break;                   
                     case 'CLOSE':
+                        if($act['RAKT_STATUS'] == STAT_CLOSE ) {
+                            continue;
+                        }
                         $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
                         break;       
                     case 'AUTO':
