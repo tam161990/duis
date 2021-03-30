@@ -196,8 +196,8 @@ if ( $isAdmin || $isProjector || $projectApprover )
       $isReadonlyExceptEconomist   = false;
     }
 
-    if(($act['RAKT_RLTT_ID'] == $userId && $isProjector && ($status == STAT_INSERT || $status == STAT_RETURN ) ) ||
-        ($isAdmin && ($status != STAT_DELETE))  )
+    //if(($act['RAKT_RLTT_ID'] == $userId && $isProjector && ($status == STAT_INSERT || $status == STAT_RETURN ) ) ||
+    if ($isAdmin && $status != STAT_DELETE)
     {
       $isDelete   = true;
     }
