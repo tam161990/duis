@@ -117,7 +117,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         }
       }
       unset($res);
-	  //print_r($workType);
+	    //print_r($workType);
       $type=array();
       $type_code = array();
       $res = dbProc::getKrfkName('PROJECT_EXPORT');
