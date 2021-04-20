@@ -69,6 +69,7 @@ if ( $isAdmin || $isSystemUser)
       $meassure['par']='par';
       $meassure['t']='t';
       $meassure['objekts']='objekts';
+      
 
       if($isProject == 1) {
          // get grupas list
