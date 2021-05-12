@@ -39,6 +39,14 @@ if (reqVar::get('xmlHttp') == 1)
       if (reqVar::get('notes')!='')
       {
         dbProc::updateMaterialComment(reqVar::get('saveId'), reqVar::get('notes'));
+      }      
+      if(reqVar::get('crossection')!= '')
+      {
+        dbProc::updateMaterialCrossection(reqVar::get('saveId'), reqVar::get('crossection'));
+      }
+      if(reqVar::get('complectation')!= '')
+      {
+        dbProc::updateMaterialComplectation(reqVar::get('saveId'), reqVar::get('complectation'));
       }
     }
     exit();
@@ -151,6 +159,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                  $aMaterialsFr[$j]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
                  $aMaterialsFr[$j]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
                  $aMaterialsFr[$j]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
+                 $aMaterialsFr[$j]['MATR_CROSSECTION'] = $oFormMaterialTab->getValue('crossection['.$i.']');
+                 $aMaterialsFr[$j]['MATR_COMPLECTATION'] = $oFormMaterialTab->getValue('complectation['.$i.']');
                  $aMaterialsFr[$j]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
                  $aMaterialsFr[$j]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
                  // validate work progress value
@@ -193,6 +203,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                         'amount_mat' => $aMaterialsFr[$j]['MATR_DAUDZUMS'],                        
                         'st' => $aMaterialsFr[$j]['MATR_IS_WORKER'],
                         'notes' => $aMaterialsFr[$j]['MATR_PIEZIMES'],
+                        'crossection' => $aMaterialsFr[$j]['MATR_CROSSECTION'],
+                        'complectation' => $aMaterialsFr[$j]['MATR_COMPLECTATION'],
                         'work_type' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
                         'work_type_id' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
                         'import_no' => $aMaterialsFr[$j]['MATR_IMPORT_NO'],
@@ -241,6 +253,29 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         {          
           //print_r($actMaterial);
           $export_type_string = false;
+          $crossection = false;
+          $complectation = false;
+          $complectationArray = array();
+          if(substr($actMaterial['MATR_KODS'], 0, 2) == '09')
+          {
+            $crossection = true;
+          }
+
+          if(dbProc::isComplectationForCategory($actMaterial['MATR_KODS']))
+          {
+            $complectation = true;
+            // get complectation list
+            $complectationArray['']=text::get('EMPTY_SELECT_OPTION');		
+            $res=dbProc::getProjectCategoryComplectation($actMaterial['MATR_KODS']);
+            if (is_array($res))
+            {
+              foreach ($res as $row)
+              {
+                $complectationArray[$row['KMTK_KOMPLEKTACIJA']] =$row['KMTK_KOMPLEKTACIJA'];
+              }
+            }
+            unset($res);
+          }
           if (!empty($actMaterial['MATR_PROJECT_EXPORT']) && !in_array( $actMaterial['MATR_PROJECT_EXPORT'],  $type_code))
           {
             $export_type_string = true;
@@ -251,6 +286,15 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
+          if(!$crossection)
+          {
+            $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', '');
+          }
+          if(!$complectation)
+          {
+            $oFormMaterialTab->addElement('label', 'complectation['.$i.']', '', '');
+          }
+          
           // ajax handler link for delete
           $saveLink = new urlQuery();
           $saveLink->addPrm(FORM_ID, 'f.akt.s.22');
@@ -267,7 +311,44 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             } else {
               $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
             }
-        } else {         
+            if($crossection)
+            {
+               $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION']);
+            }
+            if($complectation)
+            {
+              $oFormMaterialTab->addElement('label', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION']);
+            }
+        } else {
+            if($complectation)
+            {
+              // save crossection
+              $saveJs = "if(this.value != '') { 
+                var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&complectation='+this.value+'&saveId='+rowId.value));
+                this.style.borderColor = '#16bb24cc'; 
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              }";
+               $oFormMaterialTab->addElement('select', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION'], 
+               (($isReadonly)?' disabled ':'').'
+               onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $complectationArray);
+               $oFormMaterialTab -> addRule('complectation['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+            }
+            if($crossection)
+            {
+              // save crossection
+              $saveJs = "if(this.value != '') { 
+                var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&crossection='+this.value+'&saveId='+rowId.value));
+                this.style.borderColor = '#16bb24cc'; 
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              }";
+               $oFormMaterialTab->addElement('text', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION'], 
+               (($isReadonly)?' disabled ':'').'maxlength="250"'.'
+               onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
+            }         
           // save amount
           $saveJs = "var amount = isDoubleAuto(this.value,3); 
               if(amount != '') { 
@@ -317,7 +398,9 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);
               $oFormMaterialTab->setNewValue('unit['.$i.']',$actMaterial['MATR_MERVIENIBA']);
               $oFormMaterialTab->setNewValue('import_no['.$i.']',$actMaterial['MATR_IMPORT_NO']);        
-              $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);        
+              $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);  
+              $oFormMaterialTab->setNewValue('crossection['.$i.']',$actMaterial['MATR_CROSSECTION']);
+              $oFormMaterialTab->setNewValue('complectation['.$i.']',$actMaterial['MATR_COMPLECTATION']);        
               $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
               $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
 			        $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  			  
@@ -386,6 +469,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                                                 false,
                                                 $row['export_type'],
                                                 $row['import_no'],
+                                                $row['crossection'],
+                                                $row['complectation']
                                               );
                           // if work not inserted in to the DB
                           // delete  task record and show error message

@@ -3,179 +3,35 @@
 <h1><?=text::toUpper(text::get('DATA_IMPORT'));?></h1>
 <?= $oForm -> getFormHeader(); ?>
 <script type="text/javascript">
+var importCatalogs = ['MATERIAL',
+                     'EDAREA',
+                     'KALKULATION',
+                     'KALKULATION_TR',
+                     'KALKULATION_STATUSS',
+                     'MMS_WORKS',
+                     'HARMONIZED',
+                     'MMS_KALKULATION',
+                     'KALKULATION_MATERIAL',
+                     'DUUSERS',
+                     'MATERIAL_CATEGORY',
+                     'MATERIAL_COMPLECTATION',
+                     'COMPLECTATION'
+                     ];
+
 function setImportColumnVisibility()
 {
 	var selectedReport=optionValue('catalog');
-	if (selectedReport=='EDAREA')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='block';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
-	else if (selectedReport=='MATERIAL')
-	{
-       document.all['MATERIALS'].style.display='block';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
-
-    else if (selectedReport=='KALKULATION')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='block';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
+       importCatalogs.forEach(element => {
+              if( document.all[element] != 'undefined') {
+                     document.all[element].style.display='none';
+                     if(selectedReport == element) {
+                            document.all[element].style.display='block';
+                     } 
+              }
+       });
        document.all['options'].disabled=true;
        document.all['options'].selectedIndex=0;
 
-	}
-     else if (selectedReport=='KALKULATION_TR')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='block';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=false;
-       document.all['options'].selectedIndex=2;
-
-	}
-     else if (selectedReport=='KALKULATION_STATUSS')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='block';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-
-	}
-
-    else if (selectedReport=='HARMONIZED')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='block';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
-    else if (selectedReport=='MMS_WORKS')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='block';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-       }
-       else if (selectedReport=='MMS_KALKULATION')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='block';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-    }
-    else if (selectedReport=='KALKULATION_MATERIAL')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='block';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
-    else if (selectedReport=='DUUSERS')
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='block';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
-    else
-	{
-       document.all['MATERIALS'].style.display='none';
-       document.all['EDAREA'].style.display='none';
-       document.all['KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_TR'].style.display='none';
-       document.all['KALKULATION_STATUSS'].style.display='none';
-       document.all['MMS_WORKS'].style.display='none';
-       document.all['HARMONIZED'].style.display='none';
-       document.all['MMS_KALKULATIONS'].style.display='none';
-       document.all['KALKULATION_MATERIAL'].style.display='none';
-       document.all['DUUSERS'].style.display='none';
-       document.all['options'].disabled=true;
-       document.all['options'].selectedIndex=0;
-	}
 }
 add2onload('setImportColumnVisibility()');
 </script>
@@ -211,16 +67,19 @@ add2onload('setImportColumnVisibility()');
     </tr>
     <tr>
 	<td class="table_cell_2" >
-       <div id="MATERIALS" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL');?></div>
+       <div id="MATERIAL" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL');?></div>
        <div id="EDAREA" style="display:none"><?=text::get('REQUIREMENTS_EDAREA');?></div>
-       <div id="KALKULATIONS" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION');?></div>
+       <div id="KALKULATION" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION');?></div>
        <div id="KALKULATION_TR" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_TR');?></div>
        <div id="KALKULATION_STATUSS" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_STATUSS');?></div>
        <div id="MMS_WORKS" style="display:none"><?=text::get('REQUIREMENTS_MMS_WORKS');?></div>
        <div id="HARMONIZED" style="display:none"><?=text::get('REQUIREMENTS_HARMONIZED');?></div>
-       <div id="MMS_KALKULATIONS" style="display:none"><?=text::get('REQUIREMENTS_MMS_CALCULATION');?></div>
+       <div id="MMS_KALKULATION" style="display:none"><?=text::get('REQUIREMENTS_MMS_CALCULATION');?></div>
        <div id="KALKULATION_MATERIAL" style="display:none"><?=text::get('REQUIREMENTS_CALCULATION_MATERIAL');?></div>
        <div id="DUUSERS" style="display:none"><?=text::get('REQUIREMENTS_DU_USERS');?></div>
+       <div id="MATERIAL_CATEGORY" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL_CATEGORY');?></div>
+       <div id="COMPLECTATION" style="display:none"><?=text::get('REQUIREMENTS_COMPLECTATION');?></div>
+       <div id="MATERIAL_COMPLECTATION" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL_COMPLECTATION');?></div>
        </td>
     </tr>
 </table>
