@@ -3675,6 +3675,225 @@ class dbProc extends dbLayer
         $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
     }
+/*
+    
+
+    function saveProjectMaterialComplectation($actId, $work_type, $cat_code, $complectation = false, $crossection = false)
+	{
+        $r_work_type = explode('^', $work_type);
+        if($complectation == false || !isset($complectation)) {
+            $query = 'INSERT INTO `MATERIALI`
+            (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+             `MATR_IS_WORKER`, `MATR_PROJECT_EXPORT`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_CROSSECTION`)
+              SELECT '.dbLayer::quote_smart($actId).',
+                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, 0, `KMAT_KATEGORIJAS_KLASE`,
+                    '.dbLayer::quote_smart($r_work_type[0]).',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) : "").'",
+                    "'.dbLayer::quote_smart($crossection).'"
+                    FROM `KL_MATERIALI` 
+                    WHERE `KMAT_KODS` IN (SELECT MAX(KMAT_KODS) FROM `KL_MATERIALI`
+                                        WHERE `KMAT_KATEGORIJAS_KODS` = "'.dbLayer::quote_smart($cat_code).'"
+                                        ) ';
+        }
+        else 
+        {
+            $query = 'INSERT INTO `MATERIALI`
+            (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+            `MATR_IS_WORKER`, `MATR_PROJECT_EXPORT`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, 
+            `MATR_COMPLECTATION`)
+            SELECT '.dbLayer::quote_smart($actId).',
+                 `KMAT_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, 0, `KMAT_KATEGORIJAS_KLASE`,
+                    '.dbLayer::quote_smart($r_work_type[0]).',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) : "").'",
+                    "'.dbLayer::quote_smart($complectation).'"
+                    FROM `kl_materialu_grupas`
+                    INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
+                    WHERE `KMAT_KODS` IN (SELECT MAX(KTMK_MATERIAL_KODS) FROM `kl_materialu_komplekt`
+                                            WHERE `KTMK_KATEGORIJAS_KODS` = "'.dbLayer::quote_smart($cat_code).'"
+                                            AND `KTMK_KOMPLEKTACIJA` = "'.dbLayer::quote_smart($complectation).'"
+                                            ) ';
+        }
+        
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
+    function getProjectMaterialGroup(){
+        
+        $query = "SELECT DISTINCT `KMTG_GRUPAS_NOSAUKUNS`, KMTG_GRUPAS_KODS AS GRUPAS_KODS,
+                        CONCAT(KMTG_GRUPAS_KODS, 
+                                        '*', 
+                                        CASE WHEN  KMTG_GRUPAS_KODS = '09' THEN '1' ELSE '0' END ) as KMTG_GRUPAS_KODS 
+			FROM `kl_materialu_grupas`
+            LEFT JOIN `kl_komplektacijas` ON `KMTG_KATEGORIJAS_KODS` = `KMTK_KATEGORIJAS_KODS`
+            WHERE `KMTG_PIEGADES_VEIDS` NOT IN ('Aprīkojums', 'Neprojektēt')
+			ORDER BY KMTG_GRUPAS_KODS";
+
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    
+
+    function getProjectMaterialSubGroup($group){
+        
+        $query = "SELECT CONCAT(KMTG_APAKSGRUPAS_KODS, '*', CASE WHEN SUM(a) = 0 THEN '0' ELSE '1' END, '*', CASE WHEN SUM(b) = 0 THEN '0' ELSE '1' END) as KMTG_APAKSGRUPAS_KODS, 
+                    `KMTG_APAKSGRUPAS_NOSAUKUNS`, APAKSGRUPAS_KODS, `KMTG_GRUPAS_KODS` 
+                    FROM  (SELECT CASE WHEN KMTK_KOMPLEKTACIJA IS NOT NULL THEN '1' ELSE '0' END AS a,
+                                    CASE WHEN  KMTG_GRUPAS_KODS = '09' THEN '1' ELSE '0' END  as b, 
+                            `KMTG_APAKSGRUPAS_NOSAUKUNS`,
+                            LPAD(KMTG_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS, 
+                            `KMTG_GRUPAS_KODS`,
+                            `KMTG_APAKSGRUPAS_KODS`
+                            FROM `kl_materialu_grupas`
+                            LEFT JOIN `kl_komplektacijas` ON `KMTG_KATEGORIJAS_KODS` = `KMTK_KATEGORIJAS_KODS`
+                    WHERE `KMTG_GRUPAS_KODS` = '".dbLayer::quote_smart($group)."'
+                    AND `KMTG_PIEGADES_VEIDS` NOT IN ('Aprīkojums', 'Neprojektēt')
+                    ) x
+		        GROUP BY KMTG_APAKSGRUPAS_KODS, KMTG_APAKSGRUPAS_NOSAUKUNS, APAKSGRUPAS_KODS, KMTG_GRUPAS_KODS
+            ORDER BY KMTG_APAKSGRUPAS_KODS asc";
+        //echo $query;
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getProjectCategoryWithComplectation($sub_group, $with_complectation = true){
+        
+        $query = "select DISTINCT KMTG_KATEGORIJAS_KODS, `KMTG_KATEGORIJAS_NOSAUKUNS`
+        from `kl_materialu_grupas`";
+        if($with_complectation) {
+            $query .= "INNER JOIN `kl_komplektacijas` ON `KMTG_KATEGORIJAS_KODS` = `KMTK_KATEGORIJAS_KODS`";
+        }
+        $query .= "WHERE `KMTG_APAKSGRUPAS_KODS` = ".dbLayer::quote_smart($sub_group)." 
+        AND `KMTG_PIEGADES_VEIDS` NOT IN ('Aprīkojums', 'Neprojektēt')
+        order by `KMTG_KATEGORIJAS_NOSAUKUNS` asc";
+        //echo $query;
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    
+    function getProjectMaterial($group){
+        
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
+        from `kl_materialu_grupas`
+        INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
+        ' . (empty($group) ? '' : ' WHERE `KMTG_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
+        order by `KMTG_KATEGORIJAS_KODS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+*/
+
+    function getProjectMaterialGroup(){
+        
+        $query = "SELECT DISTINCT `KMTG_GRUPAS_NOSAUKUNS` as `KMAT_GRUPAS_NOSAUKUNS`,
+                                    KMTG_GRUPAS_KODS AS KMAT_GRUPAS_KODS
+			FROM `kl_materialu_grupas`
+            WHERE `KMTG_PIEGADES_VEIDS` NOT IN ('Aprīkojums', 'Neprojektēt')
+			ORDER BY KMTG_GRUPAS_KODS";
+
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getProjectMaterialSubGroup($group){
+        
+        $query = 'SELECT DISTINCT `KMTG_APAKSGRUPAS_KODS` as KMAT_APAKSGRUPAS_KODS,
+                         `KMTG_APAKSGRUPAS_NOSAUKUNS` as KMAT_APAKSGRUPAS_NOSAUKUNS,
+        LPAD(KMTG_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS
+        from `kl_materialu_grupas`
+        ' . (empty($group) ? '' : ' WHERE `KMTG_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        order by `KMTG_APAKSGRUPAS_KODS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getProjectMaterialBySubGroup($group){
+        
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMTG_KATEGORIJAS_KODS as KMAT_KATEGORIJAS_KODS, 
+        KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
+        from `kl_materialu_grupas`
+        INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
+        ' . (empty($group) ? '' : ' WHERE `KMTG_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
+        order by `KMTG_KATEGORIJAS_KODS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getProjectMaterialByCategory($category){
+        
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMTG_KATEGORIJAS_KODS as KMAT_KATEGORIJAS_KODS, 
+        KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
+        INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
+        WHERE `KMAT_KATEGORIKMTG_KATEGORIJAS_KODSJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
+        group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
+        order by `KMTG_KATEGORIJAS_KODS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function getProjectMaterialByText($text){
+        
+        $query = 'select MAX(KMAT_ID) as KMAT_ID, KMTG_KATEGORIJAS_KODS as KMAT_KATEGORIJAS_KODS, 
+        KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
+        INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
+        WHERE UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
+        order by `KMTG_KATEGORIJAS_KODS` asc';
+
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
+    function isComplectationForCategory($code) {
+        $query = "SELECT COUNT(*) as cnt 
+                FROM `kl_materialu_grupas`
+                INNER JOIN `kl_komplektacijas` ON `KMTG_KATEGORIJAS_KODS` = `KMTK_KATEGORIJAS_KODS`
+                WHERE `KMTG_KATEGORIJAS_KODS` = '".dbLayer::quote_smart($code)."'";
+        $oSQL = new dbLayer;
+        $result = $oSQL -> makeQuery($query);
+        return (($result[0]['cnt'] == 0 ) ? false : true);
+    }
+
+    function saveProjectMaterialRecord($actId, $ID, $work_type, $group, $subgroup)
+	{
+        $r_work_type = explode('^', $work_type);
+        $query = 'INSERT INTO `MATERIALI`
+        (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
+         `MATR_IS_WORKER`, `MATR_PROJECT_EXPORT`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`)
+          SELECT '.dbLayer::quote_smart($actId).',
+            `KMAT_KATEGORIJAS_KODS`,`KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`,  0, `KMAT_KATEGORIJAS_KLASE`,
+                '.dbLayer::quote_smart($r_work_type[0]).',
+                "'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) : "").'"
+                FROM `KL_MATERIALI` 
+                WHERE `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
+        
+        //echo $query;
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
+    function getProjectCategoryComplectation($category) {
+        $query = "SELECT DISTINCT `KMTK_KOMPLEKTACIJA`
+			from `kl_komplektacijas`
+            WHERE `KMTK_KATEGORIJAS_KODS` = ".dbLayer::quote_smart($category)." 
+			ORDER BY KMTK_KOMPLEKTACIJA";
+        $oSQL = new dbLayer;
+        return $oSQL -> makeQuery($query);
+    }
+
 
     function getMaterialGroup(){
         
@@ -3698,6 +3917,9 @@ class dbProc extends dbLayer
         $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
     }
+
+    
+    
 
     function getMaterialBySubGroup($group){
         
@@ -6629,27 +6851,6 @@ class dbProc extends dbLayer
         return isset($result[0]['DRBI_WORK_TYPE']) ? $result[0]['DRBI_WORK_TYPE'] : '';
     }
 
-    function saveProjectMaterialRecord($actId, $ID, $work_type)
-	{
-        $r_work_type = explode('^', $work_type);
-        $query = 'insert into `MATERIALI`
-        (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, `MATR_MERVIENIBA`,
-         `MATR_IS_WORKER`, `MATR_PROJECT_EXPORT`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`)
-        select '.dbLayer::quote_smart($actId).',
-            `KMAT_KATEGORIJAS_KODS`,`KMAT_KATEGORIJAS_NOSAUKUNS`, `KMAT_MERVIENIBA`, 
-                0, `KMAT_KATEGORIJAS_KLASE`,
-                '.dbLayer::quote_smart($r_work_type[0]).',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) : "").'" 
-                from `KL_MATERIALI`
-                where `KMAT_ID` = "'.dbLayer::quote_smart($ID).'" ';
-        
-        //echo $query;
-		$oDB = new dbLayer;
-		$result = $oDB -> makeQuery($query);
-
-		return ($result !== false);
-    }
-    
-    
 
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
@@ -6949,6 +7150,33 @@ class dbProc extends dbLayer
 		return ($result !== false);
     }
 
+    function updateMaterialCrossection($ID, $value, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "UPDATE ".$table_name." SET  `MATR_CROSSECTION` = '".dbLayer::quote_smart($value)."'
+                WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
+
+        //echo $query;
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
+    function updateMaterialComplectation($ID, $value, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "UPDATE ".$table_name." SET  `MATR_COMPLECTATION` = '".dbLayer::quote_smart($value)."'
+                WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
+
+        //echo $query;
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
+
+
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta materiala ierakstu p�c akta ID.
@@ -7117,7 +7345,8 @@ class dbProc extends dbLayer
     function writeActMaterial($actId, $code, $title, $unit, $price = false, $amount, 
                                 $total = false, $st = 0, $amount_kor = false, $notes = false,
                                 $work_type = false, $work_approve_date = false, $edited = false, 
-                                $export_type = false, $import_no = false)
+                                $export_type = false, $import_no = false, $crossection = false,
+                                $complectation = false)
 	{
         
         $r_work_type = explode('^', $work_type);
@@ -7129,7 +7358,7 @@ class dbProc extends dbLayer
                             `MATR_IS_WORKER`, `MATR_PIEZIMES`,  `MATR_APPROVE_DATE`,
                             `MATR_WORK_APROVE_DATE`, `MATR_WORK_TYPE_ID`,
                              `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,
-                             `MATR_IMPORT_NO` )                           
+                             `MATR_IMPORT_NO`, `MATR_CROSSECTION`, `MATR_COMPLECTATION` )                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -7145,7 +7374,9 @@ class dbProc extends dbLayer
                             '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
                             '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
-                            '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
+                            '.(($import_no !== false) ? '"'.dbLayer::quote_smart($import_no).'"' : '"NULL"').',
+                            '.(($crossection !== false) ? '"'.dbLayer::quote_smart($crossection).'"' : '"NULL"').',
+                            '.(($complectation !== false) ? '"'.dbLayer::quote_smart($complectation).'"' : '"NULL"').'
                             )';
         } else {
             $query = 'insert into `MATERIALI`
@@ -7154,7 +7385,7 @@ class dbProc extends dbLayer
                     `MATR_IS_WORKER`, `MATR_PIEZIMES`,  `MATR_APPROVE_DATE`,
                     `MATR_WORK_APROVE_DATE`, `MATR_WORK_TYPE_ID`,
                     `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,
-                    `MATR_IMPORT_NO` )          
+                    `MATR_IMPORT_NO`, `MATR_CROSSECTION`, `MATR_COMPLECTATION` )          
                     values ( '.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($code).'",
                     "'.dbLayer::quote_smart($title).'",
@@ -7169,7 +7400,9 @@ class dbProc extends dbLayer
                     '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                     '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
                     '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
-                    '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
+                    '.(($import_no !== false) ? '"'.dbLayer::quote_smart($import_no).'"' : '"NULL"').',
+                    '.(($crossection !== false) ? '"'.dbLayer::quote_smart($crossection).'"' : '"NULL"').',
+                    '.(($complectation !== false) ? '"'.dbLayer::quote_smart($complectation).'"' : '"NULL"').'
                     )';
         }
         //echo  $query;
@@ -9734,9 +9967,248 @@ class dbProc extends dbLayer
         return  $oDB -> makeQuery($query);
     }
 
+    //=======================================
+    // PROJECT MATERIAL CATEGORY
+    //=======================================
 
+    function saveMaterialKategoryFromExcel($data){
 
+        $group_code = substr($data[0], 0, 2);  
+        $group = substr($data[0], 3);  
+        $subgroup_code = substr($data[1], 0, 4); 
+        $subgroup = substr($data[1], 5);    
         
+        $oSQL=new dbLayer();
+        
+        $query = 'INSERT INTO `kl_materialu_grupas_temp` 
+                    (
+                        `KMTG_GRUPAS_KODS`,
+                        `KMTG_GRUPAS_NOSAUKUNS`,
+                        `KMTG_APAKSGRUPAS_KODS`,
+                        `KMTG_APAKSGRUPAS_NOSAUKUNS`,
+                        `KMTG_KATEGORIJAS_KODS`,
+                        `KMTG_KATEGORIJAS_NOSAUKUNS`,
+                        `KMTG_KATEGORIJAS_MERVIENIBA`,
+                        `KMTG_PIEGADES_VEIDS`,
+                        `KMTG_TS_NUMURS`,
+                        `KMTG_KATEGORIJAS_IZMAINAS`,
+                        `KMTG_IZMAINU_PIEZIMES`,
+                        `KMTG_TS_ID`,
+                        `KMTG_TS_STATUS`,
+                        `KMTG_MR_STATUS`,
+                        `KMTG_KATEGORIJAS_PIELIETOJUMS`,
+                        `KMTG_KATEGORIJAS_NOZIMIGUMS`,
+                        `KMTG_KATEGORIJAS_UZTUR`,
+                        `KMTG_AIZVIETOJAMA_NOMENKLATURA`,
+                        `KMTG_VIENUMA_TIPS`,
+                        `KMTG_CELS`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($group_code).'",
+                            "'.dbLayer::quote_smart($group).'",
+                            "'.dbLayer::quote_smart($subgroup_code).'",
+                            "'.dbLayer::quote_smart($subgroup).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'",
+                            "'.dbLayer::quote_smart($data[5]).'",
+                            "'.dbLayer::quote_smart($data[6]).'",
+                            "'.dbLayer::quote_smart($data[7]).'",
+                            "'.dbLayer::quote_smart($data[8]).'",
+                            "'.dbLayer::quote_smart($data[9]).'",
+                            "'.dbLayer::quote_smart($data[10]).'",
+                            "'.dbLayer::quote_smart($data[11]).'",
+                            "'.dbLayer::quote_smart($data[12]).'",
+                            "'.dbLayer::quote_smart($data[13]).'",
+                            "'.dbLayer::quote_smart($data[14]).'",
+                            "'.dbLayer::quote_smart($data[15]).'",
+                            "'.dbLayer::quote_smart($data[16]).'",
+                            "'.dbLayer::quote_smart($data[17]).'"
+                            
+                        ) ';
+
+        return $oSQL->makeQuery($query);
+    }
+
+    
+    // -----------------------------------------------------------------------------
+	// izveidot tmp kalkul�cijas sql tabulu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function createMaterialGroupTempTable()
+	{
+		$oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_materialu_grupas_temp`';
+        $oSQL->makeQuery($sql);
+
+        $sql =   'CREATE TABLE `kl_materialu_grupas_temp` (
+            `KMTG_ID` INT(11) NOT NULL AUTO_INCREMENT,	
+            `KMTG_GRUPAS_KODS` CHAR(2) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_GRUPAS_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_APAKSGRUPAS_KODS` CHAR(4) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_APAKSGRUPAS_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_KODS` CHAR(8) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_MERVIENIBA` VARCHAR(15) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_PIEGADES_VEIDS` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_TS_NUMURS` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_IZMAINAS` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_IZMAINU_PIEZIMES` VARCHAR(250) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_TS_ID` INT(3) NULL ,
+            `KMTG_TS_STATUS` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_MR_STATUS` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_PIELIETOJUMS` VARCHAR(50) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_NOZIMIGUMS` VARCHAR(50) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_KATEGORIJAS_UZTUR` VARCHAR(50) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTG_AIZVIETOJAMA_NOMENKLATURA` VARCHAR(50) NOT NULL,
+            `KMTG_VIENUMA_TIPS` VARCHAR(50) NOT NULL,
+            `KMTG_CELS` VARCHAR(50) NOT NULL,
+            PRIMARY KEY (`KMTG_ID`),
+            UNIQUE INDEX `KMTG_KATEGORIJAS_KODS` (`KMTG_KATEGORIJAS_KODS`),
+            INDEX `KMTG_GRUPAS_KODS` (`KMTG_GRUPAS_KODS`),
+            INDEX `KMTG_APAKSGRUPAS_KODS` (`KMTG_APAKSGRUPAS_KODS`)
+          ) 
+          COLLATE=utf8_latvian_ci
+          AUTO_INCREMENT=1;';
+
+		return $oSQL->makeQuery($sql);
+	}
+
+    // -----------------------------------------------------------------------------
+	// parsaukt kalkul�cijas temp sql tabulu uz  KL_KALKULACIJA
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function renameMaterialGroupTable()
+	{
+        $oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_materialu_grupas`';
+        $oSQL->makeQuery($sql);
+		return $oSQL->makeQuery('ALTER TABLE `kl_materialu_grupas_temp` RENAME `kl_materialu_grupas`');
+    }
+    
+    function saveComplectationFromExcel($data){
+        
+        $oSQL=new dbLayer();
+        
+        $query = 'INSERT INTO `kl_komplektacijas_temp` 
+                    (
+                        `KMTK_KATEGORIJAS_KODS`,
+                        `KMTK_KATEGORIJAS_NOSAUKUNS`,
+                        `KMTK_KOMPLEKTACIJA`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'"                            
+                    ) ';
+
+        return $oSQL->makeQuery($query);
+    }
+
+    
+    // -----------------------------------------------------------------------------
+	// izveidot tmp kalkul�cijas sql tabulu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function createComplectTempTable()
+	{
+		$oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_komplektacijas_temp`';
+        $oSQL->makeQuery($sql);
+
+        $sql =   'CREATE TABLE `kl_komplektacijas_temp` (
+            `KMTK_ID` INT(11) NOT NULL AUTO_INCREMENT,	
+            `KMTK_KATEGORIJAS_KODS` CHAR(8) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTK_KATEGORIJAS_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KMTK_KOMPLEKTACIJA` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            PRIMARY KEY (`KMTK_ID`)
+        )
+        COLLATE=utf8_latvian_ci
+        AUTO_INCREMENT=1
+        ;';
+
+		return $oSQL->makeQuery($sql);
+	}
+
+    // -----------------------------------------------------------------------------
+	// parsaukt kalkul�cijas temp sql tabulu uz  KL_KALKULACIJA
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function renameComplectTable()
+	{
+        $oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_komplektacijas`';
+        $oSQL->makeQuery($sql);
+		return $oSQL->makeQuery('ALTER TABLE `kl_komplektacijas_temp` RENAME `kl_komplektacijas`');
+    }
+    
+    function saveMaterialComplectFromExcel($data){
+        
+        $oSQL=new dbLayer();
+        
+        $query = 'INSERT INTO `kl_materialu_komplekt_temp` 
+                    (
+                        `KTMK_KATEGORIJAS_KODS`,
+                        `KTMK_KATEGORIJAS_NOSAUKUNS`,
+                        `KTMK_MATERIAL_KODS`,
+                        `KTMK_MATERIAL_NOSAUKUNS`,
+                        `KTMK_KOMPLEKTACIJA`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'",
+                            "'.dbLayer::quote_smart($data[3]).'",
+                            "'.dbLayer::quote_smart($data[4]).'"                            
+                    ) ';
+
+        return $oSQL->makeQuery($query);
+    }
+
+    
+    // -----------------------------------------------------------------------------
+	// izveidot tmp kalkul�cijas sql tabulu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function createMaterialComplectTempTable()
+	{
+		$oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_materialu_komplekt_temp`';
+        $oSQL->makeQuery($sql);
+
+        $sql =   'CREATE TABLE `kl_materialu_komplekt_temp` (
+            `KTMK_ID` INT(11) NOT NULL AUTO_INCREMENT,	
+            `KTMK_KATEGORIJAS_KODS` CHAR(8) NOT NULL COLLATE utf8_latvian_ci,
+            `KTMK_KATEGORIJAS_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KTMK_MATERIAL_KODS` CHAR(7) NOT NULL COLLATE utf8_latvian_ci,
+            `KTMK_MATERIAL_NOSAUKUNS` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            `KTMK_KOMPLEKTACIJA` VARCHAR(250) NOT NULL COLLATE utf8_latvian_ci,
+            PRIMARY KEY (`KTMK_ID`),
+            INDEX `KTMK_MATERIAL_KODS` (`KTMK_MATERIAL_KODS`)
+        )
+        COLLATE=utf8_latvian_ci
+        AUTO_INCREMENT=1
+        ;';
+
+		return $oSQL->makeQuery($sql);
+	}
+
+    // -----------------------------------------------------------------------------
+	// parsaukt kalkul�cijas temp sql tabulu uz  KL_KALKULACIJA
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function renameMaterialComplectTable()
+	{
+        $oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `kl_materialu_komplekt`';
+        $oSQL->makeQuery($sql);
+		return $oSQL->makeQuery('ALTER TABLE `kl_materialu_komplekt_temp` RENAME `kl_materialu_komplekt`');
+	}
+
+            
 
         
 }

@@ -59,7 +59,7 @@ $catalog  = reqVar::get('catalog');
         document.all["mat_sub_group"].options[i] = null;
       }
       <?
-      $res=dbProc::getMaterialSubGroup(reqVar::get('mat_group'));      
+      $res=dbProc::getProjectMaterialSubGroup(reqVar::get('mat_group'));      
       if (is_array($res) && count($res)>0)
       {
         ?>
@@ -88,7 +88,7 @@ $catalog  = reqVar::get('catalog');
         document.all["scope[]"].options[i] = null;
       }
       <?
-      $res=dbProc::getMaterialBySubGroup($mat_sub_group);
+      $res=dbProc::getProjectMaterialBySubGroup($mat_sub_group);
       if (is_array($res) && count($res)>0)
       {
         $i = 1;
@@ -225,7 +225,7 @@ if ( $isAdmin || $isProjector)
             }
             unset($res);
             $matrGroup = array();
-            $res=dbProc::getMaterialGroup();
+            $res=dbProc::getProjectMaterialGroup();
             if (is_array($res))
             {
               $matrGroup['']=text::get('ALL');
@@ -239,7 +239,7 @@ if ( $isAdmin || $isProjector)
             $matrSubGroup = array();
             if(isset($default_matr_gr_id )) {
               
-              $res=dbProc::getMaterialSubGroup($default_matr_gr_id);
+              $res=dbProc::getProjectMaterialSubGroup($default_matr_gr_id);
               
               if (is_array($res))
               {
@@ -256,21 +256,21 @@ if ( $isAdmin || $isProjector)
 
             if(isset($default_matr_subgr_id)) 
             {
-                $res=dbProc::getMaterialBySubGroup($default_matr_subgr_id);
+                $res=dbProc::getProjectMaterialBySubGroup($default_matr_subgr_id);
             }
 
             if ($oFormPop->isFormSubmitted()) {
                 if ($oFormPop->getValue('action')==OP_UPDATE && $oFormPop->getValue('mat_sub_group'))
                 {
-                    $res=dbProc::getMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
+                    $res=dbProc::getProjectMaterialBySubGroup($oFormPop->getValue('mat_sub_group'));
                 }
                 if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('category') != '')
                 {
-                  $res = dbProc::getMaterialByCategory($oFormPop->getValue('category'));
+                  $res = dbProc::getProjectMaterialByCategory($oFormPop->getValue('category'));
                 }
                 if ($oFormPop->getValue('action')==OP_SEARCH && $oFormPop->getValue('text_part') != '')
                 {
-                  $res = dbProc::getMaterialByText($oFormPop->getValue('text_part') );
+                  $res = dbProc::getProjectMaterialByText($oFormPop->getValue('text_part') );
                 }
 	          }
               
@@ -378,16 +378,14 @@ if ( $isAdmin || $isProjector)
                                   case  KL_MATERIALS:
                                     $r = dbProc::saveProjectMaterialRecord($oFormPop->getValue('actId'), 
                                                                       $cValue, 
-                                                                      $oFormPop->getValue('work_type')
+                                                                      $oFormPop->getValue('work_type'),
+                                                                      $oFormPop->getValue('mat_group'),
+                                                                      $oFormPop->getValue('mat_sub_group')
                                                                     );
                                     break;
 
                                 }
-                                $r = dbProc::saveUserPreferences($oFormPop->getValue('actId'), 
-                                                                  $oFormPop->getValue('userId'), 
-                                                                  $oFormPop->getValue('calc_group'), 
-                                                                  $oFormPop->getValue('mat_group'),
-                                                                  $oFormPop->getValue('mat_sub_group'));
+                               
                                 if(!$r)
                                 {
                                   $oFormPop->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
@@ -402,6 +400,12 @@ if ( $isAdmin || $isProjector)
                 }
                 else
                 {
+                  $r = dbProc::saveUserPreferences($oFormPop->getValue('actId'), 
+                                                  $oFormPop->getValue('userId'), 
+                                                  $oFormPop->getValue('calc_group'), 
+                                                  $oFormPop->getValue('mat_group'),
+                                                  $oFormPop->getValue('mat_sub_group'));
+
                    if($r)
                     {
                       $oRedirectLink=new urlQuery();
