@@ -403,4 +403,12 @@ define('CALC_GROUP_CODE_EPW','21,22,23,24,25,26,27,28,29,31');
 define('WORKER_TAX_EPW','300000/13-208');
 define('WORKER_SECTION_EPW','Daugavpils,Preili,Ludza,Kraslava,Rezekne');
 
+#=================================================
+#  neatlasīt materialos
+#=================================================
+define('CAT_CLASE_1','Aprīkojums');
+define('CAT_CLASE_2','Neprojektēt');
+
+
+
 ?>

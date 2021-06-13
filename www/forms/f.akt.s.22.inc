@@ -176,8 +176,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                   if (empty($aMaterialsFr[$j]['MATR_DAUDZUMS']))
                   {
                       // assign error message
-                      $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
-                      $isRowValid = false;
+                      //$oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
+                      //$isRowValid = false;
                   }
                   // validate work progress value
                   elseif (!is_numeric($aMaterialsFr[$j]['MATR_DAUDZUMS']))
@@ -368,7 +368,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             ((isset($actMaterial['MATR_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
            
-            $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+            //$oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
             $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
             // check Amaunt field
             $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');

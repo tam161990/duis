@@ -3511,9 +3511,10 @@ class dbProc extends dbLayer
             
             //, SUBSTRING(`KMAT_NOSAUKUMS`, 1, 25) as `KMAT_NOSAUKUMS`
             $query = 'select *, ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',
-            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
+            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') ."
             from `KL_MATERIALI`
-            where '.$searchString.'
+            where `KMAT_KATEGORIJAS_KLASE` NOT IN ('" .CAT_CLASE_1 ."', '" .CAT_CLASE_2 ."') 
+            AND ".$searchString.'
             order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
 			{
@@ -3536,7 +3537,8 @@ class dbProc extends dbLayer
             $column = dbProc::getKlklDefaultColumn(KL_MATERIALS);
 			$query = 'select *
             from `KL_MATERIALI`
-            where `KMAT_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
+            WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+			AND`KMAT_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
             order by `'.dbLayer::quote_smart($column).'` asc';
 
 	   	$oSQL = new dbLayer;
@@ -3646,6 +3648,7 @@ class dbProc extends dbLayer
     function getMaterialCategory(){
         
         $query = 'select `KMAT_KATEGORIJAS_KODS`, `KMAT_KATEGORIJAS_NOSAUKUNS` from `KL_MATERIALI`
+		WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';
 
         $oSQL = new dbLayer;
@@ -3656,7 +3659,8 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
-        WHERE `KMAT_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
+        WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+		AND `KMAT_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';        
 
@@ -3668,13 +3672,15 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
-        WHERE UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+		AND UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';        
 
         $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
     }
+
 /*
     
 
@@ -3821,7 +3827,8 @@ class dbProc extends dbLayer
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
         from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        ' . (empty($group) ? '' : ' WHERE `KMTG_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+        ' . (empty($group) ? '' : ' AND `KMTG_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
 
@@ -3833,8 +3840,10 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMTG_KATEGORIJAS_KODS as KMAT_KATEGORIJAS_KODS, 
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
+        from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE `KMAT_KATEGORIKMTG_KATEGORIJAS_KODSJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
+        WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+        AND `KMTG_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
 
@@ -3846,8 +3855,10 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMTG_KATEGORIJAS_KODS as KMAT_KATEGORIJAS_KODS, 
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
+        from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
+        WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+        AND UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
 
@@ -3897,9 +3908,10 @@ class dbProc extends dbLayer
 
     function getMaterialGroup(){
         
-        $query = 'SELECT DISTINCT `KMAT_GRUPAS_NOSAUKUNS`, KMAT_GRUPAS_KODS
+        $query = "SELECT DISTINCT `KMAT_GRUPAS_NOSAUKUNS`, KMAT_GRUPAS_KODS
 			from `KL_MATERIALI`
-			ORDER BY KMAT_GRUPAS_KODS';
+            WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ('" .CAT_CLASE_1 ."', '" .CAT_CLASE_2 ."') 
+			ORDER BY KMAT_GRUPAS_KODS";
 
 
         $oSQL = new dbLayer;
@@ -3908,24 +3920,21 @@ class dbProc extends dbLayer
 
     function getMaterialSubGroup($group){
         
-        $query = 'select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
+        $query = "select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
         LPAD(KMAT_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS
-        from `KL_MATERIALI`
-        ' . (empty($group) ? '' : ' WHERE `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        from `KL_MATERIALI` WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ('" .CAT_CLASE_1 ."', '" .CAT_CLASE_2 ."') 
+        " . (empty($group) ? '' : ' AND `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         order by `KMAT_APAKSGRUPAS_KODS` asc';
 
         $oSQL = new dbLayer;
         return $oSQL -> makeQuery($query);
     }
 
-    
-    
-
     function getMaterialBySubGroup($group){
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
-        from `KL_MATERIALI`
-        ' . (empty($group) ? '' : ' WHERE `KMAT_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        from `KL_MATERIALI`  WHERE `KMAT_KATEGORIJAS_KLASE` NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  
+        ' . (empty($group) ? '' : ' AND `KMAT_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_KODS` asc';
 
@@ -3955,8 +3964,9 @@ class dbProc extends dbLayer
         {
             $searchString .= ' and `KMAT_IR_AKTIVS` =1 ';
         }
-        $query =  'select count(`KMAT_ID`) as `RECORDCOUNT` from `KL_MATERIALI`
-        where '.$searchString;
+        $query =  "select count(`KMAT_ID`) as `RECORDCOUNT` from `KL_MATERIALI`
+        where `KMAT_KATEGORIJAS_KLASE` NOT IN ('" .CAT_CLASE_1 ."', '" .CAT_CLASE_2 ."') 
+        AND ".$searchString;
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
@@ -7056,7 +7066,6 @@ class dbProc extends dbLayer
         $query = "select *
                 from `MATERIALI`                
                 WHERE `MATR_RAKT_ID` = ".$ID."
-                AND `MATR_DAUDZUMS` IS NOT NULL     
                 " . (($group_id !== false) ? " AND `MATR_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ." 
                 " . (($type_text !== false) ? ((empty($type_text) || $type_text == 'NULL') ? " AND `MATR_WORK_TYPE_TEXT` = 'X' " : " AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($type_text)."'" ) : "" ) ."           
                 ORDER BY `MATR_IS_WORKER` DESC, `MATR_KODS`";
@@ -10209,7 +10218,22 @@ class dbProc extends dbLayer
 	}
 
             
-
+    function checkAllInputFields($actId) {
+        $query = "SELECT SUM(cnt_darbi + cnt_meriali) as cnt FROM (
+                SELECT COUNT(*) as cnt_darbi, 0 as cnt_meriali
+                FROM `darbi`
+                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                AND (DRBI_DAUDZUMS IS NULL OR DRBI_DAUDZUMS ='NULL')
+                UNION
+                SELECT 0 as cnt_darbi, COUNT(*) as cnt_meriali
+                FROM `materiali`
+                WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')
+                ) x";
+        $oSQL = new dbLayer;
+        $result = $oSQL -> makeQuery($query);
+        return (($result[0]['cnt'] == 0 ) ? true : false);
+    }       
         
 }
 

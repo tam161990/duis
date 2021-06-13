@@ -329,12 +329,17 @@ if ( $isAdmin || $isProjector || $projectApprover )
   {
     $oForm -> addElement('submitImg', 'make_excel', text::get('EXPORT'), 'img/btn_make_excel.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') ) {setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
   }
+  if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)
+  {
+    $oForm -> addElement('submitImg', 'make_excel2', text::get('EXPORT'), 'img/export_to_excel.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') ) {setValue(\'action\',\''.OP_ESTIMATE.'\');} else {return false;}"');
+  }
 
   if ($oForm -> isFormSubmitted())
   {
     if ($oForm->getValue('action')==OP_INSERT ||
         ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('actId'))) ||
         ($oForm->getValue('action')==OP_EXPORT && is_numeric($oForm->getValue('actId')))  ||
+        ($oForm->getValue('action')==OP_ESTIMATE && is_numeric($oForm->getValue('actId')))  ||
         ($oForm->getValue('action')==OP_MIDLE_EXPORT && is_numeric($oForm->getValue('actId'))) 
         )
 	  {
@@ -418,60 +423,65 @@ if ( $isAdmin || $isProjector || $projectApprover )
             }
             
             // export
-            if($oForm->getValue('action')==OP_EXPORT )
+            if($oForm->getValue('action')==OP_EXPORT || $oForm->getValue('action')==OP_ESTIMATE)
             {
-                $r=dbProc::saveAct($oForm->getValue('actId'),
-                            false,
-                            false,
-                            false,
-                            0,
-                            false,
-                            false,
-                            false,
-                            $oForm->getValue('status'),
-                            ($oForm->getValue('ouner'))? $oForm->getValue('ouner'):$userId,
-                            false,
-                            false,
-                            false,
-                            $oForm->getValue('worker'),
-                            $oForm->getValue('EDarea'),
-                            1,
-                            0,
-                            $oForm->getValue('numPostfix'),
-                            $oForm->getValue('worktitle'),
-                            false,
-                            false,
-                            false,
-                            false,
-                            1,
-                            1
-                );
+              
+              if($oForm->getValue('action')==OP_EXPORT && dbProc::checkAllInputFields($oForm->getValue('actId')) == false )
+              {
+                  $oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
+              }
+              else 
+              {
+                  $r=dbProc::saveAct($oForm->getValue('actId'),
+                              false,
+                              false,
+                              false,
+                              0,
+                              false,
+                              false,
+                              false,
+                              $oForm->getValue('status'),
+                              ($oForm->getValue('ouner'))? $oForm->getValue('ouner'):$userId,
+                              false,
+                              false,
+                              false,
+                              $oForm->getValue('worker'),
+                              $oForm->getValue('EDarea'),
+                              1,
+                              0,
+                              $oForm->getValue('numPostfix'),
+                              $oForm->getValue('worktitle'),
+                              false,
+                              false,
+                              false,
+                              false,
+                              1,
+                              1
+                  );
 
-                if ($r )
-                {
-                  // get info about voltage
-                  $actInfo = dbProc::getActInfo($oForm->getValue('actId'));
-                  if(count($actInfo)>0)
+                  if ($r )
                   {
-                      $act = $actInfo[0];
-                      $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
-                      $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
-                  }
-                  if( $oForm->getValue('action')==OP_EXPORT )
-                  {
-
+                    // get info about voltage
+                    $actInfo = dbProc::getActInfo($oForm->getValue('actId'));
+                    if(count($actInfo)>0)
+                    {
+                        $act = $actInfo[0];
+                        $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
+                        $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
+                    }
                     // akta sagatavi (tab tamme)
-                    $fileId = toPdf::projectTammePdf($actId, $userId, OP_EXPORT);
+                    $fileId = toPdf::projectTammePdf($actId, $userId, $oForm->getValue('action')==OP_ESTIMATE);
                     if( $fileId === false){
                       $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                     }
                     else {
-                      $fileId = toExcel::projectTammeExcel($actId, $userId);
+                      $fileId = toExcel::projectTammeExcel($actId, $userId, $oForm->getValue('action'));
                     }
                     if( $fileId === false){
                         $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                     } else 
                     {
+                      if($oForm->getValue('action')==OP_EXPORT) {
                         // update act status
                         $r=dbProc::saveAct($oForm->getValue('actId'),
                                       false,false,false,false,false,false,
@@ -503,12 +513,13 @@ if ( $isAdmin || $isProjector || $projectApprover )
                         {
                           $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
                         }
-                    }
+                      }
+                    }                
                 }
-              }
-              else
-              {
-                $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                else
+                {
+                  $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                }
               }
             }
 
@@ -545,6 +556,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
               $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
               break;
             case OP_EXPORT:
+              $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
+              $oLink->addPrm('tab', TAB_EXPORT);
+              break;
+            case OP_ESTIMATE:
               $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
               $oLink->addPrm('tab', TAB_EXPORT);
               break;

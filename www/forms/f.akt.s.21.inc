@@ -177,8 +177,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                   if (empty($aWorkFr[$j]['DRBI_DAUDZUMS']))
                   {
                     // assign error message
-                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
-                    $isRowValid = false;
+                   // $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
+                   // $isRowValid = false;
                   }
                           // validate work progress value
                   elseif (!is_numeric($aWorkFr[$j]['DRBI_DAUDZUMS']))
@@ -310,7 +310,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
            
             if(!empty($actWork['DRBI_KKAL_SHIFRS']))            {   
                 
-                    $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                    //$oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
                     $oFormWorkTab -> addRule('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
                     // check Amaunt field
                     $v1=&$oFormWorkTab->createValidation('amauntValidation_'.$i, array('amount['.$i.']'), 'ifonefilled');
