@@ -52,6 +52,9 @@
                  <? if($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover))  {?>
                     <tr><td><?=$oForm->getElementHtml('make_excel');?></td></tr>
                  <? } ?>
+                 <? if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)  {?>
+                    <tr><td><?=$oForm->getElementHtml('make_excel2');?></td></tr>
+                 <? } ?>
                 </table>
             </td>
         </tr>
