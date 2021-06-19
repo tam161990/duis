@@ -9982,9 +9982,10 @@ class dbProc extends dbLayer
 
     function saveMaterialKategoryFromExcel($data){
 
-        $group_code = substr($data[0], 0, 2);  
+        $category_code = explode('.', $data[2]);
+        $group_code = substr($category_code[0], 0, 2);  
         $group = substr($data[0], 3);  
-        $subgroup_code = substr($data[1], 0, 4); 
+        $subgroup_code = $category_code[0]; 
         $subgroup = substr($data[1], 5);    
         
         $oSQL=new dbLayer();

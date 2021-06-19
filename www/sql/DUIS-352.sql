@@ -102,7 +102,7 @@ AUTO_INCREMENT=1
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES ('REQUIREMENTS_MATERIAL_COMPLECTATION',
-       '<h3>Materiālu komplektacijas importam lūdzam izmantot daus Excel 97-2003 formātā</h3>
+       '<h3>Materiālu nomenklatūras importam lūdzam izmantot daus Excel 97-2003 formātā</h3>
         <table cellpadding="3" cellspacing="0" border="1" width="100%">
         <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr> 
         <tr><td>Nomenklatūras kategorijas kods</td><td>+</td><td>Maksimāli 8 simboli formatā [xxxx.xxx].</td></tr>
@@ -114,7 +114,7 @@ VALUES ('REQUIREMENTS_MATERIAL_COMPLECTATION',
 );
 
 INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`)
-VALUES ('IMPORTS', 'MATERIAL_COMPLECTATION', 'Materiālu komplektacija');
+VALUES ('IMPORTS', 'MATERIAL_COMPLECTATION', 'Materiālu nomenklatūras');
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
 ('COMPLECTATION','Komplektācija' ),
