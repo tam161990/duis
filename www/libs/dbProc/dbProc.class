@@ -4755,6 +4755,49 @@ class dbProc extends dbLayer
 		return ($result !== false);
         
     }
+
+     // dzēst visus akta no importēta XLS faila 
+     function deleteActXLS($data)
+     {
+         foreach ($data as $code) {
+
+            $res = false;
+            $actId = 0;
+            $sql = 'SELECT `RAKT_ID` FROM `AKTI`
+            where `RAKT_NUM_POSTFIX`="'.dbLayer::quote_smart($code).'"
+            AND `RAKT_STATUS` IN ( "'.STAT_DELETE.'", "'.STAT_INSERT.'", "'.STAT_AUTO.'")
+            AND `RAKT_IS_AUTO` = 1
+            AND `RAKT_KAKV_ID` IN ( '.ACT_TYPE_PLAN_ID.', '.ACT_TYPE_PLAN_TR_ID.')';	
+
+            $oSQL=new dbLayer();
+            $res=$oSQL->makeQuery($sql);            
+            if (count($res) == 0 || empty($res[0]['RAKT_ID']) ) {
+                continue;
+            }
+            
+            $actId = $res[0]['RAKT_ID'];
+
+            // darbi
+            dbProc::deleteActWorks($actId);
+            dbProc::deleteActWorks($actId, true);
+
+            // materiali
+            dbProc::deleteActMaterials($actId);
+            dbProc::deleteActMaterials($actId, true);
+
+            // status
+            dbProc::deleteAuditInfo($actId);
+
+            // faili
+            dbProc::deleteAllActFiles($actId);
+
+            // pats akts
+            dbProc::deleteAct($actId);
+
+            // MMS
+            dbProc::deleteMMSWork($code);
+         }
+     }
     
 
     function CheckQuiqStepUnique($code)
@@ -7730,7 +7773,19 @@ class dbProc extends dbLayer
 					order by f.RFLS_ID desc';
 
 		return $oSQL -> makeQuery($sql);
-	}
+    }
+    
+    // dzēst visus akta failus 
+    function deleteAllActFiles($actId)
+	{
+        $oSQL=new dbLayer();
+
+        $res=$oSQL->makeQuery('delete from `FAILI` where RFLS_RAKT_ID = '.dbLayer::quote_smart($actId));
+        if ($res!==false)
+		{
+			return $oSQL->makeQuery('delete from `EXCEL_FAILI` where EFLS_RAKT_ID = '.dbLayer::quote_smart($actId));
+		}
+    }
 
 
      // -----------------------------------------------------------------------------
