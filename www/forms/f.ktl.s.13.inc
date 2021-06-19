@@ -382,9 +382,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
           if($oForm -> getValue('catalog') == 'MMS_WORKS' ||
             $oForm -> getValue('catalog') == 'MATERIAL_CATEGORY' ||
             $oForm -> getValue('catalog') == 'MATERIAL_COMPLECTATION' ||
-            $oForm -> getValue('catalog') == 'COMPLECTATION'
+            $oForm -> getValue('catalog') == 'COMPLECTATION' ||
+            $oForm -> getValue('catalog') == 'ACT_DELETE'
           )
-          if($oForm -> getValue('catalog') == 'MMS_WORKS' || $oForm -> getValue('catalog') == 'ACT_DELETE' )
+          
           {
             $oLink=new urlQuery();
             $oLink->addPrm('isNew', '1');
