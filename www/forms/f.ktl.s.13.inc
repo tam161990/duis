@@ -20,16 +20,23 @@ if (userAuthorization::isAdmin() || $isEdUser )
     {
        	foreach ($res as $row)
       	{
-      	   if (userAuthorization::isAdmin() && $isEdUser && 
-		        ($row['nosaukums'] == 'MMS_WORKS' || $row['nosaukums'] == 'KALKULATION_TR' || $row['nosaukums'] == 'KALKULATION') 
-	        )
-           {
-      		   $catalog[$row['nosaukums']]=$row['nozime'];
-           }
-           if (userAuthorization::isAdmin() && !$isEdUser)
-           {
-      		   $catalog[$row['nosaukums']]=$row['nozime'];
-           }
+          if (userAuthorization::isSuperAdmin() ) {
+            if($row['nosaukums'] == 'ACT_DELETE') {
+              $catalog[$row['nosaukums']]=$row['nozime'];
+            }
+          }
+          if (userAuthorization::isAdmin() ) {
+            if ($row['nosaukums'] == 'MMS_WORKS' ||  $row['nosaukums'] == 'KALKULATION') {
+              if($isEdUser) {
+                $catalog[$row['nosaukums']]=$row['nozime'];
+              }
+            } else {
+              if($row['nosaukums'] != 'ACT_DELETE') {
+                $catalog[$row['nosaukums']]=$row['nozime'];
+              }
+            }
+          }         
+      	  
        	}
     }
     unset($res);
@@ -229,6 +236,40 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 }
                               }                            
                               break;
+                          // akta dzēšana
+                          case 'ACT_DELETE':
+                            if (userAuthorization::isSuperAdmin() )
+                            {
+                              $j = 0;
+                              foreach ($objWorksheet->getRowIterator() as $row)
+                              {
+                                  $cellIterator = $row->getCellIterator();
+                                  $cellIterator->setIterateOnlyExistingCells(true);
+                                  
+                                  $i = 0;    
+                                  foreach ($cellIterator as $cell)
+                                  {
+                                    if($i > 1 ) {
+                                      $r2 = false;
+                                      break 2;
+                                    }
+                                    if(!is_null($cell))
+                                    {                                      
+                                        $j++;
+                                        if($j == 1)
+                                            break 1;
+                                        $data[] =  $cell->getValue();
+                                        $i++;                                      
+                                      }
+                                  }                                  
+                              }
+                              // dzēst visus failus
+                              if($j > 1)
+                              {
+                                $r2 = dbProc::deleteActXLS($data);
+                              }                            
+                          }
+                          break;
                       }
                   }
               } 
@@ -245,7 +286,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
         // if operation was compleated succefully, show success mesage and redirect current frame
         if($r !== false && $r2 !== false)
         {
-          if($oForm -> getValue('catalog') == 'MMS_WORKS' )
+          if($oForm -> getValue('catalog') == 'MMS_WORKS' || $oForm -> getValue('catalog') == 'ACT_DELETE' )
           {
             $oLink=new urlQuery();
             $oLink->addPrm('isNew', '1');
