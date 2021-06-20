@@ -15,7 +15,8 @@ var importCatalogs = ['MATERIAL',
                      'DUUSERS',
                      'MATERIAL_CATEGORY',
                      'MATERIAL_COMPLECTATION',
-                     'COMPLECTATION'
+                     'COMPLECTATION',
+                     'ACT_DELETE'
                      ];
 
 function setImportColumnVisibility()
@@ -80,6 +81,7 @@ add2onload('setImportColumnVisibility()');
        <div id="MATERIAL_CATEGORY" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL_CATEGORY');?></div>
        <div id="COMPLECTATION" style="display:none"><?=text::get('REQUIREMENTS_COMPLECTATION');?></div>
        <div id="MATERIAL_COMPLECTATION" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL_COMPLECTATION');?></div>
+       <div id="ACT_DELETE" style="display:none"><?=text::get('REQUIREMENTS_ACT_DELETE');?></div>
        </td>
     </tr>
 </table>
@@ -91,7 +93,9 @@ add2onload('setImportColumnVisibility()');
                          <img src="./img/loading.gif" widht="32" height="32" border="0" />
                          </span><?= $oForm -> getElementHtml('submit'); ?>
               </td>
-	</tr>
+       </tr>
 </table>
+
 <?= $oForm -> getFormBottom(); ?>
 </body>
+       
