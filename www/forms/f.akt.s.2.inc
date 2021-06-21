@@ -514,10 +514,11 @@ if ( $isAdmin || $isSystemUser)
                     	dbProc::updateWorkSumms($actId, $tameWork);
 	
               if($tameWork == 1) {
+                // sarunāts ar Linku, ka pagaidām aizkomentējam
                   // iztirit mat�ri�la tame
-                  dbProc::deleteAutoActMaterial($actId);
+                  //dbProc::deleteAutoActMaterial($actId);
                   // p�rr��inat materi�la tame
-                  dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
+                  //dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
 		      	    }
                    	
 		
