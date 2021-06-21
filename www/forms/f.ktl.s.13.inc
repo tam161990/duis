@@ -25,16 +25,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
               $catalog[$row['nosaukums']]=$row['nozime'];
             }
           }
-          if (userAuthorization::isAdmin() ) {
+          if ($isEdUser ) {
             if ($row['nosaukums'] == 'MMS_WORKS' ||  $row['nosaukums'] == 'KALKULATION') {
-              if($isEdUser) {
-                $catalog[$row['nosaukums']]=$row['nozime'];
-              }
-            } else {
+              $catalog[$row['nosaukums']]=$row['nozime'];
+            }
+          }
+          if (userAuthorization::isAdmin() ) {           
               if($row['nosaukums'] != 'ACT_DELETE') {
                 $catalog[$row['nosaukums']]=$row['nozime'];
-              }
-            }
+              }            
           }         
       	  
        	}
@@ -209,7 +208,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                             }                            
                             break;
                             // DU lietotāji
-                          case 'DUUSERS':                           
+                            case 'DUUSERS':                           
                             $j = 0;
                             foreach ($objWorksheet->getRowIterator() as $row)
                             {
@@ -236,6 +235,99 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 }
                               }                            
                               break;
+                            // materiālu kategorijas
+                            case 'MATERIAL_CATEGORY':                           
+                            $j = 0;
+                            $r = dbProc::createMaterialGroupTempTable();
+                            if($r !== false) {
+                              foreach ($objWorksheet->getRowIterator() as $row)
+                              {
+                                  $cellIterator = $row->getCellIterator();
+                                  $cellIterator->setIterateOnlyExistingCells(false);
+    
+                                  $i = 0;    
+                                  foreach ($cellIterator as $cell)
+                                  {
+                                      $j++;
+                                      if($j == 1)
+                                          break 1;
+                                      $data[$i] =  $cell->getValue();
+                                      $i++;    
+                                  }
+                                  // save matr kategorijas record
+                                  if($j > 1)
+                                  {
+                                    $r2 = dbProc::saveMaterialKategoryFromExcel($data);
+                                    
+                                  }
+                                }  
+                                $r =  dbProc::renameMaterialGroupTable();     
+                            }                    
+                            break;
+                            // Materiālu kompkektācija
+                            case 'MATERIAL_COMPLECTATION':                           
+                              $j = 0;
+                              $r = dbProc::createMaterialComplectTempTable();
+                              if($r !== false) {
+                                foreach ($objWorksheet->getRowIterator() as $row)
+                                {
+                                    $cellIterator = $row->getCellIterator();
+                                    $cellIterator->setIterateOnlyExistingCells(true);
+      
+                                    $i = 0;    
+                                    foreach ($cellIterator as $cell)
+                                    {
+                                      if(!is_null($cell))
+                                      {                                      
+                                          $j++;
+                                          if($j == 1)
+                                              break 1;
+                                          $data[$i] =  $cell->getValue();
+                                          $i++;                                      
+                                        }
+                                    }
+                                    // save kalkulācijas record
+                                    if($j > 1)
+                                    {
+                                      $r2 = dbProc::saveMaterialComplectFromExcel($data);
+                                      
+                                    }
+                                  }
+                                  $r =  dbProc::renameMaterialComplectTable();                             
+                                }
+                                break;
+                            // Materiālu kompkektācija
+                            case 'COMPLECTATION':                           
+                              $j = 0;
+                              $r = dbProc::createComplectTempTable();
+                              if($r !== false) {
+                                foreach ($objWorksheet->getRowIterator() as $row)
+                                {
+                                    $cellIterator = $row->getCellIterator();
+                                    $cellIterator->setIterateOnlyExistingCells(true);
+      
+                                    $i = 0;    
+                                    foreach ($cellIterator as $cell)
+                                    {
+                                      if(!is_null($cell))
+                                      {                                      
+                                          $j++;
+                                          if($j == 1)
+                                              break 1;
+                                          $data[$i] =  $cell->getValue();
+                                          $i++;                                      
+                                        }
+                                    }
+                                    // save kalkulācijas record
+                                    if($j > 1)
+                                    {
+                                      $r2 = dbProc::saveComplectationFromExcel($data);
+                                      
+                                    }
+                                  }
+                                  $r =  dbProc::renameComplectTable();                             
+                                }
+                                break;
                           // akta dzēšana
                           case 'ACT_DELETE':
                             if (userAuthorization::isSuperAdmin() )
@@ -286,7 +378,12 @@ if (userAuthorization::isAdmin() || $isEdUser )
         // if operation was compleated succefully, show success mesage and redirect current frame
         if($r !== false && $r2 !== false)
         {
-          if($oForm -> getValue('catalog') == 'MMS_WORKS' || $oForm -> getValue('catalog') == 'ACT_DELETE' )
+          if($oForm -> getValue('catalog') == 'MMS_WORKS' ||
+            $oForm -> getValue('catalog') == 'MATERIAL_CATEGORY' ||
+            $oForm -> getValue('catalog') == 'MATERIAL_COMPLECTATION' ||
+            $oForm -> getValue('catalog') == 'COMPLECTATION' ||
+            $oForm -> getValue('catalog') == 'ACT_DELETE'
+          )
           {
             $oLink=new urlQuery();
             $oLink->addPrm('isNew', '1');
