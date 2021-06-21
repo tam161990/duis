@@ -25,16 +25,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
               $catalog[$row['nosaukums']]=$row['nozime'];
             }
           }
-          if (userAuthorization::isAdmin() ) {
+          if ($isEdUser ) {
             if ($row['nosaukums'] == 'MMS_WORKS' ||  $row['nosaukums'] == 'KALKULATION') {
-              if($isEdUser) {
-                $catalog[$row['nosaukums']]=$row['nozime'];
-              }
-            } else {
+              $catalog[$row['nosaukums']]=$row['nozime'];
+            }
+          }
+          if (userAuthorization::isAdmin() ) {           
               if($row['nosaukums'] != 'ACT_DELETE') {
                 $catalog[$row['nosaukums']]=$row['nozime'];
-              }
-            }
+              }            
           }         
       	  
        	}
@@ -385,7 +384,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
             $oForm -> getValue('catalog') == 'COMPLECTATION' ||
             $oForm -> getValue('catalog') == 'ACT_DELETE'
           )
-          
           {
             $oLink=new urlQuery();
             $oLink->addPrm('isNew', '1');
