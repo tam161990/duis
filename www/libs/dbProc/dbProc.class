@@ -8895,6 +8895,10 @@ class dbProc extends dbLayer
                 {
                     $accept_date = $act['ACCEPT_DATE'];
                 }
+                if($status == STAT_CLOSE && !isset($act['ACCEPT_DATE']) )
+                {
+                    $accept_date = dbLayer::parseDate(dtime::now());
+                }
 
                 switch ($act['AAST_STATUS']) {
                     /*Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + cits lietotājs  tad uz Ievadu nepāriet un nomainās tikai lietotājs
