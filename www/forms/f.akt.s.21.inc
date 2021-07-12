@@ -41,6 +41,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateWorkTypeText(reqVar::get('saveId'), reqVar::get('work_type_text'));
       }
+      if (reqVar::get('work_type')!='')
+      {
+        dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
+      }
     }
     exit();
 }
@@ -142,7 +146,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aWorks = array();
       $aWorkExist = false;
-      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
+     /* if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
           $aKids =  $oFormWorkTab->getValue('chipher');
@@ -224,7 +228,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
            }
       }
       else
-      {
+      { */
         //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
         $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true);      	
         
@@ -238,7 +242,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         if(!$aWorkExist) {
           $aWorks[0] = array();          
         }        
-      }
+      //}
       $oFormWorkTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormWorkTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormWorkTab->addElement('hidden','actId','',$actId);      
@@ -276,7 +280,17 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormWorkTab->addElement('label', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT']);
               $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
           } else {
-            $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
+            // save work_type_text
+            $saveJs = "if(this.value != '') { 
+              var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value));
+              this.style.borderColor = '#16bb24cc'; 
+              this.parentNode.prepend(sp1);
+              setTimeout(savedField, 3000, this, '#8c8c8c'); 
+            }";
+            $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':''). '
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
+            
             $oFormWorkTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required'); 
              // save work_type_text
              $saveJs = "if(this.value != '') { 
@@ -379,7 +393,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       // if form iz submit (save button was pressed)
 	  if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
 	  {
-		if($oFormWorkTab ->isValid()  && $isRowValid)
+		/*if($oFormWorkTab ->isValid()  && $isRowValid)
 		{
 		   $r=dbProc::deleteActWorks($actId);
 		   if ($r === false)
@@ -443,7 +457,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
                 }
            }
-        }
+        } */
       }
        $oFormWorkTab -> makeHtml();
        include('f.akt.s.21.tpl');
