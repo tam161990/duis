@@ -48,6 +48,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateMaterialComplectation(reqVar::get('saveId'), reqVar::get('complectation'));
       }
+      if (reqVar::get('work_type')!='')
+      {
+        dbProc::updateMaterialWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
+      }
     }
     exit();
 }
@@ -142,7 +146,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aMaterials = array();
       $aMaterialExist = false;
-      if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false)
+     /* if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
           $aCodes =  $oFormMaterialTab->getValue('code');
@@ -222,7 +226,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       }
       else
       {
-
+        */
         //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
         $aMaterialDb=dbProc::getActMaterialList($actId, false, false, true);
 
@@ -237,7 +241,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         if(!$aMaterialExist) {
           $aMaterials[0] = array();          
         }    
-      }
+     // }
       
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
@@ -346,7 +350,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                 setTimeout(savedField, 3000, this, '#8c8c8c'); 
               }";
                $oFormMaterialTab->addElement('text', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION'], 
-               (($isReadonly)?' disabled ':'').'maxlength="250"'.'
+               (($isReadonly)?' disabled ':'').'maxlength="20"'.'
                onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
             }         
           // save amount
@@ -389,7 +393,15 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
 
-            $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':'').'maxlength="9"', '', '', $workType);
+            $saveJs = "if(this.value != '') { 
+              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value));
+              this.style.borderColor = '#16bb24cc'; 
+              this.parentNode.prepend(sp1);
+              setTimeout(savedField, 3000, this, '#8c8c8c'); 
+            }";
+            $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':''). '
+            onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
             $oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
             unset($saveLink);
             
@@ -441,7 +453,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       // if form iz submit (save button was pressed)
 	  if ($oFormMaterialTab -> isFormSubmitted()&& $isNew === false)
 	  { 
-      if($oFormMaterialTab ->isValid()  && $isRowValid)
+      /*if($oFormMaterialTab ->isValid()  && $isRowValid)
       {
           $r=dbProc::deleteActMaterials($actId);
           if ($r === false)
@@ -491,7 +503,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                     dbProc::setUserActionDate($userId, ACT_UPDATE);
                 }
            }
-        }
+        }*/
       }
        $oFormMaterialTab -> makeHtml();
        include('f.akt.s.22.tpl');
