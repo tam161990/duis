@@ -7085,7 +7085,7 @@ class dbProc extends dbLayer
         $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
 
         $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA  ". $group_name.",
-                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE,
+                CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE,
                 ".dbLayer::sqlParseDate('MATR_APPROVE_DATE') .", ".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
@@ -7094,7 +7094,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) ." 
                 union
                 select *, FORMAT(0, 2) AS `MATR_CENA_KOPA` ". $group_name.",
-                CONCAT(MATR_WORK_TYPE_ID, '^', MATR_WORK_TYPE_TEXT) as MATR_WORK_TYPE,
+                CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE,
                 ".dbLayer::sqlParseDate('MATR_APPROVE_DATE') .",".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
@@ -7252,7 +7252,7 @@ class dbProc extends dbLayer
         $r_work_type = explode('^', $work_type);
         $query = "UPDATE ".$table_name." SET  
         `MATR_WORK_TYPE_ID` = '".dbLayer::quote_smart($r_work_type[0])."',
-        `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($r_work_type[1])."'
+        `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart(str_replace('\'', '"', $r_work_type[1]))."'
                 WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
 
         //echo $query;

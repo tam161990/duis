@@ -125,7 +125,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       {
         foreach ($res as $row)
         {
-          $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? $row['DRBI_WORK_TYPE_TEXT'] : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+          $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
         }
       }
       unset($res);
