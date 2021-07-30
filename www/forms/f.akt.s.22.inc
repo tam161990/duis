@@ -38,7 +38,8 @@ if (reqVar::get('xmlHttp') == 1)
       }
       if (reqVar::get('notes')!='')
       {
-        dbProc::updateMaterialComment(reqVar::get('saveId'), reqVar::get('notes'));
+        $note = ((reqVar::get('notes') == 'D') ? '' : reqVar::get('notes'));
+        dbProc::updateMaterialComment(reqVar::get('saveId'), $note);
       }      
       if(reqVar::get('crossection')!= '')
       {
@@ -233,6 +234,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         $aMaterialExist = false;
         foreach ($aMaterialDb as $material)
         {
+          $material['MATR_PIEZIMES'] = ($material['MATR_PIEZIMES'] == 'NULL') ? '' : $material['MATR_PIEZIMES'];
           $aMaterials[$material['MATR_WORK_TYPE']][] = $material;   
             
           $aMaterialExist = true;     
@@ -385,7 +387,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             // save notes
             $saveJs = "
               var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+this.value+'&saveId='+rowId.value));
+              var val = ((this.value != '') ? this.value : 'D');
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+val+'&saveId='+rowId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 

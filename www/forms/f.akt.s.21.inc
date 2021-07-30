@@ -35,7 +35,8 @@ if (reqVar::get('xmlHttp') == 1)
       }
 	    if (reqVar::get('notes')!='')
       {
-        dbProc::updateWorkComment(reqVar::get('saveId'), reqVar::get('notes'));
+        $note = ((reqVar::get('notes') == 'D') ? '' : reqVar::get('notes'));
+        dbProc::updateWorkComment(reqVar::get('saveId'), $note);
       }
       if (reqVar::get('work_type_text')!='')
       {
@@ -235,6 +236,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         $aWorkExist = false;
         foreach ($aWorkDb as $work)
         {
+          $work['DRBI_PIEZIMES'] = ($work['DRBI_PIEZIMES'] == 'NULL') ? '' : $work['DRBI_PIEZIMES'];
           $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;     
           $aWorkExist = true;     
         }
@@ -338,7 +340,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             // save notes
             $saveJs = " 
               var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+this.value+'&saveId='+rowId.value));
+              var val = ((this.value != '') ? this.value : 'D');
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+val+'&saveId='+rowId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
