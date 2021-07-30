@@ -383,13 +383,13 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
         
             // save notes
-            $saveJs = "if(this.value != '') { 
+            $saveJs = "
               var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
               eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+this.value+'&saveId='+rowId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
-            }";
+            ";
             $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
 

@@ -336,13 +336,13 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                 
             }  
             // save notes
-            $saveJs = "if(this.value != '') { 
+            $saveJs = " 
               var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
               eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+this.value+'&saveId='+rowId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
-            }";
+            ";
             $oFormWorkTab->addElement('text', 'notes['.$i.']', '', $actWork['DRBI_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
             
