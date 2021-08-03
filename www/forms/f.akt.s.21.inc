@@ -21,8 +21,7 @@ if (reqVar::get('xmlHttp') == 1)
 	  {
 	   	   dbProc::deleteActWorkRecord(reqVar::get('deleteId'));
        ?>
-	    rowNode = this.parentNode.parentNode;
-		  rowNode.parentNode.removeChild(rowNode);
+	    document.all['frmWorkTab'].submit();      
 	<?
     }
 
@@ -360,6 +359,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormWorkTab->setNewValue('amount['.$i.']',$actWork['DRBI_DAUDZUMS']);        
               $oFormWorkTab->setNewValue('work_type['.$i.']',$actWork['DRBI_WORK_TYPE_ID']);  
               $oFormWorkTab->setNewValue('work_type_text['.$i.']',$actWork['DRBI_WORK_TYPE_TEXT']);        
+              $oFormWorkTab->setNewValue('id['.$i.']',$actWork['DRBI_ID']);
             }
           }
 
