@@ -22,10 +22,9 @@ if (reqVar::get('xmlHttp') == 1)
     // if operation is DELETE , delete record from DB
     if (reqVar::get('deleteId')!='')
 	  {
-	    dbProc::deleteActMaterialRecord(reqVar::get('deleteId'));
+      dbProc::deleteActMaterialRecord(reqVar::get('deleteId'));      
       ?>
-	    rowNode = this.parentNode.parentNode;
-		  rowNode.parentNode.removeChild(rowNode);
+      document.all['frmMaterialTab'].submit();      
 		  <?
     }
 
@@ -292,6 +291,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
+          
+
           if(!$crossection)
           {
             $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', '');
@@ -418,7 +419,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormMaterialTab->setNewValue('complectation['.$i.']',$actMaterial['MATR_COMPLECTATION']);        
               $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
               $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
-			        $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  			  
+              $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  
+              $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);			  
             }
         }
 
