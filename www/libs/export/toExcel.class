@@ -80,7 +80,8 @@ function projectTammeExcel($actId, $userId, $action){
                 $sheet->setCellValue('B'.$currentRow, $row['DRBI_KKAL_NOSAUKUMS']); 
                 $sheet->setCellValue('D'.$currentRow, $row['DRBI_MERVIENIBA']);
                 $sheet->setCellValueExplicit('E'.$currentRow, $row['DRBI_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $sheet->setCellValue('F'.$currentRow, $row['DRBI_PIEZIMES']);
+                $notes = (isset($row['DRBI_PIEZIMES']) && $row['DRBI_PIEZIMES'] != 'NULL') ? $row['DRBI_PIEZIMES'] : '';
+                $sheet->setCellValue('F'.$currentRow, $notes);
                 $currentRow ++; 
             }
 
@@ -122,7 +123,8 @@ function projectTammeExcel($actId, $userId, $action){
                 $sheet->setCellValue('B'.$currentRow, $nosaukums); 
                 $sheet->setCellValue('D'.$currentRow, $row['MATR_MERVIENIBA']);
                 $sheet->setCellValueExplicit('E'.$currentRow, $row['MATR_DAUDZUMS'],PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $sheet->setCellValue('F'.$currentRow, $row['MATR_PIEZIMES']);
+                $notes = (isset($row['MATR_PIEZIMES']) && $row['MATR_PIEZIMES'] != 'NULL') ? $row['MATR_PIEZIMES'] : '';
+                $sheet->setCellValue('F'.$currentRow, $notes);
                 $currentRow ++; 
             }
         }
