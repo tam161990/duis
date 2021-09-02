@@ -100,7 +100,7 @@ if ( $isAdmin || $isSystemUser)
                {
                   foreach ($res as $row)
                   {
-                     $workType[$row['KLDV_ID'].'^'.$row['DRBI_WORK_TYPE_TEXT']]=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+                     $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT'])? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
                   }
                }
          unset($res);
@@ -182,6 +182,13 @@ if ( $isAdmin || $isSystemUser)
                {
                   // assign error message
                   $oFormPop->addErrorPerElem('price', text::get('ERROR_AMOUNT_VALUE'));
+                  $isRowValid = false;
+               }
+
+               if ($oFormPop->getValue('work_type') == '')
+               {
+                  // assign error message
+                  $oFormPop->addErrorPerElem('work_type', text::get('ERROR_REQUIRED_FIELD'));
                   $isRowValid = false;
                }
             }
@@ -281,6 +288,7 @@ if ( $isAdmin || $isSystemUser)
          { 
             $oFormPop->addElement('text', 'work_type_text', text::get('PROJECT_OBJECT_TITLE'), isset($defaultWork[1]) ? $defaultWork[1] : '', 'maxlength="50" tabindex=3');
          }
+
       } 
       // form buttons
       if (!$isReadonly)

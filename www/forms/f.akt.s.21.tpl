@@ -181,26 +181,26 @@ document.onmousemove=positiontip
 	    </table>
         </td>
         <td width="20%"  valign="top">
-            <table cellpadding="5" cellspacing="1" border="0" align="center" width="100%">
-            <? if(!$isReadonly)  {
-              foreach($calcGroups as $i=>$val){?>
-             <tr>
-                <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('group['.$i.']'); ?></td>
-             </tr>
-            <? }} ?>
-            </table>
-            <br />
-            <table cellpadding="5" cellspacing="0" border="0" align="center">
-            <tr>
-             <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-            	<td><?= $oFormWorkTab -> getElementHtml('save'); ?></td>
-             <? } ?>
-            
-             </tr>
-            </table>
+           
         </td>
 	</tr>
 
 </table>
+<div class="navbar">
+    <table cellpadding="5" cellspacing="1" border="0" align="left" width="100%">
+        <? if(!$isReadonly)  {
+          foreach($calcGroups as $i=>$val){?>
+         <tr>
+            <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('group['.$i.']'); ?></td>
+         </tr>
+        <? }} ?>
+        <tr>
+         <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+            <td><?= $oFormWorkTab -> getElementHtml('save'); ?></td>
+         <? } ?>
+        
+         </tr>
+        </table>
+</div>
 <?= $oFormWorkTab -> getFormBottom(); ?>
 
