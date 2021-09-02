@@ -7352,7 +7352,7 @@ class dbProc extends dbLayer
                     '.dbLayer::quote_smart($st).'
                     '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
                     (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
-                    (($work_type !== false)? ',"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]).'"' : ""): '' ).
+                    (($work_type !== false)? ',"'. (isset($r_work_type[1]) ? dbLayer::quote_smart(str_replace('\'', '"', $r_work_type[1])) : '').'"': '' ).
                     ' )' ;
 
         }
@@ -9814,12 +9814,15 @@ class dbProc extends dbLayer
                         WHERE `RAKT_PROJECT` = 1
                         AND `RAKT_KWOI_KODS` IN ("'.$worker.'", "'.(($st_code !== false) ? $st_code : $worker).'")
                         AND `RAKT_STATUS` = "' . STAT_CLOSE . '"
-                        AND NOT EXISTS (SELECT 1 FROM `darbi` WHERE 
+                         ';
+                         /*
+                         AND NOT EXISTS (SELECT 1 FROM `darbi` WHERE 
                             `DRBI_RAKT_ID` = '.dbLayer::quote_smart($actId) .'
                             AND `DRBI_IMPORT_NO` = `RAKT_ID`)
                         AND NOT EXISTS (SELECT 1 FROM `materiali` WHERE 
                         `MATR_RAKT_ID` = '.dbLayer::quote_smart($actId) .'
-                        AND `MATR_IMPORT_NO` = `RAKT_ID`) ';
+                        AND `MATR_IMPORT_NO` = `RAKT_ID`)
+                        */
             //echo $query;
             $oDB = new dbLayer;
             $result = $oDB -> makeQuery($query);

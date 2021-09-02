@@ -555,3 +555,11 @@ filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 	border: 1px solid black;
 }
 
+.navbar {
+	overflow: hidden;
+	position: fixed; /* Set the navbar to fixed position */
+	top: 320; /* Position the navbar at the top of the page */
+	width: 20%; /* Full width */
+	right: 0px;
+  }
+
