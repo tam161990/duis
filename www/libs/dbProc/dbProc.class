@@ -8929,10 +8929,7 @@ class dbProc extends dbLayer
                 {
                     $accept_date = $act['ACCEPT_DATE'];
                 }
-                if($status == STAT_CLOSE && !isset($act['ACCEPT_DATE']) )
-                {
-                    $accept_date = dbLayer::parseDate(dtime::now());
-                }
+               
 
                 switch ($act['AAST_STATUS']) {
                     /*Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + cits lietotājs  tad uz Ievadu nepāriet un nomainās tikai lietotājs
@@ -8948,14 +8945,16 @@ class dbProc extends dbLayer
                         $status = STAT_RETURN;
                         break;                   
                     case 'CLOSE':
-                        if($act['RAKT_STATUS'] == STAT_CLOSE ) {
-                        break;
-                        }
-                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
+                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_CLOSE ) ? STAT_CLOSE : $act['RAKT_STATUS']);
                         break;       
                     case 'AUTO':
                         $status = $act['RAKT_STATUS'];
                         break;                               
+                }
+
+                if($status == STAT_CLOSE && !isset($act['ACCEPT_DATE']) )
+                {
+                    $accept_date = dbLayer::parseDate(dtime::now());
                 }
 
                 files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
