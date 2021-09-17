@@ -46,6 +46,22 @@ if (reqVar::get('xmlHttp') == 1)
         dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
       }
     }
+
+    // masveida dzešana
+    if (reqVar::get('issue') && reqVar::get('op'))
+    {
+      ob_clean();
+      $o = reqVar::get('op');
+      $a = reqVar::get('issue');
+      if (isset($o) && $o == OP_INSERT)
+      {
+      	session::set('DRBI_FOR_DELETE_'.$a,$a);
+      }
+      else
+      {
+         session::del('DRBI_FOR_DELETE_'.$a);
+      }
+    }
     exit();
 }
 
@@ -64,6 +80,14 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oFormWorkTab = new Form('frmWorkTab', 'post', $oLink->getQuery() . '#tab');
 
       unset($oLink);
+
+      $oLink=new urlQuery();
+      $oLink->addPrm(FORM_ID, 'f.akt.s.21');
+      $oLink->addPrm(DONT_USE_GLB_TPL, '1');
+      $oLink->addPrm('xmlHttp', '1');
+      $searchLink = $oLink -> getQuery();
+      unset($oLink);
+
 
       // if operation is success, show success message and redirect top frame
       if (reqVar::get('successMessageTab') && $isNew === false)
@@ -146,6 +170,35 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aWorks = array();
       $aWorkExist = false;
+
+      if ($oFormWorkTab -> isFormSubmitted() && $oFormWorkTab->getValue('action_t')== OP_DELETE)  {
+
+        // get issue array
+        $issues = array();
+        $r = false;
+        foreach ($_SESSION as $key => $val)
+        {
+          if(substr($key, 0, 16) == 'DRBI_FOR_DELETE_' && !empty($val))
+          {
+            $issues[] = $val;            
+          }
+        }
+        //print_r($issues);
+        if(count($issues) > 0)
+        {
+          foreach($issues as $a)
+          {
+            $r = dbProc::deleteActWorkRecord($a);
+            if($r !== false) {
+              session::del('DRBI_FOR_DELETE_'.$a);
+            }
+          }          
+        }
+        else {
+          $oFormWorkTab->addError(text::get('ERROR_NOT_CHECKED'));
+        }
+  
+      }
      /* if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
       {
           $isRowValid = true;
@@ -229,27 +282,27 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       }
       else
       { */
-        //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-        $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true);      	
-        
-        $aWorkExist = false;
-        foreach ($aWorkDb as $work)
-        {
-          $work['DRBI_PIEZIMES'] = ($work['DRBI_PIEZIMES'] == 'NULL') ? '' : $work['DRBI_PIEZIMES'];
-          $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;     
-          $aWorkExist = true;     
-        }
+      //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
+      $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true);      	
+      
+      $aWorkExist = false;
+      foreach ($aWorkDb as $work)
+      {
+        $work['DRBI_PIEZIMES'] = ($work['DRBI_PIEZIMES'] == 'NULL') ? '' : $work['DRBI_PIEZIMES'];
+        $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;     
+        $aWorkExist = true;     
+      }
 
-        if(!$aWorkExist) {
-          $aWorks[0] = array();          
-        }        
+      if(!$aWorkExist) {
+        $aWorks[0] = array();          
+      }        
       //}
       $oFormWorkTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormWorkTab -> addElement('hidden', 'searchNum', '', $searchNum);
       $oFormWorkTab->addElement('hidden','actId','',$actId);      
       $oFormWorkTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormWorkTab->addElement('hidden','minAmaunt','','0.00');     
-
+      $oFormWorkTab -> addElement('hidden', 'action_t', '');
       $i = 0;
       // form elements
       foreach ($aWorks as $d => $aGroupWorks)
@@ -389,12 +442,12 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           }
         }
         $oFormWorkTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_work.gif', 'width="120" height="20" ');
-        //$oFormWorkTab -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"');
+        $oFormWorkTab -> addElement('submitImg', 'delete_all', text::get('DELETE'), 'img/btn_delete_all_120.gif', 'width="120" height="20" onclick="if (isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action_t\',\''.OP_DELETE.'\');} else {return false;}"');
       }
       
 
       // if form iz submit (save button was pressed)
-	  if ($oFormWorkTab -> isFormSubmitted()&& $isNew === false)
+	  if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
 	  {
 		/*if($oFormWorkTab ->isValid()  && $isRowValid)
 		{

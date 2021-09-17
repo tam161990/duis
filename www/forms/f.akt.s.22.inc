@@ -53,6 +53,23 @@ if (reqVar::get('xmlHttp') == 1)
         dbProc::updateMaterialWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
       }
     }
+
+    // masveida dzešana
+    if (reqVar::get('issue') && reqVar::get('op'))
+    {
+      ob_clean();
+      $o = reqVar::get('op');
+      $a = reqVar::get('issue');
+      if (isset($o) && $o == OP_INSERT)
+      {
+      	session::set('MATR_FOR_DELETE_'.$a,$a);
+      }
+      else
+      {
+         session::del('MATR_FOR_DELETE_'.$a);
+      }
+      
+    }
     exit();
 }
 
@@ -69,6 +86,13 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('tab', TAB_MATERIAL);
       $oFormMaterialTab = new Form('frmMaterialTab', 'post', $oLink->getQuery() . '#tab');
+      unset($oLink);
+
+      $oLink=new urlQuery();
+      $oLink->addPrm(FORM_ID, 'f.akt.s.22');
+      $oLink->addPrm(DONT_USE_GLB_TPL, '1');
+      $oLink->addPrm('xmlHttp', '1');
+      $searchLink = $oLink -> getQuery();
       unset($oLink);
 
       // if operation is success, show success message and redirect top frame
@@ -143,6 +167,35 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             }
       }
       unset($res);
+
+      if ($oFormMaterialTab -> isFormSubmitted() && $oFormMaterialTab->getValue('action_tt')== OP_DELETE)  {
+        
+        // get issue array
+        $issues = array();
+        $r = false;
+        foreach ($_SESSION as $key => $val)
+        {
+          if(substr($key, 0, 16) == 'MATR_FOR_DELETE_' && !empty($val))
+          {            
+            $issues[] = $val;            
+          }
+        }
+        //print_r($issues);
+        if(count($issues) > 0)
+        {
+          foreach($issues as $a)
+          {
+            $r = dbProc::deleteActMaterialRecord($a);
+            if($r !== false) {
+              session::del('MATR_FOR_DELETE_'.$a);
+            }
+          }          
+        }
+        else {
+          $oFormWorkTab->addError(text::get('ERROR_NOT_CHECKED'));
+        }
+  
+      }
 
       $aMaterials = array();
       $aMaterialExist = false;
@@ -249,6 +302,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oFormMaterialTab->addElement('hidden','actId','',$actId);
       $oFormMaterialTab->addElement('hidden','maxAmaunt','','100000.00');
       $oFormMaterialTab->addElement('hidden','minAmaunt','','0.00');
+      $oFormMaterialTab->addElement('hidden', 'action_tt', '');
+
       //print_r($aMaterials);
       $i = 0;
       // form elements
@@ -406,7 +461,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             }";
             $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':''). '
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
-            $oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+            //$oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
             unset($saveLink);
             
             if ($oFormMaterialTab -> isFormSubmitted()){
@@ -453,6 +508,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           }
         }
         $oFormMaterialTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_material.gif', 'width="120" height="20" ');
+        $oFormMaterialTab -> addElement('submitImg', 'delete_all', text::get('DELETE'), 'img/btn_delete_all_120.gif', 'width="120" height="20" onclick="if (isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action_tt\',\''.OP_DELETE.'\');} else {return false;}"');
       }
 
       // if form iz submit (save button was pressed)

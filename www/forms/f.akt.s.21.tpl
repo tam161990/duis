@@ -2,7 +2,6 @@
 <div id="dhtmltooltip"></div>
 
 <script type="text/javascript">
-
 /***********************************************
 * Cool DHTML tooltip script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
 * This notice MUST stay intact for legal use
@@ -118,10 +117,11 @@ document.onmousemove=positiontip
 				<th  width="10%"><?=text::get('AMOUNT');?></th>                
                 <th  width="15%"><?=text::get('COMMENT');?></th>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <th  width="3%" colspan = 2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
                 <? } else {?>
-                 <th width="3%">&nbsp;</th>
+                 <th width="3%">&nbsp;</th>                 
                  <? } ?>
+                 <th width="3%">&nbsp;</th>
 			</tr>
 
 	  <?
@@ -154,11 +154,18 @@ document.onmousemove=positiontip
 				<td><?= $oFormWorkTab->getElementHtml('amount['.$x.']'); ?></td>                
                 <td><?= $oFormWorkTab->getElementHtml('notes['.$x.']'); ?></td>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                    <td><?= $oFormWorkTab->getElementHtml('export_type['.$x.']'); ?></td>
+                    <td colspan=2><?= $oFormWorkTab->getElementHtml('export_type['.$x.']'); ?></td>
                 <? } else {?>
                     <td>
                         <? if(!$isReadonly)  {?>
-                        <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
+                            <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>
+                        <? } else{ ?>
+                        &nbsp;
+                        <? } ?>
+                    </td>
+                    <td>
+                        <? if(!$isReadonly)  {?>
+                            <input type="checkbox" onclick="eval(xmlHttpGetValue('<?= $searchLink; ?>&issue=<?=$actWork['DRBI_ID'];?>&op=' + ((this.checked)?'<?=OP_INSERT;?>':'<?=OP_DELETE;?>'))); "  /></td>
                         <? } else{ ?>
                         &nbsp;
                         <? } ?>
@@ -197,9 +204,13 @@ document.onmousemove=positiontip
         <tr>
          <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
             <td><?= $oFormWorkTab -> getElementHtml('save'); ?></td>
-         <? } ?>
-        
+         <? } ?>        
          </tr>
+         <tr>
+            <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+               <td><?= $oFormWorkTab -> getElementHtml('delete_all'); ?></td>
+            <? } ?>        
+            </tr>
         </table>
 </div>
 <?= $oFormWorkTab -> getFormBottom(); ?>
