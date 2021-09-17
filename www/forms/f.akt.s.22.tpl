@@ -1,4 +1,5 @@
 ﻿<script type="text/javascript">
+
 function savedField (el, color) { 
     el.style.borderColor = color; 
     parent = el.parentNode;
@@ -41,8 +42,9 @@ sp2.style.color = 'red';
                 <th  width="10%"><?=text::get('CROSSECTION');?></th>
                 <th  width="15%"><?=text::get('COMMENT');?></th>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <th  width="3%" colspan=2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
                 <? } else {?>
+                    <th width="3%">&nbsp;</th>
                     <th width="3%">&nbsp;</th>
                 <? } ?>
 			</tr>
@@ -79,7 +81,7 @@ sp2.style.color = 'red';
                 <td><?= $oFormMaterialTab->getElementHtml('crossection['.$x.']'); ?></td>
 				<td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                    <td><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                    <td colspan=2><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
                 <? } else {?>
                     <td>
                         <? if(!$isReadonly)  {?>
@@ -88,9 +90,16 @@ sp2.style.color = 'red';
                         &nbsp;
                         <? } ?>
                     </td>
+                    <td>
+                        <? if(!$isReadonly)  {?>
+                        <input type="checkbox" onclick="eval(xmlHttpGetValue('<?= $searchLink; ?>&issue=<?=$actMaterial['MATR_ID'];?>&op=' + ((this.checked)?'<?=OP_INSERT;?>':'<?=OP_DELETE;?>'))); "  /></td>
+                        <? } else{ ?>
+                        &nbsp;
+                        <? } ?>
+                    </td>
                 <? } ?>
 			</tr>
-
+            
             <?
             $x++;
             }
@@ -124,6 +133,11 @@ sp2.style.color = 'red';
          <? } ?>
 
      </tr>
+     <tr>
+        <? if(!$isReadonly || ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
+           <td><?= $oFormMaterialTab -> getElementHtml('delete_all'); ?></td>
+        <? } ?>        
+        </tr>
     </table>   
 </div>
 <?= $oFormMaterialTab -> getFormBottom(); ?>
