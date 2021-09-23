@@ -17,7 +17,7 @@ function projectTammeExcel($actId, $userId, $action){
     // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
 	
-	$sheet->setShowGridlines(true);
+	$sheet = $objPHPExcel->getActiveSheet();
     $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
@@ -170,7 +170,7 @@ function projectExportExcel($actId, $userId){
     // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
 	
-	$sheet->setShowGridlines(true);
+	$sheet = $objPHPExcel->getActiveSheet();
     $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
@@ -325,7 +325,7 @@ function exportTameMaterial($actId, $userId, $type){
      // Create new PHPExcel object
      $objPHPExcel = new PHPExcel();
 	 
-     $sheet->setShowGridlines(true);
+     $sheet = $objPHPExcel->getActiveSheet();
      $sheet->setTitle('DUIS-worksheet');
 
      $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
@@ -469,7 +469,7 @@ function exportTameMaterial($actId, $userId, $type){
          // Create new PHPExcel object
          $objPHPExcel = new PHPExcel();
 		 
-		 $sheet->setShowGridlines(true);
+         $sheet = $objPHPExcel->getActiveSheet();
         $sheet->setTitle('DUIS-worksheet');
     
          $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
@@ -614,7 +614,7 @@ function exportTameMaterial($actId, $userId, $type){
              $objPHPExcel = new PHPExcel();
              $sheet->setTitle('DUIS-worksheet');
              
-             $sheet->setShowGridlines(true);
+             $sheet = $objPHPExcel->getActiveSheet();
              $sheet->setTitle('DUIS-worksheet');
         
              $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
