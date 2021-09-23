@@ -346,8 +346,24 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
-          
-
+          $oFormMaterialTab->addElement('label', 'nomenklatura['.$i.']', '', $actMaterial['MATR_NOM_KODS']);
+          $aMaterials[$d][$j]['color'] ='#e4edd8';
+          if($status == STAT_CLOSE) {
+            switch ($actMaterial['MATR_NOM_STATUS']) {
+              case 1:
+                $aMaterials[$d][$j]['color'] ='#70dc85';
+                  break;
+              case 2:
+                $aMaterials[$d][$j]['color'] ='#dad7d7';
+                  break;
+              case 3:
+                $aMaterials[$d][$j]['color'] ='#fb3f3f';
+                  break;
+              default: 
+              $aMaterials[$d][$j]['color'] ='#e4edd8';
+            }
+          }
+           
           if(!$crossection)
           {
             $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', '');

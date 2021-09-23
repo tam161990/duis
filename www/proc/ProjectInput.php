@@ -55,7 +55,9 @@
 										'issue_designer: '. (isset($data->issue_designer) ? $data->issue_designer : '').PHP_EOL.
 										'issue_territory: '.(isset($data->issue_territory) ? $data->issue_territory : '').PHP_EOL.
 										'issue_summary:' .(isset($data->issue_summary) ? $data->issue_summary :'').PHP_EOL.
-										'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL
+										'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL.
+										'issue_proj:' .(isset($data->issue_proj) ? $data->issue_proj :'').PHP_EOL
+
 								);						
 			//var_dump($data);
 			if( (isset($data->issue_invest_year) && !empty($data->issue_invest_year))  || 
@@ -75,7 +77,9 @@
 								$data->issue_designer, 
 								$data->issue_territory, 
 								$data->issue_summary, 
-								$data->issue_type);					
+								$data->issue_type,
+								$err_message
+							);					
 				} else {
 					throw new Exception('not all data set');
 				}			
@@ -85,7 +89,8 @@
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
 										isset($data->issue_end_date) && !empty($data->issue_end_date) ? substr($data->issue_end_date, 0, 10) : false,
-										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false
+										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false,
+										isset($data->issue_proj) && !empty($data->issue_proj) ? substr($data->issue_proj, 0, 10) : false
 										);	
 			}
 			

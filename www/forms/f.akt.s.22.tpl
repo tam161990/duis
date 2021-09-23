@@ -34,15 +34,19 @@ sp2.style.color = 'red';
 		   <tr class="table_head_2">
 
                 <th width="5%"><?=text::get('CODE');?></th>
-                <th width="30%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+                <th width="25%"><?=text::get('SINGLE_WORK_TYPE');?></th>
 				<th width="20%"><?=text::get('NAME');?></th>
 				<th  width="5%"><?=text::get('UNIT_OF_MEASURE');?></th>
                 <th  width="5%"><?=text::get('AMOUNT');?></th>
                 <th  width="10%"><?=text::get('COMPLECTATION');?></th>
                 <th  width="10%"><?=text::get('CROSSECTION');?></th>
                 <th  width="15%"><?=text::get('COMMENT');?></th>
-                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                <th  width="3%" colspan=2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                
+                <? if( $status == STAT_CLOSE )  {
+                   if ($isAdmin || $isEconomist || $projectApprover) { ?>
+                        <th  width="3%"><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                    <? } ?>
+                    <th  width="5%">&nbsp;</th>                    
                 <? } else {?>
                     <th width="3%">&nbsp;</th>
                     <th width="3%">&nbsp;</th>
@@ -79,9 +83,12 @@ sp2.style.color = 'red';
                 <td><?= $oFormMaterialTab->getElementHtml('amount_mat['.$x.']'); ?></td>
                 <td><?= $oFormMaterialTab->getElementHtml('complectation['.$x.']'); ?></td>
                 <td><?= $oFormMaterialTab->getElementHtml('crossection['.$x.']'); ?></td>
-				<td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>
-                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                    <td colspan=2><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                <td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>                
+                <? if( $status == STAT_CLOSE )  {
+                    if ($isAdmin || $isEconomist || $projectApprover) { ?>
+                        <td><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                    <? } ?>
+                    <td style="background-color:<?=$actMaterial['color'];?>"><?= $oFormMaterialTab->getElementHtml('nomenklatura['.$x.']'); ?></td>
                 <? } else {?>
                     <td>
                         <? if(!$isReadonly)  {?>

@@ -1,0 +1,121 @@
+<?
+class toXml {	
+
+    function projectOrderMaterial($actId, $userId){
+        
+        $actInfo = dbProc::getActInfo($actId);
+        if(count($actInfo)>0)
+        {
+
+            $act = $actInfo[0];
+            $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
+            $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
+            $person = dbProc::GetChifName($act['RAKT_KEDI_ID'], 'ENGINEER');
+            $project_codes = explode('.', $act['RAKT_PROJECT_NO']);
+
+            $filename = 'Pieprasijums_'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.XML_FILE_EXTENTION;
+            $res=dbProc::replaceFile( $filename, $userId, $actId, FILE_EXPORT, XML_FILE_MIMETYPE);              
+            
+            if ($res)
+            {
+                $idFile=dbLayer::getInsertId();
+            }
+            else
+            {
+                return false;				
+            }
+
+            $writer = new XMLWriter();  
+            //$writer->openURI('php://output');   
+            $writer->openURI(XML_FILES_STORE_PATH."/".$idFile);
+            $writer->startDocument('1.0','UTF-8');   
+            $writer->setIndent(4);   
+            $writer->startElement('CreateRequisition');  
+            // Start the namespaced attribute
+            $writer->startAttributeNs('xmlns', 'inv', 'value');        
+            // Add value to the attribute
+            $writer->text('http://www.w3.org/2000/xmlns');
+            //$writer->text('http://latvenergo.lv/EBS/INV');        
+            // End the attribute
+            $writer->endAttribute();
+
+            $writer->writeElement('OrderDescription', $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE']);  
+            $writer->writeElement('UserName', (empty($person) ? "DUIS" : $person)); 
+
+            $writer->startElement('RequisitionLines');  
+            
+
+            $aMaterialDb=dbProc::getActMaterialNomenklaturasList($actId, false);
+            foreach ($aMaterialDb as $mate) {
+                
+                $writer->startElement('RequisitionLine');
+
+                $writer->writeElement('ItemNo', $mate['NOMENKLATURA']); 
+                $writer->writeElement('Quantity', $mate['MATR_DAUDZUMS']); 
+                $writer->writeElement('NeedByDate', date('d.m.Y',mktime(0,0,0,1,1,$act['RAKT_GADS']))); 
+                $writer->writeElement('Location', 'RIGA.STI.8'); 
+                $writer->writeElement('ProjectNum', $project_codes[0]); 
+                $writer->writeElement('TaskNum', (isset($project_codes[1]) ? $project_codes[1] : 1)); 
+                $writer->writeElement('ExpidentureType', text::get('MATERIALS')); 
+                $writer->writeElement('ExpidentureDate', date('t.m.Y')); 
+                $writer->writeElement('ExpidentureOrganization', text::get('XML_EXPIDENTURE_ORG')); 
+
+                $writer->startElement('AdditionalAttributes');  
+                $writer->startElement('AdditionalAttribute');  
+                $writer->writeElement('fild_name', 'PiegadesNoliktava'); 
+                $writer->writeElement('fild_value', 'ST_RPRN'); 
+                $writer->endElement();
+                $writer->endElement();
+
+                dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) ));
+              
+              
+                $writer->endElement();  
+              
+            }
+            
+            $writer->endElement();  
+
+            $writer->startElement('AdditionalAttributes');  
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'Buvnieks'); 
+            $writer->writeElement('fild_value', $act['WORKER']); 
+            $writer->endElement();
+
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'BudzetaVeids'); 
+            $writer->writeElement('fild_value', text::get('XML_BUDZET_TYPE')); 
+            $writer->endElement();
+
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'PierasijumaVeids'); 
+            $writer->writeElement('fild_value', text::get('XML_BUDZET_TYPE')); 
+            $writer->endElement();
+
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'STRegions'); 
+            $writer->writeElement('fild_value', $act['KEDI_REGIONS']); 
+            $writer->endElement();
+
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'KvikStepKods'); 
+            $writer->writeElement('fild_value', $act['RAKT_NUM_POSTFIX']); 
+            $writer->endElement();
+
+            $writer->startElement('AdditionalAttribute');  
+            $writer->writeElement('fild_name', 'Strukturvieniba'); 
+            $writer->writeElement('fild_value', $act['KEDI_NOSAUKUMS']); 
+            $writer->endElement();
+
+            $writer->endElement();
+
+            $writer->endElement();  
+            $writer->endDocument(); 
+            //header('Content-type: text/xml');
+            //$writer->flush(); 
+        }
+        
+        return $idFile;
+    }
+}
+?>

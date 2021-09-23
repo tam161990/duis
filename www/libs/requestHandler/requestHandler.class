@@ -372,6 +372,14 @@ class RequestHandler
 				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'PEXCEL');
 			}
 
+			// -----------------------------------------------------------------------------
+			// Getting project xnl file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_XML_FILE_VARIABLE) && is_numeric(reqVar::get(GET_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_FILE_VARIABLE), true, 'XML');
+			}
+
             // -----------------------------------------------------------------------------
 			// Getting GPS file
 			// -----------------------------------------------------------------------------

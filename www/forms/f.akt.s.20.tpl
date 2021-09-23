@@ -21,7 +21,10 @@
                 <?= $oForm -> getElementHtml('actNumPostfixLink'); ?>
             <? } ?>
             </td>
-            <td colspan="2" class="table_head" align="right">
+            <td class="table_head" align="right">
+                <?= $oForm -> getElementLabel('code'); ?>:
+                <font color="red"><?=text::toUpper($oForm -> getElementHtml('code'));?></font></td>
+            <td class="table_head" align="right">
                 <?= $oForm -> getElementLabel('statusTxt'); ?>:
                 <font color="red"><?=text::toUpper($oForm -> getElementHtml('statusTxt'));?></font></td>
             <td width="20%" rowspan="<?=(($actId === false)?'4':'5');?>" valign="bottom">
@@ -54,6 +57,9 @@
                  <? } ?>
                  <? if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)  {?>
                     <tr><td><?=$oForm->getElementHtml('make_excel2');?></td></tr>
+                 <? } ?>
+                 <? if( $status == STAT_CLOSE && $actId != false)  {?>
+                    <tr><td><?=$oForm->getElementHtml('order_material');?></td></tr>
                  <? } ?>
                 </table>
             </td>
