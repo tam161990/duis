@@ -9725,6 +9725,17 @@ class dbProc extends dbLayer
                         'work_type:' .$work_type.PHP_EOL.PHP_EOL										
                 );						
         $oDB = new dbLayer;
+
+        // pārbaude vai projects ar atbilstošu KvikStep kodu neeksitē
+        $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($key).'"  
+                    AND `RAKT_PROJECT` = 1 AND `RAKT_STATUS` NOT  IN ("'.STAT_DELETE.'")';
+        $result = $oDB -> makeQuery($query);        
+        $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+        
+        // ja akts eksistē, pārbaudam vai nevajag atjaunot tammes, un ja vajag, tad atjaunojam            
+        if($actId !== false) {
+            return false;
+        }
         $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.stripslashes($work_type).'%"';
         $result = $oDB -> makeQuery($query);
         $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;
