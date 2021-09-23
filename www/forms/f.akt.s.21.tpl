@@ -119,9 +119,9 @@ document.onmousemove=positiontip
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
                 <th  width="3%" colspan = 2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
                 <? } else {?>
-                 <th width="3%">&nbsp;</th>                 
-                 <? } ?>
-                 <th width="3%">&nbsp;</th>
+                    <th width="3%">&nbsp;</th>
+                    <th width="3%">&nbsp;</th>
+                <? } ?>
 			</tr>
 
 	  <?
