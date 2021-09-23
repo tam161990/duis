@@ -4884,8 +4884,8 @@ class dbProc extends dbLayer
          $query = "select count(`RAKT_ID`) as `ACT_COUNT` from `AKTI` a
          where `RAKT_FULL_NUMBER` LIKE '%".dbLayer::quote_smart($searchString)."%' 
          ".(($worker !== false) ? " AND `RAKT_KWOI_KODS` = '" .dbLayer::quote_smart($worker). "'" : "");
-         $query .= " GROUP BY `RAKT_FULL_NUMBER`  ";
-
+         //$query .= " GROUP BY `RAKT_FULL_NUMBER` ";
+        
         $oSQL = new dbLayer;
 		$result = $oSQL -> makeQuery($query);
 
@@ -7106,6 +7106,32 @@ class dbProc extends dbLayer
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
     }
+
+    // -----------------------------------------------------------------------------
+	// Atgriezh akta materialus. atgriezh visas p�c akta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getActMaterialNomenklaturasList($ID, $tame = false)
+    {
+        $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
+        $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
+
+        $query = "select MATR_ID, MATR_KODS, MATR_DAUDZUMS, n.NOMENKLATURA, NVL(n.cnt, 0) as COUNT                
+                from " . $table_name . " m
+                LEFT JOIN ( select MAX(KTMK_MATERIAL_KODS) OVER (PARTITION BY KTMK_KATEGORIJAS_KODS ORDER BY KTMK_ID) as NOMENKLATURA,
+                                    KTMK_KATEGORIJAS_KODS, 
+                                    COUNT(*)  as cnt
+                            from kl_materialu_komplekt  
+                            group by KTMK_KATEGORIJAS_KODS) n
+                    on n.KTMK_KATEGORIJAS_KODS = MATR_KODS
+                WHERE `MATR_RAKT_ID` = ".$ID."
+                AND ".$column_name." IS NOT NULL                
+                ORDER BY `MATR_IS_WORKER` DESC, MATR_KODS";
+        //echo $query;
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+    }
     
     function getActEstimateMaterialList($ID)
     {        
@@ -7262,7 +7288,22 @@ class dbProc extends dbLayer
 		return ($result !== false);
     }
 
+    // -----------------------------------------------------------------------------
+	// Saglabat konkr�tu materiala ieraksta daudzumu p�c ieraksta ID.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function updateMaterialNomenklaturu($ID, $code, $status, $tame = 0)
+    {
+        $table_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+        $query = "UPDATE ".$table_name." SET  `MATR_NOM_KODS` = '".dbLayer::quote_smart($code)."',
+                `MATR_NOM_STATUS` = ".dbLayer::quote_smart($status)."
+                WHERE `MATR_ID` = ".dbLayer::quote_smart($ID);
 
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+    }
 
     // -----------------------------------------------------------------------------
 	// Izdz�st konkreta akta materiala ierakstu p�c akta ID.
@@ -7756,7 +7797,7 @@ class dbProc extends dbLayer
 	function getFileInfo($id, $type = 'PDF' )
 	{
 		$oSQL=new dbLayer();
-        if($type == "PDF")
+        if($type == "PDF" || $type == "XML")
         {
               $res=$oSQL->makeQuery('select RFLS_NOSAUKUMS AS NOSAUKUMS, RFLS_META_INFO AS META_INFO
                from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
@@ -7805,6 +7846,32 @@ class dbProc extends dbLayer
 					and f.RFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
                     and f.RFLS_TYPE="'.dbLayer::quote_smart($type).'"
 					order by f.RFLS_ID desc';
+
+		return $oSQL -> makeQuery($sql);
+    }
+
+    // -----------------------------------------------------------------------------
+	// atgriezh failes datus peec acta ID
+	// author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getAllFilesInfo($actId, $type)
+	{
+		$oSQL=new dbLayer();
+        $sql = 'select f.RFLS_ID as RFLS_ID, f.RFLS_NOSAUKUMS as RFLS_NOSAUKUMS, f.RFLS_META_INFO as RFLS_META_INFO,
+                    '.dbLayer::sqlParseDateTime('RFLS_DATUMS').' ,
+                     CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
+					from `FAILI` f, `LIETOTAJI` lt
+					where f.RFLS_RLTT_ID=lt.RLTT_ID
+					and f.RFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
+                    and f.RFLS_TYPE="'.dbLayer::quote_smart($type).'"
+                union
+                select f.EFLS_ID as RFLS_ID, f.EFLS_NOSAUKUMS as RFLS_NOSAUKUMS, f.EFLS_META_INFO as RFLS_META_INFO,
+                '.dbLayer::sqlParseDateTime('EFLS_DATUMS').' ,
+                     CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
+					from `EXCEL_FAILI` f, `LIETOTAJI` lt
+					where f.EFLS_RLTT_ID=lt.RLTT_ID
+					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
+				order by RFLS_ID desc';
 
 		return $oSQL -> makeQuery($sql);
     }
@@ -8826,10 +8893,11 @@ class dbProc extends dbLayer
                                         $status = false, 
                                         $user_name = false, 
                                         $end_date = false,
-                                        $accept_date = false
+                                        $accept_date = false,
+                                        $project_code = false
                                         )
         { 
-            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date;
+            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code;
            
             $oDB = new dbLayer;
             $query = 'insert into `AUTO_ACT_STATUS`
@@ -8839,14 +8907,16 @@ class dbProc extends dbLayer
 							`AAST_STATUS`,
                             `USER_NAME`,
                             `END_DATE`,
-                            `ACCEPT_DATE`
+                            `ACCEPT_DATE`,
+                            `AAST_PROJECT_NO`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
                         '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
-                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .'
+                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
+                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -8859,14 +8929,16 @@ class dbProc extends dbLayer
 							`AAST_STATUS`,
                             `USER_NAME`,
                             `END_DATE`,
-                            `ACCEPT_DATE`
+                            `ACCEPT_DATE`,
+                            `AAST_PROJECT_NO`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
                         '.(($status !== false) ? '"' .$status .'"' : '"NULL"') .',
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
-                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .'
+                          '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
+                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -8880,7 +8952,7 @@ class dbProc extends dbLayer
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
-                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`
+                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`, `AAST_PROJECT_NO`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -8910,6 +8982,7 @@ class dbProc extends dbLayer
                 $accept_date = false;
 				$actId = $act['RAKT_ID'];
                 $cur_user_id = $act['RAKT_RLTT_ID'];
+                $project_code = false;
 
                 if(isset($act['USER_NAME'])){
                     $userInfo = dbProc::getUserInfo('', $act['USER_NAME']);
@@ -8929,7 +9002,10 @@ class dbProc extends dbLayer
                 {
                     $accept_date = $act['ACCEPT_DATE'];
                 }
-               
+                if(isset($act['AAST_PROJECT_NO']))
+                {
+                    $project_code = $act['AAST_PROJECT_NO'];
+                }
 
                 switch ($act['AAST_STATUS']) {
                     /*Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + cits lietotājs  tad uz Ievadu nepāriet un nomainās tikai lietotājs
@@ -8962,15 +9038,17 @@ class dbProc extends dbLayer
 									'RAKT_STATUS: '.$status.PHP_EOL.
 									'RAKT_RLTT_ID: '.$user_id.PHP_EOL.
 									'RAKT_MSTK_ID: '.$place.PHP_EOL.
-                                    					'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL.
-                                    					'AAST_ID:' .$act['AAST_ID'].PHP_EOL
+                                    'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL.
+                                    'RAKT_PROJECT_NO:' .$project_code.PHP_EOL.
+                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL
 							);						
 
                 				
                 $query = 'UPDATE `AKTI` SET `RAKT_STATUS`  = "' .$status .'"
 						'.(($user_id !== false ) ? ',`RAKT_RLTT_ID`  = ' .$user_id : '' ) .'						
                         '.(($place !== false ) ? ',`RAKT_MSTK_ID`  = ' .$place : '' ) .'
-						'.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
+                        '.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
+                        '.(($project_code !== false ) ? ',`RAKT_PROJECT_NO`  = "' .$project_code .'"' : '' ) .'
                         WHERE `RAKT_ID` = '.$actId;  
 				
                
@@ -9024,7 +9102,7 @@ class dbProc extends dbLayer
                     }
                     
                     $query = 'UPDATE `AUTO_ACT_STATUS`   SET 
-                    `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL"
+                    `AAST_STATUS` = "NULL",  `USER_NAME` = "NULL", `END_DATE` = "NULL", `AAST_PROJECT_NO` = "ŅULL"
                     WHERE `AAST_ID` = ' . $act['AAST_ID'];
 
                     //echo $query;
@@ -9715,7 +9793,7 @@ class dbProc extends dbLayer
         return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
     }
 
-    function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type) {
+    function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type, &$error) {
         files::wh_log('Act status from KS 2: ' .date("d.m.Y H:i:s").PHP_EOL. 
                         'key: '.$key.PHP_EOL.
                         'year: '. $year.PHP_EOL.
@@ -9725,6 +9803,19 @@ class dbProc extends dbLayer
                         'work_type:' .$work_type.PHP_EOL.PHP_EOL										
                 );						
         $oDB = new dbLayer;
+
+        // pārbaude vai projects ar atbilstošu KvikStep kodu neeksitē
+        $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($key).'"  
+                    AND `RAKT_PROJECT` = 1 AND `RAKT_STATUS` NOT  IN ("'.STAT_DELETE.'")';
+        $result = $oDB -> makeQuery($query);        
+        $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+        
+        // ja akts eksistē, pārbaudam vai nevajag atjaunot tammes, un ja vajag, tad atjaunojam            
+        if($actId !== false) {
+            $error = 'Prohect already exists';
+            return false;
+        }
+
         $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.stripslashes($work_type).'%"';
         $result = $oDB -> makeQuery($query);
         $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;

@@ -66,6 +66,8 @@ define ('GPS_FILES_STORE_PATH', ZR_SERVER_PATH.'/gps_files');
 define ('EXCEL_FILES_STORE_PATH', ZR_SERVER_PATH.'/files/excel');
 //  project file stored dir
 define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
+//  xml file stored dir
+define ('XML_FILES_STORE_PATH', ZR_SERVER_PATH.'/xml');
 
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
@@ -130,6 +132,9 @@ define ('IS_GET_PEXCEL_FILE_VARIABLE','get_excel_file');
 // getting gps file - flag
 define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
 
+// getting xml file - flag
+define ('IS_GET_XML_FILE_VARIABLE','get_xml_file');
+
 // get file variable name
 define ('GET_FILE_VARIABLE','idFile');
 
@@ -150,6 +155,12 @@ define('EXCEL_FILE_EXTENTION', 'xlsx');
 
 // project file type
 define('PROJECT_FILE_TYPE', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+// xml file type
+define('XML_FILE_MIMETYPE', 'text/xml');
+
+// xml file extentions
+define('XML_FILE_EXTENTION', 'xml');
 
 // form id 
 define ('FORM_ID', 'formId');
@@ -329,6 +340,8 @@ define ('OP_CH_TO_INSERT', 'H');
 define ('OP_DECLINE', 'N');
 // eksportēt darbus un materialus
 define ('OP_EXPORT_ALL','Z');
+// Izveidot Materiālu pieprasījumu
+define ('OP_ORDER_MATERIAL','O');
 
 # =============================================================================
 # USER ACTION CODES

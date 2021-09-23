@@ -178,6 +178,10 @@ class files
 			else if($type == "PEXCEL")
             {
                  $c=@file_get_contents(PROJECT_FILES_STORE_PATH.'/'.$idFile);
+			}
+			else if($type == "XML")
+            {
+				 $c=@file_get_contents(XML_FILES_STORE_PATH.'/'.$idFile);
             }
 
 			if ($c)
