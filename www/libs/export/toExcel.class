@@ -17,7 +17,8 @@ function projectTammeExcel($actId, $userId, $action){
     // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
 	
-	$sheet = $objPHPExcel->getActiveSheet();
+	$sheet->setShowGridlines(true);
+    $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
     $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
@@ -168,7 +169,8 @@ function projectExportExcel($actId, $userId){
     // Create new PHPExcel object
     $objPHPExcel = new PHPExcel();
 	
-	$sheet = $objPHPExcel->getActiveSheet();
+	$sheet->setShowGridlines(true);
+    $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_PORTRAIT);
     $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
@@ -321,7 +323,8 @@ function exportTameMaterial($actId, $userId, $type){
      // Create new PHPExcel object
      $objPHPExcel = new PHPExcel();
 	 
-	 $sheet = $objPHPExcel->getActiveSheet();
+     $sheet->setShowGridlines(true);
+     $sheet->setTitle('DUIS-worksheet');
 
      $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
      $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
@@ -463,7 +466,8 @@ function exportTameMaterial($actId, $userId, $type){
          // Create new PHPExcel object
          $objPHPExcel = new PHPExcel();
 		 
-		 $sheet = $objPHPExcel->getActiveSheet();
+		 $sheet->setShowGridlines(true);
+        $sheet->setTitle('DUIS-worksheet');
     
          $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
          $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
@@ -605,7 +609,8 @@ function exportTameMaterial($actId, $userId, $type){
              // Create new PHPExcel object
              $objPHPExcel = new PHPExcel();
              
-             $sheet = $objPHPExcel->getActiveSheet();
+             $sheet->setShowGridlines(true);
+             $sheet->setTitle('DUIS-worksheet');
         
              $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
              $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
