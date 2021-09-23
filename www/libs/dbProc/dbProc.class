@@ -7871,7 +7871,7 @@ class dbProc extends dbLayer
 					from `EXCEL_FAILI` f, `LIETOTAJI` lt
 					where f.EFLS_RLTT_ID=lt.RLTT_ID
 					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
-				order by RFLS_ID desc';
+				order by RFLS_DATUMS desc';
 
 		return $oSQL -> makeQuery($sql);
     }
