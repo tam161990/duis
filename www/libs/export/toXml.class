@@ -62,8 +62,8 @@ class toXml {
 
                 $writer->startElement('AdditionalAttributes');  
                 $writer->startElement('AdditionalAttribute');  
-                $writer->writeElement('fild_name', 'PiegadesNoliktava'); 
-                $writer->writeElement('fild_value', 'ST_RPRN'); 
+                $writer->writeElement('field_name', 'PiegadesNoliktava'); 
+                $writer->writeElement('field_value', 'ST_RPRN'); 
                 $writer->endElement();
                 $writer->endElement();
 
@@ -78,33 +78,33 @@ class toXml {
 
             $writer->startElement('AdditionalAttributes');  
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'Buvnieks'); 
-            $writer->writeElement('fild_value', $act['WORKER']); 
+            $writer->writeElement('field_name', 'Buvnieks'); 
+            $writer->writeElement('field_value', $act['WORKER']); 
             $writer->endElement();
 
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'BudzetaVeids'); 
-            $writer->writeElement('fild_value', text::get('XML_BUDZET_TYPE')); 
+            $writer->writeElement('field_name', 'BudzetaVeids'); 
+            $writer->writeElement('field_value', text::get('XML_BUDZET_TYPE')); 
             $writer->endElement();
 
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'PierasijumaVeids'); 
-            $writer->writeElement('fild_value', text::get('XML_BUDZET_TYPE')); 
+            $writer->writeElement('field_name', 'PierasijumaVeids'); 
+            $writer->writeElement('field_value', text::get('XML_BUDZET_TYPE')); 
             $writer->endElement();
 
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'STRegions'); 
-            $writer->writeElement('fild_value', $act['KEDI_REGIONS']); 
+            $writer->writeElement('field_name', 'STRegions'); 
+            $writer->writeElement('field_value', $act['KEDI_REGIONS']); 
             $writer->endElement();
 
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'KvikStepKods'); 
-            $writer->writeElement('fild_value', $act['RAKT_NUM_POSTFIX']); 
+            $writer->writeElement('field_name', 'KvikStepKods'); 
+            $writer->writeElement('field_value', $act['RAKT_NUM_POSTFIX']); 
             $writer->endElement();
 
             $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('fild_name', 'Strukturvieniba'); 
-            $writer->writeElement('fild_value', $act['KEDI_NOSAUKUMS']); 
+            $writer->writeElement('field_name', 'Strukturvieniba'); 
+            $writer->writeElement('field_value', $act['KEDI_NOSAUKUMS']); 
             $writer->endElement();
 
             $writer->endElement();
