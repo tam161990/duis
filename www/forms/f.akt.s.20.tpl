@@ -65,8 +65,13 @@
             </td>
         </tr>
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
-            <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('worker'); ?></td>
+            <? if($act['RAKT_KEY_OBJECT'] == '1') { ?>
+                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('constract_company'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+                <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('constract_company'); ?></td>
+            <? } else { ?>
+                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+                <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('worker'); ?></td>    
+            <? } ?>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('ouner'); ?>:<?=((!$isReadonly1 || !$isReadonly)?'<font color="red">*</font>':'');?></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('ouner'); ?></td>
         </tr>

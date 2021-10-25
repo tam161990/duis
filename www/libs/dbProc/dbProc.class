@@ -4621,7 +4621,9 @@ class dbProc extends dbLayer
                     $signature = false,
                     $auto = false,
                     $project = false,
-                    $project_type = false
+                    $project_type = false,
+                    $construct_company = false, // Būvkomersants
+                    $key_object = false // Atslēgas objekts
                     )
 	{
         
@@ -4691,7 +4693,9 @@ class dbProc extends dbLayer
                 `RAKT_IR_OBJEKTS_PABEIGTS`,
                 `RAKT_IS_AUTO`,
 		        `RAKT_PROJECT`,
-                `RAKT_PROJECT_TYPE`
+                `RAKT_PROJECT_TYPE`,
+                `RAKT_CONSTRUCT_COMPANY`,
+                `RAKT_KEY_OBJECT`
                 )
 			values
                 ('.(( !$number ) ? dbProc::getNextActNumber(dbLayer::quote_smart($EDarea), $trase) : dbLayer::quote_smart($number)) .',
@@ -4724,7 +4728,9 @@ class dbProc extends dbLayer
                 '.(($isObjectFinished) ? '"'.dbLayer::quote_smart($isObjectFinished).'"' : '0').',
                 '.(($auto) ? '"'.dbLayer::quote_smart($auto).'"' : '0').',
                 '.(($project) ? '"'.dbLayer::quote_smart($project).'"' : '0').',  
-                '.(($project && $project_type !== false) ? '"'.dbLayer::quote_smart($project_type).'"' : '"NULL"').'                     
+                '.(($project && $project_type !== false) ? '"'.dbLayer::quote_smart($project_type).'"' : '"NULL"').',
+                '.(($construct_company) ? '"'.dbLayer::quote_smart($construct_company).'"' : '"NULL"').',
+                '.(($RAKT_KEY_OBJECT) ? '"'.dbLayer::quote_smart($RAKT_KEY_OBJECT).'"' : '"0"').'                  
                 )';
 		}
        //echo $query;
@@ -9793,44 +9799,60 @@ class dbProc extends dbLayer
         return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
     }
 
-    function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type, &$error) {
+    function createProject($key, $year, $worker_title, $ed_kods, $work_title, $work_type, $construct_company = false, $transaction_id = false, &$error) {
         files::wh_log('Act status from KS 2: ' .date("d.m.Y H:i:s").PHP_EOL. 
                         'key: '.$key.PHP_EOL.
                         'year: '. $year.PHP_EOL.
                         'worker_title: '.$worker_title.PHP_EOL.
                         'ed_kods:' .$ed_kods.PHP_EOL.
                         'work_title:' .$work_title.PHP_EOL.
-                        'work_type:' .$work_type.PHP_EOL.PHP_EOL										
+                        'work_type:' .$work_type.PHP_EOL.
+                        'construct_company:' .$construct_company.PHP_EOL.
+                        'transaction_id:' .$transaction_id.PHP_EOL													
                 );						
         $oDB = new dbLayer;
-
+        
         // pārbaude vai projects ar atbilstošu KvikStep kodu neeksitē
         $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($key).'"  
                     AND `RAKT_PROJECT` = 1 AND `RAKT_STATUS` NOT  IN ("'.STAT_DELETE.'")';
+        
         $result = $oDB -> makeQuery($query);        
         $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
         
         // ja akts eksistē, pārbaudam vai nevajag atjaunot tammes, un ja vajag, tad atjaunojam            
         if($actId !== false) {
-            $error = 'Prohect already exists';
+            $error = 'Project already exists';
             return false;
         }
-
+        
         $query = 'select `KRFK_VERTIBA` from `KL_REF_KODI` where `KRFK_NOSAUKUMS` = "PROJECT_TYPE" AND `KRFK_NOZIME` LIKE "%'.stripslashes($work_type).'%"';
+        files::wh_log('KL_REF_KODI: '.$query );
         $result = $oDB -> makeQuery($query);
-        $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;
-    
-            files::wh_log('KL_REF_KODI: '.$query );
-    
+        $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;   
+           
     
         $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_KODS` = "'.dbLayer::quote_smart($ed_kods).'"';
         $result = $oDB -> makeQuery($query);
         $ed_id = isset($result[0]['KEDI_ID']) ? $result[0]['KEDI_ID'] : false;
     
-        $query = 'SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE "%'.dbLayer::quote_smart($worker_title).'%"';
-        $result = $oDB -> makeQuery($query);
-        $worker_code = isset($result[0]['KWOI_KODS']) ? $result[0]['KWOI_KODS'] : false;
-    
+        switch ($transaction_id) {
+            case 2:
+                $worker_code = null;
+                $key_object = '1';
+            break;
+            case 0:
+                $worker_code = ST_VV_NUMBER;
+                $construct_company = false;
+                $key_object = '0';
+            break;
+            default:
+                $construct_company = false;
+                $key_object = '0';   
+                $query = 'SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE "%'.dbLayer::quote_smart($worker_title).'%"';
+                $result = $oDB -> makeQuery($query);
+                $worker_code = isset($result[0]['KWOI_KODS']) ? $result[0]['KWOI_KODS'] : false;             
+        }     
+
         files::wh_log('Act status from KS: ' .date("d.m.Y H:i:s").PHP_EOL. 
                         'key: '.$key.PHP_EOL.
                         'year: '. $year.PHP_EOL.
@@ -9838,11 +9860,14 @@ class dbProc extends dbLayer
                         'ed_kods:' .$ed_kods.PHP_EOL.
                         'work_title:' .$work_title.PHP_EOL.
                         'work_type:' .$work_type.PHP_EOL.
-                        'type:' .$type .PHP_EOL.
+                        'type:' .$type.PHP_EOL.
                         'ed_id:' .$ed_id.PHP_EOL.
-                        'worker_code:' .$worker_code.PHP_EOL										
-                );						
-    
+                        'worker_code:' .$worker_code.PHP_EOL.
+                        'construct_company:' .$construct_company.PHP_EOL.
+                        'transaction_id:' .$transaction_id.PHP_EOL					
+                );
+        
+            
         $r=dbProc::saveAct(false,
                 false,
                 0,
@@ -9868,7 +9893,9 @@ class dbProc extends dbLayer
                 false,
                 1,
                 1,
-                'PT_EL'//$type
+                'PT_EL',//$type
+                $construct_company, // Būvkomersants
+                $key_object // Atslēgas objekts
               );
     
              $actId=dbLayer::getInsertId();	

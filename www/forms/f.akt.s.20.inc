@@ -136,8 +136,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
         $statusLabel =  $act['STATUS_NAME'];
         $worker = $act['RAKT_KWOI_KODS'];
 
-        if($worker !== false) {
+        if($worker !== false && !empty($worker)) {
           $res = dbProc::getProjectorWorkerList($worker);
+        } else {
+          $res = dbProc::getProjectorWorkerList(-1);
         }
   	}
   }
@@ -241,13 +243,15 @@ if ( $isAdmin || $isProjector || $projectApprover )
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
-
+  if($act['RAKT_KEY_OBJECT'] == '1') {
+    $oForm -> addElement('text', 'constract_company',  text::get('SINGL_WORK_OWNER'), isset($act['RAKT_CONSTRUCT_COMPANY'])?$act['RAKT_CONSTRUCT_COMPANY']:'', 'maxlength="250" '.((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled'));
+  } else {
   $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), 
   array('classifName'=>KL_WORK_OWNERS,
         'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:'',
         'readonly'=>false), 
         ((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
-
+  }
   $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16" '.(($isReadonlyExceptAdmin )?' disabled':''));
 
   $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 
@@ -401,6 +405,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 1,
                 1,
                 $oForm->getValue('type'),
+                $oForm->getValue('constract_company')
               );
 
               // get inserted record ID

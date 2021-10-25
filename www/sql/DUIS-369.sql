@@ -14,3 +14,6 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES
 ('XML_EXPIDENTURE_ORG', '3 AS Sadals tīkls EUR'),
 ('XML_BUDZET_TYPE', 'Kapitālieguldījumu budžets');
+
+alter table `AKTI` add `RAKT_KEY_OBJECT` CHAR(1) DEFAULT '0';
+alter table `AKTI` add `RAKT_CONSTRUCT_COMPANY` VARCHAR(250);
