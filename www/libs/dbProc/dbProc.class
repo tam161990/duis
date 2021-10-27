@@ -7125,7 +7125,7 @@ class dbProc extends dbLayer
         $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
         $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
 
-        $query = "select MATR_ID, MATR_KODS, MATR_DAUDZUMS, n.NOMENKLATURA, NVL(n.cnt, 0) as COUNT                
+        $query = "select MATR_ID, MATR_KODS, MATR_DAUDZUMS, n.NOMENKLATURA, NVL(n.cnt, 0) as COUNT, MATR_PROJECT_EXPORT                
                 from " . $table_name . " m
                 LEFT JOIN ( select MAX(KTMK_MATERIAL_KODS) OVER (PARTITION BY KTMK_KATEGORIJAS_KODS ORDER BY KTMK_ID) as NOMENKLATURA,
                                     KTMK_KATEGORIJAS_KODS, 
