@@ -49,7 +49,7 @@ class toXml {
             foreach ($aMaterialDb as $mate) {
 
                 $matr_ststus = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
-                if($mate['MATR_PROJECT_EXPORT'] == DU_DELIVERY_TYPE) {
+                if(text::latvianToLatin($mate['MATR_PROJECT_EXPORT']) == dbProc::getKrfkInfoByName(DU_DELIVERY_TYPE)['KRFK_NOZIME']) {
                     $matr_ststus = null;
                     continue;
                 }
