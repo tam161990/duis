@@ -47,7 +47,17 @@ class toXml {
 
             $aMaterialDb=dbProc::getActMaterialNomenklaturasList($actId, false);
             foreach ($aMaterialDb as $mate) {
-                
+
+                $matr_ststus = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
+                if($mate['MATR_PROJECT_EXPORT'] == DU_DELIVERY_TYPE) {
+                    $matr_ststus = null;
+                    continue;
+                }
+                if($matr_ststus == 3) {
+                    dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_ststus);
+                    continue;
+                }
+
                 $writer->startElement('RequisitionLine');
 
                 $writer->writeElement('ItemNo', $mate['NOMENKLATURA']); 
@@ -67,8 +77,7 @@ class toXml {
                 $writer->endElement();
                 $writer->endElement();
 
-                dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) ));
-              
+                dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_ststus);
               
                 $writer->endElement();  
               

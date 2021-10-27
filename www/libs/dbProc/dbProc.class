@@ -6765,6 +6765,7 @@ class dbProc extends dbLayer
                 `DRBI_IS_WORKER`'.(($tame)? ', `DRBI_DAUDZUMS_KOR` ' : '' ).
                 (($work_type!== false)? ', `DRBI_WORK_TYPE_ID` ' : '' ).
                 (($work_type!== false)? ', `DRBI_WORK_TYPE_TEXT` ' : '' ).
+                (($work_type!== false && $st == 1)? ', `DRBI_PROJECT_EXPORT` ' : '' ).
                 ')                
                 values ('.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($title).'",
@@ -6773,8 +6774,9 @@ class dbProc extends dbLayer
                     '.dbLayer::quote_smart($amount).',
                     '.dbLayer::quote_smart($st).'
                     '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
-                    (($work_type!== false)? ','.dbLayer::quote_smart($work_type) : '"NULL"' ).
-                    (($work_type!== false)? ',"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"' ).
+                    (($work_type!== false)? ','.dbLayer::quote_smart($work_type) : '' ).
+                    (($work_type!== false)? ',"'.dbLayer::quote_smart($work_type_text).'"' : '' ).
+                    (($work_type!== false && $st == 1)? ',"'.dbLayer::quote_smart(DU_DELIVERY_TYPE).'"' : '' ).
                     ' )' ;
 
         }
@@ -7132,7 +7134,7 @@ class dbProc extends dbLayer
                             group by KTMK_KATEGORIJAS_KODS) n
                     on n.KTMK_KATEGORIJAS_KODS = MATR_KODS
                 WHERE `MATR_RAKT_ID` = ".$ID."
-                AND ".$column_name." IS NOT NULL                
+                AND ".$column_name." IS NOT NULL                  
                 ORDER BY `MATR_IS_WORKER` DESC, MATR_KODS";
         //echo $query;
 		$oSQL = new dbLayer;
@@ -7390,7 +7392,9 @@ class dbProc extends dbLayer
                 `MATR_DAUDZUMS`, 
                 `MATR_IS_WORKER`'.(($tame)? ', `MATR_DAUDZUMS_KOR` ' : '' ).
                 (($work_type!== false)? ', `MATR_WORK_TYPE_ID` ' : '' ).
-                (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).')
+                (($work_type!== false)? ', `MATR_WORK_TYPE_TEXT` ' : '' ).
+                (($work_type!== false && $st == 1)? ', `MATR_PROJECT_EXPORT` ' : '' ).
+                ')
                 values ('.dbLayer::quote_smart($actId).',
                     "'.dbLayer::quote_smart($title).'",
                     "'.dbLayer::quote_smart($mervieniba).'",
@@ -7400,6 +7404,7 @@ class dbProc extends dbLayer
                     '.(($tame)? ','.dbLayer::quote_smart($amount) : '' ).
                     (($work_type !== false)? ','.dbLayer::quote_smart($r_work_type[0]) : '' ).
                     (($work_type !== false)? ',"'. (isset($r_work_type[1]) ? dbLayer::quote_smart(str_replace('\'', '"', $r_work_type[1])) : '').'"': '' ).
+                    (($work_type !== false && $st == 1)? ',"'.dbLayer::quote_smart(DU_DELIVERY_TYPE).'"' : '' ).
                     ' )' ;
 
         }
@@ -7864,7 +7869,7 @@ class dbProc extends dbLayer
 	{
 		$oSQL=new dbLayer();
         $sql = 'select f.RFLS_ID as RFLS_ID, f.RFLS_NOSAUKUMS as RFLS_NOSAUKUMS, f.RFLS_META_INFO as RFLS_META_INFO,
-                    '.dbLayer::sqlParseDateTime('RFLS_DATUMS').' ,
+                    '.dbLayer::sqlParseDateTime('RFLS_DATUMS').' , `RFLS_DATUMS` as DATUMS_SORT,
                      CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
 					from `FAILI` f, `LIETOTAJI` lt
 					where f.RFLS_RLTT_ID=lt.RLTT_ID
@@ -7872,12 +7877,12 @@ class dbProc extends dbLayer
                     and f.RFLS_TYPE="'.dbLayer::quote_smart($type).'"
                 union
                 select f.EFLS_ID as RFLS_ID, f.EFLS_NOSAUKUMS as RFLS_NOSAUKUMS, f.EFLS_META_INFO as RFLS_META_INFO,
-                '.dbLayer::sqlParseDateTime('EFLS_DATUMS').' ,
+                '.dbLayer::sqlParseDateTime('EFLS_DATUMS').' , `EFLS_DATUMS` as DATUMS_SORT,
                      CONCAT(lt.RLTT_VARDS," ", lt.RLTT_UZVARDS) `AUTORS`
 					from `EXCEL_FAILI` f, `LIETOTAJI` lt
 					where f.EFLS_RLTT_ID=lt.RLTT_ID
 					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
-				order by RFLS_DATUMS desc';
+				order by DATUMS_SORT desc';
 
 		return $oSQL -> makeQuery($sql);
     }
