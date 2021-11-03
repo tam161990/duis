@@ -13,6 +13,14 @@ class toXml {
             $person = dbProc::GetChifName($act['RAKT_KEDI_ID'], 'ENGINEER');
             $project_codes = explode('.', $act['RAKT_PROJECT_NO']);
 
+            // get user info
+            $userInfo = dbProc::getUserInfo($userId);
+
+            if(count($userInfo) >0 )
+            {
+                $userName = $userInfo[0]['RLTT_USER_NAME'];
+            }
+
             $filename = 'Pieprasijums_'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.XML_FILE_EXTENTION;
             $res=dbProc::replaceFile( $filename, $userId, $actId, FILE_EXPORT, XML_FILE_MIMETYPE);              
             
@@ -41,7 +49,7 @@ class toXml {
 
             $writer->writeElement('OrderDescription', $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE']);  
             //$writer->writeElement('UserName', (empty($person) ? "DUIS" : $person)); 
-            $writer->writeElement('UserName', $act['RLTT_USER_NAME']); 
+            $writer->writeElement('UserName', $userName); 
             
             $writer->startElement('RequisitionLines');  
             
