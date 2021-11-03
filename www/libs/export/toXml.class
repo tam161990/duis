@@ -40,8 +40,9 @@ class toXml {
             $writer->endAttribute();
 
             $writer->writeElement('OrderDescription', $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE']);  
-            $writer->writeElement('UserName', (empty($person) ? "DUIS" : $person)); 
-
+            //$writer->writeElement('UserName', (empty($person) ? "DUIS" : $person)); 
+            $writer->writeElement('UserName', $act['RLTT_USER_NAME']); 
+            
             $writer->startElement('RequisitionLines');  
             
 
@@ -62,7 +63,7 @@ class toXml {
 
                 $writer->writeElement('ItemNo', $mate['NOMENKLATURA']); 
                 $writer->writeElement('Quantity', $mate['MATR_DAUDZUMS']); 
-                $writer->writeElement('NeedByDate', date('d.m.Y',mktime(0,0,0,1,1,$act['RAKT_GADS']))); 
+                $writer->writeElement('NeedByDate', date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS']))); 
                 $writer->writeElement('Location', 'RIGA.STI.8'); 
                 $writer->writeElement('ProjectNum', $project_codes[0]); 
                 $writer->writeElement('TaskNum', (isset($project_codes[1]) ? $project_codes[1] : 1)); 
@@ -84,37 +85,13 @@ class toXml {
             }
             
             $writer->endElement();  
-
-            $writer->startElement('AdditionalAttributes');  
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'Buvnieks'); 
-            $writer->writeElement('field_value', $act['RAKT_CONSTRUCT_COMPANY']); 
-            $writer->endElement();
-
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'BudzetaVeids'); 
-            $writer->writeElement('field_value', text::get('XML_BUDZET_TYPE')); 
-            $writer->endElement();
-
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'PierasijumaVeids'); 
-            $writer->writeElement('field_value', text::get('XML_BUDZET_TYPE')); 
-            $writer->endElement();
-
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'STRegions'); 
-            $writer->writeElement('field_value', $act['KEDI_REGIONS']); 
-            $writer->endElement();
-
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'KvikStepKods'); 
-            $writer->writeElement('field_value', $act['RAKT_NUM_POSTFIX']); 
-            $writer->endElement();
-
-            $writer->startElement('AdditionalAttribute');  
-            $writer->writeElement('field_name', 'Strukturvieniba'); 
-            $writer->writeElement('field_value', $act['KEDI_NOSAUKUMS']); 
-            $writer->endElement();
+            if (!empty($act['CONSTRACT_COMPANY'])) {
+                $writer->startElement('AdditionalAttributes');  
+                $writer->startElement('AdditionalAttribute');  
+                $writer->writeElement('field_name', 'Buvnieks'); 
+                $writer->writeElement('field_value', $act['CONSTRACT_COMPANY']); 
+                $writer->endElement();
+            }
 
             $writer->endElement();
 
