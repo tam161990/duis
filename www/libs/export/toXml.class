@@ -76,15 +76,9 @@ class toXml {
                 $writer->writeElement('ProjectNum', $project_codes[0]); 
                 $writer->writeElement('TaskNum', (isset($project_codes[1]) ? $project_codes[1] : 1)); 
                 $writer->writeElement('ExpidentureType', text::get('MATERIALS')); 
-                $writer->writeElement('ExpidentureDate', date('t.m.Y')); 
-                $writer->writeElement('ExpidentureOrganization', text::get('XML_EXPIDENTURE_ORG')); 
-
-                $writer->startElement('AdditionalAttributes');  
-                $writer->startElement('AdditionalAttribute');  
-                $writer->writeElement('field_name', 'PiegadesNoliktava'); 
-                $writer->writeElement('field_value', 'ST_RPRN'); 
-                $writer->endElement();
-                $writer->endElement();
+                $writer->writeElement('ExpidentureDate', date('Y-m-t')); 
+                //$writer->writeElement('ExpidentureOrganization', text::get('XML_EXPIDENTURE_ORG')); 
+                $writer->writeElement('Warehouse', 'ST_RPRN'); 
 
                 dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);
               
