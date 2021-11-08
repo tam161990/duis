@@ -46,10 +46,10 @@ class toXml {
             //$writer->text('http://latvenergo.lv/EBS/INV');        
             // End the attribute
             $writer->endAttribute();
-
+            $writer->writeElement('OrderNum', $act['RAKT_NUM_POSTFIX']); 
             $writer->writeElement('OrderDescription', $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE']);  
             //$writer->writeElement('UserName', (empty($person) ? "DUIS" : $person)); 
-            $writer->writeElement('UserName', $userName); 
+            $writer->writeElement('UserName', strtoupper($userName)); 
             
             $writer->startElement('RequisitionLines');  
             
