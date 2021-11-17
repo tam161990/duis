@@ -1,5 +1,15 @@
 <?
-    require_once('../libs/init.inc');
+    require_once(dirname(__FILE__).'/../config/main.conf.php');  
+	require_once(dirname(__FILE__).'/../libs/dbLayer/dbLayer.class');
+	require_once(dirname(__FILE__).'/../libs/dbProc/dbProc.class');	
+	require_once(dirname(__FILE__).'/../libs/text/text.class');
+	require_once(dirname(__FILE__).'/../libs/requestHandler/requestHandler.class');
+	require_once(dirname(__FILE__).'/../libs/process/Process.class');  
+	require_once(dirname(__FILE__).'/../libs/files/files.class');
+	require_once(dirname(__FILE__).'/../libs/fpdf/fpdf.php');
+	require_once(dirname(__FILE__).'/../libs/export/toPdf.class');
+	require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
+	
         
 	
     function json_response($code = 200, $message = null)
