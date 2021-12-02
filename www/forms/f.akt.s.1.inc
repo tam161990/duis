@@ -91,7 +91,7 @@ if (reqVar::get('xmlHttp') == 1)
 				}	
         }
         unset($res);
-       /*
+       
         $res=dbProc::getDuContractNo(reqVar::get('worker'), $trase, true);
         if (is_array($res))
         {
@@ -112,7 +112,7 @@ if (reqVar::get('xmlHttp') == 1)
 				}	
         }
         unset($res);
-        */
+        
 	}
 	
     
@@ -168,7 +168,8 @@ if (reqVar::get('xmlHttp') == 1)
                 }
              }*/
            }   
-            $res=dbProc::getEDAreaNotElementActivList($trase);
+           // $res=dbProc::getEDAreaNotElementActivList($trase);
+           $res=dbProc::getEDSectionListForWorker(reqVar::get('worker'), reqVar::get('contract'), $trase);
             
       }
       elseif((reqVar::get('type') == ACT_TYPE_DAMAGE_ID) || (reqVar::get('type') == ACT_TYPE_DEFECT_ID ) || (reqVar::get('type') == ACT_TYPE_DAMAGE_TR_ID) || (reqVar::get('type') == ACT_TYPE_DEFECT_TR_ID ))
@@ -509,6 +510,7 @@ unset($res);
   $isActNumPrefix = false;
   $isAllowToPay = false;
   $isAllowPrintActcalc = false;
+  $isAllowChangeWorker = false;
   if($actId != false)
   {
 	
@@ -562,7 +564,14 @@ unset($res);
     {
       $isActNumPrefix   = true;
     }
-    
+
+    if($isAdmin && ($status == STAT_INSERT || $status == STAT_AUTO ) && $isAuto == 1 && dbProc::isActTypePlan($act['RAKT_KAKV_ID']) )
+    {
+      $isAllowChangeWorker   = true;
+    }
+
+
+    //  ar administratora un jā akta veids Plāns, statusi Ģenerēts, Ievads
     if(($act['RAKT_RLTT_ID'] == $userId && $isEditor && ($status == STAT_INSERT || $status == STAT_RETURN ) && $isAuto == 0 ) ||
         ($isAdmin && ($status != STAT_DELETE))  )
     {
@@ -659,22 +668,27 @@ unset($res);
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
  
-  $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', ($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
-  if ($isReadonlyExceptSuperAdmin && !$isReadonly1 && !$isCopy)
+  if($isAllowChangeWorker)
+  {
+    $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', '', '', '', $contract);
+  } else {
+    $oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($act['RAKT_VV_NUMBER'])?$act['RAKT_VV_NUMBER']:'', (($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1) )? ' disabled ':''). '  onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&contract=\'+this.value))"', '', '', $contract);
+  }
+  if ($isReadonlyExceptSuperAdmin && !$isReadonly1 && !$isCopy && !$isAllowChangeWorker)
   {
     $oForm -> addRule('contract', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin)?' ':'disabled'), '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId, ''.((!$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin || $isAllowChangeWorker)?' ':'disabled'), '', '', $ouner);
   //$oForm -> addElement('kls', 'ouner',  text::get('ACT_OUNER'), array('classifName'=>KL_USERS,'value'=>isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:$userId,'readonly'=>false), (($isReadonlyExceptAdmin || !$isEconomist)?' disabled ':'').'maxlength="2000"');
-  if ($isReadonlyExceptSuperAdmin && !$isReadonlyExceptAdmin)
+  if ($isAllowChangeWorker || !$isReadonly2 || !$isReadonlyExceptAdmin || !$isReadonlyExceptSuperAdmin )
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
+  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin && !$isAllowChangeWorker) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
 
-  if ($isReadonlyExceptSuperAdmin && !$isReadonlyExceptAdmin)
+  if (!($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin && !$isAllowChangeWorker))
   {
     $oForm -> addRule('worker', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
