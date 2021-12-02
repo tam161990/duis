@@ -163,7 +163,8 @@ if ( $isAdmin || $isSystemUser)
         // URL
     	$oLink = new urlQuery;
     	$oLink -> addPrm(FORM_ID, 'f.akt.s.9');
-    	$oLink->addPrm('search', $sCriteria);
+        $oLink->addPrm('search', $sCriteria);
+        $oLink->addPrm('isNumber', $isNumber);
 
        	// inicialising of listing object
         $amount= (($isNumber == 0) ? 
