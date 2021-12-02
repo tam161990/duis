@@ -3511,10 +3511,10 @@ class dbProc extends dbLayer
             
             //, SUBSTRING(`KMAT_NOSAUKUMS`, 1, 25) as `KMAT_NOSAUKUMS`
             $query = 'select *, ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',
-            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') ."
+            ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
             from `KL_MATERIALI`
             WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
-            AND ".$searchString.'
+            AND '.$searchString.'
             order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
 			{
@@ -3908,10 +3908,10 @@ class dbProc extends dbLayer
 
     function getMaterialGroup(){
         
-        $query = "SELECT DISTINCT `KMAT_GRUPAS_NOSAUKUNS`, KMAT_GRUPAS_KODS
+        $query = 'SELECT DISTINCT `KMAT_GRUPAS_NOSAUKUNS`, KMAT_GRUPAS_KODS
 			from `KL_MATERIALI`
             WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
-			ORDER BY KMAT_GRUPAS_KODS";
+			ORDER BY KMAT_GRUPAS_KODS';
 
 
         $oSQL = new dbLayer;
@@ -3920,10 +3920,10 @@ class dbProc extends dbLayer
 
     function getMaterialSubGroup($group){
         
-        $query = "select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
+        $query = 'select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
         LPAD(KMAT_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS
         from `KL_MATERIALI` WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
-        " . (empty($group) ? '' : ' AND `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
+        ' . (empty($group) ? '' : ' AND `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         order by `KMAT_APAKSGRUPAS_KODS` asc';
 
         $oSQL = new dbLayer;
@@ -3964,9 +3964,9 @@ class dbProc extends dbLayer
         {
             $searchString .= ' and `KMAT_IR_AKTIVS` =1 ';
         }
-        $query =  "select count(`KMAT_ID`) as `RECORDCOUNT` from `KL_MATERIALI`
+        $query =  'select count(`KMAT_ID`) as `RECORDCOUNT` from `KL_MATERIALI`
         WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
-        AND ".$searchString;
+        AND '.$searchString;
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
