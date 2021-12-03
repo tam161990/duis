@@ -44,6 +44,15 @@ class RequestHandler
 
 	}
 
+	// -----------------------------------------------------------------------------
+	// die with opener window perlace javascript (for popups to return to main window)
+	// -----------------------------------------------------------------------------
+	function makeParentReplaceWithoutClosure( $url )
+	{
+		echo ('<script>window.opener.location.replace( "'.$url.'" );</script>');
+
+	}
+
 	
 	// -----------------------------------------------------------------------------
 	// show error message and die

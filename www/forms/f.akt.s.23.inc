@@ -110,6 +110,7 @@ $catalog  = reqVar::get('catalog');
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if ( $isAdmin || $isProjector)
 {
+
     $oLink=new urlQuery();
     $oLink->addPrm(FORM_ID, 'f.akt.s.23');
     $oFormPop = new Form('frmMainTab','post',$oLink->getQuery());
@@ -117,7 +118,7 @@ if ( $isAdmin || $isProjector)
 
     if($actId !== false  && ($catalog == KL_CALCULALATION  || $catalog == KL_MATERIALS) )
     {
-     
+
       // get info about act
       $actInfo = dbProc::getActInfo($actId);
       //print_r($actInfo);
@@ -293,7 +294,7 @@ if ( $isAdmin || $isProjector)
 
       }
 
-      
+    
       // form elements
       $oFormPop -> addElement('hidden', 'action', '');
       $oFormPop -> addElement('hidden', 'actId', '', $actId);
@@ -394,12 +395,14 @@ if ( $isAdmin || $isProjector)
                                 $checkRequiredFields = true;
                         }
                 }
+                
                 if(!$checkRequiredFields)
                 {
                     $oFormPop->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
                 }
                 else
                 {
+                  
                   $r = dbProc::saveUserPreferences($oFormPop->getValue('actId'), 
                                                   $oFormPop->getValue('userId'), 
                                                   $oFormPop->getValue('calc_group'), 
@@ -407,7 +410,7 @@ if ( $isAdmin || $isProjector)
                                                   $oFormPop->getValue('mat_sub_group'));
 
                    if($r)
-                    {
+                    {                      
                       $oRedirectLink=new urlQuery();
                       $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');
                       $oRedirectLink->addPrm('actId', $oFormPop->getValue('actId'));
@@ -421,10 +424,11 @@ if ( $isAdmin || $isProjector)
                             break;
 
                       }
-
-                      $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
-                      requestHandler::makeParentReplace($oRedirectLink->getQuery().'#tab');
+                      
+                      $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());                      
+                      requestHandler::makeParentReplaceWithoutClosure($oRedirectLink->getQuery().'#tab');                      
                       unset($oRedirectLink);
+                      
                    }
                 }
 			      }
