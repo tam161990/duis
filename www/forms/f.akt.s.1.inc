@@ -69,7 +69,7 @@ if (reqVar::get('xmlHttp') == 1)
     }     
   
   $ouner[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
-	if(reqVar::get('worker'))
+	if(reqVar::get('worker') && dbProc::isActTypePlan(reqVar::get('type')))
     {
         $res = dbProc::getUserWorkerList(reqVar::get('worker'));
         if (is_array($res))
@@ -686,7 +686,7 @@ unset($res);
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
 
-  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin && !$isAllowChangeWorker) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
+  $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:(($isReadonlyExceptAdmin)?userAuthorization::getWorker(): ''),'readonly'=>false), (($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin && !$isAllowChangeWorker) ? ' disabled' : ' ') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+document.all[\'type\'].options[document.all[\'type\'].selectedIndex].value+\'&worker=\'+this.value))"');
 
   if (!($isReadonlyExceptAdmin && $isReadonlyExceptSuperAdmin && !$isAllowChangeWorker))
   {
