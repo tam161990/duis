@@ -28,11 +28,20 @@
 	</tr>
     <tr onmouseover="makeActiveRow2(this,'x');"
 		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $materialTotalReportLinkP; ?>');reloadFrame(23,'');">
-		<td><?= text::get('REPORT_MATERIAL_TOTAL_P'); ?></td>
+		<td><?= text::get('REPORT_MATERIAL_TOTAL_P'); ?> ST</td>
 	</tr>
 	<tr onmouseover="makeActiveRow2(this,'x');"
 		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $materialTotalReportLinkE; ?>');reloadFrame(23,'');">
-		<td><?= text::get('REPORT_MATERIAL_TOTAL_E'); ?></td>
+		<td><?= text::get('REPORT_MATERIAL_TOTAL_E'); ?> ST</td>
+	</tr>
+
+	<tr onmouseover="makeActiveRow2(this,'x');"
+		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $materialTotalReportLinkPDU; ?>');reloadFrame(23,'');">
+		<td><?= text::get('REPORT_MATERIAL_TOTAL_P'); ?> DU</td>
+	</tr>
+	<tr onmouseover="makeActiveRow2(this,'x');"
+		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $materialTotalReportLinkEDU; ?>');reloadFrame(23,'');">
+		<td><?= text::get('REPORT_MATERIAL_TOTAL_E'); ?> DU</td>
 	</tr>
     <!--tr onmouseover="makeActiveRow2(this,'x');"
 		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $actMainReportLink; ?>');reloadFrame(23,'');">

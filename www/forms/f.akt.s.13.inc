@@ -184,6 +184,7 @@ if ( $isAdmin || $isSystemUser)
                   $oFormPop->addErrorPerElem('price', text::get('ERROR_AMOUNT_VALUE'));
                   $isRowValid = false;
                }
+            } else {
 
                if ($oFormPop->getValue('work_type') == '')
                {
@@ -195,7 +196,7 @@ if ( $isAdmin || $isSystemUser)
         }
         if($isRowValid === false)
         {
-           $showResults = true;
+           echo 'invalid';
         }
 
         if($isRowValid)

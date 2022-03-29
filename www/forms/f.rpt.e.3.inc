@@ -3,6 +3,7 @@
     // TRASE act
    $trase =  reqVar::get('isTrase');
    $sign =  reqVar::get('sign');
+   $st =  reqVar::get('st');
    $year = '';
    $month = '';
    $monthN = '';
@@ -67,7 +68,7 @@
    else
        $workerNumber = dbProc::getWorkOwnerNumberByCode($sCr[2]);*/
          // gel list of users
-        $res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign);
+        $res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign, $st);
         /*echo "<pre>";
         print_r($res);
         echo "</pre>";*/
@@ -182,8 +183,8 @@
                   'name' => $row['MATR_NOSAUKUMS'],
                   'miasure' => $row['MATR_MERVIENIBA'],
                   'quantity' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'] + $row['DAUDZUMS'] :$row['DAUDZUMS']),
-                  'cena' => '0.00',
-                  'total' => '0.00',
+                  'cena' =>  (($st == '0' ) ? $row['MATR_CENA'] : '0,00'),
+                  'total' =>  (($st == '0' ) ? $totalMaterialPrice : '0,00'),
                   'subtitle' => $subtitle
                  );
                  $subtitle = '';

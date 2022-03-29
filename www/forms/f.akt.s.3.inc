@@ -265,15 +265,16 @@ if ( $isAdmin || $isSystemUser)
 
       // form elements
       $totalTime = array();
-      $totalPrice = 0;
+      $totalTimeSt = array();      
       $workApproveDate = array();
-
-      $i = 0;
+      $i = 0;      
       foreach ($aMaterials as $d => $aDayMaterial)
       {
+        $totalPrice = 0;
+        $totalPriceSt = 0;
+        $st = 1;
         foreach ($aDayMaterial as $j => $actMaterial)
-        {      
-          
+        {    
             $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
             $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
             $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
@@ -318,7 +319,7 @@ if ( $isAdmin || $isSystemUser)
 
           $oFormMaterialTab->addElement('label', 'total_mat['.$i.']', '', $actMaterial['MATR_CENA_KOPA'], ' disabled maxlength="13"');
 
-          $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
+          
 	        $workApproveDate[$d] =  (($actMaterial['MATR_WORK_APROVE_DATE'] == DEFAULT_DATE) ? "" : $actMaterial['MATR_WORK_APROVE_DATE']);
 
           if( !$isReadonly && (empty($actMaterial['MATR_APPROVE_DATE'])  || $tameMaterial) ) {
@@ -339,6 +340,14 @@ if ( $isAdmin || $isSystemUser)
                   unset($delLink);
           }
           $i++;
+          if($actMaterial['MATR_IS_WORKER'] == 1)
+          {
+            $totalPriceSt += $actMaterial['MATR_CENA_KOPA'];          
+            $totalTimeSt[$d] = number_format($totalPriceSt, 2, '.', '');
+          }  else {
+            $totalPrice += $actMaterial['MATR_CENA_KOPA'];          
+             $st = 0;
+          }  
         }
         
         $totalTime[$d] = number_format($totalPrice, 2, '.', '');
@@ -429,7 +438,7 @@ if ( $isAdmin || $isSystemUser)
                             $Id=dbLayer::getInsertId();
                             $oFormMaterialTab -> setNewValue('id['.$row['rowNum'].']', $Id);
                             $oFormMaterialTab -> setNewValue('total_mat['.$row['rowNum'].']', $row['total_mat']);
-                            $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));
+                            $oFormMaterialTab->addSuccess(text::get('RECORD_WAS_SAVED'));                            
 
                           }
                       }
