@@ -44,21 +44,42 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
     	$workTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);
 
-        // Akts par izlietotiem materi�liem
+        // Akts par izlietotiem materi�liem ST
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
 		$oLink->addPrm('isTrase', '0');
 		$oLink->addPrm('sign', 'P');
+		$oLink->addPrm('st', '1');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
     	$materialTotalReportLinkP=$oLink ->getQuery();
     	unset($oLink);
-		// Akts par izlietotiem materi�liem
+		// Akts par izlietotiem materi�liem ST
     	$oLink=new urlQuery();
     	$oLink->addPrm('isSearch', '1');
 		$oLink->addPrm('isTrase', '0');
 		$oLink->addPrm('sign', 'E');
+		$oLink->addPrm('st', '1');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
     	$materialTotalReportLinkE=$oLink ->getQuery();
+		unset($oLink);
+		
+		// Akts par izlietotiem materi�liem DU
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'P');
+		$oLink->addPrm('st', '0');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+    	$materialTotalReportLinkPDU=$oLink ->getQuery();
+    	unset($oLink);
+		// Akts par izlietotiem materi�liem DU
+    	$oLink=new urlQuery();
+    	$oLink->addPrm('isSearch', '1');
+		$oLink->addPrm('isTrase', '0');
+		$oLink->addPrm('sign', 'E');
+		$oLink->addPrm('st', '0');
+    	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
+    	$materialTotalReportLinkEDU=$oLink ->getQuery();
     	unset($oLink);
 
         // act summary
@@ -128,6 +149,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
     	$oLink->addPrm('isSearch', '1');
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'P');
+		$oLink->addPrm('st', '');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
     	$materialTrTotalReportLinkP=$oLink ->getQuery();
     	unset($oLink);
@@ -136,6 +158,7 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
     	$oLink->addPrm('isSearch', '1');
 		$oLink->addPrm('isTrase', '1');
 		$oLink->addPrm('sign', 'E');
+		$oLink->addPrm('st', '');
     	$oLink->addPrm(FORM_ID, 'f.rpt.s.3');
     	$materialTrTotalReportLinkE=$oLink ->getQuery();
     	unset($oLink);

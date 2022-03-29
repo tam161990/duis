@@ -912,6 +912,7 @@ class toPdf {
 			$data = array();
 			$total = 0;
 			$i = 0;
+			$j = 0;
 			foreach ($aDayMaterial as $j => $material)
 			{      
 				if (isset($material['MATR_CENA_KOPA']))
@@ -922,22 +923,42 @@ class toPdf {
 				{
 					$mat_cena_kopa = $material['MATR_CENA'] *  $material['MATR_DAUDZUMS'];
 				}
-				$data[$i] = array(
-					'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
-					'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
-					'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 60),
-					'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
-					'MATR_CENA' => (($material['MATR_IS_WORKER'] == '1')?  $material['MATR_CENA'] : ''),
-					'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
-					'MATR_CENA_KOPA' => (($material['MATR_IS_WORKER'] == '1')? $mat_cena_kopa : '' )
-					);
-				$i++;
 				if($material['MATR_IS_WORKER'] == '1') {
+					$dataW[$j] = array(
+						'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
+						'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
+						'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 60),
+						'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+						'MATR_CENA' => $material['MATR_CENA'],
+						'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
+						'MATR_CENA_KOPA' => $mat_cena_kopa
+						);				
+					$j++;
 					$total +=  $mat_cena_kopa;
 					$totalM +=  $mat_cena_kopa;
+				} else {
+					$data[$i] = array(
+						'MATR_KODS' => (($material['MATR_IS_WORKER'] == '1')? '' : $material['MATR_KODS']),
+						'MATR_APPROVE_DATE'  => $material['MATR_APPROVE_DATE'],
+						'MATR_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$material['MATR_NOSAUKUMS']),  3, "\n", 60),
+						'MATR_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$material['MATR_MERVIENIBA']),
+						'MATR_CENA' => '',
+						'MATR_DAUDZUMS' => $material['MATR_DAUDZUMS'],
+						'MATR_CENA_KOPA' =>''
+						);	
+						$i++;			
 				}
+				
 			}
-			$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);			
+			if(count($dataW) > 0) {
+				$pdf->FancyTableTrase($headers,$dataW, $width, $align, $alignHeader);
+			}
+			if(count($dataW) > 0 && count($data) > 0) {
+				$pdf->Cell(20,6,'', 0,1,'R');
+			}
+			if(count($data) > 0) {
+				$pdf->FancyTableTrase($headers,$data, $width, $align, $alignHeader);	
+			}		
 			$pdf->SetFont('Arial','',8);
 			$pdf->Cell(160,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL')).":",0,0,'R');
 			$pdf->SetFont('Arial','B',8);

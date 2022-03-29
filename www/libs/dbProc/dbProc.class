@@ -5389,7 +5389,7 @@ class dbProc extends dbLayer
 	// Ja doti, njem veeraa nobiidi un daudzumu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getActTotalMaterialList($searchString, $trase = 0, $sign = 'P')
+	function getActTotalMaterialList($searchString, $trase = 0, $sign = 'P', $st = '')
 {
             $sCriteria = explode("^", $searchString);
 
@@ -5398,7 +5398,7 @@ class dbProc extends dbLayer
              $searcCriteria['worker'] = $sCriteria[2];
              $searcCriteria['edRegion'] = $sCriteria[3];
              $searcCriteria['section'] = $sCriteria[4];
-           $searcCriteria['contract'] = $sCriteria[5];
+             $searcCriteria['contract'] = $sCriteria[5];
 
             $query = "select *,
              m.MATR_DAUDZUMS `DAUDZUMS`, 
@@ -5417,7 +5417,7 @@ class dbProc extends dbLayer
             LEFT JOIN (SELECT AAUD_STATUS, AAUD_DATUMS, AAUD_RAKT_ID FROM `AKTA_STATUSA_MAINA`
 					WHERE AAUD_ID IN (SELECT MAX(AAUD_ID) AAUD_ID FROM `AKTA_STATUSA_MAINA` GROUP BY AAUD_RAKT_ID) ) s 
 				ON (a.RAKT_ID = s.AAUD_RAKT_ID)     
-            where 1 AND `RAKT_PROJECT` = '0' AND `MATR_IS_WORKER` = 0 ";
+            where 1 AND `RAKT_PROJECT` = '0'";
 
            // $query .= " and a.RAKT_GADS = '".$searcCriteria['year']."' ";
 
@@ -5444,6 +5444,15 @@ class dbProc extends dbLayer
             } else {
                 $query .= " and a.RAKT_SIGNATURE  IN ('P') ";
             }
+
+            if($st == 1) {
+                $query .= " and m.MATR_IS_WORKER ='0' ";
+            } elseif($st == 0 ) {
+                $query .= " and m.MATR_IS_WORKER ='1' ";
+            }elseif($trase == 1) {
+                $query .= " and m.MATR_IS_WORKER ='0' ";
+            }
+
             //$query .= " GROUP BY ww.KWRC_TITLE, m.MATR_NOSAUKUMS, m.MATR_IS_WORKER ";
             $query .= " ORDER BY ww.KWRC_TITLE, m.MATR_IS_WORKER DESC, m.MATR_KODS";
 
@@ -7497,8 +7506,7 @@ class dbProc extends dbLayer
                             `MATR_CENA`, `MATR_DAUDZUMS`, `MATR_DAUDZUMS_KOR`, `MATR_CENA_KOPA`, 
                             `MATR_IS_WORKER`, `MATR_PIEZIMES`,  `MATR_APPROVE_DATE`,
                             `MATR_WORK_APROVE_DATE`, `MATR_WORK_TYPE_ID`,
-                             `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT`,
-                             `MATR_IMPORT_NO`, `MATR_CROSSECTION`, `MATR_COMPLECTATION` )                           
+                             `MATR_WORK_TYPE_TEXT`, `MATR_PROJECT_EXPORT` )                           
                             values ( '.dbLayer::quote_smart($actId).',
                             "'.dbLayer::quote_smart($code).'",
                             "'.dbLayer::quote_smart($title).'",
@@ -7513,10 +7521,7 @@ class dbProc extends dbLayer
                             '.(($work_approve_date === false ) ? '"NULL"' : ( ($work_approve_date == DEFAULT_DATE ) ? '"NULL"' : '"'.dbLayer::parseDate($work_approve_date).'"')).',
                             '.(($work_type !== false) ? dbLayer::quote_smart($r_work_type[0]) : '"NULL"').',
                             '.(($work_type !== false) ? '"'.(isset($r_work_type[1]) ? dbLayer::quote_smart($r_work_type[1]) .'"': '') : '"NULL"').',
-                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
-                            '.(($import_no !== false) ? '"'.dbLayer::quote_smart($import_no).'"' : '"NULL"').',
-                            '.(($crossection !== false) ? '"'.dbLayer::quote_smart($crossection).'"' : '"NULL"').',
-                            '.(($complectation !== false) ? '"'.dbLayer::quote_smart($complectation).'"' : '"NULL"').'
+                            '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').'                           
                             )';
         } else {
             $query = 'insert into `MATERIALI`

@@ -4,8 +4,9 @@ $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isSystemUser = dbProc::isExistsUserRole($userId);
 // TRASE act
-   $trase =  reqVar::get('isTrase');
-   $sign =  reqVar::get('sign');
+$trase =  reqVar::get('isTrase');
+$sign =  reqVar::get('sign');
+$st =  reqVar::get('st');
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
 if(true/*$isEdUser || $isAdmin*/)
 {
@@ -18,6 +19,7 @@ if(true/*$isEdUser || $isAdmin*/)
     	  $oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
         $oLink->addPrm('sign', $sign );
+        $oLink->addPrm('st', $st );
     	  // form inicialization
     	  $oForm = new Form('frmMain','post',$oLink->getQuery());
     	  unset($oLink);
@@ -27,6 +29,7 @@ if(true/*$isEdUser || $isAdmin*/)
         $oLink->addPrm('isSearch', 1 );
         $oLink->addPrm('isTrase', $trase );
         $oLink->addPrm('sign', $sign );
+        $oLink->addPrm('st', $st );
 	      $oLink->addPrm(FORM_ID, 'f.rpt.s.3');
 	      $criteriaLink=$oLink ->getQuery();
 	      unset($oLink);
@@ -38,8 +41,10 @@ if(true/*$isEdUser || $isAdmin*/)
             $oListLink->addPrm(FORM_ID, 'f.rpt.s.3');
             $oListLink->addPrm('isTrase', $trase );
             $oListLink->addPrm('sign', $sign );
+            $oListLink->addPrm('st', $st );
         }
-        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_MATERIAL_TOTAL_'.$sign).(($trase == 1) ? ' ('.text::get('TRASE').')' : '' )));
+        $searchTitle = text::toUpper(text::toUpper(text::get('REPORT_MATERIAL_TOTAL_'.$sign).
+          (($trase == 1) ? ' ('.text::get('TRASE').')' : (($st == '1') ? ' st' : ' du') )));
         $searchName = 'REPORT_MATERIAL_TOTAL';
         include('f.akt.m.4.inc');
 	}
@@ -72,12 +77,13 @@ if(true/*$isEdUser || $isAdmin*/)
     	  $oLink->addPrm('search', $sCriteria);
         $oLink->addPrm('isTrase', $trase );
         $oLink->addPrm('sign', $sign );
+        $oLink->addPrm('st', $st );
         $oLink->addPrm(DONT_USE_GLB_TPL, '1');
         $exportUrl =  $oLink ->getQuery();
         unset($oLink);
 
         // gel list of users
-		$res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign);
+		$res = dbProc::getActTotalMaterialList($sCriteria, $trase, $sign, $st);
        /* echo "<pre>";
         print_r($res);
         echo "</pre>";*/
@@ -190,8 +196,8 @@ if(true/*$isEdUser || $isAdmin*/)
                   'name' => $row['MATR_NOSAUKUMS'],
                   'miasure' => $row['MATR_MERVIENIBA'],
                   'quantity' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'])?$area[$row['WRITE_OFF_ACCOUNT']]['material'][$code]['quantity'] + $row['DAUDZUMS'] :$row['DAUDZUMS']),
-                  'cena' =>  '0.00' ,
-                  'total' =>  '0.00',
+                  'cena' =>  (($st == '0' ) ? $row['MATR_CENA'] : '0,00'),
+                  'total' =>  (($st == '0' ) ? $totalMaterialPrice : '0,00'),
                   'subtitle' => $subtitle
                  );
                  $subtitle = '';
