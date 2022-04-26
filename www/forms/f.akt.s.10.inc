@@ -39,9 +39,13 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 				$fileInfo[$i]['ico'] = 'ico_excel.gif'; 
 			}
 
-
 			if($row['RFLS_META_INFO'] == XML_FILE_MIMETYPE) {
 				$oLinkFile->addPrm(IS_GET_XML_FILE_VARIABLE, 1);	
+				$fileInfo[$i]['ico'] = 'ico_xml.png'; 			
+			}
+
+			if($row['RFLS_META_INFO'] == JSON_FILE_MIMETYPE) {
+				$oLinkFile->addPrm(IS_GET_JSON_FILE_VARIABLE, 1);	
 				$fileInfo[$i]['ico'] = 'ico_xml.png'; 			
 			}
 

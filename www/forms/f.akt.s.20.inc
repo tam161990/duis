@@ -777,7 +777,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
     if (($oForm->getValue('action')==OP_ORDER_MATERIAL && is_numeric($oForm->getValue('actId'))) )
     {    
 
-      $fileId = toXml::projectOrderMaterial($actId, $userId);
+      $fileId = toJson::projectOrderMaterial($actId, $userId);
       $r = false;
       if( $fileId === false){
          $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
