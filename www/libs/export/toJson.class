@@ -47,7 +47,8 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
-                    $manerialLine[] = array(                    
+                    $manerialLines[] = array(
+						'RequisitionLine' => array(                    
                             'ItemNo' => $mate['NOMENKLATURA'], 
                             'Quantity' =>  $mate['MATR_DAUDZUMS'], 
                             'NeedByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
@@ -58,7 +59,8 @@ class toJson {
                             'ExpidentureDate' =>  date('Y-m-t'),                          
                             'Warehouse' =>  'ST_RPRN' 
                         
-                    )  ;  
+						)  
+					);  
 
                      dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }            
@@ -67,7 +69,7 @@ class toJson {
                         'OrderNum' => $act['RAKT_NUM_POSTFIX'], 
                         'OrderDescription' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
                         'UserName' => strtoupper($userName), 
-                        'RequisitionLines' => array('RequisitionLine' => $manerialLine),
+                        'RequisitionLines' => $manerialLines,
                         'AdditionalAttributes' => array(
                             'AdditionalAttribute' => array(
                                 'field_name' => 'Buvnieks', 
