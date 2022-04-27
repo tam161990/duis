@@ -164,10 +164,11 @@ class files
 	// -----------------------------------------------------------------------------
 	function sendFile($idFile, $isExit=true, $type = 'PDF')
 	{
+				
 		$info=files::getFileInfo($idFile, $type);
 		if ($info)
 		{
-		    if($type == "PDF")
+			if($type == "PDF")
             {
                  $c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
             }
@@ -185,7 +186,7 @@ class files
 			}
 			else if($type == "JSON")
             {				
-				 $c=@file_get_contents(JSON_FILES_STORE_PATH.'/'.$idFile.'.txt');
+				 $c=@file_get_contents(JSON_FILES_STORE_PATH.'/'.$idFile);
             }
 			
 			if ($c)

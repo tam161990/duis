@@ -46,7 +46,7 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 
 			if($row['RFLS_META_INFO'] == JSON_FILE_MIMETYPE) {
 				$oLinkFile->addPrm(IS_GET_JSON_FILE_VARIABLE, 1);	
-				$fileInfo[$i]['ico'] = 'ico_xml.png'; 			
+				$fileInfo[$i]['ico'] = 'ico_json.png'; 			
 			}
 
 			$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['RFLS_ID']);

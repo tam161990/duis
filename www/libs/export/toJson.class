@@ -41,11 +41,11 @@ class toJson {
                     $matr_status = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
                     if($mate['MATR_PROJECT_EXPORT'] == dbProc::getKrfkInfoByName(DU_DELIVERY_TYPE)['KRFK_NOZIME']) {
                         $matr_status = null;
-                    //    continue;
+                        continue;
                     }
                     if($matr_status == 3) {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
-                    //    continue;
+                        continue;
                     }
                     $manerialLine[] = array(                    
                             'ItemNo' => $mate['NOMENKLATURA'], 
@@ -60,10 +60,10 @@ class toJson {
                         
                     )  ;  
 
-                // dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
+                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }            
-                $array['CreateRequisition'] = array(
-                    "0" => array(
+                $array = array(
+                    "CreateRequisition" => array(
                         'OrderNum' => $act['RAKT_NUM_POSTFIX'], 
                         'OrderDescription' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
                         'UserName' => strtoupper($userName), 
@@ -77,19 +77,16 @@ class toJson {
                     )
                 );
             }
-            echo '<pre>';
+            /*echo '<pre>';
             print_r($array);
-            echo '</pre>';
+            echo '</pre>';*/
 
             $json = json_encode($array);
             //var_dump($json); 
-
-            //$fp = f_open()
-
             if(file_put_contents(JSON_FILES_STORE_PATH."/".$idFile, $json))
             {
                 return $idFile;
-            }
+            }            
         }
 
         return false;
