@@ -47,10 +47,19 @@
    <tr>
 	<td class="table_cell_c"><?= $oForm -> getElementLabel('isActive'); ?>:</td>
 	<td class="table_cell_2"><?= $oForm -> getElementHtml('isActive'); ?></td>	
-	<td class="table_cell_c"><?= $oForm -> getElementLabel('created'); ?>:</td>
-	<td class="table_cell_2"><?= $oForm -> getElementHtml('created'); ?></td>
-	<td class="table_cell_c"><?= $oForm -> getElementLabel('creator'); ?>:</td>
-	<td class="table_cell_2"><?= $oForm -> getElementHtml('creator'); ?></td>
+   <td class="table_cell_c"><?= $oForm -> getElementLabel('round_amount'); ?>:</td>
+   <td class="table_cell_2"><?= $oForm -> getElementHtml('round_amount'); ?></td>
+   <td class="table_cell_c"><?= $oForm -> getElementLabel('dvd'); ?>:</td>
+   <td class="table_cell_2"><?= $oForm -> getElementHtml('dvd'); ?></td>
+</tr>
+<tr>
+	<td class="table_cell_c">&nbsp;</td>
+	<td class="table_cell_2">&nbsp;</td>
+	
+   <td class="table_cell_c"><?= $oForm -> getElementLabel('created'); ?>:</td>
+   <td class="table_cell_2"><?= $oForm -> getElementHtml('created'); ?></td>
+   <td class="table_cell_c"><?= $oForm -> getElementLabel('creator'); ?>:</td>
+   <td class="table_cell_2"><?= $oForm -> getElementHtml('creator'); ?></td>
 </tr>
 
 <tr>

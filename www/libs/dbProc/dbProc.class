@@ -8604,7 +8604,7 @@ class dbProc extends dbLayer
 
             return ($result !== false);
         }
-
+        
     // -----------------------------------------------------------------------------
 	// Dzēst ierakstu
 	// Author: Tatjana Fedorkova
