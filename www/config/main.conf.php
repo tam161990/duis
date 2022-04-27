@@ -68,6 +68,8 @@ define ('EXCEL_FILES_STORE_PATH', ZR_SERVER_PATH.'/files/excel');
 define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
 //  xml file stored dir
 define ('XML_FILES_STORE_PATH', ZR_SERVER_PATH.'/xml');
+//  json file stored dir
+define ('JSON_FILES_STORE_PATH', ZR_SERVER_PATH.'/json');
 
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
@@ -135,6 +137,9 @@ define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
 // getting xml file - flag
 define ('IS_GET_XML_FILE_VARIABLE','get_xml_file');
 
+// getting xml file - flag
+define ('IS_GET_JSON_FILE_VARIABLE','get_json_file');
+
 // get file variable name
 define ('GET_FILE_VARIABLE','idFile');
 
@@ -159,8 +164,14 @@ define('PROJECT_FILE_TYPE', 'application/vnd.openxmlformats-officedocument.sprea
 // xml file type
 define('XML_FILE_MIMETYPE', 'text/xml');
 
+// json file type
+define('JSON_FILE_MIMETYPE', 'text/json');
+
 // xml file extentions
 define('XML_FILE_EXTENTION', 'xml');
+
+// json file extentions
+define('JSON_FILE_EXTENTION', 'json');
 
 // form id 
 define ('FORM_ID', 'formId');

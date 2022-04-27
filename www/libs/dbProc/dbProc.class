@@ -7815,7 +7815,7 @@ class dbProc extends dbLayer
 	function getFileInfo($id, $type = 'PDF' )
 	{
 		$oSQL=new dbLayer();
-        if($type == "PDF" || $type == "XML")
+        if($type == "PDF" || $type == "XML" || $type == "JSON")
         {
               $res=$oSQL->makeQuery('select RFLS_NOSAUKUMS AS NOSAUKUMS, RFLS_META_INFO AS META_INFO
                from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');

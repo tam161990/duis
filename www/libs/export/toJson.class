@@ -1,0 +1,95 @@
+<?
+class toJson {	
+
+    function projectOrderMaterial($actId, $userId){
+        
+        $actInfo = dbProc::getActInfo($actId);
+        if(count($actInfo)>0)
+        {
+
+            $act = $actInfo[0];
+            $regionName = dbProc::GetRefionName($act['RAKT_KEDI_ID']);
+            $departmentName = dbProc::GetDepartmentName($act['RAKT_KEDI_ID']);
+            $person = dbProc::GetChifName($act['RAKT_KEDI_ID'], 'ENGINEER');
+            $project_codes = explode('.', $act['RAKT_PROJECT_NO']);
+
+            // get user info
+            $userInfo = dbProc::getUserInfo($userId);
+
+            if(count($userInfo) >0 )
+            {
+                $userName = $userInfo[0]['RLTT_USER_NAME'];
+            }
+
+            $filename = 'Pieprasijums_'.$act['RAKT_NUM_POSTFIX'].'_'.dtime::now().'.'.JSON_FILE_EXTENTION;
+            $res=dbProc::replaceFile( $filename, $userId, $actId, FILE_EXPORT, JSON_FILE_MIMETYPE);              
+            
+            if ($res)
+            {
+                $idFile=dbLayer::getInsertId();           
+
+                $manerialLine = array();
+                $aMaterialDb=dbProc::getActMaterialNomenklaturasList($actId, false);
+                /*
+                echo '<pre>';
+                print_r($aMaterialDb);
+                echo '</pre>';
+                */
+                foreach ($aMaterialDb as $mate) {
+
+
+                    $matr_status = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
+                    if($mate['MATR_PROJECT_EXPORT'] == dbProc::getKrfkInfoByName(DU_DELIVERY_TYPE)['KRFK_NOZIME']) {
+                        $matr_status = null;
+                        continue;
+                    }
+                    if($matr_status == 3) {
+                        dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
+                        continue;
+                    }
+                    $manerialLine[] = array(                    
+                            'ItemNo' => $mate['NOMENKLATURA'], 
+                            'Quantity' =>  $mate['MATR_DAUDZUMS'], 
+                            'NeedByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
+                            'Location' =>  'RIGA.STI.8', 
+                            'ProjectNum' =>  $project_codes[0], 
+                            'TaskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : 1),  
+                            'ExpidentureType' =>  text::get('MATERIALS'),  
+                            'ExpidentureDate' =>  date('Y-m-t'),                          
+                            'Warehouse' =>  'ST_RPRN' 
+                        
+                    )  ;  
+
+                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
+                }            
+                $array = array(
+                    "CreateRequisition" => array(
+                        'OrderNum' => $act['RAKT_NUM_POSTFIX'], 
+                        'OrderDescription' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
+                        'UserName' => strtoupper($userName), 
+                        'RequisitionLines' => array('RequisitionLine' => $manerialLine),
+                        'AdditionalAttributes' => array(
+                            'AdditionalAttribute' => array(
+                                'field_name' => 'Buvnieks', 
+                                'field_value' => $act['CONSTRACT_COMPANY']
+                            )
+                        )
+                    )
+                );
+            }
+            /*echo '<pre>';
+            print_r($array);
+            echo '</pre>';*/
+
+            $json = json_encode($array);
+            //var_dump($json); 
+            if(file_put_contents(JSON_FILES_STORE_PATH."/".$idFile, $json))
+            {
+                return $idFile;
+            }            
+        }
+
+        return false;
+    }
+}
+?>

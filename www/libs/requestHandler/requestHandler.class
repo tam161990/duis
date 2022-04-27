@@ -389,6 +389,14 @@ class RequestHandler
 				files::sendFile(reqVar::get(GET_FILE_VARIABLE), true, 'XML');
 			}
 
+			// -----------------------------------------------------------------------------
+			// Getting project json file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_JSON_FILE_VARIABLE) && is_numeric(reqVar::get(GET_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_FILE_VARIABLE), true, 'JSON');
+			}
+
             // -----------------------------------------------------------------------------
 			// Getting GPS file
 			// -----------------------------------------------------------------------------
