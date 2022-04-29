@@ -175,7 +175,13 @@ if (reqVar::get('xmlHttp') == 1)
            $searcCriteria['status1']  = implode("*",$oForm->getValue('status'));
            $searcCriteria['designation'] = $oForm->getValue('designation');
            $searcCriteria['section'] = $oForm->getValue('section');
+           if($searchName == 'REPORT_MATERIALS_IN_MONTH'){
+            $searcCriteria['object']  = $oForm->getValue('object');
+          } else {
+            $searcCriteria['contract'] = $oForm->getValue('contract');
+          }
            $searcCriteria['object']  = ($searchName == 'REPORT_MATERIALS_IN_MONTH')? $oForm->getValue('object'):'';
+           
            dbProc::replaceSearchResult($searchName, $userId,
                                 $searcCriteria['yearFrom'],
                                 $searcCriteria['yearUntil'],
@@ -193,7 +199,8 @@ if (reqVar::get('xmlHttp') == 1)
                                 $searcCriteria['object'],
                                 '','','','','','','',
                                 $searcCriteria['designation'],
-                                $searcCriteria['section']
+                                $searcCriteria['section'],
+                                $searcCriteria['contract']
                                 );
 
            $cr = '';
@@ -243,7 +250,14 @@ if (reqVar::get('xmlHttp') == 1)
            $searcCriteria['status']  = isset($critery['status1'])? explode("*",$critery['status1']) : array(STAT_CLOSE);
            $searcCriteria['designation']  = isset($critery['designation'])? $critery['designation'] : '';
            $searcCriteria['section']  = isset($critery['section'])? $critery['section'] : '-1';
-           $searcCriteria['object'] = isset($critery['object'])? $critery['object'] :'-1';
+           
+           if($searchName == 'REPORT_MATERIALS_IN_MONTH'){
+             $searcCriteria['object'] = isset($critery['object'])? $critery['object'] :'-1';
+           } else {
+             $searcCriteria['contract']  = isset($critery['contract'])? $critery['contract'] : '';
+           }
+           
+           
         }
 
         // get ED section list
@@ -314,6 +328,8 @@ if (reqVar::get('xmlHttp') == 1)
         {
            $oForm -> addElement('text', 'designation',  text::get('MAIN_DESIGNATION'), $searcCriteria['designation'], '', false, false,false,true);
         }
+
+        $oForm -> addElement('text', 'contract',  text::get('KWOI_VV_NUMBER'), $searcCriteria['contract                                               '], '', false, false,false,true);
 
        	// form buttons
        	$oForm -> addElement('submitImg', 'search', text::get('SEARCH'), 'img/btn_meklet.gif', 'width="70" height="20" onClick="setPosition1(\'loading\'); return true;"');

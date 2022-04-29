@@ -62,8 +62,8 @@ javascript:window.history.forward(1);
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('object'); ?></td>
     </tr>
     <tr>
-        <td class="table_cell_c">&nbsp;</td>
-		<td class="table_cell_2">&nbsp;</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
         <td class="table_cell_c">&nbsp;</td>
 		<td class="table_cell_2">&nbsp;</td>
     </tr>

@@ -137,6 +137,7 @@ if ( $isAdmin || $isSystemUser)
                 $searcCriteria['status1']  = isset($critery['status1'])? $critery['status1'] : 'STAT_CLOSE';
                 $searcCriteria['designation']  = isset($critery['designation'])? $critery['designation'] : '';
                 $searcCriteria['section']  = isset($critery['section'])? $critery['section'] : '-1';
+                $searcCriteria['contract']  = isset($critery['contract'])? $critery['contract'] : '';
 
             } else {
 
