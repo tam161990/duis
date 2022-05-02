@@ -45,6 +45,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
       }
+      if (reqVar::get('export_type')!='')
+      {
+        dbProc::updateExportTypeText(reqVar::get('saveId'), reqVar::get('export_type'));
+      }
     }
     exit();
 }
@@ -288,7 +292,16 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               if($export_type_string) {
                 $oFormWorkTab->addElement('label', 'export_type['.$i.']', '', $actWork['DRBI_PROJECT_EXPORT']); 
               } else {
-              $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+                // save export_type
+                $saveJs = "if(this.value != '') { 
+                var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&export_type='+this.value+'&saveId='+rowId.value));
+                this.style.borderColor = '#16bb24cc'; 
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              }";
+                $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 
+                'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);
               }
           } else {
             // save work_type_text
