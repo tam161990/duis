@@ -79,13 +79,10 @@ class toJson {
             /*echo '<pre>';
             print_r($array);
             echo '</pre>';*/
-
-            $json = json_encode($array);
-
-            RequestHandler::MaterialRequest($json);
+            //RequestHandler::sentMaterialRequest($array);
             //var_dump($json); 
-            if(file_put_contents(JSON_FILES_STORE_PATH."/".$idFile, $json))
-            {
+            if(file_put_contents(JSON_FILES_STORE_PATH."/".$idFile, json_encode($array)))
+            {                
                 return $idFile;
             }            
         }
