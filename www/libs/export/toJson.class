@@ -35,6 +35,8 @@ class toJson {
                 print_r($aMaterialDb);
                 echo '</pre>';
                 */
+                $manerialLines = array();
+                $i = 0;
                 foreach ($aMaterialDb as $mate) {
 
 
@@ -47,8 +49,7 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
-                    $manerialLines[] = array(
-						'RequisitionLine' => array(                    
+                    $manerialLines[] = array(						              
                             'ItemNo' => $mate['NOMENKLATURA'], 
                             'Quantity' =>  $mate['MATR_DAUDZUMS'], 
                             'NeedByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
@@ -57,26 +58,22 @@ class toJson {
                             'TaskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : 1),  
                             'ExpidentureType' =>  text::get('MATERIALS'),  
                             'ExpidentureDate' =>  date('Y-m-t'),                          
-                            'Warehouse' =>  'ST_RPRN' 
-                        
-						)  
-					);  
+                            'Warehouse' =>  'ST_RPRN'  
+                    );  
+                    $i++;
 
-                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
+                    dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }            
                 $array = array(
-                    "CreateRequisition" => array(
                         'OrderNum' => $act['RAKT_NUM_POSTFIX'], 
                         'OrderDescription' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
                         'UserName' => strtoupper($userName), 
                         'RequisitionLines' => $manerialLines,
                         'AdditionalAttributes' => array(
-                            'AdditionalAttribute' => array(
                                 'field_name' => 'Buvnieks', 
                                 'field_value' => $act['CONSTRACT_COMPANY']
-                            )
-                        )
-                    )
+                           
+                        )                    
                 );
             }
             /*echo '<pre>';
