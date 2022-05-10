@@ -15,6 +15,7 @@ class toPdf {
 		$masterName = dbProc::GetMasterName($act['RAKT_KEDI_ID'], 'MASTER');      
 		$start_date = date('d.m.Y');
 		$pvn = PCT_21  ;
+		$signatory = dbProc::GetSignatory($act['RAKT_KEDI_ID'], $act['RAKT_VV_NUMBER'], $act['RAKT_KWOI_KODS']) ;
 		
 		// parrakstītais akts
 		$pdf=new FPDF();
@@ -204,7 +205,7 @@ class toPdf {
 			iconv('UTF-8', 'windows-1257',  $departmentName .', ' . text::get('EXP_OUNER_OPERATING_PART') )
 			),
 		array(
-			iconv('UTF-8', 'windows-1257',$act['AUTORS']),
+			iconv('UTF-8', 'windows-1257',(empty($signatory) ? $act['AUTORS'] : $signatory)),
 			iconv('UTF-8', 'windows-1257', $depChifName )
 			),
 
