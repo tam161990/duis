@@ -1380,7 +1380,191 @@ class dbProc extends dbLayer
 		$result = $oDB -> makeQuery($query);
 
 		return isset($result[0]['REGI_COUNT']) ? $result[0]['REGI_COUNT'] : false;
+    }
+    
+// =============================================================================
+// KL_KALKULACIJA_NORMAS
+// =============================================================================
+// -----------------------------------------------------------------------------
+	// Atgriezh regionus. Ja dots ID, atdod to, ja ne - atgriezh visas.
+	// Ja doti, njem veeraa nobiidi un daudzumu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getCalcNormList($ID = false, $offset = false, $limit = false,
+                            $search =  false,
+                            $column = false,
+                            $order =  'ASC',
+                            $orderColumn = false,
+                            $showOnlyActiv = false)
+	{
+		if ($ID)
+		{
+			$query = 'select *
+				from `KL_KALKULACIJAS_NORMAS`
+				where `KKNO_ID` = "'.dbLayer::quote_smart($ID).'"';
+		}
+		else
+		{
+		    if($column === false)
+            {
+                  $column = dbProc::getKlklDefaultColumn(KL_CALC_NORM);
+            }
+            if($orderColumn === false)
+            {
+                  $orderColumn = dbProc::getKlklDefaultColumn(KL_CALC_NORM);
+            }
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+            
+			$query = 'select * from `KL_KALKULACIJAS_NORMAS`
+            where '.$searchString.'
+            order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
+			if (($offset !== false) && $limit)
+			{
+				$query .= ' limit '.
+					($offset ? (int)$offset.', ' : '').
+					(int)$limit;
+			}
+		}
+        
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
 	}
+
+    // -----------------------------------------------------------------------------
+	// Saglabaa ED iecirk�u. Ja dots ID, izmaina esosho ierakstu, ja ne -
+	// izveido jaunu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function saveCalcNorm($ID, $code, $title, $norm)
+	{
+	    $tableName  = 'KL_KALKULACIJAS_NORMAS' ;
+		if ($ID)
+		{
+			$query = 'update `'.$tableName.'`
+				set `KKNO_KKAL_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
+                    `KKNO_NORM` = "'.dbLayer::quote_smart($norm).'",
+                    `KKNO_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+				where `KKNO_ID` = "'.dbLayer::quote_smart($ID).'"';
+
+		}
+		elseif ($title)
+		{
+			$query = 'insert into  `'.$tableName.'`
+                (`KKNO_KKAL_SHIFRS`, `KKNO_KKAL_NOSAUKUMS`, `KKNO_NORM`)
+			values
+                (
+                "'.dbLayer::quote_smart($code).'",
+                "'.dbLayer::quote_smart($title).'",
+                "'.dbLayer::quote_smart($norm).'")';
+		}
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+	}
+
+
+	// -----------------------------------------------------------------------------
+	// Atgriezh kopeejo ED iecirk�u skaitu.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getCalcNormCount($search = false, $column = false, $showOnlyActiv = false)
+	{
+		$oDB = new dbLayer;
+        if($column === false)
+        {
+           $column = dbProc::getKlklDefaultColumn(KL_CALC_NORM);
+        }
+        $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+        if($search === false || $search == '')
+        {
+            $searchString = '1 ';
+        }
+        
+        $query =  'select count(`KKNO_ID`) as `COUNT` from `KL_KALKULACIJAS_NORMAS`
+        where '.$searchString;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['COUNT']) ? $result[0]['COUNT'] : false;
+    }
+    
+    function CalcNornCodeExists($code, $Id = false)
+	{
+		$query = 'select `KKNO_ID` from `KL_KALKULACIJAS_NORMAS`
+            where `KKNO_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"';
+		if ($Id)
+		{
+			$query .= ' and `KKNO_ID` != "'.dbLayer::quote_smart($Id).'"';
+		}
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['KKNO_ID']);
+    }
+    
+    function saveCalcNormFromExcel($data){
+        
+        $oSQL=new dbLayer();
+        
+        $query = 'INSERT INTO `KL_KALKULACIJAS_NORMAS_TEMP` 
+                    (
+                        `KKNO_KKAL_SHIFRS`,
+                        `KKNO_KKAL_NOSAUKUMS`,
+                        `KKNO_NORM`
+                    )
+                    VALUES
+                    (
+                            "'.dbLayer::quote_smart($data[0]).'",
+                            "'.dbLayer::quote_smart($data[1]).'",
+                            "'.dbLayer::quote_smart($data[2]).'"                            
+                    ) ';
+
+        return $oSQL->makeQuery($query);
+    }
+
+    
+    // -----------------------------------------------------------------------------
+	// izveidot tmp kalkul�cijas sql tabulu
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function createCalcNormTempTable()
+	{
+		$oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `KL_KALKULACIJAS_NORMAS_TEMP`';
+        $oSQL->makeQuery($sql);
+
+        $sql =   'CREATE TABLE `KL_KALKULACIJAS_NORMAS_TEMP` (
+            KKNO_ID INT(11) NOT NULL AUTO_INCREMENT,	
+            KKNO_KKAL_SHIFRS CHAR(5) NOT NULL,
+            KKNO_KKAL_NOSAUKUMS VARCHAR(150) NOT NULL,
+            KKNO_NORM FLOAT(7,2),
+            PRIMARY KEY (`KKNO_ID`),
+	        UNIQUE INDEX `U_KKNO_KKAL_SHIFRS` (KKNO_KKAL_SHIFRS)
+        )
+        COLLATE=utf8_latvian_ci
+        AUTO_INCREMENT=1
+        ;';
+
+		return $oSQL->makeQuery($sql);
+	}
+
+    // -----------------------------------------------------------------------------
+	// parsaukt kalkul�cijas temp sql tabulu uz  KL_KALKULACIJA
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function renameCalcNormTable()
+	{
+        $oSQL=new dbLayer();
+        $sql =   'DROP TABLE IF EXISTS `KL_KALKULACIJAS_NORMAS`';
+        $oSQL->makeQuery($sql);
+		return $oSQL->makeQuery('ALTER TABLE `KL_KALKULACIJAS_NORMAS_TEMP` RENAME `KL_KALKULACIJAS_NORMAS`');
+    }
 
 // =============================================================================
 // KL_ED_IECIRKNI
@@ -1482,9 +1666,6 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
     function getEDElementSectionList($activ = true)
     {
-
-
-
             /*$query = 'select * from `KL_ED_IECIRKNI`   e
             INNER JOIN KL_KALKULACIJA k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
             where k.KKAL_IR_AKTIVS = 1  and  e.KEDI_IR_AKTIVS = 1

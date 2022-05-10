@@ -91,6 +91,7 @@ if($isAdmin || $isEdUser || $isAuditor )
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$mmsCalculationListLink;?>" onclick="reloadFrame(2,'<?=$editMmsCalculationLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('MMS_CALCULATION');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$calculationMaterialListLink;?>" onclick="reloadFrame(2,'<?=$editCalculationMaterialLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('CALCULATION_MATERIAL');?></a></td>
 		   <td class="menu_cell" ><a  target="frame_1" href="<?=$workTypeListLink;?>" onclick="reloadFrame(2,'<?=$editWorkTypeLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('WORK_TYPES');?></a></td>
+		   <td class="menu_cell" ><a  target="frame_1" href="<?=$CalcNormsListLink;?>" onclick="reloadFrame(2,'<?=$editCalcNormsLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('CALC_WORK_H_NORMS');?></a></td>
            <?
 if(!$isAuditor)
 {

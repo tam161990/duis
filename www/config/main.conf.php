@@ -210,6 +210,7 @@ define ('KL_MMS_WORK_CALCULALATION','KL_MMS_KALKULACIJA');
 define ('KL_CALCULALATION_MATERIAL','KL_KALKULACIJA_MATERIALI');
 define ('KL_SYSTEM_PROCESS','KL_SISTEMAS_PROCESI');
 define ('KL_WORK_TYPS','KL_DARBA_VEIDI');
+define ('KL_CALC_NORM','KL_KALKULACIJAS_NORMAS');
 
 # =============================================================================
 # sistemas procesi kodes

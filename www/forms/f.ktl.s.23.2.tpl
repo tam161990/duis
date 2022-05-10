@@ -1,7 +1,7 @@
 ﻿
 <body class="frame_2">
 <?=$oForm->getElementHtml('jsRefresh2');?>
-<h1><?=text::toUpper(text::toUpper(text::get('region')));?></h1>
+<h1><?=text::toUpper(text::toUpper(text::get('CALC_WORK_H_NORMS')));?></h1>
 <?= $oForm -> getFormHeader(); ?>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 	<tr>
@@ -15,7 +15,7 @@
 		<td class="table_cell_2" width="10%"><?= $oForm -> getElementHtml('kods'); ?></td>
         <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('nosaukums'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2" ><?= $oForm -> getElementHtml('nosaukums'); ?></td>
-        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('norm'); ?>:<font color="red">*</font></td>
+        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('norm'); ?>:</td>
 		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('norm'); ?></td>
 	</tr>
 

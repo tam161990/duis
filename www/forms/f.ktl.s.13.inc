@@ -362,6 +362,37 @@ if (userAuthorization::isAdmin() || $isEdUser )
                               }                            
                           }
                           break;
+                        case 'CALC_NORMAS':
+                          $j = 0;
+                          $r = dbProc::createCalcNormTempTable();
+                          if($r !== false) {
+                            foreach ($objWorksheet->getRowIterator() as $row)
+                            {
+                                $cellIterator = $row->getCellIterator();
+                                $cellIterator->setIterateOnlyExistingCells(true);
+  
+                                $i = 0;    
+                                foreach ($cellIterator as $cell)
+                                {
+                                  if(!is_null($cell))
+                                  {                                      
+                                      $j++;
+                                      if($j == 1)
+                                          break 1;
+                                      $data[$i] =  $cell->getValue();
+                                      $i++;                                      
+                                    }
+                                }
+                                // save kalkulācijas record
+                                if($j > 1)
+                                {
+                                  $r2 = dbProc::saveCalcNormFromExcel($data);
+                                  
+                                }
+                              }
+                              $r =  dbProc::renameCalcNormTable();                             
+                            }
+                            break;
                       }
                   }
               } 
@@ -382,7 +413,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
             $oForm -> getValue('catalog') == 'MATERIAL_CATEGORY' ||
             $oForm -> getValue('catalog') == 'MATERIAL_COMPLECTATION' ||
             $oForm -> getValue('catalog') == 'COMPLECTATION' ||
-            $oForm -> getValue('catalog') == 'ACT_DELETE'
+            $oForm -> getValue('catalog') == 'ACT_DELETE' 
           )
           {
             $oLink=new urlQuery();
@@ -426,8 +457,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog sDU lietotāju
                 case 'DUUSERS':      
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
-                  break;                      
-                
+                  break;  
+                case 'CALC_NORMAS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.23');
+                  break;                                          
+               
             }
             $listLink=$oLink ->getQuery();
             unset($oLink);
@@ -463,7 +497,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog sDU lietotāju
                  case 'DUUSERS':      
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.2');
-                  break;                                       
+                  break;       
+                case 'CALC_NORMAS':      
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.23');
+                  break;                                                                 
                 
             }
             $oLink->addPrm('editMode', '1');
