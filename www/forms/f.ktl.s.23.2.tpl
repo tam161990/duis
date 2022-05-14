@@ -15,7 +15,7 @@
 		<td class="table_cell_2" width="10%"><?= $oForm -> getElementHtml('kods'); ?></td>
         <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('nosaukums'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2" ><?= $oForm -> getElementHtml('nosaukums'); ?></td>
-        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('norm'); ?>:</td>
+        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('norm'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('norm'); ?></td>
 	</tr>
 
