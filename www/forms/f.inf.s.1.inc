@@ -339,6 +339,19 @@ if ( $isAdmin || $isSystemUser )
 	$editWorkTypeLink = $oLink->getQuery();
 	unset($oLink);
 
+	// list calc norms
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.23');
+	$CalcNormsListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit calc norms form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.23');
+	$oLink->addPrm('editMode', '1');
+	$editCalcNormsLink = $oLink->getQuery();
+	unset($oLink);
+
     // calalog imports
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');
