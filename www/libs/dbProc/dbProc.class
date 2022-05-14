@@ -6461,7 +6461,7 @@ class dbProc extends dbLayer
 	{
             $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
             $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
-            $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
+            $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : ',`KKNO_NORM`*`DRBI_DAUDZUMS` as WORK_NORM_SUM';
             $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
                     ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                     (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
@@ -6469,6 +6469,7 @@ class dbProc extends dbLayer
                     AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -6482,6 +6483,7 @@ class dbProc extends dbLayer
                 AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -7111,7 +7113,7 @@ class dbProc extends dbLayer
         return isset($result[0]['DRBI_WORK_TYPE']) ? $result[0]['DRBI_WORK_TYPE'] : '';
     }
 
-
+    
     // -----------------------------------------------------------------------------
 	// Saglabaa akta darda ierakstu.
     // V�rtibas tiek nemtas no kalkul�cijas tabula p�c kalkul�cijas �ifra
