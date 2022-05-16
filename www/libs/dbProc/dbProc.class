@@ -1541,9 +1541,9 @@ class dbProc extends dbLayer
                     (
                             "'.dbLayer::quote_smart($data[0]).'",
                             "'.dbLayer::quote_smart($data[1]).'",
-                            "'.dbLayer::quote_smart($data[2]).'"                            
+                            "'.dbLayer::quote_smart(str_replace(',', '.', $data[2])).'"                            
                     ) ';
-
+        
         return $oSQL->makeQuery($query);
     }
 
