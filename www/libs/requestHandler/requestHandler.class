@@ -606,18 +606,19 @@ class RequestHandler
 
 		// Send the request
 		$response = curl_exec($ch);	
-		$response = null;		
 		
 		if (curl_errno($ch)) {
 			files::wh_log('sentMaterialRequest RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
 			return false;
 		} else { 
 			// Decode the response
-			$responseData = json_decode($response, TRUE);
-			files::wh_log('sentMaterialRequest RESPONSE:'.PHP_EOL.
-					'status:'.$responseData['status'] .PHP_EOL.
-					'code:' .$responseData['code'].PHP_EOL.
-					'details:' .$responseData['details'].PHP_EOL  );          	 	
+			$responseData = json_decode($response, false);
+			$responseStatus = $responseData->status;
+			files::wh_log('sentMaterialRequest RESPONSE:'. $response. PHP_EOL.
+					'status:'.$responseStatus->status .PHP_EOL.
+					'code:' .$responseStatus->code .PHP_EOL.
+					'message:' .$responseStatus->message .PHP_EOL.
+					'duisRequestId:' .$responseData->duisRequestId .PHP_EOL );          	 	
 			curl_close($ch);
 			return true;
 		}		
