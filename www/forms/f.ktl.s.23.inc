@@ -42,11 +42,11 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('hidden', 'action', '');
 		$oForm -> addElement('hidden', 'normId', null, isset($calc_norm['KKNO_ID'])? $calc_norm['KKNO_ID']:'');
 
-        $oForm -> addElement('text', 'kods',  text::get('CHIPHER'), isset($calc_norm['KKNO_KKAL_SHIFRS'])?$calc_norm['KKNO_KKAL_SHIFRS']:'', 'tabindex=1 maxlength="3"' .(($normId || $isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'kods',  text::get('CHIPHER'), isset($calc_norm['KKNO_KKAL_SHIFRS'])?$calc_norm['KKNO_KKAL_SHIFRS']:'', 'tabindex=1 maxlength="5"' .(($normId || $isEdUser)?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
         $oForm -> addRule('kods', text::get('ERROR_ALPHANUMERIC_VALUE'), 'numeric');
 
-        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($calc_norm['KKNO_KKAL_NOSAUKUMS'])?$calc_norm['KKNO_KKAL_NOSAUKUMS']:'', 'tabindex=2 maxlength="250"'.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($calc_norm['KKNO_KKAL_NOSAUKUMS'])?$calc_norm['KKNO_KKAL_NOSAUKUMS']:'', 'tabindex=2 maxlength="150"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
 		$oForm -> addElement('text', 'norm',  text::get('CALC_WORK_H_NORM'), isset($calc_norm['KKNO_NORM'])?$calc_norm['KKNO_NORM']:'', 'tabindex=3 maxlength="7"'.(($isEdUser)?' disabled' : ''));
@@ -54,12 +54,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addRule('norm', text::get('ERROR_REQUIRED_FIELD'), 'required');
 		$oForm -> addRule('norm', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
 		// check Standart field
+		/*
 		$oForm->addElement('hidden','minStandart','','0.00');
 		$oForm->addElement('hidden','maxStandart','','1000.00');
 		$v1=&$oForm->createValidation('standartValidation', array('norm'), 'ifonefilled');		
-		$r2=&$oForm->createRule(array('norm', 'maxStandart'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
+		$r2=&$oForm->createRule(array('norm', 'maxStandart'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','>');
 		$oForm->addRule(array( $r2), 'groupRuleStandart', 'group', $v1);
-		
+		*/
         // form buttons
         if(!$isEdUser)
         {
