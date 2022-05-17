@@ -105,6 +105,7 @@ define ('CURRENT_YEAR','current_year');
 define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
 
 // WS service for material request
+// documentation https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition
 define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition');
 
 

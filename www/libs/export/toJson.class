@@ -59,7 +59,7 @@ class toJson {
                             'quantity' =>  $mate['MATR_DAUDZUMS'], 
                             'needByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
                             'location' =>  'RIGA.STI.8', 
-                            'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : $act['RAKT_ID']), 
+                            'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
                             'taskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : "1"),  
                             'expenditureType' =>  text::get('MATERIALS'),  
                             'expenditureDate' =>  date('Y-m-t'),                          
@@ -72,7 +72,7 @@ class toJson {
                 }  
                 $additionalAttributes[] = array(
                     'field_name' => 'Buvnieks', 
-                    'field_value' =>empty($act['CONSTRACT_COMPANY'])? "UNKNOWN" : $act['CONSTRACT_COMPANY']
+                    'field_value' =>empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY']
                 ) ;         
                 $array = array(
                         'orderNum' => strval($idFile), 

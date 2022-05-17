@@ -614,7 +614,7 @@ class RequestHandler
 			// Decode the response
 			$responseData = json_decode($response, false);
 			$responseStatus = $responseData->status;
-			files::wh_log('sentMaterialRequest RESPONSE:'. $response. PHP_EOL.
+			files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
 					'status:'.$responseStatus->status .PHP_EOL.
 					'code:' .$responseStatus->code .PHP_EOL.
 					'message:' .$responseStatus->message .PHP_EOL.
