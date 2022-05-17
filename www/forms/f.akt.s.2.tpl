@@ -194,6 +194,10 @@ document.onmousemove=positiontip
 
              <td align="right" colspan="3"><b><?=text::get('TOTAL');?>:</b></td>
              <td align="center"><b><?= isset($totalTime[$d])?$totalTime[$d]:''; ?></b></td>
+             <? if(!$tame && $isAdmin) { ?>
+             <td></td>
+             <td align="center"><b><?= isset($totalNorm[$d])?number_format($totalNorm[$d], 2, '.', ''):''; ?></b></td>
+             <? } ?>
         </tr>
         <?
 		}

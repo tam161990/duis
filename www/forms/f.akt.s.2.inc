@@ -293,6 +293,7 @@ if ( $isAdmin || $isSystemUser)
       $oFormWorkTab->addElement('hidden','tame','',($tameWork) ? 1 : 0);
       
       $totalTime = array();
+      $totalNorm = array();
       $workApproveDate = array();
 
       $i = 0;
@@ -384,6 +385,7 @@ if ( $isAdmin || $isSystemUser)
           $oFormWorkTab->addElement('label', 'total['.$i.']', '', $actWork['DRBI_CILVEKSTUNDAS'], ' disabled maxlength="10"');
 
           $totalTime[$d] = number_format($actWork['DRBI_DAY_TOTAL'], 2, '.', '');
+          $totalNorm[$d] += $actWork['WORK_NORM_SUM'];
 	        $workApproveDate[$d] =  $actWork['DRBI_WORK_APROVE_DATE'];
         
           // delete button
