@@ -49,37 +49,43 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
+                    /*$additionalAttributes[] = array(
+                        'field_name' => '', 
+                        'field_value' => ''
+                    ) ;*/   
+                    
                     $manerialLines[] = array(						              
-                            'ItemNo' => $mate['NOMENKLATURA'], 
-                            'Quantity' =>  $mate['MATR_DAUDZUMS'], 
-                            'NeedByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
-                            'Location' =>  'RIGA.STI.8', 
-                            'ProjectNum' =>  $project_codes[0], 
-                            'TaskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : 1),  
-                            'ExpidentureType' =>  text::get('MATERIALS'),  
-                            'ExpidentureDate' =>  date('Y-m-t'),                          
-                            'Warehouse' =>  'ST_RPRN'  
+                            'itemNo' => $mate['NOMENKLATURA'], 
+                            'quantity' =>  $mate['MATR_DAUDZUMS'], 
+                            'needByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
+                            'location' =>  'RIGA.STI.8', 
+                            'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
+                            'taskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : "1"),  
+                            'expenditureType' =>  text::get('MATERIALS'),  
+                            'expenditureDate' =>  date('Y-m-t'),                          
+                            'warehouse' =>  'ST_RPRN',
+                            'additionalAttributes' => array() 
                     );  
                     $i++;
 
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
-                }            
+                }  
+                $additionalAttributes[] = array(
+                    'field_name' => 'Buvnieks', 
+                    'field_value' =>empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY']
+                ) ;         
                 $array = array(
-                        'OrderNum' => $act['RAKT_NUM_POSTFIX'], 
-                        'OrderDescription' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
-                        'UserName' => strtoupper($userName), 
-                        'RequisitionLines' => $manerialLines,
-                        'AdditionalAttributes' => array(
-                                'field_name' => 'Buvnieks', 
-                                'field_value' => $act['CONSTRACT_COMPANY']
-                           
-                        )                    
+                        'orderNum' => strval($idFile), 
+                        'orderDescr' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
+                        'userName' => strtoupper($userName), 
+                        'requisitionLines' => $manerialLines,
+                        'additionalAttributes' => $additionalAttributes
                 );
             }
             /*echo '<pre>';
             print_r($array);
             echo '</pre>';*/
-            //RequestHandler::sentMaterialRequest($array);
+            RequestHandler::sentMaterialRequest($array);
             //var_dump($json); 
             if(file_put_contents(JSON_FILES_STORE_PATH."/".$idFile, json_encode($array)))
             {                
