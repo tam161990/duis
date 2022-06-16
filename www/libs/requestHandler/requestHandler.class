@@ -591,6 +591,53 @@ class RequestHandler
 					'details:' .$responseData['details'].PHP_EOL  );          	 	
 			curl_close($ch);
 		}		
+	}
+
+	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+	function getLimitkarteReport ($reportName, $code, $pageNumber, $recordsPerPage) 
+	{			
+		// The data to send to the API		
+		files::wh_log('getLimitkarteReport report:'.$reportName.PHP_EOL.
+				'code: '.$code.PHP_EOL.
+				'pageNumber:' .$pageNumber.PHP_EOL.
+				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
+		$postData = [
+		"projectNr" => $code,
+		"pageNr" => $pageNumber,
+		"countPerPage" => $recordsPerPage,
+		];
+		
+		// Setup cURL		
+		switch ($reportName) {
+			case 'LIMITCARD_PROJRCT_MATERIAL':
+				$url = API_LIMITCARD_PROJRCT_MATERIAL;
+				break;			
+		}
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		//echo $response;
+		if (curl_errno($ch)) {
+			files::wh_log('getLimitkarteReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, TRUE);
+			files::wh_log('getLimitkarteReport RESPONSE:'.PHP_EOL.
+					'status:'.$responseData['status'] .PHP_EOL.
+					'code:' .$responseData['code'].PHP_EOL.
+					'details:' .$responseData['details'].PHP_EOL  );         	 	
+			
+		}	
+		curl_close($ch);
+		return 	$responseData;
 
 	}
 

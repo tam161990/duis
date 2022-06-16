@@ -109,6 +109,8 @@ define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KV
 define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition');
 
 
+// API for Limitkarte rekords
+define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
 # =============================================================================
 # FMK configuration
 # =============================================================================

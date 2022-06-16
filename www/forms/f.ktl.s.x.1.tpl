@@ -23,18 +23,26 @@
 		<td>
             <table cellpadding="0" cellspacing="0" border="0" >
 				<tr>
+                   <? if(isset($searchTitle)) { ?>
+                    <td nowrap ><?= $searchTitle; ?></td>
+                    <? } ?>
                     <td nowrap ><input type="text" id="Search" maxlength="50" value="<?=isset($_GET['search'])?$_GET['search']:''; ?>">&nbsp;</td>
-                    <td nowrap >
+                    <td nowrap >                       
+                    <?
+	                    if (!isset($searchTitle))
+	                    {
+                        ?>
                         <select id="Columns">
                         <?
-	                    if (is_array($columns))
-	                    {
 		                     foreach ($columns as $col)
 		                     {
                               ?>
                               <option value="<?= $col['kolonna']; ?>"  <?= ( (isset($_GET['column']) && $_GET['column'] == $col['kolonna'])? "selected" : (!isset($_GET['column']) && $col['def']==1)? "selected" : "");?> ><?= $col['nosaukums']; ?></option>
                               <?
                              }
+                        ?>
+                        <select id="Columns">
+                        <?
                         }
                         ?>
                         </select>&nbsp;

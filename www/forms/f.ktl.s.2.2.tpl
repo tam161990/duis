@@ -43,12 +43,12 @@
 
 	</tr>
     <tr>
-         <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('changePass'); ?></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('changePass'); ?></td>
-        <td class="table_cell_c">&nbsp;</td>
-		<td class="table_cell_2">&nbsp;</td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('limitCard'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('limitCard'); ?></td>
 
 	</tr>
 
