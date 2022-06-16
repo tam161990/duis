@@ -63,10 +63,12 @@ class userAuthorization
 					{
 							session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
 							session::set('isContract', $rows[0]['RLTT_IR_LIGUMS'] );
+							session::set('isLimitcard', $rows[0]['RLTT_IR_LIMITCARD'] );
 					}
 					else
 					{
 							session::set('isContract', 0);
+							session::set('isLimitcard', 0);
 					}
 					return true;
 				}
@@ -102,7 +104,8 @@ class userAuthorization
 					session::set('login',$rows[0]['RLTT_USER_NAME']);
 					session::set('isAdmin',$rows[0]['RLTT_IR_ADMINS']);
                     session::set('isTrase',$rows[0]['RLTT_IR_TRASE']);
-                    session::set('isContract',$rows[0]['RLTT_IR_LIGUMS']);
+					session::set('isContract',$rows[0]['RLTT_IR_LIGUMS']);
+					session::set('isLimitcard',$rows[0]['RLTT_IR_LIMITCARD']);
                      if($rows[0]['RLTT_KWOI_KODS'] != "")
                         session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
 					return true;
@@ -175,6 +178,14 @@ class userAuthorization
 	function isContract()
 	{
 		return session::get('isContract');
+	}
+
+	// -----------------------------------------------------------------------------
+	// piekļuve sadaļai LIMITKARTE
+	// -----------------------------------------------------------------------------
+	function isLimitcard()
+	{
+		return session::get('isLimitcard');
 	}
 
 	// -----------------------------------------------------------------------------

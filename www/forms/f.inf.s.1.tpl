@@ -28,6 +28,7 @@ function hideMenu()
 	var c=getElement('tdAct',true); c.className="menu_cell_top";
 	var c=getElement('reportSubMenuDiv',true); c.style.visibility="hidden";
 	var c=getElement('tdReport',true); c.className="menu_cell_top";
+	var c=getElement('tdLimitcard',true); c.className="menu_cell_top";
     var c=getElement('optionSubMenuDiv',true); c.style.visibility="hidden";
 	var c=getElement('tdOptions',true); c.className="menu_cell_top";
 	var c=getElement('projectSubMenuDiv',true); c.style.visibility="hidden";
@@ -236,6 +237,7 @@ if($isAdmin || $isSystemUser)
 					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
 					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $projectApprover)?'':'disabled';?>><?=($isAdmin ||  $isProjector ||  $projectApprover)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
 					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
+					<td nowrap id="tdLimitcard" class="menu_cell_top" <?=($isAdmin || $isLimitCardUser)?'':'disabled';?>><?=($isAdmin || $isLimitCardUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cLimitcardMain.'" target="frame_1">':'';?><?=text::get('LIMITCARD');?><?=($isAdmin || $isLimitCardUser)?'</a>':'';?></td>
                     <td nowrap id="tdGps" class="menu_cell_top" <?=($isEditor || $isEdUser || $isAdmin)?'':'disabled';?>><?=($isEditor || $isEdUser || $isAdmin)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cGpsMain.'" target="frame_1">':'';?><?=text::get('GPS');?><?=($isEditor || $isEdUser || $isAdmin)?'</a>':'';?></td>
 					<td nowrap id="tdOptions" class="menu_cell_top" <?=($isAdmin)?'':'disabled';?>><?=($isAdmin)?'<a onclick="subMenu(\'optionSubMenuDiv\',\'tdOptions\');return false;" href="#">':'';?><?=text::get('OPTIONS');?><?=($isAdmin)?'</a>':'';?></td>
 					
