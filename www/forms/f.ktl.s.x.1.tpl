@@ -1,8 +1,13 @@
 ﻿<script type="text/javascript">
     function doSearch()
-	{
+	  {
     	eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&search_q=' + urlencode(document.all['Search'].value) + '&search_c=' + document.all['Columns'].value));
 	    reloadFrame(1, '<?= $searchLink; ?>&search=' + q + '&column=' + c);
+    }
+    function doSearchOnlyText()
+	  {
+    	eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&search_q=' + urlencode(document.all['Search'].value) ));
+	    reloadFrame(1, '<?= $searchLink; ?>&search=' + q );
     }
     function doSort(column, order)
 	{
@@ -47,7 +52,11 @@
                         ?>
                         </select>&nbsp;
                     </td>
-					<td nowrap ><a href="#" onclick="doSearch()">
+          <? if(isset($searchTitle)) { ?>
+            <td nowrap ><a href="#" onclick="doSearchOnlyText()">
+          <? } else { ?>
+             <td nowrap ><a href="#" onclick="doSearch()">
+          <? } ?>
 						<img src="img/btn_meklet.gif" alt="<?= text::get('SEARCH'); ?>" width="70" height="20" border="0" class="block">
 					</a></td>
                 </tr>
