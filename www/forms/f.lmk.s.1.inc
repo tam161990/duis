@@ -3,6 +3,7 @@
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isLimitCardUser = userAuthorization::isLimitcard();
+$report = reqVar::get('report');
 
 // tikai  lietotajam ar atbilstošam tiesībam  vai administr�toram ir pieeja!
 if($isLimitCardUser || $isAdmin)
@@ -47,9 +48,17 @@ if($isLimitCardUser || $isAdmin)
 		    exit;
     	}
         // set list title
-        $title = text::toUpper(text::get('PROJRCT_MATERIAL_REPORT'));
+        switch ($repor) {
+            case 'LIMITCARD_PROJRCT_MATERIAL':                
+                $title = text::toUpper(text::get('PROJRCT_MATERIAL_REPORT'));                
+				break;			
+			case 'UNCOMPLETED_PROJECT_REPORT':
+				$title = text::toUpper(text::get('UNCOMPLETED_PROJECT_REPORT'));   
+				break;			
+		}
         // get search column list
-        $columns=dbProc::getKlklName('LIMITCARD_PROJRCT_MATERIAL');
+        $columns=dbProc::getKlklName($report);
+        
         $searchTitle = text::get('PROJRCT_NUMBER');
         $searchText = ((reqVar::get('search') && reqVar::get('search') != '') || reqVar::get('search') == 0) ? reqVar::get('search') : false;
         $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
@@ -63,7 +72,7 @@ if($isLimitCardUser || $isAdmin)
     	$oLink = new urlQuery;
     	$oLink-> addPrm(FORM_ID, 'f.lmk.s.1');
     	$oLink-> addPrm('isNew', '1');
-
+        $oLink-> addPrm('report', $report);
         // add search/order params to listing
         $oLink->addPrm('search', reqVar::get('search'));
         $oLink->addPrm('order', reqVar::get('order'));
@@ -71,19 +80,17 @@ if($isLimitCardUser || $isAdmin)
         $searchLink = $oLink -> getQuery();
 
 		// inicialising of listing object
-		//$amount=dbProc::getCalcNormCount($searchText,
-        //        (($searchColumn === false) ? $defaultColumn : $searchColumn));
         $listing=new listing();
         
         if($searchText !== false) {
-            $reportData = RequestHandler::getLimitkarteReport('LIMITCARD_PROJRCT_MATERIAL', $searchText, 1, 1);
+            $reportData = RequestHandler::getLimitkarteReport($report, $searchText, 1, 1);
 
             $amount = $reportData['totalRecordCount']; 
             $listing->setAmount($amount);
             $listingHtml=$listing->getHtml($oLink ->getQuery());
             unset($oLink);
 
-            $reportData = RequestHandler::getLimitkarteReport('LIMITCARD_PROJRCT_MATERIAL', $searchText, $listing->getCurrentPageNumber(), $listing->getAmountOnPage());
+            $reportData = RequestHandler::getLimitkarteReport($report, $searchText, $listing->getCurrentPageNumber(), $listing->getAmountOnPage());
             $rows = $reportData['reportData'];
 
             if (is_array($rows))

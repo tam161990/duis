@@ -587,8 +587,8 @@ class RequestHandler
 				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
 		$postData = [
 		"projectNr" => $code,
-		"pageNr" => $pageNumber,
-		"countPerPage" => $recordsPerPage,
+		"pageNr" => intval($pageNumber),
+		"countPerPage" => intval($recordsPerPage),
 		];
 		
 		// Setup cURL		
@@ -596,7 +596,11 @@ class RequestHandler
 			case 'LIMITCARD_PROJRCT_MATERIAL':
 				$url = API_LIMITCARD_PROJRCT_MATERIAL;
 				break;			
+			case 'UNCOMPLETED_PROJECT_REPORT':
+				$url = API_UNCOMPLETED_PROJECT_REPORT;
+				break;			
 		}
+		//var_dump($postData);
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -614,11 +618,6 @@ class RequestHandler
 		} else { 
 			// Decode the response
 			$responseData = json_decode($response, TRUE);
-			files::wh_log('getLimitkarteReport RESPONSE:'.PHP_EOL.
-					'status:'.$responseData['status'] .PHP_EOL.
-					'code:' .$responseData['code'].PHP_EOL.
-					'details:' .$responseData['details'].PHP_EOL  );         	 	
-			
 		}	
 		curl_close($ch);
 		return 	$responseData;

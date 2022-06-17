@@ -57,7 +57,10 @@
           <? } else { ?>
              <td nowrap ><a href="#" onclick="doSearch()">
           <? } ?>
-						<img src="img/btn_meklet.gif" alt="<?= text::get('SEARCH'); ?>" width="70" height="20" border="0" class="block">
+            <span id="loading" style="position:absolute; width:32; height:32; margin-left:30px; display: none; ">
+            <img src="./img/loading.gif" widht="32" height="32" border="0" />
+            </span>
+						<img src="img/btn_meklet.gif" alt="<?= text::get('SEARCH'); ?>"  onClick="setPosition1('loading'); return true;" width="70" height="20" border="0" class="block">
 					</a></td>
                 </tr>
 			</table>
