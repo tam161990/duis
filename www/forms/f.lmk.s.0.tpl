@@ -10,7 +10,7 @@
 		<td><?= text::get('PROJRCT_MATERIAL_REPORT'); ?></td>
 	</tr>
 	<tr onmouseover="makeActiveRow2(this,'x');"
-		onClick="parent['frameTop'].enableFrameControl();window.top.normal();reloadFrame(1,'<?= $uncompletedPrReport; ?>');reloadFrame(23,'');">
+		onClick="parent['frameTop'].disableFrameControl();window.top.normal();reloadFrame(1,'<?= $uncompletedPrReport; ?>');reloadFrame(23,'');">
 		<td><?= text::get('UNCOMPLETED_PROJECT_REPORT'); ?></td>
 	</tr>    
 	</tbody>
