@@ -48,7 +48,7 @@ if($isLimitCardUser || $isAdmin)
 		    exit;
     	}
         // set list title
-        switch ($repor) {
+        switch ($report) {
             case 'LIMITCARD_PROJRCT_MATERIAL':                
                 $title = text::toUpper(text::get('PROJRCT_MATERIAL_REPORT'));                
 				break;			
@@ -102,6 +102,10 @@ if($isLimitCardUser || $isAdmin)
                     $res[$i]['itemUnitPrice'] = number_format($row['itemUnitPrice'], 2, '.', '');
                     $date = new DateTime((string)substr($row['transactionDate'], 0, strrpos($row['transactionDate'], 'T')));
                     $res[$i]['transactionDate'] =  $date->format('d.m.Y');
+                    $date = new DateTime((string)substr($row['creationDate'], 0, strrpos($row['creationDate'], 'T')));
+                    $res[$i]['creationDate'] =  $date->format('d.m.Y');
+                    $date = new DateTime((string)substr($row['approvedDate'], 0, strrpos($row['approvedDate'], 'T')));
+                    $res[$i]['approvedDate'] =  $date->format('d.m.Y');
                     $i ++;
                 }
             }
