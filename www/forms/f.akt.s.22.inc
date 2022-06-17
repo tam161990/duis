@@ -5,7 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isEDUser = dbProc::isExistsUserRole($userId);
 $isSystemUser = $isEDUser || $isEditor;
-$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
+$isProjector = dbProc::isExistsUserRoleWithProject($userId) || dbProc::isUserInRole($userId, ROLE_DESIGNER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 // act ID

@@ -10,7 +10,7 @@ $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $isAuditor = dbProc::isUserInRole($userId, ROLE_AUDIT_USER);
-$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
+$isProjector = dbProc::isExistsUserRoleWithProject($userId) || dbProc::isUserInRole($userId, ROLE_DESIGNER);
 $projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 
 if($isContractUser)
