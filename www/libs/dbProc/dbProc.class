@@ -4683,9 +4683,16 @@ class dbProc extends dbLayer
 
     
     function saveMmsFromCsv($data, $user){
-        
+
+        // <DUIS-346
+        // izmainīt MMS plāna darbu importa procedūru ar loģiku - ja trases=1 
+        // un sprieguma kods=10, tad Spriegums aizpildās ar kodu =60
+        // IS_EPLA - $data[11]
+        // KMSD_KSRG_KODS - $data[20]
+        $data[20] = (($data[20] == 10) ? (($data[11] == 1) ? 60 : $data[20]) : $data[20]);
+
         $query = 'INSERT into `KL_MMS_DARBI`
-                        (`KMSD_ID`,
+                        (`KMSD_ID`, 
                         `KMSD_KODS`,
                         `KMSD_OPERATIVAS_APZIM`,
                         `KMSD_WORK_TITLE`,
@@ -4723,7 +4730,7 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($data[8]).'",
                         "'.dbLayer::quote_smart($data[9]).'",
                         "'.dbLayer::quote_smart($data[10]).'",
-                        "'.dbLayer::quote_smart($data[11]).'",
+                        "'.dbLayer::quote_smart($data[11]).'",  
                         "'.dbLayer::quote_smart($data[12]).'",
                         "'.dbLayer::quote_smart($data[13]).'",
                         "'.dbLayer::quote_smart($data[14]).'",
@@ -4732,7 +4739,7 @@ class dbProc extends dbLayer
                         "'.dbLayer::quote_smart($data[17]).'",
                         "'.dbLayer::quote_smart($data[18]).'",
                         "'.dbLayer::quote_smart($data[19]).'",
-                        "'.dbLayer::quote_smart($data[20]).'",
+                        "'.dbLayer::quote_smart($data[20]).'", 
                         "'.dbLayer::quote_smart($data[21]).'",
                         "'.dbLayer::quote_smart($data[22]).'",
                         "'.dbLayer::quote_smart($data[23]).'",
@@ -9466,8 +9473,8 @@ class dbProc extends dbLayer
                             AND `KEDI_KODS` = "'.$mms['KMSD_KEDI_KODS'].'"
                             AND `KKAL_TRASE` = '.dbLayer::quote_smart($trase).'
                             AND (
-                                ('.$mms['KMSD_KSRG_KODS'].' = 10 AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
-                                ('.$mms['KMSD_KSRG_KODS'].' <> 10 AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
+                                ('.$mms['KMSD_KSRG_KODS'].' IN ( 10, 60) AND `KMKL_NOKL_SPRIEGUMS_10` = 1) OR
+                                ('.$mms['KMSD_KSRG_KODS'].' NOT IN ( 10, 60) AND `KMKL_NOKL_SPRIEGUMS_NE_10` = 1)
                             )
                             AND `KMKL_KMSD_NOSACIJUMA_KODS` = "'.$mms['KMSD_NOSACIJUMA_KODS'].'"
                             ';
