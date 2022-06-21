@@ -136,16 +136,19 @@ if ( $isAdmin || $isProjector || $projectApprover )
         $statusLabel =  $act['STATUS_NAME'];
         $worker = $act['RAKT_KWOI_KODS'];
 
-        if($worker !== false && !empty($worker)) {
+        if($worker !== false && !empty($worker)) 
+        {
           if( !$isEditor) {
             $res = dbProc::getUserInfo($userId);
-          } else {
+          } 
+          else {
             $res = dbProc::getProjectorWorkerList($worker);
           }
-        } else {
+        } 
+        else {
           $res = dbProc::getProjectorWorkerList(-1);       
-        }
-  	}
+        }      
+    }  
   }
   else
   {
@@ -260,7 +263,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
         'readonly'=>false), 
         ((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled') . ' maxlength="2000" '.
         ((!$isEditor) ? '' : 'onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"'));
-
+  }
   $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16" '.(($isReadonlyExceptAdmin )?' disabled':''));
 
   $oForm -> addElement('text', 'worktitle',  text::get('PRINT_WORK_TITLE'), isset($act['RAKT_WORK_TITLE'])?$act['RAKT_WORK_TITLE']:'', 
