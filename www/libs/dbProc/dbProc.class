@@ -644,7 +644,7 @@ class dbProc extends dbLayer
 		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
 					where '.
                     ' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-                    ' '					
+                    ' and RLTT_PROJECTOR = 1'					
 				);
 
 		if (is_array($res) && count($res)==1)
@@ -2676,7 +2676,23 @@ class dbProc extends dbLayer
 			return $result[0]['NOSAUKUMS'];
 		}
 		return false;
+    }
+    
+    function getWorkOwnerCode($Id)
+	{
+		$query = 'select KWOI_KODS as `CODE`
+        from `KL_WORK_OWNERS`
+        where `KWOI_ID` = "'.dbLayer::quote_smart($Id).'"';
+
+		$oSQL = new dbLayer;
+		$result = $oSQL -> makeQuery($query);
+		if (isset($result[0]['CODE']))
+		{
+			return $result[0]['CODE'];
+		}
+		return false;
 	}
+
 
     // -----------------------------------------------------------------------------
 	// Atgriezh darba uznem�ja nosaukumu
