@@ -136,13 +136,18 @@ if ( $isAdmin || $isProjector || $projectApprover )
         $statusLabel =  $act['STATUS_NAME'];
         $worker = $act['RAKT_KWOI_KODS'];
 
-        if($worker !== false) {
-          if( $isEditor) {
-              $res = dbProc::getProjectorWorkerList($worker);
-          } else {
-              $res = dbProc::getUserInfo($userId);
+        if($worker !== false && !empty($worker)) 
+        {
+          if( !$isEditor && !$isAdmin) { 
+            $res = dbProc::getUserInfo($userId);
+          } 
+          else { 
+            $res = dbProc::getProjectorWorkerList($worker);
           }
-        }
+        } 
+        else {
+          $res = dbProc::getProjectorWorkerList(-1);       
+        }  	
   	}
   }
   else
