@@ -138,17 +138,17 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
         if($worker !== false && !empty($worker)) 
         {
-          if( !$isEditor) {
+          if( !$isEditor && !$isAdmin) { 
             $res = dbProc::getUserInfo($userId);
           } 
-          else {
+          else { 
             $res = dbProc::getProjectorWorkerList($worker);
           }
         } 
         else {
           $res = dbProc::getProjectorWorkerList(-1);       
-        }      
-    }  
+        }  	
+  	}
   }
   else
   {
