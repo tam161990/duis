@@ -239,7 +239,6 @@ define ('ROLE_ED_USER', 'ED_USER');
 define ('ROLE_AUDIT_USER', 'AUDITOR');
 define ('ROLE_TR_USER', 'TRASE_EDIT'); 
 define ('ROLE_PROJ_APPROVER', 'PROJ_APPROVER'); 
-define ('ROLE_DESIGNER', 'DESIGNER'); 
 
 # =============================================================================
 # FAVORIT KRFK ID
