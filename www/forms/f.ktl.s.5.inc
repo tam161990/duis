@@ -53,11 +53,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		// form elements
 		$oForm -> addElement('hidden', 'action', '');
-		$oForm -> addElement('hidden', 'edAId', null, isset($edArea['KEDI_ID'])? $edArea['KEDI_ID']:'');
-
-        $oForm -> addElement('text', 'region',  text::get('REGION'), isset($edArea['KEDI_REGIONS'])?$edArea['KEDI_REGIONS']:'', 'tabindex=1 maxlength="3"' .(($edAId || $isEdUser)?' disabled' : ''));
-		$oForm -> addRule('region', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        $oForm -> addRule('region', text::get('ERROR_ALPHANUMERIC_VALUE'), 'alphanumeric');
+		$oForm -> addElement('hidden', 'edAId', null, isset($edArea['KEDI_ID'])? $edArea['KEDI_ID']:'');        
 
 		$oForm -> addElement('text', 'kods',  text::get('CODE'), isset($edArea['KEDI_KODS'])?$edArea['KEDI_KODS']:'', 'tabindex=3 maxlength="5"' . (($edAId || $isEdUser)?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -71,7 +67,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($edArea['KEDI_IR_AKTIVS'])?$edArea['KEDI_IR_AKTIVS']:1, 'tabindex=4'.(($isEdUser)?' disabled' : ''));
 
-        $oForm -> addElement('checkbox', 'element',  text::get('ELEMENT'), isset($edArea['KEDI_IS_ELEMENT'])?$edArea['KEDI_IS_ELEMENT']:0, 'tabindex=7');
+        $oForm -> addElement('checkbox', 'element',  text::get('ELEMENT'), isset($edArea['KEDI_IS_ELEMENT'])?$edArea['KEDI_IS_ELEMENT']:0, 'tabindex=7'.(($isEdUser)?' disabled' : ''));
 
 		// importa dati
 		$oForm -> addElement('text', 'created',  text::get('CREATED'), isset($edArea['KEDI_CREATED'])?$edArea['KEDI_CREATED']:dtime::now(), 'tabindex=21 maxlength="20" disabled');
@@ -123,7 +119,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
             // save
 			elseif ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('edAId'))))
 			{
-      			if ($oForm -> getValue('region') && $oForm -> getValue('kods') &&
+      			if ( $oForm -> getValue('kods') &&
                       $oForm -> getValue('nosaukums') && $oForm -> getValue('section') )
       			{
       				$checkRequiredFields = true;
@@ -131,9 +127,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
       			if ($checkRequiredFields)
       			{
 
-					// chech that ED area with same region and code not set
+					// chech that ED area with same code not set
 					if (dbProc::edAreaWithRegionCodeExists(
-                                                            $oForm->getValue('region'),
                                                             $oForm->getValue('kods'),
                                                             ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('edAId'):false)
                                                             )
@@ -146,7 +141,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					if($check)
 					{
 						$r=dbProc::saveEDArea(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('edAId'):false),
-						$oForm->getValue('region'),
 						$oForm->getValue('kods'),
 						$oForm->getValue('nosaukums'),
 						$oForm->getValue('isActive',0),

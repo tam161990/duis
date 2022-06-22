@@ -9,7 +9,7 @@
 			<th width="5%"><?=text::get('TRASE');?></th>
 			<th width="30%"><?=text::get('KWOI_VV_NUMBER');?></th>
 			<th width="30%"><?=text::get('SIGNATORY');?></th>
-           	<th width="30%"><?=text::get('ED_SECTION') ;?> </th>
+           	<th width="30%"><?=text::get('SINGL_ED_AREA') ;?> </th>
             <th width="5%"><?=text::get('IS_ACTIVE');?></th>
 			<th width="10">
 				<a href="#" onclick="javascript:openNewBlock('empty_node'); return false;" title="<?= text::get('INSERT_NEW_ROW'); ?>">

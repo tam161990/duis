@@ -77,7 +77,7 @@ if($isAdmin || $isEdUser || $isAuditor )
 		<tr>
 
 		   <td class="menu_cell"><a  target="frame_1" href="<?=$materialListLink;?>" onclick="reloadFrame(2,'<?=$editMaterialLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('MATERIALS');?></a></td>
-           <td class="menu_cell"><a  target="frame_1" href="<?=$regionListLink;?>" onclick="reloadFrame(2,'<?=$editRegionLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('REGIONS');?></a></td> 
+           <!--td class="menu_cell"><a  target="frame_1" href="<?=$regionListLink;?>" onclick="reloadFrame(2,'<?=$editRegionLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('REGIONS');?></a></td--> 
            <td class="menu_cell"><a  target="frame_1" href="<?=$edAreaListLink;?>" onclick="reloadFrame(2,'<?=$editEdAreaLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ED_AREA');?></a></td>
            <td class="menu_cell"><a  target="frame_1" href="<?=$voltageListLink;?>" onclick="reloadFrame(2,'<?=$editVoltageLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('VOLTAGE');?></a></td>
            <td class="menu_cell"><a  target="frame_1" href="<?=$objectListLink;?>" onclick="reloadFrame(2,'<?=$editObjectLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('OBJECTS');?></a></td>

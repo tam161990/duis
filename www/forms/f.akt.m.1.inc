@@ -1,39 +1,5 @@
 <?
-// Main form with XMLHTTP method load this code:
-if (reqVar::get('xmlHttp') == 1)
-{
-	//if is set edRegion
-	if (reqVar::get('edRegion') !== false)
-	{
 
-        // unset previouse values of section
-		?>
-		for(i=document.all["section"].length; i>=0; i--)
-		{
-			document.all["section"].options[i] = null;
-		}
-		<?
-		$res=dbProc::getEDSectionListForRegion(reqVar::get('edRegion'));
-		if (is_array($res) && count($res)>0)
-		{
-			?>
-			document.all["section"].options[0] = new Option('<?=text::get('ALL');?>', '-1');
-			<?
-            $i = 1;
-			foreach ($res as $row)
-			{
-				// feel options array
-				?>
-				document.all["section"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_SECTION'];?>', '<?=$row['KEDI_SECTION'];?>');
-                <?
-                $i++;
-			}
-		}
-	}
-
-
-	exit;
-}
         $isSearchForm = isset($isSearchForm)? $isSearchForm : false;
         // get user info
       	$userInfo = dbProc::getUserInfo($userId);
@@ -49,40 +15,6 @@ if (reqVar::get('xmlHttp') == 1)
       		$user = $userInfo[0];
        	}
 
-
-         // get ED region list
-         $edRegion=array();
-         $initRegion = '-1';
-         $j = 0;
-         if(isset($user['RLTT_REGIONS']) && isset($user['RLTT_ROLE']) && ($isEconomist || $isViewer) )
-         {
-            $edRegion[$user['RLTT_REGIONS']]=$user['RLTT_REGIONS'];
-            $initRegion = $user['RLTT_REGIONS'];
-         }
-         elseif(isset($user['RLTT_KEDI_SECTION']) && isset($user['RLTT_ROLE']) &&  ($isEconomist || $isViewer) )
-         {
-              $region = dbProc::getEDRegionBySection($user['RLTT_KEDI_SECTION']) ;
-              $edRegion[$region]=$region;
-         }
-         else
-         {
-           $edRegion['-1']=text::get('ALL');
-           $res=dbProc::getEDRegionList();
-           if (is_array($res))
-           {
-           	foreach ($res as $row)
-           	{
-			            if($j == 0)
-                	{
-                     	$initRegion = $row['nosaukums'];
-                	}
-           		    $edRegion[$row['nosaukums']]=$row['nosaukums'];
-			            $j++;
-           	}
-           }
-         }
-         unset($res);
-
         // get users list
          $usersList = array();
          if(isset($user['RLTT_KEDI_SECTION']) && !$isEdUser)
@@ -97,9 +29,9 @@ if (reqVar::get('xmlHttp') == 1)
               }
             }
          }
-         elseif(isset($user['RLTT_REGIONS']) && !$isEdUser)
+         elseif(isset($user['RLTT_KEDI_ID']) && !$isEdUser)
          {
-            $res=dbProc::getUserRegionList($user['RLTT_REGIONS']);
+            $res=dbProc::getUserEdList($user['RLTT_KEDI_ID']);
             if (is_array($res))
             {
               $usersList['-1']=text::get('ALL');
@@ -165,7 +97,7 @@ if (reqVar::get('xmlHttp') == 1)
            $searcCriteria['monthFrom'] = $oForm->getValue('monthFrom');
            $searcCriteria['monthUntil'] = $oForm->getValue('monthUntil');
            $searcCriteria['worker'] = (($isEditor)? $workerCode : $oForm->getValue('worker'));
-           $searcCriteria['edRegion'] = $oForm->getValue('edRegion');
+           $searcCriteria['edCode'] = $oForm->getValue('edCode');
 
            $searcCriteria['voltage'] = $oForm->getValue('voltage');
            $searcCriteria['ouner'] = $oForm->getValue('ouner');
@@ -182,7 +114,7 @@ if (reqVar::get('xmlHttp') == 1)
                                 $searcCriteria['monthFrom'],
                                 $searcCriteria['monthUntil'],
                                 $searcCriteria['worker'],
-                                $searcCriteria['edRegion'],
+                                $searcCriteria['edCode'],
                                 '',
                                 $searcCriteria['voltage'],
                                 $searcCriteria['ouner'],
@@ -233,7 +165,7 @@ if (reqVar::get('xmlHttp') == 1)
            $searcCriteria['monthUntil'] = isset($critery['monthUntil'])? $critery['monthUntil'] :dtime::getCurrentMonth();
 
            $searcCriteria['worker'] = (($isEditor)? $workerCode : (isset($critery['worker']) ? $critery['worker'] : '-1'));
-           $searcCriteria['edRegion'] = isset($critery['edRegion'])? $critery['edRegion'] :'-1';
+           $searcCriteria['edCode'] = isset($critery['edCode'])? $critery['edCode'] :'-1';
 
 
            $searcCriteria['voltage'] = isset($critery['voltage'])? $critery['voltage'] :'-1';
@@ -251,22 +183,10 @@ if (reqVar::get('xmlHttp') == 1)
         if(isset($user['RLTT_KEDI_SECTION']) && isset($user['RLTT_ROLE']) &&  ($isEconomist || $isViewer) )
         {
              $section[$user['RLTT_KEDI_SECTION']]=$user['RLTT_KEDI_SECTION'];
-        }
-        elseif(isset($user['RLTT_REGIONS']) && isset($user['RLTT_ROLE']) && ($isEconomist || $isViewer) )
-        {
-            $res=dbProc::getEDSectionListForRegion($user['RLTT_REGIONS']);
-            if (is_array($res))
-            {
-                $section['-1']=text::get('ALL');
-              foreach ($res as $row)
-              {
-                $section[$row['KEDI_SECTION']]=$row['KEDI_SECTION'];
-              }
-            }
-         }
+        }        
          else
          {
-            $res=dbProc::getEDSectionListForRegion((($searcCriteria['edRegion'] == '-1') ? $initRegion : $searcCriteria['edRegion']));
+          $res=dbProc::getEDAreaSectionList();
             if (is_array($res))
             {
                 $section['-1']=text::get('ALL');
@@ -285,15 +205,11 @@ if (reqVar::get('xmlHttp') == 1)
         $oForm -> addElement('label', 'month',  text::get('MONTH'), '');
         $oForm -> addElement('select', 'monthFrom',  text::get('FROM'), $searcCriteria['monthFrom'], 'style="width:70;"', '', '', dtime::getMonthArray());
         $oForm -> addElement('select', 'monthUntil',  text::get('UNTIL'), $searcCriteria['monthUntil'], 'style="width:70;"', '', '', dtime::getMonthArray());
-        // xmlHttp link
-        $oLink=new urlQuery();
-        $oLink->addPrm(DONT_USE_GLB_TPL, 1);
-        $oLink->addPrm(FORM_ID, 'f.akt.m.1');
-
+        
         $oForm -> addElement('kls2', 'worker',  text::get('SINGL_WORK_OWNER'),  array('classifName'=>KL_WORK_OWNERS,'value'=>$searcCriteria['worker'],'readonly'=>false), (($isEditor)?' disabled ':'').'maxlength="2000"');
 
-		    $oForm -> addElement('select', 'edRegion',  text::get('ED_REGION'), $searcCriteria['edRegion'], 'onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&edRegion=\'+document.all[\'edRegion\'].options[document.all[\'edRegion\'].selectedIndex].value));"', '', '', $edRegion);
-        unset($oLink);
+		    $oForm -> addElement('kls2', 'edCode',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>$searcCriteria['edCode'],'readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
+        
 
         $oForm -> addElement('select', 'section',  text::get('ED_SECTION'), $searcCriteria['section'], '', '', '', $section);
 

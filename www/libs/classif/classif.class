@@ -26,7 +26,17 @@ class classif
 				{
 					foreach ($res as $row)
 					{
-						$m[$row['KEDI_ID']]=$row['KEDI_REGIONS'].' : '.$row['KEDI_KODS'].' : '.$row['KEDI_NOSAUKUMS'];
+						$m[$row['KEDI_ID']]= $row['KEDI_KODS'].' : '.$row['KEDI_NOSAUKUMS'];
+					}
+				}
+				break;
+			case KL_ED_AREA_CODE:
+				$res=dbProc::getEDAreaActivList();
+				if (is_array($res))
+				{
+					foreach ($res as $row)
+					{
+						$m[$row['KEDI_KODS']]= $row['KEDI_KODS'].' : '.$row['KEDI_NOSAUKUMS'];
 					}
 				}
 				break;

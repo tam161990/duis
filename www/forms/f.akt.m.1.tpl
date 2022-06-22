@@ -41,8 +41,8 @@ javascript:window.history.forward(1);
             <?= $oForm -> getElementHtml('monthUntil'); ?>
         </td>
 
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('edRegion'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('edRegion'); ?></td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('edCode'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('edCode'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('worker'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('worker'); ?></td>
    	</tr>

@@ -10,11 +10,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 	// if insert/update/delete
 	if($editMode)
 	{
-        // get region list
-       $region=array();
-       $region['']=text::get('EMPTY_SELECT_OPTION');
-
-
+       
        // get roles list
        $role=array();
        $role['']=text::get('EMPTY_SELECT_OPTION');
@@ -27,18 +23,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
        	}
        }
        unset($res);
-
-       // get ED region list
-        $res=dbProc::getEDRegionList();
-
-        if (is_array($res))
-        {
-          	foreach ($res as $row)
-          	{
-           		$region[$row['nosaukums']]=$row['nosaukums'];
-           	}
-        }
-        unset($res);
 
 		$oLink=new urlQuery();
 		$oLink->addPrm(FORM_ID, 'f.ktl.s.12');
@@ -93,8 +77,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addRule('surname', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
 		$oForm -> addElement('checkbox', 'irAdmin',  text::get('IR_ADMIN'), isset($user['RLTT_IR_ADMINS'])?$user['RLTT_IR_ADMINS']:'', 'tabindex=11'.(($isEdUser)?' disabled' : ''));
-
-        $oForm -> addElement('select', 'region',  text::get('REGION'), isset($user['RLTT_REGIONS'])?$user['RLTT_REGIONS']:'', 'tabindex=8'.(($isEdUser)? ' disabled ': ''), '', '', $region);
 
         $oForm -> addElement('select', 'role',  text::get('ROLE'), isset($user['RLTT_ROLE'])?$user['RLTT_ROLE']:'', 'tabindex=10 '.(($isEdUser)?' disabled' : ''), '', '', $role);
         unset($oLink);
@@ -191,7 +173,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('edArea'),
 						(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
 						$oForm->getValue('isActive', 0),
-						$oForm->getValue('region'),
                         $oForm->getValue('role'),
                         '',
 						$oForm->getValue('section'),

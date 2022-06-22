@@ -1,62 +1,5 @@
 ﻿<?
 //created by Tatjana Fedorkova at 2004.12.08.
-if (reqVar::get('xmlHttp') == 1)
-{
-   	//if is set edRegion
-	if (reqVar::get('region') !== false)
-	{
-		// unset previouse values of edArea
-		?>
-		for(i=document.all["edArea"].length; i>=0; i--)
-		{
-			document.all["edArea"].options[i] = null;
-		}
-		<?
-		$res=dbProc::getEDAreaListForRegion(reqVar::get('region'));
-		if (is_array($res) && count($res)>0)
-		{
-			?>
-			document.all["edArea"].options[0] = new Option('<?=text::get('EMPTY_SELECT_OPTION');?>', '');
-			<?
-            $i = 1;
-			foreach ($res as $row)
-			{
-				// feel options array
-				?>
-				document.all["edArea"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_REGIONS'].' : '.$row['KEDI_KODS'].' : '.$row['KEDI_NOSAUKUMS'];?>', '<?=$row['KEDI_ID'];?>');
-                <?
-                $i++;
-			}
-		}
-        // unset previouse values of section
-		?>
-		for(i=document.all["section"].length; i>=0; i--)
-		{
-			document.all["section"].options[i] = null;
-		}
-		<?
-		$res=dbProc::getEDSectionListForRegion(reqVar::get('region'));
-		if (is_array($res) && count($res)>0)
-		{
-			?>
-			document.all["section"].options[0] = new Option('<?=text::get('EMPTY_SELECT_OPTION');?>', '');
-			<?
-            $i = 1;
-			foreach ($res as $row)
-			{
-				// feel options array
-				?>
-				document.all["section"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_SECTION'];?>', '<?=$row['KEDI_SECTION'];?>');
-                <?
-                $i++;
-			}
-            ?>
-			    document.all["section"].options[<?=$i;?>] = new Option('<?=text::get('OPERATING_PART');?>', '<?=text::get('OPERATING_PART');?>');
-			<?
-		}
-	}
-    exit;
-}
 $userId = userAuthorization::getUserId();
 $isEdUser = (dbProc::isUserInRole($userId, ROLE_ED_USER) || dbProc::isUserInRole($userId, ROLE_AUDIT_USER));    
 if (userAuthorization::isAdmin() || $isEdUser )
@@ -66,9 +9,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 	// if insert/update/delete
 	if($editMode)
 	{
-
-
-
        // get position list
        $position=array();
        $position['']=text::get('EMPTY_SELECT_OPTION');
@@ -81,20 +21,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
        	}
        }
        unset($res);
-
-       // get region list
-        $region=array();
-        $region['']=text::get('EMPTY_SELECT_OPTION');
-        $res=dbProc::getEDRegionList();
-
-        if (is_array($res))
-        {
-          	foreach ($res as $row)
-          	{
-           		$region[$row['nosaukums']]=$row['nosaukums'];
-           	}
-        }
-        unset($res);
+       
 
        // get section list
        $sections=array();
@@ -168,15 +95,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addRule('surname', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
         $oForm -> addElement('text', 'department',  text::get('ED_IECIKNIS'), isset($user['SLTT_ED_IECIKNIS'])?$user['SLTT_ED_IECIKNIS']:'', 'tabindex=2 maxlength="250"'.(($isEdUser)?' disabled' : ''));
-		$oForm -> addRule('department', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
-        // xmlHttp link
-		$oLink=new urlQuery();
-		$oLink->addPrm(DONT_USE_GLB_TPL, 1);
-		$oLink->addPrm(FORM_ID, 'f.ktl.s.4');
-	    $oForm -> addElement('select', 'region',  text::get('REGION'), isset($user['SLTT_REGIONS'])?$user['SLTT_REGIONS']:'', 'onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&region=\'+document.all[\'region\'].options[document.all[\'region\'].selectedIndex].value));" tabindex=4'.(($isEdUser)? ' disabled ': ''), '', '', $region);
-        $oForm -> addRule('region', text::get('ERROR_REQUIRED_FIELD'), 'required');
-        unset($oLink);
+		$oForm -> addRule('department', text::get('ERROR_REQUIRED_FIELD'), 'required');       
 
         $oForm -> addElement('select', 'position',  text::get('POSITION'), isset($user['SLTT_POSITION'])?$user['SLTT_POSITION']:'', 'tabindex=3 '.(($isEdUser)?' disabled' : ''), '', '', $position);
         $oForm -> addRule('position', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -229,7 +148,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-           	if ($oForm -> getValue('region') && $oForm -> getValue('name') && $oForm -> getValue('surname') && $oForm -> getValue('position') && $oForm -> getValue('section') && $oForm -> getValue('department')  )
+           	if ( $oForm -> getValue('name') && $oForm -> getValue('surname') && $oForm -> getValue('position') && $oForm -> getValue('section') && $oForm -> getValue('department')  )
 			{
 				$checkRequiredFields = true;
 			}
@@ -254,7 +173,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('surname'),
 						$oForm->getValue('edArea'),
 						$oForm->getValue('isActive', 0),
-						$oForm->getValue('region'),
                         $oForm->getValue('position'),
                         $oForm->getValue('department'),
 						$oForm->getValue('section'),

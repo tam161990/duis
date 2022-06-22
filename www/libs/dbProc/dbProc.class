@@ -293,7 +293,7 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
     function saveUser($userId,$login,$name,$surname,$isAdmin,$dvArea,$password=false, 
-                        $isActive,$region,$role, $worker = '', $section = '', 
+                        $isActive,$role, $worker = '', $section = '', 
                         $trase = 0, $contract = 0, $projector = 0, $limitcard = 0)
 	{
 		$oSQL=new dbLayer();
@@ -307,7 +307,6 @@ class dbProc extends dbLayer
                         `RLTT_IR_ADMINS`,
                         `RLTT_KEDI_ID`,
                         `RLTT_IR_AKTIVS`, 
-                        `RLTT_REGIONS`, 
                         `RLTT_ROLE`, 
                         `RLTT_KWOI_KODS`, 
                         `RLTT_KEDI_SECTION`, 
@@ -323,8 +322,7 @@ class dbProc extends dbLayer
 						 "'.dbLayer::quote_smart($surname).'",
 						 "'.dbLayer::quote_smart($isAdmin).'",
 						 "'.dbLayer::quote_smart($dvArea).'",
-						 "'.dbLayer::quote_smart($isActive).'",
-						 "'.dbLayer::quote_smart($region).'",
+						 "'.dbLayer::quote_smart($isActive).'",					
                          "'.dbLayer::quote_smart($role).'",
                          "'.dbLayer::quote_smart($worker).'",
                          "'.dbLayer::quote_smart($section).'",
@@ -344,8 +342,7 @@ class dbProc extends dbLayer
 						`RLTT_UZVARDS`="'.dbLayer::quote_smart($surname).'",
 						`RLTT_IR_ADMINS`="'.dbLayer::quote_smart($isAdmin).'",
 						`RLTT_KEDI_ID`="'.dbLayer::quote_smart($dvArea).'",
-						`RLTT_IR_AKTIVS`="'.dbLayer::quote_smart($isActive).'",
-						`RLTT_REGIONS`="'.dbLayer::quote_smart($region).'",
+						`RLTT_IR_AKTIVS`="'.dbLayer::quote_smart($isActive).'",						
                         `RLTT_ROLE`="'.dbLayer::quote_smart($role).'",
                         `RLTT_KWOI_KODS`="'.dbLayer::quote_smart($worker).'",
                         `RLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'",
@@ -448,15 +445,14 @@ class dbProc extends dbLayer
 	// Atgriezh informaciju par lietotaju/lietotajiem   konkreta regiona ietvaros
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getUserRegionList($region, $isActive = true)
+	function getUserEdList($edId, $isActive = true)
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select *  from `LIETOTAJI`
                     where  '.
-                    (($isActive) ? '`RLTT_IR_AKTIVS`=1 and ' : '').
-                    (($region != -1)? '`RLTT_REGIONS` = "'.dbLayer::quote_smart($region).'"
-                    or `RLTT_KEDI_ID` IN (select `KEDI_ID` from `KL_ED_IECIRKNI` where `KEDI_REGIONS` = "'.$region.'")' : 1).'
-					order by RLTT_VARDS, RLTT_UZVARDS'
+                    (($isActive) ? '`RLTT_IR_AKTIVS`=1 ' : '').
+                    (($edId != -1)? ' and `RLTT_KEDI_ID` = "'.dbLayer::quote_smart($edId).'" ' : ''.                  
+					'order by RLTT_VARDS, RLTT_UZVARDS')
 				);
 		return $res;
 	}
@@ -884,7 +880,7 @@ class dbProc extends dbLayer
 	// saglaba saskanotaja datus
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveHarmonized($userId, $name,$surname, $dvArea, $isActive,$region,$position,$edArea,$section = '', $user)
+	function saveHarmonized($userId, $name,$surname, $dvArea, $isActive,$position,$edArea,$section = '', $user)
 	{
 		$oSQL=new dbLayer();
 		if ($userId==false)
@@ -894,7 +890,6 @@ class dbProc extends dbLayer
                             `SLTT_UZVARDS`,
                             `SLTT_KEDI_ID`,
                             `SLTT_IR_AKTIVS`, 
-                            `SLTT_REGIONS`, 
                             `SLTT_POSITION`,
                             `SLTT_ED_IECIKNIS`, 
                             `SLTT_KEDI_SECTION`,
@@ -904,7 +899,6 @@ class dbProc extends dbLayer
 						 "'.dbLayer::quote_smart($surname).'",
 						 "'.dbLayer::quote_smart($dvArea).'",
 						 "'.dbLayer::quote_smart($isActive).'",
-						 "'.dbLayer::quote_smart($region).'",
                          "'.dbLayer::quote_smart($position).'",
                          "'.dbLayer::quote_smart($edArea).'",
                          "'.dbLayer::quote_smart($section).'",
@@ -918,7 +912,6 @@ class dbProc extends dbLayer
 						`SLTT_UZVARDS`="'.dbLayer::quote_smart($surname).'",
 						`SLTT_KEDI_ID`="'.dbLayer::quote_smart($dvArea).'",
 						`SLTT_IR_AKTIVS`="'.dbLayer::quote_smart($isActive).'",
-						`SLTT_REGIONS`="'.dbLayer::quote_smart($region).'",
                         `SLTT_POSITION`="'.dbLayer::quote_smart($position).'",
                         `SLTT_ED_IECIKNIS`="'.dbLayer::quote_smart($edArea).'",
                         `SLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'",
@@ -1697,7 +1690,7 @@ class dbProc extends dbLayer
              where   e.KEDI_IR_AKTIVS = 1
             AND `KEDI_IS_ELEMENT` = 1
             group by e.KEDI_KODS
-            order by `KEDI_REGIONS`, `KEDI_KODS`';
+            order by  `KEDI_KODS`';
 			//echo $query;
 
            $oSQL = new dbLayer;
@@ -1713,7 +1706,7 @@ class dbProc extends dbLayer
 
 
             $query = 'select * from `KL_ED_IECIRKNI`   e
-            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
+            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_KODS = k.KKAL_KEDI_KODS  )
             where k.KKAL_IR_AKTIVS = 1  and  e.KEDI_IR_AKTIVS = 1
             AND `KEDI_IS_ELEMENT` <> 1
             group by e.KEDI_KODS
@@ -1792,7 +1785,7 @@ class dbProc extends dbLayer
 	function getEDSectionListForWorker($worker, $contract, $trase = 0)
 	{
 			$query = 'select * from `KL_ED_IECIRKNI`   e
-            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
+            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_KODS = k.KKAL_KEDI_KODS  )
             where k.KKAL_IR_AKTIVS = 1  and  e.KEDI_IR_AKTIVS = 1
             AND `KEDI_IS_ELEMENT` <> 1'.
             (($contract == false) ? '' : ' AND `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"' )
@@ -1812,7 +1805,7 @@ class dbProc extends dbLayer
 
 			$query = 'select * from `KL_ED_IECIRKNI`   e
             INNER JOIN KL_MMS_DARBI d ON (e.KEDI_KODS = d.KMSD_KEDI_KODS  )
-            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_SECTION = k.KKAL_KEDI_SECTION  )
+            INNER JOIN '.(($trase == 1)? 'KL_KALKULACIJA_TRASE':'KL_KALKULACIJA' ).' k ON (e.KEDI_KODS = k.KKAL_KEDI_KODS  )
             where e.KEDI_IR_AKTIVS = 1   and k.KKAL_IR_AKTIVS = 1
             and d.KMSD_IR_EPLA = '.$trase.
             (($contract == false) ? '' : ' AND `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"' )
@@ -1883,7 +1876,7 @@ class dbProc extends dbLayer
 	// izveido jaunu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function saveEDArea($ID, $region, $code, $title, $isActive, $section, $element, $user )
+	function saveEDArea($ID, $code, $title, $isActive, $section, $element, $user )
 	{
 	   
 		if ($ID)
@@ -1901,7 +1894,7 @@ class dbProc extends dbLayer
 		elseif ($title)
 		{
 			$query = 'insert into  `KL_ED_IECIRKNI`
-                        (`KEDI_REGIONS`, 
+                        (
                         `KEDI_KODS`, 
                         `KEDI_NOSAUKUMS`, 
                         `KEDI_IR_AKTIVS`, 
@@ -1909,7 +1902,7 @@ class dbProc extends dbLayer
                         `KEDI_IS_ELEMENT`,
                         `KEDI_EDITOR`)
 			values
-                ("'.dbLayer::quote_smart($region).'",
+                (
                 "'.dbLayer::quote_smart($code).'",
                 "'.dbLayer::quote_smart($title).'",
                 "'.dbLayer::quote_smart($isActive).'",
@@ -1933,11 +1926,10 @@ class dbProc extends dbLayer
 	// paarbaudee
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function edAreaWithRegionCodeExists($region, $code, $dvAId = false)
+	function edAreaWithRegionCodeExists($code, $dvAId = false)
 	{
 		$query = 'select `KEDI_ID` from `KL_ED_IECIRKNI`
-            where `KEDI_REGIONS` = "'.dbLayer::quote_smart($region).'"
-		and `KEDI_IR_AKTIVS` = 1 
+            where `KEDI_IR_AKTIVS` = 1 
             and `KEDI_KODS` = "'.dbLayer::quote_smart($code).'"';
 		if ($dvAId)
 		{
@@ -1982,7 +1974,6 @@ class dbProc extends dbLayer
         $query = 'INSERT INTO `KL_ED_IECIRKNI` 
                     (
                             `KEDI_KODS`, 
-                            `KEDI_REGIONS`, 
                             `KEDI_NOSAUKUMS`, 
                             `KEDI_SECTION`, 
                             `KEDI_IS_ELEMENT`,
@@ -1994,14 +1985,12 @@ class dbProc extends dbLayer
                             "'.dbLayer::quote_smart($data[1]).'",
                             "'.dbLayer::quote_smart($data[2]).'",
                             "'.dbLayer::quote_smart($data[3]).'",
-                            "'.dbLayer::quote_smart($data[4]).'",
                             "'.dbLayer::quote_smart( $user).'"
                         )
-                    ON DUPLICATE KEY UPDATE
-                            `KEDI_REGIONS` = "'.dbLayer::quote_smart($data[1]).'",
-                            `KEDI_NOSAUKUMS` = "'.dbLayer::quote_smart($data[2]).'",
-                            `KEDI_SECTION` = "'.dbLayer::quote_smart($data[3]).'",
-                            `KEDI_IS_ELEMENT` = "'.dbLayer::quote_smart($data[4]).'",         
+                    ON DUPLICATE KEY UPDATE                            
+                            `KEDI_NOSAUKUMS` = "'.dbLayer::quote_smart($data[1]).'",
+                            `KEDI_SECTION` = "'.dbLayer::quote_smart($data[2]).'",
+                            `KEDI_IS_ELEMENT` = "'.dbLayer::quote_smart($data[3]).'",         
                             `KEDI_CREATOR` = "'.dbLayer::quote_smart($user).'"
                     ';
 
@@ -3208,7 +3197,7 @@ class dbProc extends dbLayer
                     `KKAL_FIZ_RADIJUMS` = "'.dbLayer::quote_smart($fizRadijums).'",
                     `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'",
                     `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'",
-                    `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($edArea).'",
+                    `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($edArea).'",
                     `KKAL_PLANA` = "'.dbLayer::quote_smart($standart).'",
                     `KKAL_NEPLANA` = "'.dbLayer::quote_smart($standart_np).'",
                     `KKAL_KOEFICENT` = "'.dbLayer::quote_smart($koeficent).'",
@@ -3232,7 +3221,7 @@ class dbProc extends dbLayer
                 `KKAL_FIZ_RADIJUMS`,
                 `KKAL_KWOI_KODS`,
                 `KKAL_VV_NUMBER`,
-                `KKAL_KEDI_SECTION`,
+                `KKAL_KEDI_KODS`,
                 `KKAL_PLANA`,
                 `KKAL_NEPLANA`,
                 `KKAL_KOEFICENT`,
@@ -3281,7 +3270,7 @@ class dbProc extends dbLayer
 		$query = 'select `KKAL_ID` from `KL_KALKULACIJA`
             where `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
             AND `KKAL_TRASE` = "'.dbLayer::quote_smart($trase).'"
-            AND `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($edarea).'"
+            AND `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($edarea).'"
             AND `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"
             AND `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"';	
 		if ($ID)
@@ -3340,7 +3329,7 @@ class dbProc extends dbLayer
                         `KKAL_FIZ_RADIJUMS`,
                         `KKAL_KWOI_KODS`,
                         `KKAL_VV_NUMBER`,
-                        `KKAL_KEDI_SECTION`,
+                        `KKAL_KEDI_KODS`,
                         `KKAL_PLANA`,
                         `KKAL_NEPLANA`,
                         `KKAL_KOEFICENT`,
@@ -3376,7 +3365,7 @@ class dbProc extends dbLayer
                             `KKAL_FIZ_RADIJUMS` = "'.dbLayer::quote_smart($data[5]).'",
                             `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($data[6]).'",
                             `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($data[7]).'",
-                            `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($data[8]).'",
+                            `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($data[8]).'",
                             `KKAL_PLANA` = "'.dbLayer::quote_smart($data[9]).'",
                             `KKAL_NEPLANA` = "'.dbLayer::quote_smart($data[10]).'",
                             `KKAL_KOEFICENT` = "'.dbLayer::quote_smart($data[11]).'",
@@ -3502,7 +3491,7 @@ class dbProc extends dbLayer
                     `KKAL_FIZ_RADIJUMS` = "'.dbLayer::quote_smart($fizRadijums).'",
 
                     `KKAL_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'",
-                    `KKAL_KEDI_SECTION` = "'.dbLayer::quote_smart($edArea).'",
+                    `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($edArea).'",
                     `KKAL_PLAN_PRICE` = "'.dbLayer::quote_smart($planPrice).'",
                     `KKAL_NOT_PLAN_PRICE` = "'.dbLayer::quote_smart($notPlanPrice).'",
                     `KKAL_IS_ELEMENT` = "'.dbLayer::quote_smart($element).'",
@@ -3515,7 +3504,7 @@ class dbProc extends dbLayer
 			$query = 'insert into `'.$tableName.'`
                 (`KKAL_GRUPAS_KODS`, `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_APRAKSTS`,
                  `KKAL_MERVIENIBA`, `KKAL_IR_AKTIVS`, `KKAL_FIZ_RADIJUMS`,
-                 `KKAL_KWOI_KODS`, `KKAL_KEDI_SECTION`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`,
+                 `KKAL_KWOI_KODS`, `KKAL_KEDI_KODS`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`,
                  `KKAL_IS_ELEMENT`, `KKAL_VV_NUMBER`)
 			values
                 ("'.dbLayer::quote_smart($code).'",
@@ -3551,7 +3540,7 @@ class dbProc extends dbLayer
 
 		$query = 'insert into `'.$tableName.'`
                 (`KKAL_GRUPAS_KODS`, `KKAL_SHIFRS`, `KKAL_NOSAUKUMS`, `KKAL_APRAKSTS`,
-                 `KKAL_MERVIENIBA`, `KKAL_IR_AKTIVS`,   `KKAL_FIZ_RADIJUMS`, `KKAL_KWOI_KODS`, `KKAL_KEDI_SECTION`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`, `KKAL_IS_ELEMENT`, `KKAL_VV_NUMBER`)
+                 `KKAL_MERVIENIBA`, `KKAL_IR_AKTIVS`,   `KKAL_FIZ_RADIJUMS`, `KKAL_KWOI_KODS`, `KKAL_KEDI_KODS`, `KKAL_PLAN_PRICE`, `KKAL_NOT_PLAN_PRICE`, `KKAL_IS_ELEMENT`, `KKAL_VV_NUMBER`)
 			values
                 ("'.dbLayer::quote_smart($code).'",
                 "'.dbLayer::quote_smart($chipher).'",
@@ -3669,6 +3658,7 @@ class dbProc extends dbLayer
           `KKAL_IS_ELEMENT`  tinyint(1) DEFAULT 0 NOT NULL ,
           `KKAL_KOEFICENT`   float(5,2) DEFAULT 1 NOT NULL ,
           `KKAL_VV_NUMBER` VARCHAR( 20 )  NOT NULL,
+          `KKAL_KEDI_KODS` CHAR( 5 ) NULL ,
           PRIMARY KEY ( `KKAL_ID` ) ,
           INDEX ( `KKAL_GRUPAS_KODS` )
           ) TYPE = MYISAM CHARACTER SET utf8 COLLATE utf8_latvian_ci;';
@@ -5088,7 +5078,7 @@ class dbProc extends dbLayer
 	{
 
         $query = "select *, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_NOSAUKUMS `TYPE`,
-            e.KEDI_SECTION `ED`,
+            CONCAT(e.KEDI_KODS, ': ', e.KEDI_NOSAUKUMS) `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS`
@@ -5137,7 +5127,7 @@ class dbProc extends dbLayer
              $searcCriteria['monthFrom'] = $sCriteria[2];
              $searcCriteria['monthUntil'] = $sCriteria[3];
              $searcCriteria['worker'] = $sCriteria[4];
-             $searcCriteria['edRegion'] = $sCriteria[5];
+             $searcCriteria['edCode'] = $sCriteria[5];
              $searcCriteria['voltage'] = $sCriteria[6];
              $searcCriteria['ouner'] = $sCriteria[7];
              $searcCriteria['type'] = $sCriteria[8];
@@ -5174,7 +5164,7 @@ class dbProc extends dbLayer
              $searcCriteria['section'] = urldecode($sCriteria[12]);
 
 		    $query = "select *, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_NOSAUKUMS `TYPE`,
-            e.KEDI_SECTION `ED`,
+            CONCAT(e.KEDI_KODS, ': ', e.KEDI_NOSAUKUMS) `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS`
@@ -5222,9 +5212,9 @@ class dbProc extends dbLayer
                 $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
             }
 
-            if(isset($searcCriteria['edRegion']) && $searcCriteria['edRegion'] != -1)
+            if(isset($searcCriteria['edCode']) && $searcCriteria['edCode'] != -1)
             {
-                $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
+                $query .= " and e.KEDI_KODS = '".$searcCriteria['edCode']."' ";
             }
             if(isset($searcCriteria['section']) && $searcCriteria['section'] != -1)
             {
@@ -5279,7 +5269,7 @@ class dbProc extends dbLayer
 
              $searcCriteria['yearFrom'] = $sCriteria[0];            
              $searcCriteria['worker'] = $sCriteria[1];
-             $searcCriteria['edRegion'] = $sCriteria[2];             
+             $searcCriteria['edCode'] = $sCriteria[2];             
              $searcCriteria['ouner'] = $sCriteria[3];
 
              $statusString = '';
@@ -5313,7 +5303,7 @@ class dbProc extends dbLayer
              
 
 		    $query = "select *, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_NOSAUKUMS `TYPE`,
-            e.KEDI_SECTION `ED`,
+            CONCAT(e.KEDI_KODS, ': ', e.KEDI_NOSAUKUMS) `ED`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS`
@@ -5339,9 +5329,9 @@ class dbProc extends dbLayer
             {
                 $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
             }
-            if(isset($searcCriteria['edRegion']) && $searcCriteria['edRegion'] != -1)
+            if(isset($searcCriteria['edCode']) && $searcCriteria['edCode'] != -1)
             {
-                $query .= " and e.KEDI_ID = ".$searcCriteria['edRegion']." ";
+                $query .= " and e.KEDI_KODS = ".$searcCriteria['edCode']." ";
             }
             if(isset($searcCriteria['ouner']) && $searcCriteria['ouner'] != -1)
             {
@@ -6246,7 +6236,7 @@ class dbProc extends dbLayer
              $searcCriteria['monthFrom'] = $sCriteria[2];
              $searcCriteria['monthUntil'] = $sCriteria[3];
              $searcCriteria['worker'] = $sCriteria[4];
-             $searcCriteria['edRegion'] = $sCriteria[5];
+             $searcCriteria['edCode'] = $sCriteria[5];
              $searcCriteria['voltage'] = $sCriteria[6];
              $searcCriteria['ouner'] = $sCriteria[7];
              $searcCriteria['type'] = $sCriteria[8];
@@ -6327,9 +6317,9 @@ class dbProc extends dbLayer
                 $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
             }
 
-            if(isset($searcCriteria['edRegion']) && $searcCriteria['edRegion'] != -1)
+            if(isset($searcCriteria['edCode']) && $searcCriteria['edCode'] != -1)
             {
-                $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
+                $query .= " and e.KEDI_KODS = '".$searcCriteria['edCode']."' ";
             }
             if(isset($searcCriteria['section']) && $searcCriteria['section'] != -1)
             {
@@ -6379,7 +6369,7 @@ class dbProc extends dbLayer
 
              $searcCriteria['yearFrom'] = $sCriteria[0];
              $searcCriteria['worker'] = $sCriteria[1];
-             $searcCriteria['edRegion'] = $sCriteria[2];
+             $searcCriteria['edCode'] = $sCriteria[2];
              $searcCriteria['ouner'] = $sCriteria[3];
              
              $statusString = '';
@@ -6411,7 +6401,6 @@ class dbProc extends dbLayer
                 $searcCriteria['status']  = substr($statusString, 0, -1);
              }
              
-
 		    $query = "SELECT COUNT(1) as `ACT_COUNT` FROM (select 1
             from `AKTI` a
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
@@ -6433,9 +6422,9 @@ class dbProc extends dbLayer
             {
                 $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
             }
-            if(isset($searcCriteria['edRegion']) && $searcCriteria['edRegion'] != -1)
+            if(isset($searcCriteria['edCode']) && $searcCriteria['edCode'] != -1)
             {
-                $query .= " and e.KEDI_ID = ".$searcCriteria['edRegion']." ";
+                $query .= " and e.KEDI_KODS = ".$searcCriteria['edCode']." ";
             }
             if(isset($searcCriteria['ouner']) && $searcCriteria['ouner'] != -1)
             {
@@ -6711,7 +6700,7 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	function getFreeCalculationList($calcGroup, $actId, $trase = 0, $searchText = '')
 	{
-    	  $query = 'select e.KEDI_SECTION as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
+    	  $query = 'select e.KEDI_KODS as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
           RAKT_KWOI_KODS as `WORKER`, RAKT_VV_NUMBER as `CONTRACT`
           FROM `AKTI` a
           LEFT JOIN `KL_AKTA_VEIDS` av ON (a.RAKT_KAKV_ID = av.KAKV_ID)
@@ -6736,7 +6725,7 @@ class dbProc extends dbLayer
             where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
             and `KKAL_KWOI_KODS` =  "'.$worker.'"
             and `KKAL_VV_NUMBER` =  "'.$contract.'"
-            and `KKAL_KEDI_SECTION` =  "'.$section.'"
+            and `KKAL_KEDI_KODS` =  "'.$section.'"
             and  `KKAL_PLANA` IS NOT NULL
             and KKAL_TRASE = '.$trase.' 
             and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .'             
@@ -6755,7 +6744,7 @@ class dbProc extends dbLayer
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
-              and `KKAL_KEDI_SECTION` =  "'.$section.'"
+              and `KKAL_KEDI_KODS` =  "'.$section.'"
               and  `KKAL_NEPLANA` IS NOT NULL
               and `KKAL_TRASE`  = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1
@@ -6775,7 +6764,7 @@ class dbProc extends dbLayer
                  AND kk.KKAL_NOSAUKUMS =  k.KKAL_NOSAUKUMS
                  AND kk.KKAL_KWOI_KODS = "'.$worker.'"
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
-                 and kk.KKAL_KEDI_SECTION =  "'.$section.'"
+                 and kk.KKAL_KEDI_KODS =  "'.$section.'"
                   AND  kk.KKAL_IS_ELEMENT = 1
                   and kk.KKAL_TRASE  = '.$trase.'
                  ),
@@ -6800,7 +6789,7 @@ class dbProc extends dbLayer
             and k.KKAL_TRASE = '.$trase.'
             AND  k.KKAL_IS_ELEMENT = 1  ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
             GROUP BY `KKAL_SHIFRS`            
-            order by `KKAL_SHIFRS` asc';           // and k.KKAL_KEDI_SECTION =  "'.$section.'"
+            order by `KKAL_SHIFRS` asc';           // and k.KKAL_KEDI_KODS =  "'.$section.'"
            }
           }
           else
@@ -6812,7 +6801,7 @@ class dbProc extends dbLayer
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
-              and `KKAL_KEDI_SECTION` =  "'.$section.'"
+              and `KKAL_KEDI_KODS` =  "'.$section.'"
               and  `KKAL_NEPLANA` IS NOT NULL
               and KKAL_TRASE = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
@@ -6825,7 +6814,7 @@ class dbProc extends dbLayer
               where `KKAL_GRUPAS_KODS` = "'.dbLayer::quote_smart($calcGroup).'"
               and `KKAL_KWOI_KODS` =  "'.$worker.'"
               and `KKAL_VV_NUMBER` =  "'.$contract.'"
-              and `KKAL_KEDI_SECTION` =  "'.$section.'"
+              and `KKAL_KEDI_KODS` =  "'.$section.'"
               and  `KKAL_NEPLANA` IS NOT NULL
               and KKAL_TRASE = '.$trase.'
               and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
@@ -6869,7 +6858,7 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	function getAllCalculationList( $actId, $trase = 0, $searchText = '')
 	{
-    	  $query = 'select e.KEDI_SECTION as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
+    	  $query = 'select e.KEDI_KODS as `SEC`, av.KAKV_IR_PLANS as `PLAN`, a.RAKT_KAKV_ID  as `TYPE` ,
           RAKT_KWOI_KODS as `WORKER`, RAKT_VV_NUMBER as `CONTRACT`
           FROM `AKTI` a
           LEFT JOIN `KL_AKTA_VEIDS` av ON (a.RAKT_KAKV_ID = av.KAKV_ID)
@@ -6894,7 +6883,7 @@ class dbProc extends dbLayer
             from `KL_KALKULACIJA`
             where `KKAL_KWOI_KODS` = "'.$worker.'"
             and `KKAL_VV_NUMBER` =  "'.$contract.'"
-            and `KKAL_KEDI_SECTION` =  "'.$section.'"
+            and `KKAL_KEDI_KODS` =  "'.$section.'"
             and  `KKAL_PLANA` IS NOT NULL 
             and KKAL_TRASE = '.$trase.'
             and `KKAL_IR_AKTIVS` = 1  ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
@@ -6912,7 +6901,7 @@ class dbProc extends dbLayer
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
-                and `KKAL_KEDI_SECTION` =  "'.$section.'"
+                and `KKAL_KEDI_KODS` =  "'.$section.'"
                 and  `KKAL_NEPLANA` IS NOT NULL
                 and `KKAL_IR_AKTIVS` = 1
                 and KKAL_TRASE = '.$trase.'
@@ -6931,7 +6920,7 @@ class dbProc extends dbLayer
                  AND kk.KKAL_NOSAUKUMS =  k.KKAL_NOSAUKUMS
                  AND kk.KKAL_KWOI_KODS = "'.$worker.'"
                  and kk.KKAL_VV_NUMBER =  "'.$contract.'"
-                 and kk.KKAL_KEDI_SECTION =  "'.$section.'"
+                 and kk.KKAL_KEDI_KODS =  "'.$section.'"
                   AND  kk.KKAL_IS_ELEMENT = 1
                   and kk.KKAL_TRASE  = '.$trase.'
                  ),
@@ -6955,7 +6944,7 @@ class dbProc extends dbLayer
             and k.KKAL_TRASE  = '.$trase.'
             AND  k.KKAL_IS_ELEMENT = 1 ' . (($searchText == '')? '' : ' AND k.KKAL_NOSAUKUMS LIKE "%'.$searchText.'%"') .' 
             GROUP BY `KKAL_SHIFRS`
-            order by `KKAL_SHIFRS` asc';    // and k.KKAL_KEDI_SECTION =  "'.$section.'"
+            order by `KKAL_SHIFRS` asc';    // and k.KKAL_KEDI_KODS =  "'.$section.'"
            }
           }
           else
@@ -6966,7 +6955,7 @@ class dbProc extends dbLayer
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
-                and `KKAL_KEDI_SECTION` =  "'.$section.'"
+                and `KKAL_KEDI_KODS` =  "'.$section.'"
                 and  `KKAL_NEPLANA` IS NOT NULL
                 and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
@@ -6978,7 +6967,7 @@ class dbProc extends dbLayer
                 from `KL_KALKULACIJA`
                 where `KKAL_KWOI_KODS` = "'.$worker.'"
                 and `KKAL_VV_NUMBER` =  "'.$contract.'"
-                and `KKAL_KEDI_SECTION` =  "'.$section.'"
+                and `KKAL_KEDI_KODS` =  "'.$section.'"
                 and  `KKAL_NEPLANA` IS NOT NULL
                 and KKAL_TRASE  = '.$trase.'
                 and `KKAL_IR_AKTIVS` = 1 ' . (($searchText == '')? '' : ' AND `KKAL_NOSAUKUMS` LIKE "%'.$searchText.'%"') .' 
@@ -8285,7 +8274,7 @@ class dbProc extends dbLayer
                                 $monthFrom = '',
                                 $monthUntil = '',
                                 $worker = '',
-                                $edRegion = '',
+                                $edCode = '',
                                 $edArea = '',
                                 $voltage = '',
                                 $ouner = '',
@@ -8314,9 +8303,8 @@ class dbProc extends dbLayer
                                 `monthFrom`,
                                 `monthUntil`,
                                 `worker`,
-                                `edRegion`,
+                                `edCode`,
                                 `edArea`,
-
                                 `voltage`,
                                 `ouner`,
                                 `type`,
@@ -8341,7 +8329,7 @@ class dbProc extends dbLayer
                                 "'.dbLayer::quote_smart($monthUntil).'",
 
                                 "'.dbLayer::quote_smart($worker).'",
-                                "'.dbLayer::quote_smart($edRegion).'",
+                                "'.dbLayer::quote_smart($edCode).'",
                                 "'.dbLayer::quote_smart($edArea).'",
 
                                 "'.dbLayer::quote_smart($voltage).'",
@@ -8465,11 +8453,13 @@ class dbProc extends dbLayer
 	{
        //   echo $workerCode; echo $isTrase;
 		$oSQL=new dbLayer();
-		$sql = 'select DISTINCT * from `KL_CONTRACT`
-                where  `KCNT_KWOI_KODS` ="'.dbLayer::quote_smart($workerCode).'"
-                '.(($isTrase == -1)? '' : ' AND `KCNT_IR_TRASE` = ' . dbLayer::quote_smart($isTrase)).'
-                '.(($isOnlyActive)? ' AND `KCNT_IR_AKTIVS` = 1 ' : ' ').'';
-       // echo $sql;
+        $sql = "select DISTINCT ct.*, concat(ct.KONT_KEDI_KODS, ': ', ie.KEDI_NOSAUKUMS) as KCNT_EDAREA 
+                from `KL_CONTRACT` ct
+                INNER JOIN kl_ed_iecirkni ie on ie.KEDI_KODS = ct.KONT_KEDI_KODS
+                where  `KCNT_KWOI_KODS` ='".dbLayer::quote_smart($workerCode)."'
+                ".(($isTrase == -1)? "" : " AND `KCNT_IR_TRASE` = " . dbLayer::quote_smart($isTrase))."
+                ".(($isOnlyActive)? " AND `KCNT_IR_AKTIVS` = 1 " : " ")."";
+        //echo $sql;
 		return $oSQL -> makeQuery($sql);
 	}
 
@@ -8485,12 +8475,12 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($sql);
 	}
 
-    function isEqualContract($contractNo, $section, $isTrase)
+    function isEqualContract($contractNo, $edArea, $isTrase)
 	{
 		$oSQL=new dbLayer();
 		$sql = 'select COUNT(*) as CONTRACT from `KL_CONTRACT`
                 where  `KCNT_VV_NUMBER` ="'.dbLayer::quote_smart($contractNo).'"
-                AND `KCNT_SECTION` ="'.dbLayer::quote_smart($section).'"
+                AND `KONT_KEDI_KODS` ="'.dbLayer::quote_smart($edArea).'"
                 AND  `KCNT_IR_TRASE` = '.dbLayer::quote_smart($isTrase);
         $res = $oSQL->makeQuery($sql);
 		if (isset($res[0]['CONTRACT']))
@@ -8502,7 +8492,7 @@ class dbProc extends dbLayer
 
 	}
 
-    function saveContractNo($workerCode, $oTrase, $oContractNo, $section, $id, $isActive, $oSignatory)
+    function saveContractNo($workerCode, $oTrase, $oContractNo, $edArea, $id, $isActive, $oSignatory)
 	{
         $query = '';
 		if ($id)
@@ -8510,7 +8500,7 @@ class dbProc extends dbLayer
 			$query = 'update `KL_CONTRACT`
 				set `KCNT_KWOI_KODS` = "'.dbLayer::quote_smart($workerCode).'",
                     `KCNT_VV_NUMBER` = "'.dbLayer::quote_smart($oContractNo).'",
-                    `KCNT_SECTION` = "'.dbLayer::quote_smart($section).'",
+                    `KONT_KEDI_KODS` = "'.dbLayer::quote_smart($edArea).'",
                     `KCNT_IR_TRASE` = "'.dbLayer::quote_smart($oTrase).'",
                     `KCNT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
                     `KCNT_SIGNATORY` = "'.dbLayer::quote_smart($oSignatory).'"
@@ -8520,13 +8510,13 @@ class dbProc extends dbLayer
 		elseif ($oContractNo)
 		{
 			$query = 'insert into  `KL_CONTRACT`
-                (`KCNT_KWOI_KODS`, `KCNT_VV_NUMBER`, `KCNT_SECTION`, `KCNT_IR_TRASE`, `KCNT_IR_AKTIVS`,
+                (`KCNT_KWOI_KODS`, `KCNT_VV_NUMBER`, `KONT_KEDI_KODS`, `KCNT_IR_TRASE`, `KCNT_IR_AKTIVS`,
                 `KCNT_SIGNATORY`)
 			values
                 (
                 "'.dbLayer::quote_smart($workerCode).'",
                 "'.dbLayer::quote_smart($oContractNo).'",
-                "'.dbLayer::quote_smart($section).'",
+                "'.dbLayer::quote_smart($edArea).'",
                 "'.dbLayer::quote_smart($oTrase).'",
                 "'.dbLayer::quote_smart($isActive).'",
                 "'.dbLayer::quote_smart($oSignatory).'")';
@@ -8592,7 +8582,7 @@ class dbProc extends dbLayer
             {
                 foreach ($contractArray as $row)
             	{
-            		$contractStr .= $row['KCNT_SECTION'].': '.$row['KCNT_VV_NUMBER'] .' '.$row['KCNT_SIGNATORY'] . '<br>';
+            		$contractStr .= $row['KCNT_EDAREA'].': '.$row['KCNT_VV_NUMBER'] .' '.$row['KCNT_SIGNATORY'] . '<br>';
             	}
             }
             return $contractStr;
@@ -9600,12 +9590,30 @@ class dbProc extends dbLayer
             }
 		return false;
 
+    }
+    
+    function getActEDCode($actId) {
+		$query = 'select `KEDI_KODS`
+                from KL_ED_IECIRKNI e
+                inner join AKTI a ON a.RAKT_KEDI_ID = e.KEDI_ID
+                        where `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+                limit 1';
+
+            
+            $oSQL = new dbLayer;
+            $result = $oSQL -> makeQuery($query);
+            if (isset($result[0]['KEDI_KODS']))
+            {
+                return $result[0]['KEDI_KODS'];
+            }
+		return false;
+
 	}
 
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
-	        $section = dbProc::getActSectionName($actId);
+	        $section = dbProc::getActEDCode($actId);
             if ($mmsList!==false)
             {
                 $oDB = new dbLayer;
@@ -9614,7 +9622,7 @@ class dbProc extends dbLayer
                 foreach ($mmsList as $mms)
                 {	
                     $query = 'SELECT '.dbLayer::quote_smart($actId).' as `AKT_ID`, `KKAL_ID`, `KKAL_SHIFRS`, 
-                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, `KKAL_KEDI_SECTION`,
+                                `KKAL_NOSAUKUMS`, `KKAL_PLANA`, `KKAL_MERVIENIBA`, `KKAL_KEDI_KODS`,
                             CASE WHEN `KMKL_IZMANTOT_LINIJU` = 1 
                                 THEN 
                                     CASE WHEN `KMKL_IZMANTOT_VADU` = 1 
@@ -9631,7 +9639,7 @@ class dbProc extends dbLayer
                             END  AS `DAUDZUMS`
                             FROM `kl_mms_kalkulacija` 
                             INNER JOIN `kl_kalkulacija` ON `KKAL_SHIFRS` = `KMKL_KKAL_SHIFRS`
-                            INNER JOIN  `kl_ed_iecirkni` ON `KEDI_SECTION` = `KKAL_KEDI_SECTION`
+                            INNER JOIN  `kl_ed_iecirkni` ON `KEDI_KODS` = `KKAL_KEDI_KODS`
                             WHERE `KMKL_IR_AKTIVS` = 1 
                             AND `KKAL_KWOI_KODS` = "'.$mms['KMSD_IZPILDITAJA_KODS'].'"
 			                AND `KKAL_VV_NUMBER` = "'.$mms['KMSD_VV_NUMURS'].'"
@@ -9649,7 +9657,7 @@ class dbProc extends dbLayer
                         
                     foreach ($res as $work)
                     {
-                        if($work['KKAL_KEDI_SECTION'] != $section) {
+                        if($work['KKAL_KEDI_KODS'] != $section) {
                             continue;
                         }
                                                 

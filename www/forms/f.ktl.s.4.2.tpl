@@ -24,29 +24,22 @@
 
 	</tr>
 	<tr>
-
-
-        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('region'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('region'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('section'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('section'); ?></td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('edArea'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('edArea'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('isActive'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('isActive'); ?></td>
 	</tr>
-	<tr>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('edArea'); ?>:</td>
-		<td class="table_cell_2" colspan="2"><?= $oForm -> getElementHtml('edArea'); ?></td>
-         <td class="table_cell_c"><?= $oForm -> getElementLabel('department'); ?>:</td>
-		<td class="table_cell_2" colspan="2"><?= $oForm -> getElementHtml('department'); ?></td>
-	</tr>
 	<tr>        
-		<td class="table_cell_c">&nbsp;</td>
-		<td class="table_cell_2">&nbsp;</td>
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('department'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('department'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('created'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('created'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('creator'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('creator'); ?></td>
 	</tr>
+	
 	<tr>
 		<td class="table_cell_c">&nbsp;</td>
 		<td class="table_cell_2">&nbsp;</td>
