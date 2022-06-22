@@ -22,7 +22,7 @@
             <td align="left"><?= text::get('YEAR'); ?></td>
             <td align="left"><?= text::get('STATUS'); ?></td>
             <td align="left"><?= text::get('PRINT_WORK_TITLE'); ?></td>
-            <td align="left"><?= text::get('ED_SECTION'); ?></td>
+            <td align="left"><?= text::get('SINGL_ED_AREA'); ?></td>
             <td align="left"><?= text::get('SINGL_WORK_OWNER'); ?></td>
             <td align="left"><?= text::get('USER'); ?></td>
 		</tr>

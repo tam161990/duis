@@ -29,8 +29,9 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('surname'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('password'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('password'); ?></td>
-        <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('region'); ?>:</td>
-		<td class="table_cell_2" width="16%"><?= $oForm -> getElementHtml('region'); ?></td>
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('section'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('section'); ?></td>
+
 
 	</tr>
 	<tr>
@@ -38,9 +39,8 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('isActive'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('password2'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('password2'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('section'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('section'); ?></td>
-
+		<td class="table_cell_c"><?= $oForm -> getElementLabel('edArea'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('edArea'); ?></td>
 
 	</tr>
 	<tr>
@@ -48,8 +48,8 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('irAdmin'); ?></td>
 		<td class="table_cell_c"><?= $oForm -> getElementLabel('changePass'); ?></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('changePass'); ?></td>
-        <td class="table_cell_c"><?= $oForm -> getElementLabel('edArea'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('edArea'); ?></td>
+        <td class="table_cell_c">&nbsp;</td>
+		<td class="table_cell_2">&nbsp;</td>
 	</tr>
 
 </table>

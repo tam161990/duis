@@ -14,6 +14,7 @@ if (reqVar::get('xmlHttp') == 1)
         {
           document.all["ouner"].options[i] = null;
         }
+        document.all["ouner"].options[0] = new Option( '<?=text::get('ALL');?>', '-1');
         <?
           $i = 1;
           foreach ($res as $row)
@@ -38,7 +39,7 @@ if (reqVar::get('xmlHttp') == 1)
         $isAdmin=userAuthorization::isAdmin();
         $isEditor = (userAuthorization::getWorker() != false) ? true : false;
         $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
-        $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
+        $isProjector = dbProc::isExistsUserRoleWithProject($userId) && !$isAdmin ;
 
         // if came back from act
         $selectedId = reqVar::get('selectedId');        
@@ -47,19 +48,7 @@ if (reqVar::get('xmlHttp') == 1)
       	{
       		$user = $userInfo[0];
        	}
-         // get ED region list         
-         $edRegion['-1']=text::get('ALL');
-         $res=dbProc::getEDAreaActivList();
-
-          if (is_array($res))
-          {
-                foreach ($res as $row)
-                {
-                    $edRegion[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
-                }
-          }
-          unset($res);
-
+        
         // get users list
         $usersList = array();
         $usersList['-1']=text::get('ALL');
@@ -72,7 +61,7 @@ if (reqVar::get('xmlHttp') == 1)
         }
         if (is_array($res))
         {
-          $usersList['-1']=text::get('ALL');
+          
           foreach ($res as $row)
           {
             $usersList[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
@@ -101,18 +90,18 @@ if (reqVar::get('xmlHttp') == 1)
     	{
            $searcCriteria['yearFrom'] = $oForm->getValue('yearFrom');
            $searcCriteria['worker'] = (($isProjector)? ((!empty($workerCode)) ? $workerCode : -1) : $oForm->getValue('worker'));
-           $searcCriteria['edRegion'] = $oForm->getValue('edRegion');
+           $searcCriteria['edCode'] = $oForm->getValue('edCode');
            $searcCriteria['ouner'] = $oForm->getValue('ouner');
            $searcCriteria['status']  = $oForm->getValue('status');
            $searcCriteria['status1']  = implode("*",$oForm->getValue('status'));
-           
+                      
            dbProc::replaceSearchResult($searchName, $userId,
                                 $searcCriteria['yearFrom'],
                                 '',
                                 '',
                                 '',
                                 $searcCriteria['worker'],
-                                $searcCriteria['edRegion'],
+                                $searcCriteria['edCode'],
                                 '',
                                 '',
                                 $searcCriteria['ouner'],
@@ -152,7 +141,7 @@ if (reqVar::get('xmlHttp') == 1)
             }
            $searcCriteria['yearFrom'] = isset($critery['yearFrom'])? $critery['yearFrom'] :dtime::getCurrentYear();
            $searcCriteria['worker'] = (($isEditor)? $workerCode : (isset($critery['worker']) ? $critery['worker'] : '-1'));
-           $searcCriteria['edRegion'] = isset($critery['edRegion'])? $critery['edRegion'] :'-1';
+           $searcCriteria['edCode'] = isset($critery['edCode'])? $critery['edCode'] :'-1';
            $searcCriteria['ouner'] = isset($critery['ouner'])? $critery['ouner'] : (($isAdmin) ? '-1' : $userId) ;
            $searcCriteria['status']  = isset($critery['status1'])? explode("*",$critery['status1']) : array(STAT_CLOSE);
            
@@ -168,7 +157,7 @@ if (reqVar::get('xmlHttp') == 1)
 
         $oForm -> addElement('kls2', 'worker',  text::get('SINGL_WORK_OWNER'),  array('classifName'=>KL_WORK_OWNERS,'value'=>$searcCriteria['worker'],'readonly'=>false), (($isEditor)?' disabled ':'').'maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
         unset($oLink);
-		    $oForm -> addElement('select', 'edRegion',  text::get('ED_REGION'), $searcCriteria['edRegion'], '', '', '', $edRegion);
+		    $oForm -> addElement('kls2', 'edCode',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>$searcCriteria['edCode'],'readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
         
         $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), $searcCriteria['ouner'], '', '', '', $usersList);
 
