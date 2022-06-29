@@ -275,7 +275,8 @@ class toPdf {
 		$engeneerName = dbProc::GetEngineerName($act['RAKT_KEDI_ID'], 'ENGINEER');
 		$start_date = date('d.m.Y');
 		$pvn = PCT_21  ;
-
+		$signatory = dbProc::GetSignatory($act['RAKT_KEDI_ID'], $act['RAKT_VV_NUMBER'], $act['RAKT_KWOI_KODS']) ;
+		
 		$pdf=new FPDF();
 		$pdf->AddFont('Arial','','arial.php');
 		$pdf->AddFont('Arial','BI','arialbi.php');
@@ -458,12 +459,12 @@ class toPdf {
 		 ''
 			 ),
 		  array(
-		  iconv('UTF-8', 'windows-1257',$act['AUTORS']),
+		  iconv('UTF-8', 'windows-1257',(empty($signatory) ? $act['AUTORS'] : $signatory)),
 		  ''
 			 )
 		  );
 		$pdf->FooterTablePortraitAsimetrikal($actFooter);
-
+		
 		// saglaba faila datus
 		$res=dbProc::replaceFile(
 			'T_'.$act['NUMURS'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
