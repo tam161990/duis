@@ -3,7 +3,7 @@
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
-$isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
+$isProjector = dbProc::isExistsUserRoleWithProject($userId)  ;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
 
@@ -136,9 +136,18 @@ if ( $isAdmin || $isProjector || $projectApprover )
         $statusLabel =  $act['STATUS_NAME'];
         $worker = $act['RAKT_KWOI_KODS'];
 
-        if($worker !== false) {
-          $res = dbProc::getProjectorWorkerList($worker);
-        }
+        if($worker !== false && !empty($worker)) 
+        {
+          if( !$isEditor && !$isAdmin) { 
+            $res = dbProc::getUserInfo($userId);
+          } 
+          else { 
+            $res = dbProc::getProjectorWorkerList($worker);
+          }
+        } 
+        else {
+          $res = dbProc::getProjectorWorkerList(-1);       
+        }  	
   	}
   }
   else
@@ -149,6 +158,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
     $statusLabel = $statusInfo['KRFK_NOZIME'];    
     $worker = userAuthorization::getWorker();
 
+    if( !$isEditor) {        
+      $res = dbProc::getUserInfo($userId);
+      $worker = dbProc::getWorkOwnerCode(ST);
+    }
     if($isAdmin) {
       $res = dbProc::getProjectorWorkerList();
     }
@@ -191,7 +204,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
     }
 	
     //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = �Ekonomists�  un AKTS:STATUS = �Saska?o?ana�.
-    if(($projectApprover || $isAdmin) && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
+    if((($projectApprover && !$isProjector)|| $isAdmin) && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
     {
       $isReadonlyExceptEconomist   = false;
     }
@@ -232,7 +245,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
   $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $edarea);
     
-  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:'', ''.((!$isReadonlyExceptAdmin || !$isReadonly)? '' :' disabled').'', '', '', $ouner);
+  $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:(($isEditor) ? '' : $userId), ''.((!$isReadonlyExceptAdmin || !$isReadonly )? '' :' disabled').'', '', '', $ouner);
   
   $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_PROJECT_TYPE'])?$act['RAKT_PROJECT_TYPE']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $type);
   
@@ -243,9 +256,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
   $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), 
   array('classifName'=>KL_WORK_OWNERS,
-        'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']:'',
+        'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']: (($isEditor) ? '' : $worker),
         'readonly'=>false), 
-        ((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled') . ' maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
+        ((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled') . ' maxlength="2000" '.
+        ((!$isEditor) ? '' : 'onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"'));
 
   $oForm -> addElement('text', 'numPostfix',  text::get('ACT_NUM_POSTFIX'), isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', 'maxlength="16" '.(($isReadonlyExceptAdmin )?' disabled':''));
 
