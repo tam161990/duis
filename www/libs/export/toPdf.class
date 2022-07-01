@@ -44,7 +44,7 @@ class toPdf {
 				) ,
 		array(
 
-			array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(($date == false) ? $start_date : $date)), 'L', '', 8),
+			array('', 'L', '', 8),
 			array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
 				),
 		array(
@@ -71,10 +71,7 @@ class toPdf {
 			array(iconv('UTF-8', 'windows-1257',text::get('ED_IECIKNIS').':'), 'L', '', 8),
 			array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
 				) ,
-		array(
-			array(iconv('UTF-8', 'windows-1257',$regionName. ' '. text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
-			array('', 'L', '', 8)
-				) ,
+		
 		array(
 			array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
 			array('', 'L', '', 8)
@@ -83,10 +80,7 @@ class toPdf {
 			array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
 			array('', 'L', '',8)
 				) ,
-		array(
-			array(iconv('UTF-8', 'windows-1257',$regionName . ' '.text::get('REPORT_REGION')), 'L', 'B', 8),
-			array('', 'L', '', 8)
-				) ,
+		
 		array(
 			array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
 			array('', 'L', '', 8)
@@ -189,12 +183,9 @@ class toPdf {
 			),
 		array(
 			iconv('UTF-8', 'windows-1257',''),
-			iconv('UTF-8', 'windows-1257',  $departmentName .', '.dbProc::getKrfkTextByName('ENGINEER') )
+			iconv('UTF-8', 'windows-1257',  dbProc::getKrfkTextByName('ENGINEER') . ' '.(($engineer == false) ? $engeneerName : $engineer ) )
 			),
-		array(
-			iconv('UTF-8', 'windows-1257',''),
-			iconv('UTF-8', 'windows-1257', (($engineer == false) ? $engeneerName : $engineer ))
-			),
+		
 		array(
 			iconv('UTF-8', 'windows-1257',text::get('REPORT_WORKER_FINISHED').': '),
 			iconv('UTF-8', 'windows-1257','')
@@ -202,39 +193,18 @@ class toPdf {
 
 		array(
 			iconv('UTF-8', 'windows-1257',$act['WORKER']),
-			iconv('UTF-8', 'windows-1257',  $departmentName .', ' . text::get('EXP_OUNER_OPERATING_PART') )
+			iconv('UTF-8', 'windows-1257','')
 			),
 		array(
 			iconv('UTF-8', 'windows-1257',(empty($signatory) ? $act['AUTORS'] : $signatory)),
-			iconv('UTF-8', 'windows-1257', $depChifName )
+			iconv('UTF-8', 'windows-1257','')
 			),
 
-		array(
-			'',
-			''
-			),
-		array(
-			iconv('UTF-8', 'windows-1257','__________________________________'),
-			iconv('UTF-8', 'windows-1257', '_________________________________________________')
-			),
-
-		array(
-			iconv('UTF-8', 'windows-1257','               ('.strtolower(text::get('DATE')).')'),
-			iconv('UTF-8', 'windows-1257','                      ('.strtolower(text::get('DATE')).')')
-			),
-
-		array(
-			iconv('UTF-8', 'windows-1257','__________________________________'),
-			iconv('UTF-8', 'windows-1257', '_________________________________________________')
-			),
-		array(
-			iconv('UTF-8', 'windows-1257','               ('.strtolower(text::get('SIGNATURE')).')'),
-			iconv('UTF-8', 'windows-1257','                      ('.strtolower(text::get('SIGNATURE')).')')
-			),
 		array(
 			'',
 			''
 			)
+		
 		);
 
 		$pdf->FooterTablePortraitAsimetrikal($actFooter);
@@ -303,7 +273,7 @@ class toPdf {
 				) ,
 		  array(
 
-			 array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(date('d.m.Y'))), 'L', '', 8),
+			 array('', 'L', '', 8),
 			 array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']), 'R', 'B', 10)
 				),
 		  array(
@@ -330,10 +300,7 @@ class toPdf {
 			 array(iconv('UTF-8', 'windows-1257',text::get('ED_IECIKNIS').':'), 'L', '', 8),
 			 array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
 				) ,
-		   array(
-			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
-			 array('', 'L', '', 8)
-				) ,
+		   
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',$act['KEDI_SECTION']), 'L', 'B', 8),
 			 array('', 'L', '', 8)
@@ -342,10 +309,7 @@ class toPdf {
 			 array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
 			 array('', 'L', '',8)
 				) ,
-		   array(
-			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
-			 array('', 'L', '', 8)
-				) ,
+		   
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
 			 array('', 'L', '', 8)
@@ -771,7 +735,7 @@ class toPdf {
 			 array('', 'L', '', 8)
 				) ,
 		   array(
-			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
+			 array(iconv('UTF-8', 'windows-1257', text::get('REPORT_DEPARTMENT')), 'L', 'B', 8),
 			 array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
 				) ,
 		   array(
@@ -782,10 +746,7 @@ class toPdf {
 			 array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', '', 8),
 			 array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
 				) ,
-		   array(
-			 array(iconv('UTF-8', 'windows-1257', $regionName.' '.text::get('REPORT_REGION')), 'L', 'B', 8),
-			 array('', 'L', '', 8)
-				) ,
+		   
 		   array(
 			 array(iconv('UTF-8', 'windows-1257',$act['KEDI_NOSAUKUMS'] ), 'L', 'B', 8),
 			 array('', 'L', '', 8)

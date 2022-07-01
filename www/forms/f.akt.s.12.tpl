@@ -13,7 +13,7 @@
      <td colspan="2">&nbsp;</td>
   </tr>
   <tr>     
-        <td><?= dtime::dateToLvStringEmpty(date('d.m.Y')); ?></td>
+        <td></td>
     <td align="right"><b><?=text::get('NUMBER_SIMBOL').'. '.$act['NUMURS']; ?></b></td>
   </tr>
   <tr>
@@ -59,11 +59,6 @@
   </tr>
   <tr>
     <td><?= text::get('ED_IECIKNIS').':'; ?></td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <tr>
-    <td><b><?= $regionName .' '. $departmentName; ?></b></td>
     <td><?= text::get('REPORT_WORK_DONE'); ?></td>
   </tr>
   <tr>
@@ -74,10 +69,7 @@
     <td><?= text::get('WORKS_AND_TERITORY'); ?></td>
     <td><?= text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']; ?></td>
   </tr>
-  <tr>
-    <td><b><?= $regionName .' '. text::get('REPORT_REGION'); ?></b></td>
-    <td>&nbsp;</td>
-  </tr>
+  
   <tr>
     <td><b><?= $act['KEDI_NOSAUKUMS']; ?></b></td>
     <td>&nbsp;</td>

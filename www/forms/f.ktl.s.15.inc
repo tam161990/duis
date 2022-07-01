@@ -3,7 +3,7 @@
 $userId = userAuthorization::getUserId();
 $isEdUser = (dbProc::isUserInRole($userId, ROLE_ED_USER) || dbProc::isUserInRole($userId, ROLE_AUDIT_USER));
 // by default 10 contract numbers for one DU
-define('CONTRACT_MAX_COUNT', 30);
+define('CONTRACT_MAX_COUNT', 50);
 // error end warning messages for delete
 $errorMsgDelete = text::get('ERROR_CONTRACT_IS_USED');
 $warningMsgDelete = text::get('WARNING_DELETE_CONTRACT');
