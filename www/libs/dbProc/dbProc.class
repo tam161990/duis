@@ -9097,7 +9097,7 @@ class dbProc extends dbLayer
                                 WHERE  `AAST_KODS` IS NOT NULL 
                                 AND `AAST_STATUS` IS NOT NULL
                                 AND `RAKT_STATUS` IN ( "'.STAT_AUTO.'", "'.STAT_ACCEPT.'", "'.STAT_INSERT.'", 
-                                "'.STAT_WRETEDOFF.'", "'.STAT_CLOSE.'" )
+                                "'.STAT_WRETEDOFF.'" )
                                 ORDER BY AAST_CREATED';
             //echo $query;
            // files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. $query);						
@@ -9156,7 +9156,7 @@ class dbProc extends dbLayer
                         $status = STAT_RETURN;
                         break;                   
                     case 'CLOSE':
-                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT || $act['RAKT_STATUS'] == STAT_CLOSE ) ? STAT_CLOSE : $act['RAKT_STATUS']);
+                        $status = (($act['RAKT_STATUS'] == STAT_ACCEPT ) ? STAT_CLOSE : $act['RAKT_STATUS']);
                         break;       
                     case 'AUTO':
                         $status = $act['RAKT_STATUS'];
