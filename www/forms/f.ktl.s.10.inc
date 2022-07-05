@@ -170,7 +170,7 @@ if ($isAdmin || $isAuditUser || $isEdUser)
 		if($trase == 1) $oForm -> addRule('worker', text::get('ERROR_REQUIRED_FIELD'), 'required');
         unset($oLink);
 
-        $oForm -> addElement('kls', 'edArea',  text::get('ED_SECTION'), array('classifName'=>KL_ED_SECTIONS,'value'=>isset($calc['KKAL_KEDI_SECTION'])?$calc['KKAL_KEDI_SECTION']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isAuditUser)?' disabled' : ''));
+        $oForm -> addElement('kls', 'edArea',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>isset($calc['KKAL_KEDI_KODS'])?$calc['KKAL_KEDI_KODS']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isAuditUser)?' disabled' : ''));
 		if($trase == 1) $oForm -> addRule('edArea', text::get('ERROR_REQUIRED_FIELD'), 'required');
 		
 		$oForm -> addElement('select', 'contract',  text::get('KWOI_VV_NUMBER'), isset($calc['KKAL_VV_NUMBER'])?$calc['KKAL_VV_NUMBER']:0, (($isAuditUser)?' disabled' : ''), '', '', $contract);

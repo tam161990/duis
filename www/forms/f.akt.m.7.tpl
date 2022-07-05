@@ -17,8 +17,8 @@ javascript:window.history.forward(1);
    <tr>
 		<td class="table_cell_c" width="10%"><?= $oForm -> getElementLabel('year'); ?>:</td>
         <td class="table_cell_2" width="20%"><?= $oForm -> getElementHtml('yearFrom'); ?></td>
-        <td class="table_cell_c" width="10%"><?= $oForm -> getElementLabel('edRegion'); ?>:</td>
-        <td class="table_cell_2" width="23%"><?= $oForm -> getElementHtml('edRegion'); ?></td>
+        <td class="table_cell_c" width="10%"><?= $oForm -> getElementLabel('edCode'); ?>:</td>
+        <td class="table_cell_2" width="23%"><?= $oForm -> getElementHtml('edCode'); ?></td>
         <td class="table_cell_c" rowspan="3"><?= $oForm -> getElementLabel('status'); ?>:</td>
 		<td class="table_cell_2" rowspan="3"><?= $oForm -> getElementHtml('status'); ?></td>
    </tr>

@@ -127,7 +127,7 @@ if ( $isAdmin || $isSystemUser)
                 $searcCriteria['monthUntil'] = isset($critery['monthUntil'])? $critery['monthUntil'] :dtime::getCurrentMonth();
 
                 $searcCriteria['worker'] = isset($critery['worker'])? $critery['worker'] :$user['RLTT_KWOI_KODS'];
-                $searcCriteria['edRegion'] = isset($critery['edRegion'])? $critery['edRegion'] :'-1';
+                $searcCriteria['edCode'] = isset($critery['edCode'])? $critery['edCode'] :'-1';
 
                 $searcCriteria['voltage'] = isset($critery['voltage'])? $critery['voltage'] :'-1';
                 $searcCriteria['ouner'] = isset($critery['ouner'])? $critery['ouner'] :(($isEconomist || $isEditor) ? -1 : $userId);
@@ -142,7 +142,7 @@ if ( $isAdmin || $isSystemUser)
 
                 $searcCriteria['yearFrom'] = isset($critery['yearFrom'])? $critery['yearFrom'] :dtime::getCurrentYear();              
                 $searcCriteria['worker'] = isset($critery['worker'])? $critery['worker'] :((isset($user['RLTT_KWOI_KODS'])) ? $user['RLTT_KWOI_KODS'] : -1 );
-                $searcCriteria['edRegion'] = isset($critery['edRegion'])? $critery['edRegion'] :'-1';
+                $searcCriteria['edCode'] = isset($critery['edCode'])? $critery['edCode'] :'-1';
                 $searcCriteria['ouner'] = isset($critery['ouner'])? $critery['ouner'] :(($isEconomist || $isEditor) ? -1 : $userId);
                 $searcCriteria['status']  = isset($critery['status'])? $critery['status'] : 'STAT_CLOSE';
                 $searcCriteria['status1']  = isset($critery['status1'])? $critery['status1'] : 'STAT_CLOSE';
@@ -165,12 +165,15 @@ if ( $isAdmin || $isSystemUser)
     	$oLink -> addPrm(FORM_ID, 'f.akt.s.9');
         $oLink->addPrm('search', $sCriteria);
         $oLink->addPrm('isNumber', $isNumber);
+        $oLink->addPrm('isProject', $isProject);
 
        	// inicialising of listing object
         $amount= (($isNumber == 0) ? 
                     (($isProject == 0 ) ? dbProc::getActCount($sCriteria) : dbProc::getProjectCount($sCriteria)) : 
                     dbProc::getActByNumberCount($sCriteria, (($isAdmin ) ? false : userAuthorization::getWorker())));
-		$listing=new listing();
+        
+        
+        $listing=new listing();
 		$listing->setAmount($amount);
 
 		$listingHtml=$listing->getHtml($oLink ->getQuery());
@@ -181,7 +184,7 @@ if ( $isAdmin || $isSystemUser)
         $oLink->addPrm('isProject', $isProject);
         $oLink->addPrm('searchNum', ($isNumber == 0)?false:$sCriteria );
 
-		// gel list of users
+		// gel list 
         if($isNumber == 0)
         {   
             if($isProject == 0) {

@@ -3,7 +3,7 @@
 $userId = userAuthorization::getUserId();
 $isEdUser = (dbProc::isUserInRole($userId, ROLE_ED_USER) || dbProc::isUserInRole($userId, ROLE_AUDIT_USER));
 // by default 10 contract numbers for one DU
-define('CONTRACT_MAX_COUNT', 30);
+define('CONTRACT_MAX_COUNT', 50);
 // error end warning messages for delete
 $errorMsgDelete = text::get('ERROR_CONTRACT_IS_USED');
 $warningMsgDelete = text::get('WARNING_DELETE_CONTRACT');
@@ -106,7 +106,7 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		$data[$i]['ID']=$row['KCNT_ID'];
     		$data[$i]['CONTRACT']=$row['KCNT_VV_NUMBER'];
     		$data[$i]['TRASE']=$row['KCNT_IR_TRASE'];
-            $data[$i]['SECTION'] = $row['KCNT_SECTION']  ;
+            $data[$i]['ED'] = $row['KONT_KEDI_KODS']  ;
             $data[$i]['ACTIVE'] = $row['KCNT_IR_AKTIVS']  ;
     		// increment counter
     		$i++;
@@ -148,7 +148,7 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     	$oForm -> addElement('text', 'contractNo_'.$i, '', isset($data[$i]['CONTRACT'])?$data[$i]['CONTRACT']:'', 'maxlength="20"  '.(($isEdUser)?' disabled' : ''));
        //$oForm -> addRule('contractNo_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
 
-        $oForm -> addElement('kls', 'edArea_'.$i,  '', array('classifName'=>KL_ED_SECTIONS,'value'=>isset($data[$i]['SECTION'])?$data[$i]['SECTION']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('kls', 'edArea_'.$i,  '', array('classifName'=>KL_ED_AREA_CODE,'value'=>isset($data[$i]['ED'])?$data[$i]['ED']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
        // $oForm -> addRule('edArea_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
     }
     $oForm -> addElement('hidden', 'workerCode', '', $workerCode );
@@ -174,16 +174,16 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		$oTrase = $oForm->getValue('isTrase_'.$i, 0);
     		// get title value
     		$oContractNo = $oForm->getValue('contractNo_'.$i);
-              $oSection = $oForm->getValue('edArea_'.$i);
+            $oEd = $oForm->getValue('edArea_'.$i);
              
     		// if region & title value not empty
-    		if(!empty($oContractNo) && !empty($oSection) )
+    		if(!empty($oContractNo) && !empty($oEd) )
     		{
     			// FOR INSERT
 			if($oForm->getValue('contractId_'.$i) == '')
 			{
     				// check that title is unique
-    				if(dbProc::isEqualContract($oContractNo, $oSection, $oTrase))
+    				if(dbProc::isEqualContract($oContractNo, $oEd, $oTrase))
     				{
     					// edd error message to incorrect element
     					$oForm->addErrorPerElem('contractNo_'.$i, text::get('ERROR_CONTRACT_EXIST'));
@@ -206,13 +206,13 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		    $oTrase = $oForm->getValue('isTrase_'.$i, 0);
     		    // get title value
     		    $oContractNo = $oForm->getValue('contractNo_'.$i);
-                $oSection = $oForm->getValue('edArea_'.$i);
+                $oEd = $oForm->getValue('edArea_'.$i);
                 $oActive = $oForm->getValue('isActive_'.$i, 0);
     			// if region & title value not empty
     			if(!empty($oContractNo) ) {
 
     				// write to the DB
-    				$r=dbProc::saveContractNo($workerCode, $oTrase, $oContractNo, $oSection, $id, $oActive);
+    				$r=dbProc::saveContractNo($workerCode, $oTrase, $oContractNo, $oEd, $id, $oActive);
 
     				if($r === false)
     				{

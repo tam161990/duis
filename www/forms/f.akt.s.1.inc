@@ -195,7 +195,7 @@ if (reqVar::get('xmlHttp') == 1)
             {
               // feel options array
               ?>
-              document.all["EDarea"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_NOSAUKUMS'];?>', '<?=$row['KEDI_ID'];?>');
+              document.all["EDarea"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_KODS'].': '.$row['KEDI_NOSAUKUMS'];?>', '<?=$row['KEDI_ID'];?>');
               <?
                $i++;
             }
@@ -292,7 +292,7 @@ unset($res);
         {
          	foreach ($res as $row)
          	{
-         	   $edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
+         	   $edarea[$row['KEDI_ID']]=$row['KEDI_KODS'].': '.$row['KEDI_NOSAUKUMS'];
           }
         }
         unset($res);
@@ -367,8 +367,8 @@ unset($res);
         	{
          		foreach ($res as $row)
          		{
-         	   		$edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
-            		}
+         	   		$edarea[$row['KEDI_ID']]= $row['KEDI_KODS'].': '.$row['KEDI_NOSAUKUMS'];
+            }
         	}
         	unset($res);
 
@@ -412,7 +412,7 @@ unset($res);
               {
                 foreach ($res as $row)
                 {
-                  $edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
+                  $edarea[$row['KEDI_ID']]=$row['KEDI_KODS'].': '.$row['KEDI_NOSAUKUMS'];
                   }
               }
               unset($res);
@@ -423,7 +423,8 @@ unset($res);
         // plan        
         if(dbProc::isActTypePlan($act['RAKT_KAKV_ID']))
         {
-            $res=dbProc::getEDAreaNotElementActivList($trase);           
+            $res=dbProc::getEDAreaNotElementActivList($trase);  
+            
         }
         // bojanums, defekts
         elseif(($act['RAKT_KAKV_ID'] == ACT_TYPE_DAMAGE_ID) || ($act['RAKT_KAKV_ID'] == ACT_TYPE_DEFECT_ID ) || ($act['RAKT_KAKV_ID'] == ACT_TYPE_DAMAGE_TR_ID) || ($act['RAKT_KAKV_ID'] == ACT_TYPE_DEFECT_TR_ID ))
@@ -445,7 +446,7 @@ unset($res);
         {
          	foreach ($res as $row)
          	{
-          	$edarea[$row['KEDI_ID']]=$row['KEDI_NOSAUKUMS'];
+          	$edarea[$row['KEDI_ID']]=$row['KEDI_KODS'].': '.$row['KEDI_NOSAUKUMS'];
           }
         }
         unset($res);
@@ -661,8 +662,8 @@ unset($res);
         $isEdDisabled = false;
       }
   }
-
-  $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').'', '', '', $edarea);
+  //$oForm -> addElement('kls', 'EDarea',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA,'value'=>isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'','readonly'=>false), 'tabindex=6 maxlength="2000" '.(( $isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1))? ' disabled ': ''));
+  $oForm -> addElement('select', 'EDarea',  text::get('SINGL_ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').'', '', '', $edarea);
   if ($isReadonlyExceptSuperAdmin && !$isReadonly1)
   {
     $oForm -> addRule('EDarea', text::get('ERROR_REQUIRED_FIELD'), 'required');
