@@ -973,11 +973,10 @@ class dbProc extends dbLayer
     function GetEngineerName($edRegionId, $position)
     {
 
-       $sql = 'SELECT CONCAT(SLTT_VARDS,\' \',SLTT_UZVARDS) nosaukums FROM `KL_SASKANOTAJI` s
-       INNER JOIN `KL_ED_IECIRKNI` i ON ( i.KEDI_REGIONS = s.SLTT_REGIONS AND \''.text::get('OPERATING_PART').'\' = s.SLTT_KEDI_SECTION)
-       WHERE i.KEDI_ID = "'.dbLayer::quote_smart($edRegionId).'"
-       AND s.SLTT_KEDI_ID IS NULL AND s.SLTT_IR_AKTIVS = 1 
-       AND s.SLTT_POSITION = "'.dbLayer::quote_smart($position).'"  ';
+        $sql = 'SELECT CONCAT(SLTT_VARDS,\' \',SLTT_UZVARDS) nosaukums FROM `KL_SASKANOTAJI` s
+        WHERE s.SLTT_KEDI_ID = '.dbLayer::quote_smart($edRegionId).'
+        AND s.SLTT_IR_AKTIVS = 1 
+        AND s.SLTT_POSITION = "'.dbLayer::quote_smart($position).'"  ';
 
        	$oSQL=new dbLayer();
         $result = $oSQL -> makeQuery($sql);

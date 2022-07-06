@@ -173,7 +173,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('edArea'),
 						(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
 						$oForm->getValue('isActive', 0),
-						$oForm->getValue('region'),
                         $oForm->getValue('role'),
                         $oForm->getValue('worker'),
                         '',
