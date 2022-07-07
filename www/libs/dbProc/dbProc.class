@@ -1056,6 +1056,25 @@ class dbProc extends dbLayer
 		return '';
     }
 
+    function GetSignatory($edRegionId, $contractNo, $regNo)
+    {
+       $sql = 'SELECT `KCNT_SIGNATORY` signatory FROM `KL_CONTRACT` r
+        INNER JOIN `KL_ED_IECIRKNI` e ON e.KEDI_KODS = r.KONT_KEDI_KODS
+        WHERE e.KEDI_ID = "'.dbLayer::quote_smart($edRegionId).'" 
+        AND KCNT_KWOI_KODS = "'.dbLayer::quote_smart($regNo).'" 
+        AND KCNT_VV_NUMBER = "'.dbLayer::quote_smart($contractNo).'" ' ;
+        
+       	$oSQL=new dbLayer();
+        $result = $oSQL -> makeQuery($sql);
+        $return = '';
+		if (isset($result[0]))
+		{            
+			$return= $result[0]['signatory'];
+        }
+       
+		return $return;
+    }
+
 
 
     
@@ -8356,7 +8375,7 @@ class dbProc extends dbLayer
 
 	}
 
-    function saveContractNo($workerCode, $oTrase, $oContractNo, $edArea, $id, $isActive)
+    function saveContractNo($workerCode, $oTrase, $oContractNo, $edArea, $id, $isActive, $oSignatory)
 	{
         $query = '';
 		if ($id)
@@ -8366,21 +8385,24 @@ class dbProc extends dbLayer
                     `KCNT_VV_NUMBER` = "'.dbLayer::quote_smart($oContractNo).'",
                     `KONT_KEDI_KODS` = "'.dbLayer::quote_smart($edArea).'",
                     `KCNT_IR_TRASE` = "'.dbLayer::quote_smart($oTrase).'",
-                    `KCNT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'"
+                    `KCNT_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'",
+                    `KCNT_SIGNATORY` = "'.dbLayer::quote_smart($oSignatory).'"
 				where `KCNT_ID` = "'.dbLayer::quote_smart($id).'"';
 
 		}
 		elseif ($oContractNo)
 		{
 			$query = 'insert into  `KL_CONTRACT`
-                (`KCNT_KWOI_KODS`, `KCNT_VV_NUMBER`, `KONT_KEDI_KODS`, `KCNT_IR_TRASE`, `KCNT_IR_AKTIVS`)
+                (`KCNT_KWOI_KODS`, `KCNT_VV_NUMBER`, `KONT_KEDI_KODS`, `KCNT_IR_TRASE`, `KCNT_IR_AKTIVS`,
+                `KCNT_SIGNATORY`)
 			values
                 (
                 "'.dbLayer::quote_smart($workerCode).'",
                 "'.dbLayer::quote_smart($oContractNo).'",
                 "'.dbLayer::quote_smart($edArea).'",
                 "'.dbLayer::quote_smart($oTrase).'",
-                "'.dbLayer::quote_smart($isActive).'")';
+                "'.dbLayer::quote_smart($isActive).'",
+                "'.dbLayer::quote_smart($oSignatory).'")';
 		}
 
 		$oDB = new dbLayer;
@@ -8443,7 +8465,7 @@ class dbProc extends dbLayer
             {
                 foreach ($contractArray as $row)
             	{
-            		$contractStr .= $row['KCNT_EDAREA'].': '.$row['KCNT_VV_NUMBER'] . '<br>';
+            		$contractStr .= $row['KCNT_EDAREA'].': '.$row['KCNT_VV_NUMBER'] .' '.$row['KCNT_SIGNATORY'] . '<br>';
             	}
             }
             return $contractStr;

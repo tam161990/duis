@@ -927,9 +927,11 @@ if(true)
 
     	 if ($checkRequiredFields)
     	 {
+        
            $actNumPostfix = false;
            if($trase == 1 || !dbProc::isActTypePlan($oForm -> getValue('type')) )
            {
+            
       	     // check act postfix
              // S�kas ar ang�u alfab�ta lielajiem burtiem, parasti 3-4 (ne vair�k par 8)
              // sal�dzin�ts ievad�tais teksta lauks ar teksta �ablonu no admin da�as
@@ -953,10 +955,11 @@ if(true)
                     $check = true;
                     break;
                 }
-	            }
+              }
+              
               if(!$check)
               {
-                      $oForm->addError( text::getAndReplace('ERROR_ACT_NUM_POSTFIX', str_replace(';', ' vai ', $PlanKvikStep)) );
+                    $oForm->addError( text::getAndReplace('ERROR_ACT_NUM_POSTFIX', str_replace(';', ' vai ', $PlanKvikStep)) );
                     $check = false;
               }
 
@@ -974,7 +977,7 @@ if(true)
            if($oForm->getValue('action')==OP_INSERT && !dbProc::CheckQuiqStepUnique( $actNumPostfix ))
            {
                $oForm -> addError(text::get('ERROR_ACT_NUM_POSTFIX_NOT_UNOQUE'));
-                $check = false;
+               $check = false;
 
            }
 

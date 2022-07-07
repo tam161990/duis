@@ -107,7 +107,8 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		$data[$i]['CONTRACT']=$row['KCNT_VV_NUMBER'];
     		$data[$i]['TRASE']=$row['KCNT_IR_TRASE'];
             $data[$i]['ED'] = $row['KONT_KEDI_KODS']  ;
-            $data[$i]['ACTIVE'] = $row['KCNT_IR_AKTIVS']  ;
+			$data[$i]['ACTIVE'] = $row['KCNT_IR_AKTIVS']  ;
+			$data[$i]['SIGNATORY'] = $row['KCNT_SIGNATORY']  ;
     		// increment counter
     		$i++;
     	}
@@ -146,7 +147,10 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
 
     	// contract no
     	$oForm -> addElement('text', 'contractNo_'.$i, '', isset($data[$i]['CONTRACT'])?$data[$i]['CONTRACT']:'', 'maxlength="20"  '.(($isEdUser)?' disabled' : ''));
-       //$oForm -> addRule('contractNo_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
+	   //$oForm -> addRule('contractNo_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
+	   
+	   // parakstitajs
+	   $oForm -> addElement('text', 'signatory_'.$i, '', isset($data[$i]['SIGNATORY'])?$data[$i]['SIGNATORY']:'', 'maxlength="20"  '.(($isEdUser)?' disabled' : ''));
 
         $oForm -> addElement('kls', 'edArea_'.$i,  '', array('classifName'=>KL_ED_AREA_CODE,'value'=>isset($data[$i]['ED'])?$data[$i]['ED']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
        // $oForm -> addRule('edArea_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
@@ -207,12 +211,14 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		    // get title value
     		    $oContractNo = $oForm->getValue('contractNo_'.$i);
                 $oEd = $oForm->getValue('edArea_'.$i);
-                $oActive = $oForm->getValue('isActive_'.$i, 0);
+				$oActive = $oForm->getValue('isActive_'.$i, 0);
+				$oSignatory = $oForm->getValue('signatory_'.$i);
+
     			// if region & title value not empty
     			if(!empty($oContractNo) ) {
 
     				// write to the DB
-    				$r=dbProc::saveContractNo($workerCode, $oTrase, $oContractNo, $oEd, $id, $oActive);
+    				$r=dbProc::saveContractNo($workerCode, $oTrase, $oContractNo, $oEd, $id, $oActive, $oSignatory);
 
     				if($r === false)
     				{
@@ -240,9 +246,9 @@ if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
     		$oLink = new urlQuery;
     		$oLink -> addPrm(FORM_ID, 'f.ktl.s.15');
     		$oLink-> addPrm('errorMessage', $errorMsg);
-            	$oLink-> addPrm('workerCode', $workerCode);
-            	$oLink-> addPrm('workerId', $workerId);
-            	$oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+			$oLink-> addPrm('workerCode', $workerCode);
+			$oLink-> addPrm('workerId', $workerId);
+			$oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
     		// if all write operations was success, redirect form
     		RequestHandler::makeRedirect($oLink->getQuery());
