@@ -312,7 +312,8 @@ class dbProc extends dbLayer
                         `RLTT_KEDI_SECTION`, 
                         `RLTT_IR_TRASE`, 
                         `RLTT_IR_LIGUMS`,
-                        `RLTT_PROJECTOR`
+                        `RLTT_PROJECTOR`,
+                        `RLTT_IR_LIMITCARD`
                         ) 
                     values
 						("'.dbLayer::quote_smart($login).'",
@@ -327,8 +328,8 @@ class dbProc extends dbLayer
                          "'.dbLayer::quote_smart($section).'",
                          "'.dbLayer::quote_smart($trase).'",
                          "'.dbLayer::quote_smart($contract).'",
-                         "'.dbLayer::quote_smart($projector).'"
-                         
+                         "'.dbLayer::quote_smart($projector).'",
+                         "'.dbLayer::quote_smart($limitcard).'"
                          )';
 
 		}
@@ -347,8 +348,8 @@ class dbProc extends dbLayer
                         `RLTT_KEDI_SECTION` = "'.dbLayer::quote_smart($section).'",
                         `RLTT_IR_TRASE` = "'.dbLayer::quote_smart($trase).'",
                         `RLTT_IR_LIGUMS` = "'.dbLayer::quote_smart($contract).'",
-                        `RLTT_PROJECTOR` = "'.dbLayer::quote_smart($projector).'"
-                        
+                        `RLTT_PROJECTOR` = "'.dbLayer::quote_smart($projector).'",
+                        `RLTT_IR_LIMITCARD` = "'.dbLayer::quote_smart($limitcard).'"
 						where RLTT_ID="'.dbLayer::quote_smart($userId).'"';
 
 		}

@@ -6,6 +6,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isTraseUser = userAuthorization::isTrase();
 $isContractUser = userAuthorization::isContract();
+$isLimitCardUser = userAuthorization::isLimitcard();
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
@@ -372,6 +373,13 @@ if ( $isAdmin || $isSystemUser )
 	$oLink = new urlQuery;
 	$oLink -> addPrm(FORM_ID, 'f.gps.s.0');
 	$cGpsMain = $oLink -> getQuery();
+	unset($oLink);
+
+	// LimitCard links
+	// Reports main
+	$oLink = new urlQuery;
+	$oLink -> addPrm(FORM_ID, 'f.lmk.s.0');
+	$cLimitcardMain = $oLink -> getQuery();
 	unset($oLink);
 
 // menu OPTIONS

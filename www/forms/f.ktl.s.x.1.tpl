@@ -1,8 +1,13 @@
 ﻿<script type="text/javascript">
     function doSearch()
-	{
+	  {
     	eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&search_q=' + urlencode(document.all['Search'].value) + '&search_c=' + document.all['Columns'].value));
 	    reloadFrame(1, '<?= $searchLink; ?>&search=' + q + '&column=' + c);
+    }
+    function doSearchOnlyText()
+	  {
+    	eval(xmlHttpGetValue('<?= $searchLink; ?>&xml=1&search_q=' + urlencode(document.all['Search'].value) ));
+	    reloadFrame(1, '<?= $searchLink; ?>&search=' + q );
     }
     function doSort(column, order)
 	{
@@ -23,24 +28,39 @@
 		<td>
             <table cellpadding="0" cellspacing="0" border="0" >
 				<tr>
+                   <? if(isset($searchTitle)) { ?>
+                    <td nowrap ><?= $searchTitle; ?></td>
+                    <? } ?>
                     <td nowrap ><input type="text" id="Search" maxlength="50" value="<?=isset($_GET['search'])?$_GET['search']:''; ?>">&nbsp;</td>
-                    <td nowrap >
+                    <td nowrap >                       
+                    <?
+	                    if (!isset($searchTitle))
+	                    {
+                        ?>
                         <select id="Columns">
                         <?
-	                    if (is_array($columns))
-	                    {
 		                     foreach ($columns as $col)
 		                     {
                               ?>
                               <option value="<?= $col['kolonna']; ?>"  <?= ( (isset($_GET['column']) && $_GET['column'] == $col['kolonna'])? "selected" : (!isset($_GET['column']) && $col['def']==1)? "selected" : "");?> ><?= $col['nosaukums']; ?></option>
                               <?
                              }
+                        ?>
+                        <select id="Columns">
+                        <?
                         }
                         ?>
                         </select>&nbsp;
                     </td>
-					<td nowrap ><a href="#" onclick="doSearch()">
-						<img src="img/btn_meklet.gif" alt="<?= text::get('SEARCH'); ?>" width="70" height="20" border="0" class="block">
+          <? if(isset($searchTitle)) { ?>
+            <td nowrap ><a href="#" onclick="doSearchOnlyText()">
+          <? } else { ?>
+             <td nowrap ><a href="#" onclick="doSearch()">
+          <? } ?>
+            <span id="loading" style="position:absolute; width:32; height:32; margin-left:30px; display: none; ">
+            <img src="./img/loading.gif" widht="32" height="32" border="0" />
+            </span>
+						<img src="img/btn_meklet.gif" alt="<?= text::get('SEARCH'); ?>"  onClick="setPosition1('loading'); return true;" width="70" height="20" border="0" class="block">
 					</a></td>
                 </tr>
 			</table>

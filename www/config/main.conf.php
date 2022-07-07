@@ -100,7 +100,10 @@ define ('CURRENT_YEAR','current_year');
 // SOA service for KvikStep act status
 define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
 
-
+// API for Limitkarte reports
+define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
+// API for nepabeigtu projektu reports
+define ('API_UNCOMPLETED_PROJECT_REPORT', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-uncompleted-pr-report');
 # =============================================================================
 # FMK configuration
 # =============================================================================
