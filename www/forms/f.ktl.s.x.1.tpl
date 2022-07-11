@@ -100,6 +100,7 @@
               <?
               if (is_array($columns))
 	            {
+                $colCount = 0;
 		            foreach ($columns as $col)
 		            {
                   if((substr($col['kolonna'], -9) == 'IR_AKTIVS') || substr($col['kolonna'], -9) == 'IR_ADMINS' || 
@@ -127,17 +128,23 @@
 				                  <td><?=$row[$col['kolonna']];?></td>
                         <?
                        }
+                       $colCount ++;
                     }
                 }
                 ?>
 
 			</tr>
 		<?
-            $i ++;
+      $i ++;
 			$number++;
 		}
 	}
 	?>
+  <? if(isset($searchTitle) && isset($subtotal)) { ?>
+    <tr><td collspan="<?= $colCount-1; ?>" align="right"><?= text::get('TOTAL'); ?></td>
+        <td><?= $subtotal; ?></td>
+    </tr>
+  <? } ?>
 
 </table>
 

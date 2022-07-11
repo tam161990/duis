@@ -90,6 +90,23 @@ if($isLimitCardUser || $isAdmin)
             $listingHtml=$listing->getHtml($oLink ->getQuery());
             unset($oLink);
 
+            // calculate total sulmm            
+            if ($amount > $listing->getAmountOnPage()) 
+            {
+                $loops = ceil($amount / $listing->getAmountOnPage());
+                for($i = 1; $i <= $loops; $i ++)
+                {
+                    $reportData = RequestHandler::getLimitkarteReport($report, $searchText, $i, $listing->getAmountOnPage());
+                    $rows = $reportData['reportData'];
+                    if (is_array($rows))
+                    {
+                        foreach ($rows as $row) {
+                            $total1 += $res[$i]['transactionAmount'];
+                        }
+                    }
+                }
+            }
+
             $reportData = RequestHandler::getLimitkarteReport($report, $searchText, $listing->getCurrentPageNumber(), $listing->getAmountOnPage());
             $rows = $reportData['reportData'];
 
@@ -97,6 +114,7 @@ if($isLimitCardUser || $isAdmin)
             {
                 $res = array();
                 $i = 0;
+                $total2 = 0;
                 foreach ($rows as $row) {
                     $res[$i] = $row;
                     $res[$i]['itemUnitPrice'] = number_format($row['itemUnitPrice'], 2, '.', '');
@@ -106,9 +124,12 @@ if($isLimitCardUser || $isAdmin)
                     $res[$i]['creationDate'] =  $date->format('d.m.Y');
                     $date = new DateTime((string)substr($row['approvedDate'], 0, strrpos($row['approvedDate'], 'T')));
                     $res[$i]['approvedDate'] =  $date->format('d.m.Y');
+                    $total2 += $res[$i]['transactionAmount'];
                     $i ++;
                 }
             }
+
+            $subtotal = number_format((isset($total2) ? $total2 : $total1), 2, '.');
         } 
 		
 		// inicial state of users number
