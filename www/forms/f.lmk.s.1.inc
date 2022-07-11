@@ -91,21 +91,34 @@ if($isLimitCardUser || $isAdmin)
             unset($oLink);
 
             // calculate total sulmm            
-            if ($amount > $listing->getAmountOnPage()) 
+            if ($amount > $listing->getAmountOnPage() && $listing->getCurrentPageNumber() == 1) 
             {
-                $loops = ceil($amount / $listing->getAmountOnPage());
-                for($i = 1; $i <= $loops; $i ++)
+			    session::set('LIMITCARD_TOTAL','');
+                $loops = ceil($amount / $listing->getAmountOnPage());				
+				$total1 = 0;				
+                for($i = 1; $i <= $loops; $i++)
                 {
                     $reportData = RequestHandler::getLimitkarteReport($report, $searchText, $i, $listing->getAmountOnPage());
-                    $rows = $reportData['reportData'];
+                    $rows = $reportData['reportData'];					
                     if (is_array($rows))
                     {
                         foreach ($rows as $row) {
-                            $total1 += $res[$i]['transactionAmount'];
+                            switch ($report) {
+                                case 'LIMITCARD_PROJRCT_MATERIAL':                
+                                    $total1 += $row['transactionAmount'];               
+                                    break;			
+                                case 'UNCOMPLETED_PROJECT_REPORT':
+                                    $total1 += $row['amtReq'];   
+                                    break;			
+                            }						    
                         }
                     }
                 }
+				session::set('LIMITCARD_TOTAL',$total1);
             }
+			if ($amount <= $listing->getAmountOnPage()){
+				session::set('LIMITCARD_TOTAL','');
+			}
 
             $reportData = RequestHandler::getLimitkarteReport($report, $searchText, $listing->getCurrentPageNumber(), $listing->getAmountOnPage());
             $rows = $reportData['reportData'];
@@ -124,12 +137,21 @@ if($isLimitCardUser || $isAdmin)
                     $res[$i]['creationDate'] =  $date->format('d.m.Y');
                     $date = new DateTime((string)substr($row['approvedDate'], 0, strrpos($row['approvedDate'], 'T')));
                     $res[$i]['approvedDate'] =  $date->format('d.m.Y');
-                    $total2 += $res[$i]['transactionAmount'];
-                    $i ++;
+                    switch ($report) {
+                        case 'LIMITCARD_PROJRCT_MATERIAL':                
+                            $total2 += $res[$i]['transactionAmount'];               
+                            break;			
+                        case 'UNCOMPLETED_PROJECT_REPORT':
+                            $total2 += $res[$i]['amtReq'];   
+                            break;			
+                    }                    
+                    $i ++;					
                 }
             }
-
-            $subtotal = number_format((isset($total2) ? $total2 : $total1), 2, '.');
+			$total1 = session::get('LIMITCARD_TOTAL');			
+			$subtotal = ((isset($total1) && !empty($total1) ) ? $total1 : $total2);
+            $subtotal = number_format($subtotal, 2, '.', '');
+			
         } 
 		
 		// inicial state of users number
