@@ -5496,9 +5496,7 @@ class dbProc extends dbLayer
              $searcCriteria['year'] = $sCriteria[0];
              $searcCriteria['month'] = $sCriteria[1];
              $searcCriteria['worker'] = $sCriteria[2];
-             $searcCriteria['edRegion'] = $sCriteria[3];
-             $searcCriteria['section'] = $sCriteria[4];
-	          $searcCriteria['contract'] = $sCriteria[5];
+	          $searcCriteria['contract'] = $sCriteria[3];
 
 		    $query = "select *,
             e.KEDI_SECTION `ED`,
@@ -5524,9 +5522,7 @@ class dbProc extends dbLayer
 
             $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
 	        $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
-            $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
-
-            $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
+            
             $query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
            // $query .= " AND s.AAUD_DATUMS >= '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."' AND s.AAUD_DATUMS  <= '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'";
            // $query .= " and s.AAUD_STATUS = 'CLOSE' ";
@@ -5559,9 +5555,7 @@ class dbProc extends dbLayer
              $searcCriteria['year'] = $sCriteria[0];
              $searcCriteria['month'] = $sCriteria[1];
              $searcCriteria['worker'] = $sCriteria[2];
-             $searcCriteria['edRegion'] = $sCriteria[3];
-             $searcCriteria['section'] = $sCriteria[4];
-             $searcCriteria['contract'] = $sCriteria[5];
+             $searcCriteria['contract'] = $sCriteria[3];
 
             $query = "select *,
              m.MATR_DAUDZUMS `DAUDZUMS`, 
@@ -5588,9 +5582,6 @@ class dbProc extends dbLayer
 
             $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
             $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
-            $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
-
-            $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
             //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
             $query .= " and a.RAKT_STATUS NOT IN ('DELETE') ";
 
@@ -6095,9 +6086,7 @@ class dbProc extends dbLayer
              $searcCriteria['year'] = $sCriteria[0];
              $searcCriteria['month'] = $sCriteria[1];
              $searcCriteria['worker'] = $sCriteria[2];
-             $searcCriteria['edRegion'] = $sCriteria[3];
-             $searcCriteria['section'] = $sCriteria[4];
-             $searcCriteria['contract'] = $sCriteria[5];
+             $searcCriteria['contract'] = $sCriteria[3];
           //(SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER <> 1)  AS `MATER_TOTAL` ,  
           //(SELECT ".dbLayer::sqlParseDate('AAUD_DATUMS')." FROM `AKTA_STATUSA_MAINA`  WHERE a.RAKT_ID = AAUD_RAKT_ID AND AAUD_STATUS = 'CLOSE' ORDER BY AAUD_DATUMS DESC LIMIT 1) AS `AAUD_DATUMS`
           $query = " SELECT * FROM ( select *,
@@ -6134,11 +6123,6 @@ class dbProc extends dbLayer
             $query .= " and a.RAKT_KWOI_KODS = '".$searcCriteria['worker']."' ";
 
             $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
-
-            $query .= " and e.KEDI_REGIONS = '".$searcCriteria['edRegion']."' ";
-
-            $query .= " and e.KEDI_SECTION = '".$searcCriteria['section']."' ";
-            //$query .= " and k.KCNT_SECTION = '".$searcCriteria['section']."' ";
 
             //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
 

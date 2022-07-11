@@ -8,9 +8,7 @@
    $worker = '';
    $workerCode = '';
    $workerNumber = '';
-   $edRegion = '';
-   $section = '';
-
+   
    $searchCr = array();
    $sCr = explode("^", $sCriteria);
   if(isset($sCr[0]) && $sCr[0] != -1 )
@@ -34,17 +32,10 @@
 
 
   }
+  
   if(isset($sCr[3]) && $sCr[3] != -1 )
   {
-     $edRegion = $sCr[3];
-  }
-  if(isset($sCr[4]) && $sCr[4] != -1 )
-  {
-     $section = $sCr[4];
-  }
-  if(isset($sCr[5]) && $sCr[5] != -1 )
-  {
-     $workerNumber = $sCr[5];
+     $workerNumber = $sCr[3];
   }
  // if(isset($sCr[4]) && $sCr[4] != -1 && isset($sCr[2]) && $sCr[2] != -1)
 //  {
@@ -147,8 +138,7 @@
                 $pdf->HeaderTable($actDescription);
 
                 $pdf->SetFont('Arial','B',10);
-                $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257', text::get('REPORT_HEADER_1').
-                ' '.$edRegion .' '.text::get('REPORT_REGION').' '.$section), 0,1);
+                $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257', text::get('REPORT_HEADER_1')), 0,1);
 
                 $pdf->SetFont('Arial','B',10);
                 $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_ACT_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' ).
