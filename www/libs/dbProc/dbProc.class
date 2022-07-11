@@ -294,7 +294,7 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
     function saveUser($userId,$login,$name,$surname,$isAdmin,$dvArea,$password=false, 
                         $isActive,$role, $worker = '', $section = '', 
-                        $trase = 0, $contract = 0, $projector = 0)
+                        $trase = 0, $contract = 0, $projector = 0, $limitcard = 0)
 	{
 		$oSQL=new dbLayer();
 		if ($userId==false)
