@@ -49,9 +49,13 @@ class userAuthorization
 					dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
 					$info = dbProc::getSystemInfo();
 					
-					if(count($info)>0 && trim($rows[0]['RLTT_USER_NAME']) == trim($info[0]['SNFO_SUPERADMIN']))
+					if(count($info)>0 )
 					{	
-						session::set('isSuperAdmin',1);
+						$adminList = explode(",", trim($info[0]['SNFO_SUPERADMIN']));
+						if (in_array(trim($rows[0]['RLTT_USER_NAME']), $adminList)) 
+						{
+							session::set('isSuperAdmin',1);
+						}
 					}
 					session::set('isLogin',true);
 					session::set('userId',$rows[0]['RLTT_ID']);
@@ -95,9 +99,13 @@ class userAuthorization
 					dbProc::setUserActionDate($rows[0]['RLTT_ID'], USER_AUTHEREISATION);
 					$info = dbProc::getSystemInfo();
 					
-					if(count($info)>0 && trim($rows[0]['RLTT_USER_NAME']) == trim($info[0]['SNFO_SUPERADMIN']))
+					if(count($info)>0 )
 					{	
-						session::set('isSuperAdmin',1);
+						$adminList = explode(",", trim($info[0]['SNFO_SUPERADMIN']));
+						if (in_array(trim($rows[0]['RLTT_USER_NAME']), $adminList)) 
+						{
+							session::set('isSuperAdmin',1);
+						}
 					}
 					session::set('isLogin',true);
 					session::set('userId',$rows[0]['RLTT_ID']);
