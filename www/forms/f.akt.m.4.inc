@@ -24,7 +24,7 @@ if (reqVar::get('xmlHttp') == 1)
 			{
 				// feel options array
 				?>
-				document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'];?>');
+				document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'];?>');
                 <?
                 $i++;
 			}
@@ -141,7 +141,7 @@ if (reqVar::get('xmlHttp') == 1)
         {
          	foreach ($res as $row)
          	{
-          	    $contract[$row['KCNT_VV_NUMBER']] = $row['KCNT_VV_NUMBER'];
+          	    $contract[$row['KCNT_VV_NUMBER']] = $row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];
             }
         }
         unset($res);
