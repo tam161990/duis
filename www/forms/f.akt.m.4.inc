@@ -24,7 +24,7 @@ if (reqVar::get('xmlHttp') == 1)
 			{
 				// feel options array
 				?>
-				document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'];?>');
+				document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'].'|'.$row['KONT_KEDI_KODS'];?>');
                 <?
                 $i++;
 			}
@@ -58,7 +58,9 @@ if (reqVar::get('xmlHttp') == 1)
            $searcCriteria['year'] = $oForm->getValue('year');
            $searcCriteria['month'] = $oForm->getValue('month');
            $searcCriteria['worker'] = (($isEditor)? $workerCode : $oForm->getValue('worker'));
-           $searcCriteria['contract'] = $oForm->getValue('contract');
+           $contr = explode('|',$oForm->getValue('contract'));
+           $searcCriteria['contract'] = $contr[0];
+           $searcCriteria['edarea'] = $contr[1];
 
            dbProc::replaceSearchResult($searchName, $userId,
                                 $searcCriteria['year'],
@@ -66,7 +68,7 @@ if (reqVar::get('xmlHttp') == 1)
                                 $searcCriteria['month'],
                                 '',
                                 $searcCriteria['worker'],
-                                '',
+                                $searcCriteria['edarea'],
                                 '',
                                 '',
                                 '',
@@ -112,7 +114,7 @@ if (reqVar::get('xmlHttp') == 1)
 
            $searcCriteria['worker'] = (($isEditor)? $workerCode : (isset($critery['worker']) ? $critery['worker'] : '-1'));
            
-           $searcCriteria['contract']  = isset($critery['contract'])? $critery['contract'] : '-1';
+           $searcCriteria['contract']  = isset($critery['contract'])? $critery['contract'] . '|'.$searcCriteria['edarea'] : '-1';
 
         }
         
@@ -141,7 +143,7 @@ if (reqVar::get('xmlHttp') == 1)
         {
          	foreach ($res as $row)
          	{
-          	    $contract[$row['KCNT_VV_NUMBER']] = $row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];
+          	    $contract[$row['KCNT_VV_NUMBER'].'|'.$row['KONT_KEDI_KODS']] = $row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];
             }
         }
         unset($res);
