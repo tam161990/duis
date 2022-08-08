@@ -8278,7 +8278,8 @@ class dbProc extends dbLayer
 	{
        //   echo $workerCode; echo $isTrase;
 		$oSQL=new dbLayer();
-        $sql = "select DISTINCT ct.*, concat(ct.KONT_KEDI_KODS, ': ', ie.KEDI_NOSAUKUMS) as KCNT_EDAREA 
+        $sql = "select DISTINCT ct.*, ie.KEDI_NOSAUKUMS,
+                concat(ct.KONT_KEDI_KODS, ': ', ie.KEDI_NOSAUKUMS) as KCNT_EDAREA 
                 from `KL_CONTRACT` ct
                 INNER JOIN kl_ed_iecirkni ie on ie.KEDI_KODS = ct.KONT_KEDI_KODS
                 where  `KCNT_KWOI_KODS` ='".dbLayer::quote_smart($workerCode)."'
