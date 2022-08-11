@@ -14,20 +14,24 @@ javascript:window.history.forward(1);
 		<td align=center colspan="6"><?= $oForm -> getMessage(); ?></td>
    </tr>
    <tr>
-		<td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('year'); ?>:</td>
-		<td class="table_cell_2" width="30%"><?= $oForm -> getElementHtml('year'); ?></td>
+		<td class="table_cell_c" width="10%"><?= $oForm -> getElementLabel('year'); ?>:</td>
+		<td class="table_cell_2" width="25%"><?= $oForm -> getElementHtml('year'); ?></td>
         
-        <td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('worker'); ?>:</td>
-		<td class="table_cell_2" width="30%"><?= $oForm -> getElementHtml('worker'); ?></td>
+        <td class="table_cell_c" width="10%"><?= $oForm -> getElementLabel('worker'); ?>:</td>
+		<td class="table_cell_2" width="25%"><?= $oForm -> getElementHtml('worker'); ?></td>
 
-
+        <td class="table_cell_c" width="10%">&nbsp;</td>
+		<td class="table_cell_2" width="20%">&nbsp;</td>
    </tr>
    <tr>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('month'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('month'); ?></td>
         
         <td class="table_cell_c"><?= $oForm -> getElementLabel('contract'); ?>:</td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
+        <td class="table_cell_2"><?= $oForm -> getElementHtml('contract'); ?></td>
+        
+        <td class="table_cell_c"><?= $oForm -> getElementLabel('one_contract'); ?>:</td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('one_contract'); ?></td>
    	</tr>
 
 
