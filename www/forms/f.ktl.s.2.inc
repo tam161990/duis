@@ -94,7 +94,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		
 		$oForm -> addElement('checkbox', 'projector',  text::get('PROJECTOR'), isset($user['RLTT_PROJECTOR'])?$user['RLTT_PROJECTOR']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
 
-		$oForm -> addElement('checkbox', 'limitCard',  text::get('LIMITCARD_ACCESS'), isset($user['RLTT_LIMITCARD'])?$user['RLTT_LIMITCARD']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
+		$oForm -> addElement('checkbox', 'limitCard',  text::get('LIMITCARD_ACCESS'), isset($user['RLTT_IR_LIMITCARD'])?$user['RLTT_IR_LIMITCARD']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
 
 		// form buttons
         if(!$isEdUser)
