@@ -91,11 +91,23 @@
 <?
 if (is_array($res))
 {
-      $i = 0;
+  $i = 0;
+  $style = 'table_cell_3';  
   foreach ($res as $row)
   {
+    if (isset($searchTitle) && is_array($columns)){
+      foreach ($columns as $col){
+        if( ($col['kolonna'] == 'transactionQty'  || $col['kolonna'] == 'quantity') && $row[$col['kolonna']] < 0 ) {
+          $style = 'table_cell_7'; 
+        }
+      }
+    }
   ?>
-    <tr id="recordRow<?=$i;?>" class="table_cell_3"  onClick="makeActiveRow(this, '<?=$row['URL'];?>');">
+    <? if(isset($searchTitle)) { ?>
+		<tr id="recordRow<?=$i;?>" class="<?=$style;?>" >
+	<? } else { ?>
+	    <tr id="recordRow<?=$i;?>" class="<?=$style;?>"  onClick="makeActiveRow(this, '<?=$row['URL'];?>');">
+	<? } ?>
       <td><?=$number;?></td>
             <?
             if (is_array($columns))
@@ -109,29 +121,29 @@ if (is_array($res))
                 substr($col['kolonna'], -9) == 'IR_LIGUMS' || substr($col['kolonna'], -9) == 'PROJECTOR' ||
                 substr($col['kolonna'], -7) == 'IR_EPLA' || substr($col['kolonna'], -7) == 'IR_AUTO' || 
                 substr($col['kolonna'], -12) == 'APJOMS_ROUND' || substr($col['kolonna'], -3) == 'DVD')
-                    {
-                      if((substr($col['kolonna'], -9) == 'IR_AKTIVS') && ($row[$col['kolonna']] == 0))
-                      {
-                        ?>
-                           <script>setRowStyle(<?=$i;?>);</script>
-                        <?
-                      }
-                      ?>
-                         <td>
-                          <?=($row[$col['kolonna']])?text::get('YES'):text::get('NO');?>
-                         </td>
-                      <?
-                    }
-                    else
-                    {
-                      ?>
-                        <td><?=$row[$col['kolonna']];?></td>
-                      <?
-                     }
-                     $colCount ++;
+                {
+                  if((substr($col['kolonna'], -9) == 'IR_AKTIVS') && ($row[$col['kolonna']] == 0))
+                  {
+                    ?>
+                    <script>setRowStyle(<?=$i;?>);</script>
+                    <?
                   }
+                  ?>
+                  <td>
+                    <?=($row[$col['kolonna']])?text::get('YES'):text::get('NO');?>
+                  </td>
+                <?
+                }
+                else
+                {
+                  ?>
+                    <td><?=$row[$col['kolonna']];?></td>
+                  <?
+                }
+                $colCount ++;
               }
-              ?>
+          }
+          ?>
 
     </tr>
   <?
