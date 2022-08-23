@@ -70,8 +70,33 @@ if (reqVar::get('xmlHttp') == 1)
       }
       
     }
+
+    if (isset($_GET['sort_k']) && isset($_GET['sort_o']))
+    {
+      ob_clean();
+      $o = $_GET['sort_o'];
+      if (isset($o))
+      {
+        echo 'o = "'.$o.'";';
+      }
+      else
+      {
+        echo 'o = "";';
+      }
+      $k = $_GET['sort_k'];
+      if ($k)
+      {
+        echo 'k = "'.$k.'";';
+      }
+      else
+      {
+        echo 'k = "";';
+      }
+    }
     exit();
 }
+
+
 
 
 // tikai  sistēmas lietotajam vai administrātoram ir pieeja!
@@ -93,6 +118,16 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm(DONT_USE_GLB_TPL, '1');
       $oLink->addPrm('xmlHttp', '1');
       $searchLink = $oLink -> getQuery();
+      unset($oLink);
+
+      // add order params to listing
+      $oLink = new urlQuery;
+      $oLink -> addPrm(FORM_ID, 'f.akt.s.20');
+      $oLink->addPrm('actId', $actId);
+      $oLink->addPrm('isSearch', $isSearch);
+      $oLink->addPrm('searchNum', $searchNum);
+      $oLink->addPrm('tab', TAB_MATERIAL);
+      $orderLink = $oLink -> getQuery();
       unset($oLink);
 
       // if operation is success, show success message and redirect top frame
@@ -199,103 +234,26 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aMaterials = array();
       $aMaterialExist = false;
-     /* if ($oFormMaterialTab -> isFormSubmitted() && $isNew === false)
+      $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
+      $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;
+    
+           
+      //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
+      $aMaterialDb=dbProc::getActMaterialList($actId, false, false, true,  $sortOrder, $orderColumn);
+
+      $aMaterialExist = false;
+      foreach ($aMaterialDb as $material)
       {
-          $isRowValid = true;
-          $aCodes =  $oFormMaterialTab->getValue('code');
-          //print_r($aCodes);
-          if(is_array($aCodes) )
-          {
-            $aMaterialsFr = array();
-            $j = 0;
-            foreach ($aCodes as $i => $val)
-            {
-                 $aMaterialsFr[$j]['MATR_ID'] = $oFormMaterialTab->getValue('id['.$i.']');
-                 $aMaterialsFr[$j]['MATR_KODS'] = $oFormMaterialTab->getValue('code['.$i.']');
-                 $aMaterialsFr[$j]['MATR_NOSAUKUMS'] = $oFormMaterialTab->getValue('title['.$i.']');
-                 $aMaterialsFr[$j]['MATR_MERVIENIBA'] = $oFormMaterialTab->getValue('unit['.$i.']');        
-                 $aMaterialsFr[$j]['MATR_IS_WORKER'] = $oFormMaterialTab->getValue('st['.$i.']');
-                 $aMaterialsFr[$j]['MATR_PIEZIMES'] = $oFormMaterialTab->getValue('notes['.$i.']');
-                 $aMaterialsFr[$j]['MATR_CROSSECTION'] = $oFormMaterialTab->getValue('crossection['.$i.']');
-                 $aMaterialsFr[$j]['MATR_COMPLECTATION'] = $oFormMaterialTab->getValue('complectation['.$i.']');
-                 $aMaterialsFr[$j]['MATR_DAUDZUMS'] = $oFormMaterialTab->getValue('amount_mat['.$i.']');
-                 $aMaterialsFr[$j]['MATR_IMPORT_NO'] = $oFormMaterialTab->getValue('import_no['.$i.']');
-                 // validate work progress value
-                 if(($status == STAT_CLOSE && ($isAdmin ||  $projectApprover))) {
-                  $isRowValid = true;
-                  $aMaterialsFr[$j]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type_id['.$i.']');
-                  $aMaterialsFr[$j]['KLDV_NOSAUKUMS'] = $oFormMaterialTab->getValue('work_type['.$i.']');
-                  $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] = $oFormMaterialTab->getValue('export_type['.$i.']');
-                } else {
-                 
-                  $aMaterialsFr[$j]['MATR_WORK_TYPE'] = $oFormMaterialTab->getValue('work_type['.$i.']');
-                  
-                  if (empty($aMaterialsFr[$j]['MATR_DAUDZUMS']))
-                  {
-                      // assign error message
-                      //$oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
-                      //$isRowValid = false;
-                  }
-                  // validate work progress value
-                  elseif (!is_numeric($aMaterialsFr[$j]['MATR_DAUDZUMS']))
-                  {
-                      // assign error message
-                      $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
-                      $isRowValid = false;
-                  }
-                  // validate work progress value
-                  elseif ($aMaterialsFr[$j]['MATR_DAUDZUMS'] >= 100000)
-                  {
-                      // assign error message
-                      $oFormMaterialTab->addErrorPerElem('amount_mat['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
-                      $isRowValid = false;
-                  }
-                }
-              
-                  // prepare database record data
-                  $aValidRows[] = array(
-                        'code' => $aMaterialsFr[$j]['MATR_KODS'],
-                        'title' => $aMaterialsFr[$j]['MATR_NOSAUKUMS'],
-                        'unit' => $aMaterialsFr[$j]['MATR_MERVIENIBA'],
-                        'amount_mat' => $aMaterialsFr[$j]['MATR_DAUDZUMS'],                        
-                        'st' => $aMaterialsFr[$j]['MATR_IS_WORKER'],
-                        'notes' => $aMaterialsFr[$j]['MATR_PIEZIMES'],
-                        'crossection' => $aMaterialsFr[$j]['MATR_CROSSECTION'],
-                        'complectation' => $aMaterialsFr[$j]['MATR_COMPLECTATION'],
-                        'work_type' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
-                        'work_type_id' => $aMaterialsFr[$j]['MATR_WORK_TYPE'],
-                        'import_no' => $aMaterialsFr[$j]['MATR_IMPORT_NO'],
-                        'export_type' => ($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)) ? $aMaterialsFr[$j]['MATR_PROJECT_EXPORT'] : '',
-                        'rowNum' => $j
-                      );
-                      $j++;
-                }
-                foreach ($aMaterialsFr as $i=>$material)
-                {
-                  $aMaterials[$material['MATR_WORK_TYPE']][] = $material;              
-                }
-                //print_r($aMaterialsFr);
-           }
+        $material['MATR_PIEZIMES'] = ($material['MATR_PIEZIMES'] == 'NULL') ? '' : $material['MATR_PIEZIMES'];
+        $aMaterials[$material['MATR_WORK_TYPE']][] = $material;   
+          
+        $aMaterialExist = true;     
       }
-      else
-      {
-        */
-        //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
-        $aMaterialDb=dbProc::getActMaterialList($actId, false, false, true);
 
-        $aMaterialExist = false;
-        foreach ($aMaterialDb as $material)
-        {
-          $material['MATR_PIEZIMES'] = ($material['MATR_PIEZIMES'] == 'NULL') ? '' : $material['MATR_PIEZIMES'];
-          $aMaterials[$material['MATR_WORK_TYPE']][] = $material;   
-            
-          $aMaterialExist = true;     
-        }
-
-        if(!$aMaterialExist) {
-          $aMaterials[0] = array();          
-        }    
-     // }
+      if(!$aMaterialExist) {
+        $aMaterials[0] = array();          
+      }    
+  
       
       $oFormMaterialTab -> addElement('hidden', 'isSearch', '', $isSearch);
       $oFormMaterialTab -> addElement('hidden', 'searchNum', '', $searchNum);
@@ -494,7 +452,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormMaterialTab->addElement('button', 'mat_del['.$i.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
               unset($delLink);
             
-            $i++;
+            $i++;          
         }
       }
       // form buttons
