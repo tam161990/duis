@@ -13,6 +13,9 @@ $isSearch  = reqVar::get('isSearch');
 // search act by number
 $searchNum  = reqVar::get('searchNum');
 
+
+
+
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
 {
@@ -66,6 +69,29 @@ if (reqVar::get('xmlHttp') == 1)
          session::del('DRBI_FOR_DELETE_'.$a);
       }
     }
+
+    if (isset($_GET['sort_k']) && isset($_GET['sort_o']))
+    {
+      ob_clean();
+      $o = $_GET['sort_o'];
+      if (isset($o))
+      {
+        echo 'o = "'.$o.'";';
+      }
+      else
+      {
+        echo 'o = "";';
+      }
+      $k = $_GET['sort_k'];
+      if ($k)
+      {
+        echo 'k = "'.$k.'";';
+      }
+      else
+      {
+        echo 'k = "";';
+      }
+    }
     exit();
 }
 
@@ -81,6 +107,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('tab', TAB_WORKS);
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
+      $oLink->addPrm('isProject',1);
       $oFormWorkTab = new Form('frmWorkTab', 'post', $oLink->getQuery() . '#tab');
 
       unset($oLink);
@@ -89,8 +116,19 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm(FORM_ID, 'f.akt.s.21');
       $oLink->addPrm(DONT_USE_GLB_TPL, '1');
       $oLink->addPrm('xmlHttp', '1');
-      $searchLink = $oLink -> getQuery();
+      $oLink->addPrm('isProject',1);
+      $searchLinkD = $oLink -> getQuery();
       unset($oLink);
+
+       // add order params to listing
+       $oLink = new urlQuery;
+       $oLink -> addPrm(FORM_ID, 'f.akt.s.20');
+       $oLink->addPrm('actId', $actId);
+       $oLink->addPrm('isSearch', $isSearch);
+       $oLink->addPrm('searchNum', $searchNum);
+       $oLink->addPrm('tab', TAB_WORKS);
+       $orderLinkD = $oLink -> getQuery();
+       unset($oLink);
 
 
       // if operation is success, show success message and redirect top frame
@@ -176,7 +214,13 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aWorks = array();
       $aWorkExist = false;
-
+      $sortOrderD = false;
+      $orderColumnD = false;
+      if (reqVar::get('tab') == 'TAB_WORKS') {
+        $sortOrderD = (reqVar::get('order_d') && reqVar::get('order_d') != '') ? reqVar::get('order_d') : false;
+        $orderColumnD = (reqVar::get('kol_d') && reqVar::get('kol_d') != '') ? reqVar::get('kol_d') : false;
+      }
+      
       if ($oFormWorkTab -> isFormSubmitted() && $oFormWorkTab->getValue('action_t')== OP_DELETE)  {
 
         // get issue array
@@ -205,91 +249,9 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         }
   
       }
-     /* if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
-      {
-          $isRowValid = true;
-          $aKids =  $oFormWorkTab->getValue('chipher');
-          //print_r($aKids);
-          if(is_array($aKids) )
-          {
-            $aWorkFr = array();
-            $j = 0;
-            foreach ($aKids as $i => $val)
-            {
-                
-                 $aWorkFr[$j]['DRBI_ID'] = $oFormWorkTab->getValue('id['.$i.']');
-                 $aWorkFr[$j]['DRBI_KKAL_ID'] = $oFormWorkTab->getValue('kid['.$i.']');
-                 $aWorkFr[$j]['DRBI_KKAL_SHIFRS'] = $oFormWorkTab->getValue('chipher['.$i.']');
-                 $aWorkFr[$j]['DRBI_KKAL_NOSAUKUMS'] = $oFormWorkTab->getValue('title['.$i.']');
-                 $aWorkFr[$j]['DRBI_DAUDZUMS'] = $oFormWorkTab->getValue('amount['.$i.']');
-                 $aWorkFr[$j]['DRBI_MERVIENIBA'] = $oFormWorkTab->getValue('measure['.$i.']');
-                 $aWorkFr[$j]['KKAL_APRAKSTS'] = $oFormWorkTab->getValue('description['.$i.']');
-                 $aWorkFr[$j]['DRBI_PIEZIMES'] = $oFormWorkTab->getValue('notes['.$i.']');
-                 $aWorkFr[$j]['DRBI_IS_WORKER'] = $oFormWorkTab->getValue('st['.$i.']');
-                 $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'] = $oFormWorkTab->getValue('work_type_text['.$i.']');
-                 $aWorkFr[$j]['DRBI_IMPORT_NO'] = $oFormWorkTab->getValue('import_no['.$i.']');
-                 
-                if(($status == STAT_CLOSE && ($isAdmin ||  $projectApprover))) {
-                  $isRowValid = true;
-                  $aWorkFr[$j]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type_id['.$i.']');                  
-                  $aWorkFr[$j]['KLDV_NOSAUKUMS'] = $oFormWorkTab->getValue('work_type['.$i.']');
-                  $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] = $oFormWorkTab->getValue('export_type['.$i.']');
-                } else {
-                  $aWorkFr[$j]['DRBI_WORK_TYPE_ID'] = $oFormWorkTab->getValue('work_type['.$i.']');
-                  // validate work progress value
-                  if (empty($aWorkFr[$j]['DRBI_DAUDZUMS']))
-                  {
-                    // assign error message
-                   // $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
-                   // $isRowValid = false;
-                  }
-                          // validate work progress value
-                  elseif (!is_numeric($aWorkFr[$j]['DRBI_DAUDZUMS']))
-                  {
-                    // assign error message
-                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_DOUBLE_VALUE'));
-                    $isRowValid = false;
-                  }
-                          // validate work progress value
-                  elseif ($aWorkFr[$j]['DRBI_DAUDZUMS'] >= 100000)
-                  {
-                    // assign error message
-                    $oFormWorkTab->addErrorPerElem('amount['.$i.']', text::get('ERROR_AMOUNT_VALUE_100000'));
-                    $isRowValid = false;
-                  }
-                }
-                  // prepare database record data
-  			          $aValidRows[] = array(
-                    'kid' => $aWorkFr[$j]['DRBI_KKAL_ID'],
-                    'chipher' => $aWorkFr[$j]['DRBI_KKAL_SHIFRS'],
-                    'title' => $aWorkFr[$j]['DRBI_KKAL_NOSAUKUMS'],
-                    'amount' => $aWorkFr[$j]['DRBI_DAUDZUMS'],
-                    'measure' => $aWorkFr[$j]['DRBI_MERVIENIBA'],
-                    'description' => $aWorkFr[$j]['KKAL_APRAKSTS'],
-                    'notes' => $aWorkFr[$j]['DRBI_PIEZIMES'],
-                    'st' => $aWorkFr[$j]['DRBI_IS_WORKER'],
-                    'work_type' => $aWorkFr[$j]['DRBI_WORK_TYPE_ID'],
-                    'work_type_text' => $aWorkFr[$j]['DRBI_WORK_TYPE_TEXT'],    
-                    'import_no' => $aWorkFr[$j]['DRBI_IMPORT_NO'],                    
-                    'export_type' => ($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)) ? $aWorkFr[$j]['DRBI_PROJECT_EXPORT'] : '',
-                    'rowNum' => $j
-                  );
-                  $j++;
-                }
-
-                //print_r($aValidRows)."<hr>";
-                //print_r($aWorkFr);
-
-            foreach ($aWorkFr as $i=>$work)
-            {
-              $aWorks[$work['DRBI_WORK_TYPE_ID'].'^'.$work['DRBI_WORK_TYPE_TEXT']][] = $work;              
-            }
-           }
-      }
-      else
-      { */
+   
       //Ja eksistee akta darbi, tad nolasaam taas darbus no datu baazes
-      $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true);      	
+      $aWorkDb=dbProc::getActWorkList($actId, false, false, false, true, false, $sortOrderD, $orderColumnD);      	
       
       $aWorkExist = false;
       foreach ($aWorkDb as $work)
@@ -470,74 +432,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       
 
       // if form iz submit (save button was pressed)
-	  if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
-	  {
-		/*if($oFormWorkTab ->isValid()  && $isRowValid)
-		{
-		   $r=dbProc::deleteActWorks($actId);
-		   if ($r === false)
-		   {
-		   	  $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-		   }
-		   else
-		   { 
-         
-		        if(isset($aValidRows) && is_array($aValidRows))
-            { 
-        	    	foreach($aValidRows as $i => $row)
-                { 
-                        $r=dbProc::writeActWork($actId,
-                        $row['kid'],
-                        isset($row['chipher'])?$row['chipher']:' ',
-                        $row['title'],
-                        false,
-                        $row['amount'],
-                        false,
-                        $row['measure'],
-                        false,
-                        false,
-                        false,
-                        false,
-                        $row['notes'],
-                        $row['st'],
-                        $row['work_type'],
-                        $row['work_type_text'],
-                        $row['export_type'],
-                        false,
-                        $row['import_no'],
-                        );
-                                                   
-                            // if work not inserted in to the DB
-                        // delete  task record and show error message
-                        if($r === false)
-                        {
-                            dbProc::deleteActWorks($actId);
-                            $oFormWorkTab->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
-                              break;
-                        }
-                         else
-                         {
-                            $Id=dbLayer::getInsertId();
-                            $oFormWorkTab -> setNewValue('id['.$row['rowNum'].']', $Id);
-                            
-                            $oFormWorkTab->addSuccess(text::get('RECORD_WAS_SAVED'));
-                            
-                            $oLink=new urlQuery();
-                            $oLink->addPrm(FORM_ID, 'f.akt.s.20');
-                            $oLink->addPrm('actId', $actId);                          
-                            $oLink->addPrm('tab', TAB_WORKS);
-                            $oLink->addPrm('isNew', RequestHandler::getMicroTime());
-                            $oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
-                            //RequestHandler::makeRedirect($oLink->getQuery());
-                         }
-                    }
-                    // saglaba lietotaja darbiibu
-                    dbProc::setUserActionDate($userId, ACT_UPDATE);
-
-                }
-           }
-        } */
-      }
+      if ($oFormWorkTab -> isFormSubmitted() && $isNew === false)
+      { }
        $oFormWorkTab -> makeHtml();
        include('f.akt.s.21.tpl');
     }
