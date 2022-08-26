@@ -110,6 +110,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('tab', TAB_MATERIAL);
+      $oLink->addPrm('isProject',1);
       $oFormMaterialTab = new Form('frmMaterialTab', 'post', $oLink->getQuery() . '#tab');
       unset($oLink);
 
@@ -117,6 +118,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm(FORM_ID, 'f.akt.s.22');
       $oLink->addPrm(DONT_USE_GLB_TPL, '1');
       $oLink->addPrm('xmlHttp', '1');
+      $oLink->addPrm('isProject',1);
       $searchLink = $oLink -> getQuery();
       unset($oLink);
 
@@ -234,9 +236,13 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $aMaterials = array();
       $aMaterialExist = false;
-      $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
-      $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;
-    
+      $sortOrder = false;
+      $orderColumn = false;
+      if (reqVar::get('tab') == 'TAB_MATERIAL') {
+        $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
+        $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;
+      }
+      
            
       //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
       $aMaterialDb=dbProc::getActMaterialList($actId, false, false, true,  $sortOrder, $orderColumn);

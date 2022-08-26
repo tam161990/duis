@@ -36,7 +36,6 @@ sp2.style.color = 'red';
         ?>
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
-
                 <th width="5%"><?=text::get('CODE');?>
                     <a href="#" onclick="doSort('MATR_KODS', 'ASC')">
                         <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>

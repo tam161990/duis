@@ -6490,11 +6490,18 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
     // -----------------------------------------------------------------------------
         function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false, 
-                                $project = false, $work_type_text = false)
+                                $project = false, $work_type_text = false,
+                                $sortOrder = false, $orderColumn = false)
 	{
             $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
             $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
             $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : ',`KKNO_NORM`*`DRBI_DAUDZUMS` as WORK_NORM_SUM';
+            if($orderColumn == false) {
+                $order = '11, 1';
+            } else {
+                $order = $orderColumn . ' ' . $sortOrder;
+            }
+            
             $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
                     ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                     (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
@@ -6521,8 +6528,8 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
                 " . (($work_type_text !== false) ? (empty($work_type_text) ? " AND `DRBI_WORK_TYPE_TEXT` IS NULL " : " AND `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'" ) : "" ) ."
-                AND ".$column_name." IS NULL
-                ORDER BY  11, 1  ";
+                AND ".$column_name." IS NULL 
+                ORDER BY " . $order;
 
         	//echo $query;
 		$oSQL = new dbLayer;
