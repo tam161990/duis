@@ -92,9 +92,10 @@
 if (is_array($res))
 {
   $i = 0;
-  $style = 'table_cell_3';  
+   
   foreach ($res as $row)
   {
+    $style = 'table_cell_3'; 
     if (isset($searchTitle) && is_array($columns)){
       foreach ($columns as $col){
         if( ($col['kolonna'] == 'transactionQty'  || $col['kolonna'] == 'quantity') && $row[$col['kolonna']] < 0 ) {
