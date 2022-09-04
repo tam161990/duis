@@ -1,5 +1,9 @@
 ﻿<script type="text/javascript">
-
+function doSort(column, order)
+{
+    eval(xmlHttpGetValue('<?= $searchLink; ?>&xmlHttp=1&sort_k=' + column + '&sort_o=' + order));
+    reloadFrame(1, '<?= $orderLink; ?>&order=' + o + '&kol=' + k);
+}
 function savedField (el, color) { 
     el.style.borderColor = color; 
     parent = el.parentNode;
@@ -32,17 +36,56 @@ sp2.style.color = 'red';
         ?>
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
-
-                <th width="5%"><?=text::get('CODE');?></th>
+                <th width="5%"><?=text::get('CODE');?>
+                    <a href="#" onclick="doSort('MATR_KODS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_KODS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <th width="30%"><?=text::get('SINGLE_WORK_TYPE');?></th>
-				<th width="20%"><?=text::get('NAME');?></th>
-				<th  width="5%"><?=text::get('UNIT_OF_MEASURE');?></th>
-                <th  width="5%"><?=text::get('AMOUNT');?></th>
-                <th  width="10%"><?=text::get('COMPLECTATION');?></th>
-                <th  width="10%"><?=text::get('CROSSECTION');?></th>
-                <th  width="15%"><?=text::get('COMMENT');?></th>
+                <th width="20%"><?=text::get('NAME');?>
+                    <a href="#" onclick="doSort('MATR_NOSAUKUMS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_NOSAUKUMS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="5%"><?=text::get('UNIT_OF_MEASURE');?>
+                    <a href="#" onclick="doSort('MATR_MERVIENIBA', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_MERVIENIBA', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="5%"><?=text::get('AMOUNT');?>
+                    <a href="#" onclick="doSort('MATR_DAUDZUMS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_DAUDZUMS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="10%"><?=text::get('COMPLECTATION');?>
+                    <a href="#" onclick="doSort('MATR_COMPLECTATION', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_COMPLECTATION', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="10%"><?=text::get('CROSSECTION');?>
+                    <a href="#" onclick="doSort('MATR_CROSSECTION', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_CROSSECTION', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="15%"><?=text::get('COMMENT');?>
+                    <a href="#" onclick="doSort('MATR_PIEZIMES', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_PIEZIMES', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                <th  width="3%" colspan=2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <th  width="3%" colspan=2><?=text::get('PROJECT_EXPORT_TYPE');?>
+                    <a href="#" onclick="doSort('MATR_PROJECT_EXPORT', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSort('MATR_PROJECT_EXPORT', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <? } else {?>
                     <th width="3%">&nbsp;</th>
                     <th width="3%">&nbsp;</th>

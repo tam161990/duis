@@ -2,6 +2,11 @@
 <div id="dhtmltooltip"></div>
 
 <script type="text/javascript">
+function doSortD(column, order)
+{
+    eval(xmlHttpGetValue('<?= $searchLinkD; ?>&xmlHttp=1&sort_k=' + column + '&sort_o=' + order));
+    reloadFrame(1, '<?= $orderLinkD; ?>&order_d=' + o + '&kol_d=' + k);
+}
 /***********************************************
 * Cool DHTML tooltip script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
 * This notice MUST stay intact for legal use
@@ -109,15 +114,50 @@ document.onmousemove=positiontip
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
 		   <tr class="table_head_2">
 
-                <th width="10%"><?=text::get('CHIPHER');?></th>
-                <th width="20%"><?=text::get('SINGLE_WORK_TYPE');?></th>
+                <th width="10%"><?=text::get('CHIPHER');?>
+                    <a href="#" onclick="doSortD('DRBI_KKAL_SHIFRS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_KKAL_SHIFRS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th width="20%"><?=text::get('SINGLE_WORK_TYPE');?>
+                    <a href="#" onclick="doSortD('DRBI_WORK_TYPE_ID', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_WORK_TYPE_ID', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <th width="15%"><?=text::get('PROJECT_OBJECT_TITLE');?></th>
-				<th width="20%" ><?=text::get('NAME');?></th>
-                <th  width="7%"><?=text::get('UNIT_OF_MEASURE');?></th>
-				<th  width="10%"><?=text::get('AMOUNT');?></th>                
-                <th  width="15%"><?=text::get('COMMENT');?></th>
+                <th width="20%" ><?=text::get('NAME');?>
+                    <a href="#" onclick="doSortD('DRBI_KKAL_NOSAUKUMS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_KKAL_NOSAUKUMS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="7%"><?=text::get('UNIT_OF_MEASURE');?>
+                    <a href="#" onclick="doSortD('DRBI_MERVIENIBA', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_MERVIENIBA', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
+                <th  width="10%"><?=text::get('AMOUNT');?>
+                    <a href="#" onclick="doSortD('DRBI_DAUDZUMS', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_DAUDZUMS', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>                
+                <th  width="15%"><?=text::get('COMMENT');?>
+                    <a href="#" onclick="doSortD('DRBI_PIEZIMES', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_PIEZIMES', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                <th  width="3%" colspan = 2><?=text::get('PROJECT_EXPORT_TYPE');?></th>
+                <th  width="3%" colspan = 2><?=text::get('PROJECT_EXPORT_TYPE');?>
+                    <a href="#" onclick="doSortD('DRBI_PROJECT_EXPORT', 'ASC')">
+                        <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                    <a href="#" onclick="doSortD('DRBI_PROJECT_EXPORT', 'DESC')">
+                        <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                </th>
                 <? } else {?>
                     <th width="3%">&nbsp;</th>
                     <th width="3%">&nbsp;</th>
@@ -165,7 +205,7 @@ document.onmousemove=positiontip
                     </td>
                     <td>
                         <? if(!$isReadonly)  {?>
-                            <input type="checkbox" onclick="eval(xmlHttpGetValue('<?= $searchLink; ?>&issue=<?=$actWork['DRBI_ID'];?>&op=' + ((this.checked)?'<?=OP_INSERT;?>':'<?=OP_DELETE;?>'))); "  /></td>
+                            <input type="checkbox" onclick="eval(xmlHttpGetValue('<?= $searchLinkD; ?>&issue=<?=$actWork['DRBI_ID'];?>&op=' + ((this.checked)?'<?=OP_INSERT;?>':'<?=OP_DELETE;?>'))); "  /></td>
                         <? } else{ ?>
                         &nbsp;
                         <? } ?>
