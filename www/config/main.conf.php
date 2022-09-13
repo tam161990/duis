@@ -454,6 +454,9 @@ define('WORKER_SECTION_EPW','Daugavpils,Preili,Ludza,Kraslava,Rezekne');
 define('CAT_CLASE_1','Aprīkojums');
 define('CAT_CLASE_2','Neprojektēt');
 
-
+#=================================================
+#  ST worker 
+#=================================================
+define('ST_WORKER_CODE','40003857687');
 
 ?>
