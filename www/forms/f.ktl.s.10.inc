@@ -128,30 +128,30 @@ if ($isAdmin || $isAuditUser || $isEdUser)
 		if($trase != 1) $oForm -> addRule('koeficent', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
 
         $oForm -> addElement('text', 'standart',  text::get('PLAN_PRICE'), isset($calc['KKAL_PLANA'])?$calc['KKAL_PLANA']:'', 'tabindex=2 maxlength="6"'.(($isEdUser)?' disabled' : ''));
-		if($trase == 1) {
+		if($trase == 1 ) {
 			$oForm -> addRule('standart', text::get('ERROR_REQUIRED_FIELD'), 'required');
 			$oForm -> addRule('standart', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
 			// check Standart field
 			$oForm->addElement('hidden','minStandart','','0.00');
-			$oForm->addElement('hidden','maxStandart','','1000.00');
+			$oForm->addElement('hidden','maxStandart','','2000.00');
 			$v1=&$oForm->createValidation('standartValidation', array('standart'), 'ifonefilled');
 			// ja Cilv�kstundas normat�vs ir defin�ts un > 1000
 			//$r1=&$oForm->createRule(array('standart', 'minStandart'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','>');
-			$r2=&$oForm->createRule(array('standart', 'maxStandart'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
+			$r2=&$oForm->createRule(array('standart', 'maxStandart'), text::get('ERROR_AMOUNT_VALUE_2000'), 'comparedouble','<');
 			$oForm->addRule(array( $r2), 'groupRuleStandart', 'group', $v1);
 		}
 
         $oForm -> addElement('text', 'standart_np',  text::get('NOT_PLAN_PRICE'), isset($calc['KKAL_NEPLANA'])?$calc['KKAL_NEPLANA']:'', 'tabindex=2 maxlength="6"'.(($isEdUser)?' disabled' : ''));
-		if($trase == 1) {
+		if($trase == 1 ) {
 			$oForm -> addRule('standart_np', text::get('ERROR_REQUIRED_FIELD'), 'required');
 			$oForm -> addRule('standart_np', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
 			// check Standart field
 			$oForm->addElement('hidden','minStandart_np','','0.00');
-			$oForm->addElement('hidden','maxStandart_np','','1000.00');
+			$oForm->addElement('hidden','maxStandart_np','','2000.00');
 			$v1=&$oForm->createValidation('standartValidationNp', array('standart_np'), 'ifonefilled');
 			// ja Cilv�kstundas normat�vs ir defin�ts un > 1000
 			//$r1=&$oForm->createRule(array('standart', 'minStandart'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','>');
-			$r2=&$oForm->createRule(array('standart_np', 'maxStandart_np'), text::get('ERROR_AMOUNT_VALUE'), 'comparedouble','<');
+			$r2=&$oForm->createRule(array('standart_np', 'maxStandart_np'), text::get('ERROR_AMOUNT_VALUE_2000'), 'comparedouble','<');
 			$oForm->addRule(array( $r2), 'groupRuleStandart_np', 'group', $v1);
 		}
 
@@ -227,7 +227,19 @@ if ($isAdmin || $isAuditUser || $isEdUser)
                       $oForm -> getValue('standart')  &&  $oForm -> getValue('standart_np') )    )
     			{
     				$checkRequiredFields = true;
-    			}
+				}
+				
+				if(($trase == 1 || $oForm->getValue('isEpla',0) == 1 )  && $oForm->getValue('standart') >=2000 ){
+					$oForm->addError(text::get('PLAN_PRICE') . ' '.strtolower(text::get('ERROR_AMOUNT_VALUE_2000')));
+					$checkRequiredFields = false;
+					$check = false;
+				}
+				if(($trase == 1 || $oForm->getValue('isEpla',0) == 1 )   && $oForm->getValue('standart_np') >= 2000){
+					$oForm->addError(text::get('NOT_PLAN_PRICE') . ' '.strtolower(text::get('ERROR_AMOUNT_VALUE_2000')));
+					$checkRequiredFields = false;
+					$check = false;
+				}
+				
 
                 if(($trase == 0)    &&
     			 ($oForm -> getValue('kods') && $oForm -> getValue('nosaukums') &&

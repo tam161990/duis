@@ -1,0 +1,2 @@
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('ERROR_AMOUNT_VALUE_2000', 'Vērtībai jābūt mazākai nekā 2000');
