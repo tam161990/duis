@@ -44,7 +44,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('hidden', 'action', '');
 		$oForm -> addElement('hidden', 'workerId', null, isset($worker['KWOI_ID'])? $worker['KWOI_ID']:'');
 
-
         $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($worker['KWOI_NOSAUKUMS'])?$worker['KWOI_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
@@ -72,12 +71,12 @@ if (userAuthorization::isAdmin() || $isEdUser )
             {
                //Popup saites sagatave
               $oPopLink=new urlQuery;
-              $oPopLink->addPrm(FORM_ID, 'f.ktl.s.15');
-              $oPopLink->addPrm('workerCode',$worker['KWOI_KODS']);
-              $oPopLink->addPrm('workerId',$workerId);
+			  $oPopLink->addPrm(url, 'f.ktl.s.15');
+			  $oPopLink->addPrm(FORM_ID,'fmk_main_2_frame');
+              $oPopLink->addPrm('id',$worker['KWOI_KODS']);
 
-              $oForm -> addElement('buttonImg', 'view', text::get('EDIT'), 'img/btn_edit.bmp', 'width="50" height="23" onclick="window.open(\''.$oPopLink ->getQuery().'\', \'frmMain1\',\'toolbar=no,resizable=yes,scrollbars=yes,width=600,height=400\')" '.(isset($worker['KWOI_KODS'])?'':' disabled '));
-              unset($oPopLink);
+			  $oForm -> addElement('buttonImg', 'view', text::get('EDIT'), 'img/btn_edit.bmp', 'width="50" height="23" onclick="let newWin=window.open(\''.$oPopLink ->getQuery().'\', \'frmMain1\',\'toolbar=no,resizable=yes,scrollbars=yes,width=800,height=600\'); " '.(isset($worker['KWOI_KODS'])?'':' disabled '));
+			  unset($oPopLink);
             }
             else
             {
