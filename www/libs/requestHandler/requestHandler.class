@@ -271,7 +271,7 @@ class RequestHandler
 		$section = (isset($_REQUEST['tab'] ) ? $_REQUEST['tab'] : null);
 		$catalog = (isset($_REQUEST['catalog'] ) ? $_REQUEST['catalog'] : null);
 		
-		if($formId !== '' && $formId !== 'blank' &&  $formId != 'fmk_main' 
+		if($formId !== '' && $formId !== 'blank' &&  $formId != 'fmk_main'  && $formId != 'fmk_main_2_frame'  
 			&& (isset($action) || isset($description) || isset($catalog))
 			) {
 			dbProc::saveEvent($type, 

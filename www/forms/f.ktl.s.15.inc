@@ -2,263 +2,209 @@
 //created by Tatjana Fedorkova
 $userId = userAuthorization::getUserId();
 $isEdUser = (dbProc::isUserInRole($userId, ROLE_ED_USER) || dbProc::isUserInRole($userId, ROLE_AUDIT_USER));
-// by default 10 contract numbers for one DU
-define('CONTRACT_MAX_COUNT', 50);
-// error end warning messages for delete
-$errorMsgDelete = text::get('ERROR_CONTRACT_IS_USED');
-$warningMsgDelete = text::get('WARNING_DELETE_CONTRACT');
 
-$workerCode = reqVar::get('workerCode');
-$workerId = reqVar::get('workerId');
+$workerCode = reqVar::get('id');
 
-//link for frame2
-$oLink2=new urlQuery();
-$oLink2->addPrm(FORM_ID, 'f.ktl.s.8');
-$oLink2->addPrm('editMode', 1);
-$oLink2->addPrm('workerId', $workerId);
-
-// Main form with XMLHTTP method load this code:
-// used for delete record from DB
-if (reqVar::get('xmlHttp') == 1)
+if (userAuthorization::isAdmin() || $isEdUser )
 {
-	if(reqVar::get('opType') == OP_DELETE)
+	$editMode = reqVar::get('editMode');
+	// bottom frame
+	// if insert/update
+
+    if($editMode)
 	{
+		$contactId = reqVar::get('contactId');
 
-      	if (reqVar::get('itemId')!='')
-    	{
-    		// if there is reletions with kls an another object => return true
-    		if ($res=dbProc::isContractRelations(reqVar::get('itemId')))
-    		{
-    			?>
-    			alert('<?=$errorMsgDelete;?>');
-    			<?
-    		}
-    		else
-    		{
-    			dbProc::deleteContractNo(reqVar::get('itemId'));
-    			?>
-                    removeErrSpans();
-		            deleteBlock(this,'empty_node',Array('contractId_','isTrase_','contractNo_'));
-    			<?
+		$oLink=new urlQuery();
+		$oLink->addPrm(FORM_ID, 'f.ktl.s.15');
+		$oLink->addPrm('id', $workerCode);
+		$oLink->addPrm('editMode', 1 );
+		// form inicialization
+		$oForm = new Form('frmMain1','post',$oLink->getQuery());
+		unset($oLink);
 
-    		}
-    	}
-    	else
-    	{
-    		?>
-               removeErrSpans();
-		       deleteBlock(this,'empty_node',Array('contractId_','isTrase_','contractNo_'));
-    		<?
+		// if operation is success, show success message and redirect top frame
+		if (reqVar::get('successMessage'))
+		{
+			$oForm->addSuccess(reqVar::get('successMessage'));
+			$oForm->addElement('static','jsRefresh2','','<script>refreshFrame(1);</script>');
+		}
 
-    	}
-
-	}
-	exit();
-}
-
-
-
-if ((userAuthorization::isAdmin() || $isEdUser ) && $workerCode != false)
-{
-
-
-    $oLink=new urlQuery();
-    $oLink->addPrm(FORM_ID, 'f.ktl.s.15');
-    $oForm = new Form('frmMain','post',$oLink->getQuery());
-    unset($oLink);
-
-    // if operation is success, show success message and redirect top frame
-    if (reqVar::get('successMessage'))
-    {
-    	$oForm->addSuccess(reqVar::get('successMessage'));
-    	$oForm->addElement('static','jsRefresh2','','<script>window.opener.refreshFrame(1); window.opener.reloadFrame(2, "'.$oLink2 ->getQuery().'");</script>');
-    }
-
-    // xmlHttp link for delete row from search result
-    $oxmlHttpLinkD = new urlQuery;
-    $oxmlHttpLinkD -> addPrm(FORM_ID, 'f.ktl.s.15');
-    $oxmlHttpLinkD -> addPrm('xmlHttp', '1');
-    $oxmlHttpLinkD->addPrm(DONT_USE_GLB_TPL, '1');
-    $oxmlHttpLinkD -> addPrm('opType', OP_DELETE);
-
-    // if success message is set
-  	if (reqVar::get('errorMessage'))
-  	{
-  		// add message to the form
-  		$oForm->addError(reqVar::get('errorMessage'));
-  	}
-
-    // get list of contract
-    $contractArray = dbProc:: getDuContractNo( $workerCode );
-
-    // list of all records
-    // if array with query records not empty
-    if (is_array($contractArray) && count($contractArray)>0)
-    {
-
-    	// inicialize array for data
-    	$data=array();
-    	// counter
-    	$i=0;
-    	// filling $daa array with values from Array
-    	foreach ($contractArray as $row)
-    	{
-    		$data[$i]['ID']=$row['KCNT_ID'];
-    		$data[$i]['CONTRACT']=$row['KCNT_VV_NUMBER'];
-    		$data[$i]['TRASE']=$row['KCNT_IR_TRASE'];
-            $data[$i]['ED'] = $row['KONT_KEDI_KODS']  ;
-			$data[$i]['ACTIVE'] = $row['KCNT_IR_AKTIVS']  ;
-			$data[$i]['SIGNATORY'] = $row['KCNT_SIGNATORY']  ;
-    		// increment counter
-    		$i++;
-    	}
-    }
-    else
-    {
-    	// if there is no records in DB, show error massage
-    	$oForm->addError(text::get('ERROR_NO_RECORDS_FOUND'));
-    }
-
-    // if array data not empty
-    if(isset($data) && is_array($data))
-    {
-    	// pievienojam tuksas vertibas massivaa sakumaa
-    	while($i< CONTRACT_MAX_COUNT)
-    	{
-    		array_unshift($data,false);
-    		$i++;
-    	}
-    }
-
-    // add CONTRACT_MAX_COUNT rows to the form
-    // first rows fields are emty and hidden
-    // latest rows fields are filed by data values
-    for ($i=0;$i< CONTRACT_MAX_COUNT;$i++)
-    {
-
-
-    	$oForm -> addElement('hidden', 'contractId_'.$i, '', isset($data[$i]['ID'])?$data[$i]['ID']:'' );
-
-    	// trase
-    	$oForm -> addElement('checkbox', 'isTrase_'.$i,  '',  isset($data[$i]['TRASE'])?$data[$i]['TRASE']:'0', ''.(($isEdUser)?' disabled' : ''));
-
-        // is active
-    	$oForm -> addElement('checkbox', 'isActive_'.$i,  '',  isset($data[$i]['ACTIVE'])?$data[$i]['ACTIVE']:'0', ''.(($isEdUser)?' disabled' : ''));
-
-    	// contract no
-    	$oForm -> addElement('text', 'contractNo_'.$i, '', isset($data[$i]['CONTRACT'])?$data[$i]['CONTRACT']:'', 'maxlength="20"  '.(($isEdUser)?' disabled' : ''));
-	   //$oForm -> addRule('contractNo_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
-	   
-	   // parakstitajs
-	   $oForm -> addElement('text', 'signatory_'.$i, '', isset($data[$i]['SIGNATORY'])?$data[$i]['SIGNATORY']:'', 'maxlength="20"  '.(($isEdUser)?' disabled' : ''));
-
-        $oForm -> addElement('kls', 'edArea_'.$i,  '', array('classifName'=>KL_ED_AREA_CODE,'value'=>isset($data[$i]['ED'])?$data[$i]['ED']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
-       // $oForm -> addRule('edArea_'.$i, text::get('ERROR_REQUIRED_FIELD'), 'requiredext');
-    }
-    $oForm -> addElement('hidden', 'workerCode', '', $workerCode );
-    $oForm -> addElement('hidden', 'workerId', '', $workerId);
-
-    // bottom buttons
-    if(!$isEdUser)
-    {
-        $oForm -> addElement('submit', 'save', '', text::get('SAVE'), 'class="btn70" ');
-    }
-
-    $oForm -> addElement('button', 'close', '', text::get('CLOSE'), 'class="btn70" onclick="javascript:window.close();return false;"; ');
-
-    // if form submitted
-    if ($oForm -> isFormSubmitted())
-    {
-    	$isValis = true;
-    	// validations
-    	// loop form rows
-    	for ($i=0;$i<CONTRACT_MAX_COUNT;$i++)
-    	{
-    		// get trase value
-    		$oTrase = $oForm->getValue('isTrase_'.$i, 0);
-    		// get title value
-    		$oContractNo = $oForm->getValue('contractNo_'.$i);
-            $oEd = $oForm->getValue('edArea_'.$i);
-             
-    		// if region & title value not empty
-    		if(!empty($oContractNo) && !empty($oEd) )
-    		{
-    			// FOR INSERT
-			if($oForm->getValue('contractId_'.$i) == '')
+		// inicial state: contactId=0;
+		// if contactId>0 ==>  selected from the list
+		if($contactId != false)
+		{
+			// get info about voltage
+			$contractInfo = dbProc::getDUcontractList($contactId);
+			if(count($contractInfo)>0)
 			{
-    				// check that title is unique
-    				if(dbProc::isEqualContract($oContractNo, $oEd, $oTrase))
-    				{
-    					// edd error message to incorrect element
-    					$oForm->addErrorPerElem('contractNo_'.$i, text::get('ERROR_CONTRACT_EXIST'));
-    					$isValis = false;
-    				}
+				$contract = $contractInfo[0];
 			}
-    		}
-    	}
-    	// if validation is OK
-    	if($isValis)
-    	{
-    		// inicial value for error message
-    		$errorMsg = '';
-    		// save info in DB
-    		for ($i=0;$i<CONTRACT_MAX_COUNT;$i++)
-    		{
-    			// get ID of each record from hidden field
-    			$id=$oForm->getValue('contractId_'.$i);
-                // get region value
-    		    $oTrase = $oForm->getValue('isTrase_'.$i, 0);
-    		    // get title value
-    		    $oContractNo = $oForm->getValue('contractNo_'.$i);
-                $oEd = $oForm->getValue('edArea_'.$i);
-				$oActive = $oForm->getValue('isActive_'.$i, 0);
-				$oSignatory = $oForm->getValue('signatory_'.$i);
+        }
 
-    			// if region & title value not empty
-    			if(!empty($oContractNo) ) {
+		// form elements
+		$oForm -> addElement('hidden', 'action', '');		
+		$oForm -> addElement('hidden', 'contractId', null, isset($contract['KCNT_ID'])? $contract['KCNT_ID']:'');
+    	// trase
+    	$oForm -> addElement('checkbox', 'isTrase',  text::get('TRASE'),  isset($contract['KCNT_IR_TRASE'])?$contract['KCNT_IR_TRASE']:'0', ''.(($isEdUser)?' disabled' : ''));
+        // is active
+    	$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'),  isset($contract['KCNT_IR_AKTIVS'])?$contract['KCNT_IR_AKTIVS']:'0', ''.(($isEdUser)?' disabled' : ''));
+		// contract no
+		$oForm -> addElement('text', 'contractNo',  text::get('KWOI_VV_NUMBER'), isset($contract['KCNT_VV_NUMBER'])?$contract['KCNT_VV_NUMBER']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('contractNo', text::get('ERROR_REQUIRED_FIELD'), 'required');
+    	// parakstitajs
+	    $oForm -> addElement('text', 'signatory',  text::get('SIGNATORY'), isset($contract['KCNT_SIGNATORY'])?$contract['KCNT_SIGNATORY']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
+	    //$oForm -> addRule('signatory', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	   	// ed area
+		$oForm -> addElement('kls', 'edArea',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>isset($contract['KONT_KEDI_KODS'])?$contract['KONT_KEDI_KODS']:'','readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('edArea', text::get('ERROR_REQUIRED_FIELD'), 'required');
+		// form buttons
+		if(!$isEdUser)
+        {
+			$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');"');
+			$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'contractId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+			$oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshButton(\'contractId\');parent.frame_1.unActiveRow();'));
 
-    				// write to the DB
-    				$r=dbProc::saveContractNo($workerCode, $oTrase, $oContractNo, $oEd, $id, $oActive, $oSignatory);
+			$oForm -> addElement('static', 'jsButtonsControl', '', '
+				<script>
+					function refreshButton(name)
+					{
+						if (!isEmptyField(name))
+						{
+							document.all["save"].src="img/btn_saglabat.gif";
 
-    				if($r === false)
-    				{
-    					// if operation is not success, add info about error to Error Message
-    					$errorMsg .= text::get('ERROR_IN_DB_QUERY').(dbProc::getError()).'<br>';
+						}
+						else
+						{
+							document.all["save"].src="img/btn_saglabat_disabled.gif";
+
+						}
+					}
+					refreshButton("contractId");
+				</script>
+			');
+        }
+		// if operation
+		if ($oForm -> isFormSubmitted())
+		{
+			$check = true;
+			$r = false;
+			$checkRequiredFields = false;
+			if ( $oForm -> getValue('contractNo') && $oForm -> getValue('edArea') )
+			{
+				$checkRequiredFields = true;
+			}
+			if ($checkRequiredFields)
+			{
+				// save
+				if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('contractId'))))
+				{
+
+					// check that title is unique
+					if(dbProc::isEqualContract($oForm->getValue('contractNo'), 
+												$oForm->getValue('edArea'), 
+												$oForm->getValue('isTrase',0),
+												(($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('contractId'):false)
+					)){
+    					// edd error message to incorrect element
+    					$oForm->addError(text::get('ERROR_CONTRACT_EXIST'));
+						$check = false;
     				}
-    				else
-    				{
-    					// if operation is success, update hidden field with calendar ID
-    					$oForm -> setNewValue('contractId_'.$i, $id);
-    				}
-    			}
-    		}
+					// if all is ok, do operation
+					if($check)
+					{
+						$r=dbProc::saveContractNo(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('contractId'):false),
+						$workerCode,
+						$oForm->getValue('isTrase',0),
+						$oForm->getValue('contractNo'),
+						$oForm->getValue('edArea'),
+						$oForm->getValue('isActive',0),
+                        $oForm->getValue('signatory')
+						);
+
+						if (!$r)
+						{
+							$oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+						}
+					}
+				}
 
 
-            /*$oRedirectLink=new urlQuery();
-            $oRedirectLink->addPrm(FORM_ID, 'f.ktl.s.8');
-            $oRedirectLink->addPrm('editMode', 1 );
-            $oRedirectLink->addPrm('workerCode', $workerCode);
+				// if operation was compleated succefully, show success mesage and redirect current frame
+				if ($r)
+				{
+					$oLink=new urlQuery();
+					$oLink->addPrm(FORM_ID, 'f.ktl.s.15');
+					$oLink->addPrm('editMode', '1');
+					$oLink->addPrm('id', $workerCode);
+					switch($oForm->getValue('action'))
+					{
+						case OP_INSERT:
+							$oLink->addPrm('successMessage', text::get('RECORD_WAS_ADDED'));
+							break;
+						case OP_UPDATE:
+							$oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+							break;
+					}
+					RequestHandler::makeRedirect($oLink->getQuery());
+				}
+			}
+			else
+			{
+				$oForm->addError(text::get('ERROR_NO_ALL_INPUT_DATES'));
+			}
+		}
 
-            RequestHandler::makeParentReplace($oRedirectLink->getQuery());
-            unset($oRedirectLink);*/
+       	$oForm -> makeHtml();
+		include('f.ktl.s.15.2.tpl');
+		
+	}
+	// top frale
+	else
+	{ 
+        // set list title
+        $title = text::toUpper(text::get('KWOI_VV_NUMBER'));
+        
+		// inicialising of listing object
+		$amount=dbProc::getDUcontractCount($workerCode);
+		$listing=new listing();
+		$listing->setAmount($amount);
 
-    		// link for redirect form
-    		$oLink = new urlQuery;
-    		$oLink -> addPrm(FORM_ID, 'f.ktl.s.15');
-    		$oLink-> addPrm('errorMessage', $errorMsg);
-			$oLink-> addPrm('workerCode', $workerCode);
-			$oLink-> addPrm('workerId', $workerId);
-			$oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+		$oLink = new urlQuery;
+    	$oLink -> addPrm(FORM_ID, 'f.ktl.s.15');
+		$oLink->addPrm('isNew', '1');
+		$oLink->addPrm('id', $workerCode);
+		$listingHtml=$listing->getHtml($oLink ->getQuery());
+		unset($oLink);
 
-    		// if all write operations was success, redirect form
-    		RequestHandler::makeRedirect($oLink->getQuery());
-    	}
-    }
+		//link for frame2
+		$oLink=new urlQuery();
+		$oLink->addPrm(FORM_ID, 'f.ktl.s.15');
+		$oLink->addPrm('id', $workerCode);
+		$oLink->addPrm('editMode', 1);
 
+		// gel list of users
+		$res = dbProc::getDUcontractList(false,
+										$workerCode,
+                                        $listing->getStartPosition(),
+                                        $listing->getAmountOnPage());
 
-    //Formas atteeloshana
-    $oForm -> makeHtml();
-    include('f.ktl.s.15.tpl');
+		if (is_array($res))
+		{
+			foreach ($res as $i=>$row)
+			{
+				// add dv area Id to each link
+				$oLink->addPrm('contactId', $row['KCNT_ID']);
+				$res[$i]['URL']=$oLink ->getQuery();
+			}
+		}
+		unset($oLink);
+
+		// inicial state of users number
+		$number=$listing->getStartPosition()+1;
+
+		include('f.ktl.s.15.1.tpl');
+	}
 }
 else
 {
