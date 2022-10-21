@@ -132,23 +132,25 @@ class text
 	// -----------------------------------------------------------------------------
 	function cleanText($s)
 	{
-		return preg_match("/^(â|Â|ç|Ç|î|Î|ô|Ô|ð|Ð|ì|Ì|í|Í|ï|Ï|þ|Þ|è|È|ò|Ò|û|Û|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
+		return preg_match("/^(ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
 	}
 
-    function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false)
+    function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false, &$linescnt=false)
     {
-      $strlength = strlen($str);
+	  $strlength = strlen($str);
+	  $linescnt = 1;
       if($strlength > $maxStrLen)
       {
-        $wrappoint = floor($strlength/($lines));
+		$wrappoint = ($lines != "") ? floor($strlength/($lines)) : $maxStrLen;
+		$linescnt = ($lines != "") ? $lines : ceil($strlength/$maxStrLen);
 
-        $newstring = array_chunk(explode($delimiter, wordwrap($str, $wrappoint, $delimiter)), $lines);
+        $newstring = array_chunk(explode($delimiter, wordwrap($str, $wrappoint, $delimiter)), $linescnt);
         //print "$strlength\n$wrappoint\n"; print_r($newstring);
         if (isset($newstring[1]))
         {
           for ($i=1; $i<=count($newstring); $i++)
           {
-             $newstring[0][$lines-1] .= ' ' . implode(' ', $newstring[$i]);
+             $newstring[0][$linescnt-1] .= ' ' . implode(' ', $newstring[$i]);
              unset($newstring[$i]);
           }
         }

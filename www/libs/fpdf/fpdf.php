@@ -1387,7 +1387,13 @@ function FancyTableTrase($headers,$data, $width, $align, $alignHeader)
         $this->SetFont('Arial','',8);
         foreach($headers as $key=>$header)
         {
-          $this->Cell($width[$i],6,$row[$key],'B',0,$align[$i]);
+			if(isset($row['LINES'])  && $row['LINES'] != "") {
+				$this->Cell($width[$i],4*$row['LINES'],$row[$key],'B',0,$align[$i]);
+			}
+			else {
+				$this->Cell($width[$i],6,$row[$key],'B',0,$align[$i]);
+			}
+          
           $i++;
         }
         $this->Ln();
@@ -1397,7 +1403,12 @@ function FancyTableTrase($headers,$data, $width, $align, $alignHeader)
 
         foreach($headers as $key=>$header)
         {
-          $this->Cell($width[$i],6,$row[$key],'B',0,$align[$i]);
+			if(isset($row['LINES'])  && $row['LINES'] != "") {
+				$this->Cell($width[$i],4*$row['LINES'],$row[$key],'B',0,$align[$i]);
+			}
+			else {
+				$this->Cell($width[$i],6,$row[$key],'B',0,$align[$i]);
+			}
           $i++;
         }
         $this->Ln();
