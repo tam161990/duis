@@ -640,13 +640,13 @@ class RequestHandler
 
 	}
 
-	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-	function sentMaterialRequest ($postData) 
-	{
-		
+	// funkcija sūta materiāla pieprasījumu uz Oracle caus SOA servisu
+	function sentMaterialRequest ($postData, $idFile) 
+	{		
 		// The data to send to the API		
 		files::wh_log('sentMaterialRequest:'.json_encode($postData).PHP_EOL.
-				'url: '.MATERIAL_REQUEST_URL .PHP_EOL);	
+				'url: '.MATERIAL_REQUEST_URL .PHP_EOL.
+				'fileId: '.$idFile .PHP_EOL);	
 				
 		// Setup cURL
 		$ch = curl_init(MATERIAL_REQUEST_URL);
@@ -675,9 +675,66 @@ class RequestHandler
 					'message:' .$responseStatus->message .PHP_EOL.
 					'duisRequestId:' .$responseData->duisRequestId .PHP_EOL );          	 	
 			curl_close($ch);
+			if($responseStatus->status == 'E') {
+				RequestHandler::sentPrNumberRequest ($responseData->duisRequestId, 
+													 $idFile, 
+													 text::get('ERROR') .'<br>'.
+													 $responseStatus->code .'<br>'.
+													 $responseStatus->message
+													 ) ;
+			} else {
+				RequestHandler::sentPrNumberRequest (text::get('SUSSCESSFULL'), 
+													 $idFile, 
+													 $responseStatus->status 
+													 ) ;
+			}
+			return true;
+		}			
+	}
+
+	// funkcija sūta API pieprasījumu, lai dabūt projekta numuru
+	function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
+	{		
+		// The data to send to the API		
+		files::wh_log('sentPrNumberRequest url: '.PRNUMBER_REQUEST_URL .PHP_EOL.
+					  'duisRequestId: '.$duisRequestId .PHP_EOL.
+					  'fileId: '.$idFile .PHP_EOL);	
+		
+		$postData = [
+		"duisRequestId" => $duisRequestId
+		];
+
+		// Setup cURL
+		$ch = curl_init(PRNUMBER_REQUEST_URL);
+
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		
+		if (curl_errno($ch)) {
+			files::wh_log('sentPrNumberRequest RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			return false;
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, false);
+			$responseStatus = $responseData->status;
+			$projectNo = $responseData->prNumber;
+			files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
+					'status:'.$responseStatus->status .PHP_EOL.
+					'code:' .$responseStatus->code .PHP_EOL.
+					'message:' .$responseStatus->message .PHP_EOL.
+					'projectNo:' .$projectNo .PHP_EOL );   
+			dbProc::updateFileDescription($fileId,  $status.'|'.$projectNo);     	 	
+			curl_close($ch);
 			return true;
 		}		
-		
 	}
 
 	// -----------------------------------------------------------------------------

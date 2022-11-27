@@ -105,9 +105,12 @@ define ('CURRENT_YEAR','current_year');
 define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
 
 // WS service for material request
-// documentation https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition
+// documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/CreateRequisition
 define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition');
 
+// WS service for project Number request
+// documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/GetRequisitionStatus
+define ('PRNUMBER_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-requisition-status');
 
 // API for Limitkarte rekords
 define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');

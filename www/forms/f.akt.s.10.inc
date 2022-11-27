@@ -46,7 +46,16 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 
 			if($row['RFLS_META_INFO'] == JSON_FILE_MIMETYPE) {
 				$oLinkFile->addPrm(IS_GET_JSON_FILE_VARIABLE, 1);	
-				$fileInfo[$i]['ico'] = 'ico_json.png'; 			
+				$fileInfo[$i]['ico'] = 'ico_json.png'; 	
+				if($isProject == 1 && isset($fileInfo[$i]['RFLS_DESCRIPTION']))	{
+					$description = explode('|', $fileInfo[$i]['RFLS_DESCRIPTION']);
+					if(is_array($description)){
+						$fileInfo[$i]['status'] = $description[0];
+						if(count($description)>1){
+							$fileInfo[$i]['project_no'] = $description[1];
+						}
+					}
+				}
 			}
 
 			$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['RFLS_ID']);

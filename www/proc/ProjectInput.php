@@ -77,7 +77,8 @@
 					(isset($data->issue_summary) && !empty($data->issue_summary)) ||
 					(isset($data->issue_type) && !empty($data->issue_type))  ||
 					(isset($data->customfield_11505) && !empty($data->customfield_11505)) ||
-					(isset($data->customfield_28740) && !empty($data->customfield_28740))	 )
+					(isset($data->customfield_28740) && !empty($data->customfield_28740)) ||
+					(isset($data->issue_proj) && !empty($data->issue_proj))
 			{
 				if( isset($data->issue_invest_year) && !empty($data->issue_invest_year)  && 
 					isset($data->issue_designer) && !empty($data->issue_designer) &&
@@ -93,6 +94,7 @@
 								$data->issue_type,
 								$data->customfield_11505,
 								$data->customfield_28740,
+								$data->issue_proj,
 								$err_message								
 							);					
 				} else {
