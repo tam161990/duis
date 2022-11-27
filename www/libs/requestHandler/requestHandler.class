@@ -694,7 +694,8 @@ class RequestHandler
 
 	// funkcija sūta API pieprasījumu, lai dabūt projekta numuru
 	function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
-	{		
+	{	
+		sleep(10);
 		// The data to send to the API		
 		files::wh_log('sentPrNumberRequest url: '.PRNUMBER_REQUEST_URL .PHP_EOL.
 					  'duisRequestId: '.$duisRequestId .PHP_EOL.
@@ -724,16 +725,23 @@ class RequestHandler
 		} else { 
 			// Decode the response
 			$responseData = json_decode($response, false);
-			$responseStatus = $responseData->status;
-			$projectNo = $responseData->prNumber;
-			files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
-					'status:'.$responseStatus->status .PHP_EOL.
-					'code:' .$responseStatus->code .PHP_EOL.
-					'message:' .$responseStatus->message .PHP_EOL.
-					'projectNo:' .$projectNo .PHP_EOL );   
-			dbProc::updateFileDescription($fileId,  $status.'|'.$projectNo);     	 	
-			curl_close($ch);
-			return true;
+			$responseStatus = $responseData->reqStatus;
+			if($responseStatus == 'PROCESSING') 
+			{
+				RequestHandler::sentPrNumberRequest ($duisRequestId, $idFile, $status);
+			} else {
+				$projectNo = $responseData->prNumber;
+				files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
+						'status:'.$responseStatus .PHP_EOL.
+						'message:' .$responseData->reqStatusMsg .PHP_EOL.
+						'projectNo:' .$projectNo .PHP_EOL );   
+				if($responseStatus == 'ERROR') {
+					$status = text::get('ERROR') .'<br>'. $responseData->reqStatusMsg ;
+				}
+				dbProc::updateFileDescription($idFile,  $status.'|'.$projectNo);     	 	
+				curl_close($ch);
+				return true;
+			}
 		}		
 	}
 

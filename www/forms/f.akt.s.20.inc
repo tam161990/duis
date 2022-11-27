@@ -302,7 +302,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
   }
 
   if($status == STAT_CLOSE) {
-    $oForm -> addElement('submitImg', 'order_material', text::get('ORDER_MATERIAL'), 'img/btn_order_material_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_ORDER_MATERIAL.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'order_material', text::get('ORDER_MATERIAL'), 'img/btn_order_material_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_ORDER_MATERIAL.'\');setPosition1(\'loading\');} else {return false;}"');
   }
 
   if (!$isReadonlyExceptEconomist && ($status == STAT_DELETE || $status == STAT_CLOSE))

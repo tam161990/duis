@@ -8088,9 +8088,11 @@ class dbProc extends dbLayer
     function updateFileDescription($fileId,  $description='')
 	{
 		$oSQL=new dbLayer();
-        $res=$oSQL->makeQuery('update `FAILI` set
-						`RFLS_DESCRIPTION`="'.dbLayer::quote_smart($description).'"
-						where RFLS_ID='.dbLayer::quote_smart($fileId));
+		$sql = "update `FAILI` set
+						`RFLS_DESCRIPTION`='".dbLayer::quote_smart($description)."'
+						where RFLS_ID=".dbLayer::quote_smart($fileId);
+		//echo $sql;
+        $res=$oSQL->makeQuery($sql);
 
 		if ($res!==false)
 		{
@@ -8098,7 +8100,6 @@ class dbProc extends dbLayer
 		}
 		return false;
 	}
-
 
 	// -----------------------------------------------------------------------------
 	// Atgriezh infomaciju par failu
