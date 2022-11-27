@@ -59,7 +59,12 @@
                     <tr><td><?=$oForm->getElementHtml('make_excel2');?></td></tr>
                  <? } ?>
                  <? if( $status == STAT_CLOSE && $actId != false)  {?>
-                    <tr><td><?=$oForm->getElementHtml('order_material');?></td></tr>
+                    <tr><td>
+                        <span id="loading" style="position:absolute; width:32; height:32; margin-left:30px; display: none; ">
+                         <img src="./img/loading.gif" widht="32" height="32" border="0" />
+                        </span>
+                         <?=$oForm->getElementHtml('order_material');?>
+                       </td></tr>
                  <? } ?>
                 </table>
             </td>

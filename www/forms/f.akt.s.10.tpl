@@ -15,13 +15,13 @@
 				<td class="table_cell" ><?=text::get('EXPORT_ACT_APOVE');?>:</td>
 				<td class="table_cell_2" ><?=$fileInfo[$i]['AUTORS'];?></td>
 				<? if($isProject == 1) { ?>
-					<? if(isset($fileInfo[$i]['STATUS'])) { ?>
+					<? if(isset($fileInfo[$i]['status'])) { ?>
 						<td class="table_cell" ><?=text::get('STATUS');?>:</td>
 					<? } else {  ?>
 						<td class="table_cell" >&nbsp;</td>
 					<? } ?>
-					<td class="table_cell_2" ><?=$fileInfo[$i]['STATUS'];?></td>
-					<? if(isset($fileInfo[$i]['project_no'])) { ?>
+					<td class="table_cell_2" ><?=$fileInfo[$i]['status'];?></td>
+					<? if(!empty($fileInfo[$i]['project_no'])) { ?>
 						<td class="table_cell" ><?=text::get('PROJECT_NO');?>:</td>
 					<? } else {  ?>
 						<td class="table_cell" >&nbsp;</td>

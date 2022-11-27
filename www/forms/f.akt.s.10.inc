@@ -17,6 +17,7 @@ if ( $isAdmin || $isSystemUser || $isProjector)
     {
        // get file info by message ID
 	  $fileInfo=dbProc::getAllFilesInfo($actId, ($trase) ? FILE_ESTIMATE : FILE_EXPORT);
+	  //print_r( $fileInfo);
 
 	  if (is_array($fileInfo))
 	  {
@@ -47,10 +48,13 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 			if($row['RFLS_META_INFO'] == JSON_FILE_MIMETYPE) {
 				$oLinkFile->addPrm(IS_GET_JSON_FILE_VARIABLE, 1);	
 				$fileInfo[$i]['ico'] = 'ico_json.png'; 	
-				if($isProject == 1 && isset($fileInfo[$i]['RFLS_DESCRIPTION']))	{
-					$description = explode('|', $fileInfo[$i]['RFLS_DESCRIPTION']);
+				
+				if($isProject == 1 && isset($row['DESCRIPTION']))	{
+				   
+					$description = explode('|', $row['DESCRIPTION']);
 					if(is_array($description)){
 						$fileInfo[$i]['status'] = $description[0];
+						
 						if(count($description)>1){
 							$fileInfo[$i]['project_no'] = $description[1];
 						}
