@@ -55,8 +55,13 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 					if(is_array($description)){
 						$fileInfo[$i]['status'] = $description[0];
 						
-						if(count($description)>1){
-							$fileInfo[$i]['project_no'] = $description[1];
+						if(count($description)>1 && !empty($description[1])){
+							$fileInfo[$i]['error_msg'] = str_replace(array("\"", "'"), "`", str_replace(array("\r\n", "\n", "\r"),"<br>",$description[1]));
+							
+						}
+						
+						if(count($description)>2){
+							$fileInfo[$i]['project_no'] = $description[2];
 						}
 					}
 				}
