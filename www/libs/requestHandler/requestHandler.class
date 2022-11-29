@@ -679,13 +679,13 @@ class RequestHandler
 				RequestHandler::sentPrNumberRequest ($responseData->duisRequestId, 
 													 $idFile, 
 													 text::get('ERROR') .'<br>'.
-													 $responseStatus->code .'<br>'.
+													 $responseStatus->code .'|'.
 													 $responseStatus->message
 													 ) ;
 			} else {
-				RequestHandler::sentPrNumberRequest (text::get('SUSSCESSFULL'), 
-													 $idFile, 
-													 $responseStatus->status 
+				RequestHandler::sentPrNumberRequest ($responseData->duisRequestId,
+													 $idFile,
+													 text::get('SUSSCESSFULL').'|'
 													 ) ;
 			}
 			return true;
@@ -736,7 +736,7 @@ class RequestHandler
 						'message:' .$responseData->reqStatusMsg .PHP_EOL.
 						'projectNo:' .$projectNo .PHP_EOL );   
 				if($responseStatus == 'ERROR') {
-					$status = text::get('ERROR') .'<br>'. $responseData->reqStatusMsg ;
+					$status = text::get('ERROR') .'|'. $responseData->reqStatusMsg ;
 				}
 				dbProc::updateFileDescription($idFile,  $status.'|'.$projectNo);     	 	
 				curl_close($ch);
