@@ -75,8 +75,8 @@ class toJson {
                     'field_value' =>empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY']
                 ) ;         
                 $array = array(
-                        'orderNum' => strval($idFile), 
-                        'orderDescr' => $act['RAKT_NUM_POSTFIX'].' '.$act['RAKT_WORK_TITLE'], 
+                        'orderNum' => $act['RAKT_NUM_POSTFIX'], 
+                        'orderDescr' => $act['RAKT_NUM_POSTFIX'].'_'.(!empty($project_codes[0]) ? $project_codes[0] : "").'_'.$act['RAKT_WORK_TITLE'], 
                         'userName' => strtoupper($userName), 
                         'requisitionLines' => $manerialLines,
                         'additionalAttributes' => $additionalAttributes
