@@ -632,6 +632,28 @@ class dbProc extends dbLayer
 
 		return false;
     }
+
+    // -----------------------------------------------------------------------------
+	// Parbauda - vai lieotajas ir atzimēts ka administrātors
+	// Ja eksiste - atgriezh true, cita gadijuma - false
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function isUserADmin($userId)
+	{
+		$oSQL=new dbLayer();
+		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
+					where '.
+					' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
+					' and `RLTT_IR_ADMINS` = 1 '
+				);
+
+		if (is_array($res) && count($res)==1)
+		{
+			return true;
+		}
+
+		return false;
+    }
     
     // -----------------------------------------------------------------------------
 	// Parbauda - vai lieotajam ir piesaistita loma sistemā un lietotājs ir atzimēts ka "projektētajs"
@@ -3152,14 +3174,27 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	function getCalculationByGroupList($calc_group, $activ = true)
 	{
-            $column = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
-            $query = 'SELECT KKAL_SHIFRS, KKAL_NOSAUKUMS, KKAL_ID
+            //$column = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
+           /* $query = 'SELECT KKAL_SHIFRS, KKAL_NOSAUKUMS, KKAL_ID
             from `KL_KALKULACIJA` a
             where `KKAL_GRUPAS_KODS` = '.dbLayer::quote_smart($calc_group).
             ' AND `KKAL_ID` IN (SELECT MAX(KKAL_ID) FROM `KL_KALKULACIJA` b WHERE b.KKAL_SHIFRS = a.KKAL_SHIFRS) '.
             ' AND `KKAL_IR_AKTIVS` = '.(($activ) ? 1 : 0).
             ' AND `KKAL_TRASE` = 0 '.
-            ' order by  KKAL_SHIFRS ASC';
+            ' order by  KKAL_SHIFRS ASC'; */
+            $query = '
+			WITH 
+			kalk_id AS (SELECT MAX(KKAL_ID) KKAL_ID, b.KKAL_SHIFRS 
+					FROM `KL_KALKULACIJA` b 
+					GROUP BY b.KKAL_SHIFRS
+			) 
+			SELECT DISTINCT a.KKAL_SHIFRS, KKAL_NOSAUKUMS, kalk_id.KKAL_ID
+            from `KL_KALKULACIJA` a
+			INNER JOIN kalk_id ON kalk_id.KKAL_SHIFRS = a.KKAL_SHIFRS
+            where `KKAL_GRUPAS_KODS` = '.dbLayer::quote_smart($calc_group).
+            ' AND `KKAL_IR_AKTIVS` = '.(($activ) ? 1 : 0).
+            ' AND `KKAL_TRASE` = 0 '.
+            ' order by  a.KKAL_SHIFRS';
 	        //echo $query;
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
