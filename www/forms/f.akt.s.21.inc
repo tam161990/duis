@@ -48,6 +48,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
       }
+      if (reqVar::get('export_type')!='')
+      {
+        dbProc::updateExportTypeText(reqVar::get('saveId'), reqVar::get('export_type'));
+      }
     }
 
     // masveida dzešana
@@ -193,7 +197,9 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         }
       }
       unset($res);
+      
       $type=array();
+      $type_code = array();
       $res = dbProc::getKrfkName('PROJECT_EXPORT');
       $type['']=text::get('EMPTY_SELECT_OPTION');		
       if (is_array($res))
@@ -201,10 +207,10 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             foreach ($res as $row)
             {
                 $type[$row['nosaukums']]=$row['nozime'];
+                $type_code[] = $row['nosaukums'];
             }
       }
       unset($res);
-
 
       $aWorks = array();
       $aWorkExist = false;
@@ -271,7 +277,11 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       {
         foreach ($aGroupWorks as $j => $actWork)
         {       
-          
+          $export_type_string = false;
+          if (!empty($actWork['DRBI_PROJECT_EXPORT']) && !in_array( $actWork['DRBI_PROJECT_EXPORT'],  $type_code))
+          {
+            $export_type_string = true;
+          }
 
           $oFormWorkTab->addElement('hidden', 'id['.$i.']', '', $actWork['DRBI_ID']);
           $oFormWorkTab->addElement('hidden', 'description['.$i.']', '', $actWork['KKAL_APRAKSTS']);
@@ -294,7 +304,20 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               $oFormWorkTab->addElement('label', 'work_type['.$i.']', '', $actWork['KLDV_NOSAUKUMS']); 
               $oFormWorkTab->addElement('hidden', 'work_type_id['.$i.']', '', $actWork['DRBI_WORK_TYPE_ID']);
               $oFormWorkTab->addElement('label', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT']);
-              $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+              if($export_type_string) {
+                $oFormWorkTab->addElement('label', 'export_type['.$i.']', '', $actWork['DRBI_PROJECT_EXPORT']); 
+              } else {
+                // save export_type
+                $saveJs = "if(this.value != '') { 
+                var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&export_type='+this.value+'&saveId='+rowId.value));
+                this.style.borderColor = '#16bb24cc'; 
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              }";
+                $oFormWorkTab -> addElement('select', 'export_type['.$i.']',  '', $actWork['DRBI_PROJECT_EXPORT'], 
+                'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);
+              }
           } else {
             // save work_type_text
             $saveJs = "if(this.value != '') { 

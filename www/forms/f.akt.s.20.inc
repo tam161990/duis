@@ -230,6 +230,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
   $oForm -> addElement('hidden', 'actId', null, isset($act['RAKT_ID'])? $act['RAKT_ID']:'');
   $oForm -> addElement('hidden', 'status', null, $status);
   $oForm -> addElement('label', 'statusTxt',  text::get('STATUS'), $statusLabel);
+  $oForm -> addElement('label', 'code',  text::get('CODE'), isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'');
   $oForm -> addElement('hidden', 'actNumber',  '', isset($act['RAKT_NUMURS'])?$act['RAKT_NUMURS']:'');
 
   $oLink=new urlQuery();
@@ -253,7 +254,9 @@ if ( $isAdmin || $isProjector || $projectApprover )
   {
     $oForm -> addRule('ouner', text::get('ERROR_REQUIRED_FIELD'), 'required');
   }
-
+  if($act['RAKT_KEY_OBJECT'] == '1') {
+    $oForm -> addElement('text', 'constract_company',  text::get('SINGL_WORK_OWNER'), isset($act['RAKT_CONSTRUCT_COMPANY'])?$act['RAKT_CONSTRUCT_COMPANY']:'', 'maxlength="250" '.((!$isReadonlyExceptAdmin || !$isReadonly )? '' : ' disabled'));
+  } else {
   $oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), 
   array('classifName'=>KL_WORK_OWNERS,
         'value'=>isset($act['RAKT_KWOI_KODS'])?$act['RAKT_KWOI_KODS']: (($isEditor) ? '' : $worker),
@@ -293,13 +296,18 @@ if ( $isAdmin || $isProjector || $projectApprover )
   {
     if($status == STAT_ACCEPT) {
       $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
-    $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
     }
+  }
+
+  if($status == STAT_CLOSE) {
+    $oForm -> addElement('submitImg', 'order_material', text::get('ORDER_MATERIAL'), 'img/btn_order_material_120.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setValue(\'action\',\''.OP_ORDER_MATERIAL.'\');setPosition1(\'loading\');} else {return false;}"');
   }
 
   if (!$isReadonlyExceptEconomist && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
-    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
+    $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
   }
   if($actId != false)
   {
@@ -409,6 +417,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 1,
                 1,
                 $oForm->getValue('type'),
+                $oForm->getValue('constract_company')
               );
 
               // get inserted record ID
@@ -581,6 +590,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
             }
             RequestHandler::makeRedirect($oLink->getQuery());
           }
+          unset($oLink);
       }      
     }
     if (($oForm->getValue('action')==OP_RETURN && is_numeric($oForm->getValue('actId'))) ||
@@ -656,6 +666,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                       $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
                       RequestHandler::makeRedirect($oLink->getQuery());
+                      unset($oLink);
                 }
             
             }
@@ -698,6 +709,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                         $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
                         RequestHandler::makeRedirect($oLink->getQuery());
+                        unset($oLink);
                   }
               }         
              else
@@ -764,12 +776,43 @@ if ( $isAdmin || $isProjector || $projectApprover )
                         $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
                         RequestHandler::makeRedirect($oLink->getQuery());
+                        unset($oLink);
                   }
               }         
         else
         {
           $oForm->addError(text::get('ERROR_NOT_PERMISSION'));
         }      
+    }
+    // 
+    // pieprasīt materiālus
+    if (($oForm->getValue('action')==OP_ORDER_MATERIAL && is_numeric($oForm->getValue('actId'))) )
+    {    
+
+      $fileId = toJson::projectOrderMaterial($actId, $userId);
+      $r = false;
+      if( $fileId === false){
+         $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+      } else {
+          // saglaba lietotaja darbiibu
+          $r = dbProc::setUserActionDate($userId, OP_ORDER_MATERIAL);
+      } 
+      // if operation was compleated succefully, show success mesage and redirect current frame
+      if ($r)
+      {
+            $oLink=new urlQuery();
+            $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+            $oLink->addPrm('actId', $actId);                        
+            $oLink->addPrm('isSearch', $isSearch);
+            $oLink->addPrm('searchNum', $searchNum);
+            $oLink->addPrm('successMessage', text::get('INFO_WAS_EXPORTED'));
+            $oLink->addPrm('tab', TAB_EXPORT);
+
+            RequestHandler::makeRedirect($oLink->getQuery());
+            unset($oLink);
+      }
+          
+        
     }
 
     $oForm -> makeHtml();

@@ -23,6 +23,8 @@
 	require_once(ZR_LIBS_DIR.'/excel1.7.6/PHPExcel.php');
 	require_once(ZR_LIBS_DIR.'/export/toPdf.class');
 	require_once(ZR_LIBS_DIR.'/export/toExcel.class');
+	require_once(ZR_LIBS_DIR.'/export/toXml.class');
+	require_once(ZR_LIBS_DIR.'/export/toJson.class');
     require_once(ZR_LIBS_DIR.'/progress/PogProgressBar.php');
     require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
 	require_once(ZR_LIBS_DIR.'/process/Process.class');  

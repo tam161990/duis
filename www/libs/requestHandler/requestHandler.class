@@ -381,6 +381,22 @@ class RequestHandler
 				files::sendFile(reqVar::get(GET_EXEL_FILE_VARIABLE), true, 'PEXCEL');
 			}
 
+			// -----------------------------------------------------------------------------
+			// Getting project xnl file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_XML_FILE_VARIABLE) && is_numeric(reqVar::get(GET_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_FILE_VARIABLE), true, 'XML');
+			}
+
+			// -----------------------------------------------------------------------------
+			// Getting project json file 
+			// -----------------------------------------------------------------------------
+			if (reqVar::get(IS_GET_JSON_FILE_VARIABLE) && is_numeric(reqVar::get(GET_FILE_VARIABLE)))
+			{
+				files::sendFile(reqVar::get(GET_FILE_VARIABLE), true, 'JSON');
+			}
+
             // -----------------------------------------------------------------------------
 			// Getting GPS file
 			// -----------------------------------------------------------------------------
@@ -624,6 +640,110 @@ class RequestHandler
 
 	}
 
+	// funkcija sūta materiāla pieprasījumu uz Oracle caus SOA servisu
+	function sentMaterialRequest ($postData, $idFile) 
+	{		
+		// The data to send to the API		
+		files::wh_log('sentMaterialRequest:'.json_encode($postData).PHP_EOL.
+				'url: '.MATERIAL_REQUEST_URL .PHP_EOL.
+				'fileId: '.$idFile .PHP_EOL);	
+				
+		// Setup cURL
+		$ch = curl_init(MATERIAL_REQUEST_URL);
+
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		
+		if (curl_errno($ch)) {
+			files::wh_log('sentMaterialRequest RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			return false;
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, false);
+			$responseStatus = $responseData->status;
+			files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
+					'status:'.$responseStatus->status .PHP_EOL.
+					'code:' .$responseStatus->code .PHP_EOL.
+					'message:' .$responseStatus->message .PHP_EOL.
+					'duisRequestId:' .$responseData->duisRequestId .PHP_EOL );          	 	
+			curl_close($ch);
+			if($responseStatus->status == 'E') {
+				RequestHandler::sentPrNumberRequest ($responseData->duisRequestId, 
+													 $idFile, 
+													 text::get('ERROR') .'<br>'.
+													 $responseStatus->code .'|'.
+													 $responseStatus->message
+													 ) ;
+			} else {
+				RequestHandler::sentPrNumberRequest ($responseData->duisRequestId,
+													 $idFile,
+													 text::get('SUSSCESSFULL').'|'
+													 ) ;
+			}
+			return true;
+		}			
+	}
+
+	// funkcija sūta API pieprasījumu, lai dabūt projekta numuru
+	function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
+	{	
+		sleep(10);
+		// The data to send to the API		
+		files::wh_log('sentPrNumberRequest url: '.PRNUMBER_REQUEST_URL .PHP_EOL.
+					  'duisRequestId: '.$duisRequestId .PHP_EOL.
+					  'fileId: '.$idFile .PHP_EOL);	
+		
+		$postData = [
+		"duisRequestId" => $duisRequestId
+		];
+
+		// Setup cURL
+		$ch = curl_init(PRNUMBER_REQUEST_URL);
+
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		
+		if (curl_errno($ch)) {
+			files::wh_log('sentPrNumberRequest RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			return false;
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, false);
+			$responseStatus = $responseData->reqStatus;
+			if($responseStatus == 'PROCESSING') 
+			{
+				RequestHandler::sentPrNumberRequest ($duisRequestId, $idFile, $status);
+			} else {
+				$projectNo = $responseData->prNumber;
+				files::wh_log('sentMaterialRequest RESPONSE:'.  PHP_EOL.
+						'status:'.$responseStatus .PHP_EOL.
+						'message:' .$responseData->reqStatusMsg .PHP_EOL.
+						'projectNo:' .$projectNo .PHP_EOL );   
+				if($responseStatus == 'ERROR') {
+					$status = text::get('ERROR') .'|'. $responseData->reqStatusMsg ;
+				}
+				dbProc::updateFileDescription($idFile,  $status.'|'.$projectNo);     	 	
+				curl_close($ch);
+				return true;
+			}
+		}		
+	}
 
 	// -----------------------------------------------------------------------------
 	// funkcija pārbauda palaistus procesus, un, gadijumā, jka process apstajas, palaiž viņu

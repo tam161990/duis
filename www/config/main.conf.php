@@ -66,6 +66,10 @@ define ('GPS_FILES_STORE_PATH', ZR_SERVER_PATH.'/gps_files');
 define ('EXCEL_FILES_STORE_PATH', ZR_SERVER_PATH.'/files/excel');
 //  project file stored dir
 define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
+//  xml file stored dir
+define ('XML_FILES_STORE_PATH', ZR_SERVER_PATH.'/xml');
+//  json file stored dir
+define ('JSON_FILES_STORE_PATH', ZR_SERVER_PATH.'/json');
 
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
@@ -104,6 +108,14 @@ define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KV
 define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
 // API for nepabeigtu projektu reports
 define ('API_UNCOMPLETED_PROJECT_REPORT', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-uncompleted-pr-report');
+// WS service for material request
+// documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/CreateRequisition
+define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition');
+
+// WS service for project Number request
+// documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/GetRequisitionStatus
+define ('PRNUMBER_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-requisition-status');
+
 # =============================================================================
 # FMK configuration
 # =============================================================================
@@ -133,6 +145,12 @@ define ('IS_GET_PEXCEL_FILE_VARIABLE','get_excel_file');
 // getting gps file - flag
 define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
 
+// getting xml file - flag
+define ('IS_GET_XML_FILE_VARIABLE','get_xml_file');
+
+// getting xml file - flag
+define ('IS_GET_JSON_FILE_VARIABLE','get_json_file');
+
 // get file variable name
 define ('GET_FILE_VARIABLE','idFile');
 
@@ -153,6 +171,18 @@ define('EXCEL_FILE_EXTENTION', 'xlsx');
 
 // project file type
 define('PROJECT_FILE_TYPE', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+// xml file type
+define('XML_FILE_MIMETYPE', 'text/xml');
+
+// json file type
+define('JSON_FILE_MIMETYPE', 'text/json');
+
+// xml file extentions
+define('XML_FILE_EXTENTION', 'xml');
+
+// json file extentions
+define('JSON_FILE_EXTENTION', 'json');
 
 // form id 
 define ('FORM_ID', 'formId');
@@ -182,6 +212,12 @@ define ('NEXT_YEAR_START',20181227);
 define ('PREV_YEAR_END',20190101);
 // default datums
 define ('DEFAULT_DATE', '2000-01-01 00:00:00');
+
+# =============================================================================
+# ST VV number
+# =============================================================================
+define ('ST_VV_NUMBER', '40003857687');
+
 
 # =============================================================================
 # Klasifikatori
@@ -334,6 +370,8 @@ define ('OP_CH_TO_INSERT', 'H');
 define ('OP_DECLINE', 'N');
 // eksportēt darbus un materialus
 define ('OP_EXPORT_ALL','Z');
+// Izveidot Materiālu pieprasījumu
+define ('OP_ORDER_MATERIAL','O');
 
 # =============================================================================
 # USER ACTION CODES
@@ -376,6 +414,11 @@ define ('PCT_21', 21);
 # WORKER
 # =============================================================================
 define ('ST', 58);
+
+# =============================================================================
+# WORKER DELIVERY TYPE
+# =============================================================================
+define ('DU_DELIVERY_TYPE', 'DU_DELIVER');
 
 # =============================================================================
 # VOLTAGE

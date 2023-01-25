@@ -21,7 +21,10 @@
                 <?= $oForm -> getElementHtml('actNumPostfixLink'); ?>
             <? } ?>
             </td>
-            <td colspan="2" class="table_head" align="right">
+            <td class="table_head" align="right">
+                <?= $oForm -> getElementLabel('code'); ?>:
+                <font color="red"><?=text::toUpper($oForm -> getElementHtml('code'));?></font></td>
+            <td class="table_head" align="right">
                 <?= $oForm -> getElementLabel('statusTxt'); ?>:
                 <font color="red"><?=text::toUpper($oForm -> getElementHtml('statusTxt'));?></font></td>
             <td width="20%" rowspan="<?=(($actId === false)?'4':'5');?>" valign="bottom">
@@ -55,12 +58,25 @@
                  <? if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)  {?>
                     <tr><td><?=$oForm->getElementHtml('make_excel2');?></td></tr>
                  <? } ?>
+                 <? if( $status == STAT_CLOSE && $actId != false)  {?>
+                    <tr><td>
+                        <span id="loading" style="position:absolute; width:32; height:32; margin-left:30px; display: none; ">
+                         <img src="./img/loading.gif" widht="32" height="32" border="0" />
+                        </span>
+                         <?=$oForm->getElementHtml('order_material');?>
+                       </td></tr>
+                 <? } ?>
                 </table>
             </td>
         </tr>
         <tr>
-            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
-            <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('worker'); ?></td>
+            <? if($act['RAKT_KEY_OBJECT'] == '1') { ?>
+                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('constract_company'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+                <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('constract_company'); ?></td>
+            <? } else { ?>
+                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worker'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
+                <td class="table_cell_2"  width="24%"><?= $oForm -> getElementHtml('worker'); ?></td>    
+            <? } ?>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('ouner'); ?>:<?=((!$isReadonly1 || !$isReadonly)?'<font color="red">*</font>':'');?></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('ouner'); ?></td>
         </tr>

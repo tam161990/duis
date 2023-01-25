@@ -52,6 +52,10 @@ if (reqVar::get('xmlHttp') == 1)
       {
         dbProc::updateMaterialWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
       }
+      if (reqVar::get('export_type')!='')
+      {
+        dbProc::updateMaterialExportType(reqVar::get('saveId'), reqVar::get('export_type'));
+      }
     }
 
     // masveida dzešana
@@ -310,8 +314,24 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           $oFormMaterialTab->addElement('label', 'title['.$i.']', '', $actMaterial['MATR_NOSAUKUMS']);
           $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
           $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
-          
-
+          $oFormMaterialTab->addElement('label', 'nomenklatura['.$i.']', '', $actMaterial['MATR_NOM_KODS']);
+          $aMaterials[$d][$j]['color'] ='#e4edd8';
+          if($status == STAT_CLOSE) {
+            switch ($actMaterial['MATR_NOM_STATUS']) {
+              case 1:
+                $aMaterials[$d][$j]['color'] ='#70dc85';
+                  break;
+              case 2:
+                $aMaterials[$d][$j]['color'] ='#dad7d7';
+                  break;
+              case 3:
+                $aMaterials[$d][$j]['color'] ='#fb3f3f';
+                  break;
+              default: 
+              $aMaterials[$d][$j]['color'] ='#e4edd8';
+            }
+          }
+           
           if(!$crossection)
           {
             $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', '');
@@ -335,7 +355,17 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             if($export_type_string) {
               $oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
             } else {
-              $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 'maxlength="10"', '', '', $type);
+              // save export_type
+              $saveJs = "if(this.value != '') { 
+                var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+                eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&export_type='+this.value+'&saveId='+rowId.value));
+                this.style.borderColor = '#16bb24cc'; 
+                this.parentNode.prepend(sp1);
+                setTimeout(savedField, 3000, this, '#8c8c8c'); 
+              }";
+              $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 
+                'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);
+              
             }
             if($crossection)
             {

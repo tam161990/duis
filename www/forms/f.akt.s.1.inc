@@ -1187,7 +1187,7 @@ if(true)
       }
       if($oForm->getValue('status') == STAT_INSERT) {
         $r=dbProc::updateActStatus($oForm->getValue('actId'), STAT_RETURN);
-        $r2 = dbProc::setUnsetActItemsDate($actId, false);
+        $r2 = dbProc::setUnsetActItemsDate($actId, false);        
       }
       if($r && $r2)
       {
@@ -1257,7 +1257,15 @@ if(true)
                 $r=dbProc::updateActStatus($oForm->getValue('actId'), 
                   ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE)
                 );
-               
+
+                $r2 = false;
+                if($oForm->getValue('action')==OP_RETURN) {
+                  $r2 = dbProc::setUnsetActItemsDate($actId, false); 
+                  if (!$r2)
+                  {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }                 
+                }
                // Ja akts tiek atgriezts nepiln�bu nov�r�anai vai dz�sts, tad PDF ar amatpersonu v�z�m j�k��st nepieejamam.
                 if($trase && $oForm->getValue('action')==OP_RETURN)
                 {

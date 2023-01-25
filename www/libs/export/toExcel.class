@@ -27,6 +27,7 @@ function projectTammeExcel($actId, $userId, $action){
     $sheet->getDefaultRowDimension()->setRowHeight(15);
 
     $sheet->setShowGridlines(true);
+    $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getDefaultStyle()->getFont()->setName('Arial');
     $sheet->getDefaultStyle()->getFont()->setSize(9);
@@ -179,6 +180,7 @@ function projectExportExcel($actId, $userId){
     $sheet->getDefaultRowDimension()->setRowHeight(15);
 
     $sheet->setShowGridlines(true);
+    $sheet->setTitle('DUIS-worksheet');
 
     $sheet->getDefaultStyle()->getFont()->setName('Arial');
     $sheet->getDefaultStyle()->getFont()->setSize(9);
@@ -333,6 +335,7 @@ function exportTameMaterial($actId, $userId, $type){
      $sheet->getDefaultRowDimension()->setRowHeight(15);
 
      $sheet->setShowGridlines(true);
+     $sheet->setTitle('DUIS-worksheet');
 
      $sheet->getDefaultStyle()->getFont()->setName('Arial');
      $sheet->getDefaultStyle()->getFont()->setSize(9);
@@ -476,6 +479,7 @@ function exportTameMaterial($actId, $userId, $type){
          $sheet->getDefaultRowDimension()->setRowHeight(15);
     
          $sheet->setShowGridlines(true);
+         $sheet->setTitle('DUIS-worksheet');
     
          $sheet->getDefaultStyle()->getFont()->setName('Arial');
          $sheet->getDefaultStyle()->getFont()->setSize(9);
@@ -608,6 +612,7 @@ function exportTameMaterial($actId, $userId, $type){
         
              // Create new PHPExcel object
              $objPHPExcel = new PHPExcel();
+             $sheet->setTitle('DUIS-worksheet');
              
              $sheet = $objPHPExcel->getActiveSheet();
              $sheet->setTitle('DUIS-worksheet');

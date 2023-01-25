@@ -122,9 +122,12 @@ sp2.style.color = 'red';
                 <td><?= $oFormMaterialTab->getElementHtml('amount_mat['.$x.']'); ?></td>
                 <td><?= $oFormMaterialTab->getElementHtml('complectation['.$x.']'); ?></td>
                 <td><?= $oFormMaterialTab->getElementHtml('crossection['.$x.']'); ?></td>
-				<td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>
-                <? if( ($status == STAT_CLOSE && ($isAdmin || $isEconomist || $projectApprover)))  {?>
-                    <td colspan=2><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                <td><?= $oFormMaterialTab->getElementHtml('notes['.$x.']'); ?></td>                
+                <? if( $status == STAT_CLOSE )  {
+                    if ($isAdmin || $isEconomist || $projectApprover) { ?>
+                        <td><?= $oFormMaterialTab->getElementHtml('export_type['.$x.']'); ?></td>
+                    <? } ?>
+                    <td style="background-color:<?=$actMaterial['color'];?>"><?= $oFormMaterialTab->getElementHtml('nomenklatura['.$x.']'); ?></td>
                 <? } else {?>
                     <td>
                         <? if(!$isReadonly)  {?>

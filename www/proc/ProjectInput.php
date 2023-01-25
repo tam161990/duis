@@ -1,5 +1,15 @@
 <?
-    require_once('../libs/init.inc');
+    require_once(dirname(__FILE__).'/../config/main.conf.php');  
+	require_once(dirname(__FILE__).'/../libs/dbLayer/dbLayer.class');
+	require_once(dirname(__FILE__).'/../libs/dbProc/dbProc.class');	
+	require_once(dirname(__FILE__).'/../libs/text/text.class');
+	require_once(dirname(__FILE__).'/../libs/requestHandler/requestHandler.class');
+	require_once(dirname(__FILE__).'/../libs/process/Process.class');  
+	require_once(dirname(__FILE__).'/../libs/files/files.class');
+	require_once(dirname(__FILE__).'/../libs/fpdf/fpdf.php');
+	require_once(dirname(__FILE__).'/../libs/export/toPdf.class');
+	require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
+	
         
 	
     function json_response($code = 200, $message = null)
@@ -55,14 +65,20 @@
 										'issue_designer: '. (isset($data->issue_designer) ? $data->issue_designer : '').PHP_EOL.
 										'issue_territory: '.(isset($data->issue_territory) ? $data->issue_territory : '').PHP_EOL.
 										'issue_summary:' .(isset($data->issue_summary) ? $data->issue_summary :'').PHP_EOL.
-										'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL
+										'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL.
+										'issue_proj:' .(isset($data->issue_proj) ? $data->issue_proj :'').PHP_EOL.
+										'customfield_11505:' .(isset($data->customfield_11505) ? $data->customfield_11505 :'').PHP_EOL. // Būvkomersants
+										'customfield_28740:' .(isset($data->customfield_28740) ? $data->customfield_28740 :'').PHP_EOL // transition_ID
 								);						
 			//var_dump($data);
 			if( (isset($data->issue_invest_year) && !empty($data->issue_invest_year))  || 
 					(isset($data->issue_designer) && !empty($data->issue_designer)) ||
 					(isset($data->issue_territory) && !empty($data->issue_territory))  ||
 					(isset($data->issue_summary) && !empty($data->issue_summary)) ||
-					(isset($data->issue_type) && !empty($data->issue_type)) 	 )
+					(isset($data->issue_type) && !empty($data->issue_type))  ||
+					(isset($data->customfield_11505) && !empty($data->customfield_11505)) ||
+					(isset($data->customfield_28740) && !empty($data->customfield_28740)) ||
+					(isset($data->issue_proj) && !empty($data->issue_proj))
 			{
 				if( isset($data->issue_invest_year) && !empty($data->issue_invest_year)  && 
 					isset($data->issue_designer) && !empty($data->issue_designer) &&
@@ -75,7 +91,12 @@
 								$data->issue_designer, 
 								$data->issue_territory, 
 								$data->issue_summary, 
-								$data->issue_type);					
+								$data->issue_type,
+								$data->customfield_11505,
+								$data->customfield_28740,
+								$data->issue_proj,
+								$err_message								
+							);					
 				} else {
 					throw new Exception('not all data set');
 				}			
@@ -85,7 +106,8 @@
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
 										isset($data->issue_end_date) && !empty($data->issue_end_date) ? substr($data->issue_end_date, 0, 10) : false,
-										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false
+										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false,
+										isset($data->issue_proj) && !empty($data->issue_proj) ? substr($data->issue_proj, 0, 10) : false
 										);	
 			}
 			
