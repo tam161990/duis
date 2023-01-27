@@ -470,7 +470,7 @@ function exportTameMaterial($actId, $userId, $type){
          $objPHPExcel = new PHPExcel();
 		 
          $sheet = $objPHPExcel->getActiveSheet();
-        $sheet->setTitle('DUIS-worksheet');
+         $sheet->setTitle('DUIS-worksheet');
     
          $sheet->getPageSetup()->setOrientation(PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE);
          $sheet->getPageSetup()->setPaperSize(PHPExcel_Worksheet_PageSetup::PAPERSIZE_A4);
@@ -612,8 +612,7 @@ function exportTameMaterial($actId, $userId, $type){
         
              // Create new PHPExcel object
              $objPHPExcel = new PHPExcel();
-             $sheet->setTitle('DUIS-worksheet');
-             
+                          
              $sheet = $objPHPExcel->getActiveSheet();
              $sheet->setTitle('DUIS-worksheet');
         
