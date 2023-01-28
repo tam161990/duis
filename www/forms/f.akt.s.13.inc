@@ -5,7 +5,7 @@ $isAdmin=userAuthorization::isAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isEDUser = dbProc::isExistsUserRole($userId);
 $isSystemUser = $isEDUser || $isEditor;
-
+$isProjector = dbProc::isExistsUserRoleWithProject($userId)  ;
 
 // act ID
 $actId  = reqVar::get('actId');
@@ -45,7 +45,7 @@ if ( $isAdmin || $isSystemUser)
 
       $isReadonly   = true;
       // Ir pieejams mainīšanai, ja  AKTS:LIETOTĀJS = ’Tekošais lietotājs’ un lietotāja loma ir ‘Ievadītais’ un AKTS:STATUS = ‘Izveide’ vai ‘Atgriezts’ vai ‘Tāme’.
-      if((( $act['RAKT_RLTT_ID'] == $userId && $isEditor) || $isAdmin || $isEconomist) && 
+      if((( $act['RAKT_RLTT_ID'] == $userId && ($isEditor || $isProjector)) || $isAdmin || $isEconomist) && 
         ((($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_ESTIMATE) && $tame==0 )|| 
         ($status == STAT_AUTO && $tame==1 ))
       )
