@@ -3729,16 +3729,16 @@ class dbProc extends dbLayer
             $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
             if($search === false || $search == '')
             {
-                $searchString = '1 ';
+                $searchString = '1 = 1';
             }
             
             //, SUBSTRING(`KMAT_NOSAUKUMS`, 1, 25) as `KMAT_NOSAUKUMS`
             $query = 'select *, ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',
             ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
             from `KL_MATERIALI`
-            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR '. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
-            AND ".$searchString.'.
-            'order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order);
+            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL AND "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+            AND '.$searchString.'
+            order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
 			{
 				$query .= ' limit '.
