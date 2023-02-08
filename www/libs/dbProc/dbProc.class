@@ -3751,7 +3751,7 @@ class dbProc extends dbLayer
             $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
             if($search === false || $search == '')
             {
-                $searchString = '1 ';
+                $searchString = '1 = 1';
             }
             
             //, SUBSTRING(`KMAT_NOSAUKUMS`, 1, 25) as `KMAT_NOSAUKUMS`
