@@ -204,7 +204,11 @@ if ( $isAdmin || $isProjector || $projectApprover )
     }
 	
     //Ir pieejams main??anai, ja   Teko?a lietot?ja loma = �Ekonomists�  un AKTS:STATUS = �Saska?o?ana�.
-    if((($projectApprover && !$isProjector)|| $isAdmin) && ( $status == STAT_ACCEPT  || $status == STAT_CLOSE))
+    if((($projectApprover && (!$isProjector || ($isProjector && $act['RAKT_RLTT_ID'] <> $userId) )) || 
+          $isAdmin
+        ) && 
+        ( $status == STAT_ACCEPT  || $status == STAT_CLOSE)
+      )
     {
       $isReadonlyExceptEconomist   = false;
     }
@@ -297,7 +301,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
     if($status == STAT_ACCEPT) {
       $oForm -> addElement('submitImg', 'decline', text::get('RETURN'), 'img/btn_decline.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setValue(\'action\',\''.OP_DECLINE.'\');} else {return false;}"');
       $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
-      $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+      
     }
   }
 
