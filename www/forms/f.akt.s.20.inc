@@ -138,7 +138,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
         if($worker !== false && !empty($worker)) 
         {
-          if( !$isEditor && !$isAdmin) { 
+          if( !$isEditor && !$isAdmin  && !$projectApprover) { 
             $res = dbProc::getUserInfo($userId);
           } 
           else { 
