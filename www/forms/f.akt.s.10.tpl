@@ -151,7 +151,7 @@
 				</tr>
 	
 			<?
-			if($isEditor && $isProject == 0) break;
+			//if($isEditor && $isProject == 0) break;
 			}
 		}
 		?>

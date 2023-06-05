@@ -69,10 +69,10 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 
 			$oLinkFile->addPrm(GET_FILE_VARIABLE, $row['RFLS_ID']);
 	  		$fileInfo[$i]['getFileURL']=$oLinkFile ->getQuery();
-			if($isEditor && $isProject == 0) {
+			/*if($isEditor && $isProject == 0) {
 				unset($oLinkFile);
 				break;
-			}
+			}*/
 			unset($oLinkFile);
 	   	}
 	  }
