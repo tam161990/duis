@@ -3326,18 +3326,19 @@ class dbProc extends dbLayer
 	// Atgriezh kopeejo kalkul�cijas skaitu.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getCalculationCount($search = false, $column = false)
+    function getCalculationCount($search = false, $selectedColumn = false)
 	{
 		$oDB = new dbLayer;
-        if($column === false)
+        if($selectedColumn === false)
         {
-           $column = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
-        }
-        if($column == 'GROUP')
+           $selectedColumn = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
+        } 
+        
+        if($selectedColumn == 'GROUP')
         {
            $column = 'g.KKLG_NOSAUKUMS';
         }
-        if($column == 'WORKER')
+        if($selectedColumn == 'WORKER')
                                                                {
             $column = 'w.KWOI_NOSAUKUMS';
         }
@@ -3346,13 +3347,28 @@ class dbProc extends dbLayer
         {
             $searchString = '1 ';
         }
-        $query =  'SELECT count(a.KKAL_ID) as `RECORDCOUNT` FROM (
+		
+		if($selectedColumn == 'GROUP')
+        {
+            $query =  'SELECT count(*) as `RECORDCOUNT` FROM (
+                    select `KKAL_ID` from `KL_KALKULACIJA`
+                    LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
+                    where '.$searchString.')a';
+        }
+		elseif($selectedColumn == 'WORKER')
+                                                               {
+             $query =  'SELECT count(*) as `RECORDCOUNT` FROM (
                     select `KKAL_ID` from `KL_KALKULACIJA`
                     LEFT JOIN `KL_WORK_OWNERS` w ON (w.KWOI_KODS = KKAL_KWOI_KODS)
-                    LEFT JOIN `KL_KALKULACIJAS_GRUPAS` g ON (KKAL_GRUPAS_KODS = g.KKLG_KODS)
-                    where '.$searchString.' GROUP BY `KKAL_ID`)a';
+                    where '.$searchString.' )a';
+        } else {
+			 $query =  'SELECT count(*) as `RECORDCOUNT` FROM (
+                    select `KKAL_ID` from `KL_KALKULACIJA`
+                    where '.$searchString.' )a';
+		}
+       
 		$result = $oDB -> makeQuery($query);
-
+        //echo $query;
 		return isset($result[0]['RECORDCOUNT']) ? $result[0]['RECORDCOUNT'] : false;
 	}
 
