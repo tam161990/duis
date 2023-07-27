@@ -4903,6 +4903,7 @@ class dbProc extends dbLayer
           '.(($number !==false)?',`RAKT_NUMURS`="'.dbLayer::quote_smart($numurs).'"':'').'
           '.(($objNumber !==false)?',`RAKT_NUMURS_OBJEKTA` = "'.dbLayer::quote_smart($objNumber).'"':'').'
           '.(($proces_date !==false)?',`RAKT_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'"':'').'
+          '.(($proces_date !==false)?',`RAKT_GADS` = '.substr($proces_date,6,4):'').'
           '.(($isObjectFinished !==false)?',`RAKT_IR_OBJEKTS_PABEIGTS` = "'.dbLayer::quote_smart($isObjectFinished).'"':'').'
           '.(($decription !==false)?',`RAKT_PIEZIMES` = "'.dbLayer::quote_smart($decription).'"':'').'
           '.(($designation !==false)?',`RAKT_OPERATIVAS_APZIM` = "'.dbLayer::quote_smart($designation).'"':'').'
