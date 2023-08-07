@@ -527,7 +527,7 @@ unset($res);
       $isReadonly1   = false;
     }
     // labo autors,  administrators
-    if((( ( $act['RAKT_RLTT_ID'] == $userId ) && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO))
+    if((( ( ($act['RAKT_RLTT_ID'] == $userId) || (dbProc::isUserADmin($act['RAKT_RLTT_ID'])) ) && $isEditor) || $isAdmin || $isEconomist) && ($status == STAT_INSERT || $status == STAT_RETURN || $status == STAT_AUTO))
     {
       
       $isReadonly2   = false;
