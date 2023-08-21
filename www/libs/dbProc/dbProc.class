@@ -655,73 +655,7 @@ class dbProc extends dbLayer
 		return false;
     }
     
-    // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajas ir atzimēts ka administrātors
-	// Ja eksiste - atgriezh true, cita gadijuma - false
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function isUserADmin($userId)
-	{
-		$oSQL=new dbLayer();
-		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
-					where '.
-					' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-					' and `RLTT_IR_ADMINS` = 1 '
-				);
-
-		if (is_array($res) && count($res)==1)
-		{
-			return true;
-		}
-
-		return false;
-    }
     
-    // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajam ir piesaistita loma sistemā un lietotājs ir atzimēts ka "projektētajs"
-	// Ja eksiste - atgriezh true, cita gadijuma - false
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function isExistsUserRoleWithProject($userId)
-	{
-		$oSQL=new dbLayer();
-		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
-					where '.
-                    ' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-                    ' and RLTT_PROJECTOR = 1'					
-				);
-
-		if (is_array($res) && count($res)==1)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-
-    // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajam ir piesaist�ta loma
-	// Ja jaa - atgriezh true, cita gadijuma - false
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function isUserInRole($userId, $role)
-	{
-		$oSQL=new dbLayer();
-		$q = 'select * from `LIETOTAJI`
-					where '.
-					' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-					' and `RLTT_ROLE`   = "'.dbLayer::quote_smart($role).'"';
-		
-		$res=$oSQL->makeQuery($q);
-
-		if (is_array($res) && count($res)==1)
-		{
-			return true;
-		}
-
-		return false;
-	}
 	// -----------------------------------------------------------------------------
 	// Noraadiito lietotaaju vaardi un uzvaardi (sagatavoti izmantoshanai atskaitees)
 	// -----------------------------------------------------------------------------
