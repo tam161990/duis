@@ -105,8 +105,7 @@
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('EDarea'); ?></td>
     
            </tr>
-    
-        <tr>
+           <tr>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('designation'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('designation'); ?></td>
             <?  if(true)  {?>
@@ -117,6 +116,15 @@
                 <td class="table_cell_2" width="24%">&nbsp;</td>
             <? } ?>
            </tr>
+           <?  if(!$trase && ($type == ACT_TYPE_DAMAGE_ID || $type == ACT_TYPE_DEFECT_ID 
+                    || $type == ACT_TYPE_STIHIJA_ID))  {?>
+            <tr>        
+                <td class="table_cell_c" width="16%">&nbsp;</td>
+                <td class="table_cell_2" width="24%">&nbsp;</td>
+                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('pers_number'); ?>:</td>
+                <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('pers_number'); ?></td>
+               </tr>
+            <? } ?>
         <tr>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('voltage'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('voltage'); ?></td>

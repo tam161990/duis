@@ -394,10 +394,10 @@ define ('ACT_CLOSE', 'ACT_CLOSE');
 # ACT TYPE ID
 # =============================================================================
 
-define ('ACT_TYPE_DAMAGE_ID', 10);
+define ('ACT_TYPE_DAMAGE_ID', 6);
 define ('ACT_TYPE_DEFECT_ID', 3);
 define ('ACT_TYPE_STIHIJA_ID', 7);
-define ('ACT_TYPE_DAMAGE_TR_ID', 6);
+define ('ACT_TYPE_DAMAGE_TR_ID', 10);
 define ('ACT_TYPE_DEFECT_TR_ID', 3);
 define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);

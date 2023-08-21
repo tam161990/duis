@@ -323,8 +323,9 @@ unset($res);
         $trase = $act['RAKT_TRASE'];
         $isPlan = dbProc::isActTypePlan($act['RAKT_KAKV_ID']);
         $isAuto = $act['RAKT_IS_AUTO'];
-	$actNumPostfix = $act['RAKT_NUM_POSTFIX'];
-	$sign = $act['RAKT_SIGNATURE'];
+        $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
+        $sign = $act['RAKT_SIGNATURE'];
+        $type = $act['RAKT_KAKV_ID'];
 
 	// get act type
 	$acttype=array();
@@ -643,7 +644,7 @@ unset($res);
       $oForm -> addElement('link', 'actNumPostfixLink', isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', $actUrl, ' target=new');
     }
 
-
+    $oForm -> addElement('text', 'pers_number',  text::get('PERS_NUMBER'), isset($act['RAKT_PERS_NUMBER'])?$act['RAKT_PERS_NUMBER']:'', 'maxlength="100"'.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':''));
     $oForm -> addElement('label', 'writeoffAccount',  text::get('WRITE_OFF_ACCOUNT'), isset($act['WRITE_OFF_ACCOUNT'])?$act['WRITE_OFF_ACCOUNT']:'');
   }
   
@@ -987,6 +988,7 @@ if(true)
 		    // save
             if($oForm->getValue('action')==OP_INSERT || $oForm->getValue('action')==OP_UPDATE)
             {
+              
               // get next act number
               $r=dbProc::saveAct(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('actId'):false),
                             false,
@@ -1011,7 +1013,12 @@ if(true)
                             false,
                             $oForm->getValue('toid'),
                             $oForm->getValue('signature'),
-							            (dbProc::isActTypePlan($oForm -> getValue('type')))?1:0
+							            (dbProc::isActTypePlan($oForm -> getValue('type')))?1:0,
+                          false,false,false,false,false,
+                          ($oForm->getValue('isTrase') != 1 && ($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID || 
+                          $oForm -> getValue('type') == ACT_TYPE_DEFECT_ID || 
+                          $oForm -> getValue('type') == ACT_TYPE_STIHIJA_ID)) ? 
+                          $oForm -> getValue('pers_number') : false
     						);
 
                 // get inserted record ID
