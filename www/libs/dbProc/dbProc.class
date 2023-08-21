@@ -4914,12 +4914,13 @@ class dbProc extends dbLayer
                     $project_type = false,
                     $project_code = false,
                     $construct_company = false, // Būvkomersants
-                    $key_object = false // Atslēgas objekts
+                    $key_object = false, // Atslēgas objekts
+                    $pers_number = false
                     )
 	{
         
 		if ($ID)
-		{
+		{ 
           $query = 'update `AKTI` set
           '.(($ID !==false)?'`RAKT_ID`="'.dbLayer::quote_smart($ID).'"':'').'
           '.(($number !==false)?',`RAKT_NUMURS`="'.dbLayer::quote_smart($numurs).'"':'').'
@@ -4941,9 +4942,11 @@ class dbProc extends dbLayer
           '.(($worker !==false)?',`RAKT_KWOI_KODS` = "'.dbLayer::quote_smart($worker).'"':'').'	     
 	        '.(($toid !==false)?',`RAKT_TO_ID` = "'.dbLayer::quote_smart($toid).'"':'').'
           '.(($contract !==false)?',`RAKT_VV_NUMBER` = "'.dbLayer::quote_smart($contract).'"':'').'
+          '.(($pers_number !==false)?',`RAKT_PERS_NUMBER` = "'.dbLayer::quote_smart($pers_number).'"':'').'
 	       '.(($object !==false && $type !==false)?',`RAKT_KWRC_ID` = (SELECT `KWRC_ID` FROM `KL_WRITEOFF_CODE` WHERE
           `KWRC_KAKV_ID`  = "'.(($trase==1) ? 1 : dbLayer::quote_smart($type)).'"
-          	 AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 : dbLayer::quote_smart($object)).'") ':'').'
+          	 AND `KWRC_KOBJ_ID` =  "'.(($trase==1) ? 99 :
+              (($pers_number !==false) ? 98 : dbLayer::quote_smart($object))).'") ':'').'
           '.(($EDarea !==false)?',`RAKT_KEDI_ID` = "'.dbLayer::quote_smart($EDarea).'"':'').'
           '.(($koeficent !==false)?',`RAKT_KOEFICENT` = "'.dbLayer::quote_smart($koeficent).'"':'').'
           '.(($trase !==false)?',`RAKT_TRASE` = "'.dbLayer::quote_smart($trase).'"':'').'     
