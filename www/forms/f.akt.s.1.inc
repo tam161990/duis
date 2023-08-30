@@ -643,8 +643,9 @@ unset($res);
 
       $oForm -> addElement('link', 'actNumPostfixLink', isset($act['RAKT_NUM_POSTFIX'])?$act['RAKT_NUM_POSTFIX']:'', $actUrl, ' target=new');
     }
-
-    $oForm -> addElement('text', 'pers_number',  text::get('PERS_NUMBER'), isset($act['RAKT_PERS_NUMBER'])?$act['RAKT_PERS_NUMBER']:'', 'maxlength="100"'.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':''));
+    if(!$trase && ($type == ACT_TYPE_DAMAGE_ID || $type == ACT_TYPE_DEFECT_ID  || $type == ACT_TYPE_STIHIJA_ID)) {
+      $oForm -> addElement('text', 'pers_number',  text::get('PERS_NUMBER'), isset($act['RAKT_PERS_NUMBER'])?$act['RAKT_PERS_NUMBER']:'', 'maxlength="100"'.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':''));
+    }
     $oForm -> addElement('label', 'writeoffAccount',  text::get('WRITE_OFF_ACCOUNT'), isset($act['WRITE_OFF_ACCOUNT'])?$act['WRITE_OFF_ACCOUNT']:'');
   }
   
