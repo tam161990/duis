@@ -27,10 +27,11 @@
     			<td width="10%"><?= text::get('ACT_NUMBER'); ?></td>
                 <td width="30%"><?=text::get('MAIN_DESIGNATION');?></td>
                 <td width="13%"><?= text::get('ACT_ACCEPT_TIME'); ?></td>
+                <td width="8%"><?=text::get('OBJECT_BUILDED');?></td>
                 <td width="13%"><?= text::get('ACT_TOTAL_WORK_PRICE').', EUR'; ?></td>
                 <td width="13%"><?=text::get('ACT_TOTAL_MATER_PRICE').', EUR';?></td>
                 <td width="13%"><?=text::get('ACT_TOTAL_PRICE').', EUR';?></td>
-                <td width="8%"><?=text::get('OBJECT_BUILDED');?></td>
+                
             </tr>
              <?
                 if (is_array($row['act']) && count($row['act']) > 0)
@@ -42,10 +43,11 @@
       			      <td align="center"><?= $r['number']; ?></td>
                       <td align="left"><?= $r['designation']; ?></td>
                       <td align="center"><?= $r['date']; ?></td>
+                      <td align="center"><?= $r['finished']; ?></td>
                       <td align="center"><?= $r['work']; ?></td>
                       <td align="center"><?= $r['material']; ?></td>
                       <td align="center"><?= $r['total']; ?></td>
-                      <td align="center"><?= $r['finished']; ?></td>
+                      
                   </tr>
                      <?
 

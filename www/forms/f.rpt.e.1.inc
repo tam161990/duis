@@ -149,17 +149,18 @@
                 $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_ACT_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' ).
                 ' '.$year .'.g. '.$month), 0,1,'C');
 
-                $width=array(20,80,40,40,40,40,40);
+                $width=array(20,80,30,20,40,40,40);
                 $align=array('C','L','C','C','C','C','C');
 
                 $headers = array(
                     'ACT_NUMBER' => iconv('UTF-8', 'windows-1257',text::get('ACT_NUMBER')),
                     'RAKT_OPERATIVAS_APZIM' => iconv('UTF-8', 'windows-1257',text::get('MAIN_DESIGNATION')),
                     'ACT_ACCEPT_TIME' => iconv('UTF-8', 'windows-1257',text::get('ACT_ACCEPT_TIME')),
+                    'RAKT_IR_OBJEKTS_PABEIGTS' => iconv('UTF-8', 'windows-1257',text::get('OBJECT_BUILDED')),
                     'ACT_TOTAL_WORK_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_WORK_PRICE').', EUR'),
                     'ACT_TOTAL_MATER_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_MATER_PRICE').', EUR'),
-                    'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE').', EUR'),
-                    'RAKT_IR_OBJEKTS_PABEIGTS' => iconv('UTF-8', 'windows-1257',text::get('OBJECT_BUILDED'))
+                    'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE').', EUR')
+                    
                     );
 
 
@@ -177,10 +178,11 @@
                                 'ACT_NUMBER' => $r['number'],
                                 'RAKT_OPERATIVAS_APZIM' => iconv('UTF-8', 'windows-1257',$r['designation']),
                                 'ACT_ACCEPT_TIME' => $r['date'],
+                                'RAKT_IR_OBJEKTS_PABEIGTS' =>  iconv('UTF-8', 'windows-1257',$r['finished']),
                                 'ACT_TOTAL_WORK_PRICE' => $r['work'],
                                 'ACT_TOTAL_MATER_PRICE' => $r['material'],
                                 'ACT_TOTAL_PRICE' => $r['total'],
-                                'RAKT_IR_OBJEKTS_PABEIGTS' => => $r['finished']
+                                
                                 );
                                 $i++;
                            }
@@ -192,15 +194,15 @@
                         $pdf->FancyTable($headers,$data, $width, $align);
 
                         $pdf->SetFont('Arial','B',8);
-                        $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+                        $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
                         $pdf->Cell(40,4,number_format($row['Cena'], 2),0,1,'C');
 
                         $pdf->SetFont('Arial','B',8);
-                        $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                        $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
                         $pdf->Cell(40,4,number_format($row['Pct'], 2),0,1,'C');
 
                         $pdf->SetFont('Arial','B',8);
-                        $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
+                        $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
                         $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
                     }
 
@@ -211,15 +213,15 @@
 
 
                 $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
                 $pdf->Cell(40,4,number_format($Totalsumma, 2),0,1,'C');
 
                 $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
                 $pdf->Cell(40,4,number_format($Totalpct, 2),0,1,'C');
 
                 $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(220,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
                 $pdf->Cell(40,4,number_format($Totaltotal, 2),0,1,'C');
 
                 $pdf->SetFont('Arial','BI',8);
