@@ -115,14 +115,19 @@ if(true/*$isEdUser || $isAdmin*/)
             }
             foreach ($res as $i=>$row)
 			{
+               $approveDate = (($row['RAKT_IS_AUTO'] == 1) ? 
+                                (isset($row['DRBI_APPROVE_DATE']) ? $row['DRBI_APPROVE_DATE'] :''):
+                                (isset($row['AAUD_DATUMS']) ? $row['AAUD_DATUMS'] :'')
+                );  
                $totalPrice =  $row['MATER_TOTAL'] + $row['WORK_TOTAL'];
                $area[$row['WRITE_OFF_ACCOUNT']]['act'][$row['RAKT_ID']]  = array (
                 'number' => $row['NUMURS'],
                 'designation' => $row['RAKT_OPERATIVAS_APZIM'],
-                'date' => (isset($row['AAUD_DATUMS']) ? $row['AAUD_DATUMS'] :''),
+                'date' => $approveDate,
                 'work' => $row['WORK_TOTAL'],
                 'material' => $row['MATER_TOTAL'],
-                'total' => number_format($totalPrice,2,'.','')
+                'total' => number_format($totalPrice,2,'.',''),
+                'finished' => (($row['RAKT_IR_OBJEKTS_PABEIGTS'] == 1) ? text::get('YES') : text::get('NO'))
                );
             }
 

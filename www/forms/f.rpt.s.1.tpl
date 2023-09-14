@@ -21,15 +21,16 @@
             <tr class="table_cell_3">
 
                 <td colspan="2" align="right"><b><?=text::get('WRITE_OFF_ACCOUNT');?>:</b></td>
-                <td colspan="4" align="left"><?= $row['writeoftitle']; ?></td>
+                <td colspan="5" align="left"><?= $row['writeoftitle']; ?></td>
             </tr>
             <tr class="table_head_2">
     			<td width="10%"><?= text::get('ACT_NUMBER'); ?></td>
                 <td width="30%"><?=text::get('MAIN_DESIGNATION');?></td>
-                <td width="15%"><?= text::get('ACT_ACCEPT_TIME'); ?></td>
-                <td width="15%"><?= text::get('ACT_TOTAL_WORK_PRICE').', EUR'; ?></td>
-                <td width="15%"><?=text::get('ACT_TOTAL_MATER_PRICE').', EUR';?></td>
-                <td width="15%"><?=text::get('ACT_TOTAL_PRICE').', EUR';?></td>
+                <td width="13%"><?= text::get('ACT_ACCEPT_TIME'); ?></td>
+                <td width="13%"><?= text::get('ACT_TOTAL_WORK_PRICE').', EUR'; ?></td>
+                <td width="13%"><?=text::get('ACT_TOTAL_MATER_PRICE').', EUR';?></td>
+                <td width="13%"><?=text::get('ACT_TOTAL_PRICE').', EUR';?></td>
+                <td width="8%"><?=text::get('OBJECT_BUILDED');?></td>
             </tr>
              <?
                 if (is_array($row['act']) && count($row['act']) > 0)
@@ -44,6 +45,7 @@
                       <td align="center"><?= $r['work']; ?></td>
                       <td align="center"><?= $r['material']; ?></td>
                       <td align="center"><?= $r['total']; ?></td>
+                      <td align="center"><?= $r['finished']; ?></td>
                   </tr>
                      <?
 
@@ -51,32 +53,32 @@
                 }
             ?>
             <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('TOTAL');?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('TOTAL');?>: </b></td>
              <td align="center"><b><?=number_format($row['Cena'],2,'.','');?></b></td>
             </tr>
             <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('PCT').' '. $pvn . '%';?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('PCT').' '. $pvn . '%';?>: </b></td>
              <td align="center"><b><?=number_format($row['Pct'],2,'.','');?></b></td>
             </tr>
             <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('TOTAL_WITH_PCT');?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('TOTAL_WITH_PCT');?>: </b></td>
              <td align="center"><b><?=number_format($row['Total'],2,'.','');?></b></td>
             </tr>
-            <tr><td colspan="6">&nbsp;</td></tr>
+            <tr><td colspan="7">&nbsp;</td></tr>
 <? }}?>
 <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('TOTAL');?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('TOTAL');?>: </b></td>
              <td align="center"><b><?=number_format($Totalsumma,2,'.','');?></b></td>
             </tr>
             <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('PCT').' '. $pvn . '%';?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('PCT').' '. $pvn . '%';?>: </b></td>
              <td align="center"><b><?=number_format($Totalpct,2,'.','');?></b></td>
             </tr>
             <tr class="table_head_2">
-             <td colspan="5" align="right"><b><?=text::get('TOTAL_WITH_PCT');?>: </b></td>
+             <td colspan="6" align="right"><b><?=text::get('TOTAL_WITH_PCT');?>: </b></td>
              <td align="center"><b><?=number_format($Totaltotal,2,'.','');?></b></td>
             </tr>
-            <tr><td colspan="6">&nbsp;</td></tr>
+            <tr><td colspan="7">&nbsp;</td></tr>
 </table>
 
 </body>
