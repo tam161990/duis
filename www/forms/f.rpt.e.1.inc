@@ -149,8 +149,8 @@
                 $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_ACT_TOTAL').(($trase == 1) ? ' ('.text::get('TRASE').')' : '' ).
                 ' '.$year .'.g. '.$month), 0,1,'C');
 
-                $width=array(20,80,40,40,40,40);
-                $align=array('C','L','C','C','C','C');
+                $width=array(20,80,40,40,40,40,40);
+                $align=array('C','L','C','C','C','C','C');
 
                 $headers = array(
                     'ACT_NUMBER' => iconv('UTF-8', 'windows-1257',text::get('ACT_NUMBER')),
@@ -179,7 +179,8 @@
                                 'ACT_ACCEPT_TIME' => $r['date'],
                                 'ACT_TOTAL_WORK_PRICE' => $r['work'],
                                 'ACT_TOTAL_MATER_PRICE' => $r['material'],
-                                'ACT_TOTAL_PRICE' => $r['total']
+                                'ACT_TOTAL_PRICE' => $r['total'],
+                                'RAKT_IR_OBJEKTS_PABEIGTS' => => $r['finished']
                                 );
                                 $i++;
                            }
