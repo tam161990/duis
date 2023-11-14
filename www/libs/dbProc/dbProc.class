@@ -5006,7 +5006,7 @@ class dbProc extends dbLayer
                 '.(($project && $project_type !== false) ? '"'.dbLayer::quote_smart($project_type).'"' : '"NULL"').',
                 '.(($project_code) ? '"'.dbLayer::quote_smart($project_code).'"' : '"NULL"').',
                 '.(($construct_company) ? '"'.dbLayer::quote_smart($construct_company).'"' : '"NULL"').',
-                '.(($RAKT_KEY_OBJECT) ? '"'.dbLayer::quote_smart($RAKT_KEY_OBJECT).'"' : '"0"').'                  
+                '.(($key_object) ? '"'.dbLayer::quote_smart($key_object).'"' : '"0"').'                  
                 )';
 		}
        //echo $query;
@@ -7410,38 +7410,96 @@ class dbProc extends dbLayer
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
     function getActMaterialList($ID, $tame = false, $project = false, $onlyNotApproved = false,
-                                    $sortOrder = false, $orderColumn = false)
+                                    $sortOrder = false, $orderColumn = false, $work_type = false,
+                                    $offset = false,  $limit = false)
     {
+        
         $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
         $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
         $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
         if($orderColumn == false) {
-            $order = 'MATR_IS_WORKER DESC, MATR_ID';
+            //$order = 'MATR_DAUDZUMS, MATR_IS_WORKER DESC, MATR_ID';
+            $order = 'ord';
         } else {
             $order = $orderColumn. ' ' . $sortOrder;
+        }
+        $wta = false;
+        if ($work_type != false) {
+            $wta = explode('^', $work_type);
         }
 
         $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA  ". $group_name.",
                 CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE,
                 ".dbLayer::sqlParseDate('MATR_APPROVE_DATE') .", ".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
-                from " . $table_name . "
+                ,CASE
+                    WHEN MATR_DAUDZUMS IS NULL THEN 1
+                    WHEN MATR_KODS IS NULL THEN 2
+                    ELSE 3 END as ord from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NOT NULL
-                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) ." 
+                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .       
+                (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
+                " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "")." 
                 union
                 select *, FORMAT(0, 2) AS `MATR_CENA_KOPA` ". $group_name.",
                 CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE,
                 ".dbLayer::sqlParseDate('MATR_APPROVE_DATE') .",".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
-                from " . $table_name . "
+                ,CASE
+                    WHEN MATR_DAUDZUMS IS NULL THEN 1
+                    WHEN MATR_KODS IS NULL THEN 2
+                    ELSE 3 END as ord from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
                 WHERE `MATR_RAKT_ID` = ".$ID."
                 AND ".$column_name." IS NULL 
-                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) ." 
+                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .     
+                (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
+                " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "")."
                 ORDER BY " . $order;
+                if (($offset !== false) && $limit)
+                {
+                    $query .= ' limit '.
+                        ($offset ? (int)$offset.', ' : '').
+                        (int)$limit;
+                };
         //echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
+    }
+
+    function getActMaterialListCount($ID, $onlyNotApproved = false, $work_type = false)
+    {
+        
+        $table_name =  '`MATERIALI`';
+        $column_name = '`MATR_DAUDZUMS`';
+        $group_name = ',`KLDV_NOSAUKUMS`';
+        
+        $wta = false;
+        if ($work_type != false) {
+            $wta = explode('^', $work_type);
+        }
+
+        $query = " SELECT COUNT(MATR_ID) as amount FROM (".
+                "select MATR_ID from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
+                WHERE `MATR_RAKT_ID` = ".$ID."
+                AND ".$column_name." IS NOT NULL
+                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .       
+                (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
+                " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "")."
+                union
+                select MATR_ID from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
+                WHERE `MATR_RAKT_ID` = ".$ID."
+                AND ".$column_name." IS NULL 
+                " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .     
+                (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
+                " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'": "")." 
+                ) x " ;
+        //echo $query;
+		$oSQL = new dbLayer;
+		$result = $oSQL -> makeQuery($query);
+        return isset($result[0]['amount']) ? $result[0]['amount'] : 0;
     }
 
     // -----------------------------------------------------------------------------
@@ -10175,6 +10233,32 @@ class dbProc extends dbLayer
     }
 
     // -----------------------------------------------------------------------------
+    // Atgriezh aktiva darba veida sarakstu
+    // Author: Tatjana Fedorkova
+    // -----------------------------------------------------------------------------
+    function getWorkTypeListByWorkAndMaterials($actId)
+    {
+    $query = "select DISTINCT `KLDV_ID`,`KLDV_NOSAUKUMS`, `DRBI_WORK_TYPE_TEXT`, DRBI_WORK_TYPE_ID,
+        (select count(MATR_ID) FROM `materiali` WHERE MATR_RAKT_ID = DRBI_RAKT_ID 
+        and MATR_WORK_TYPE_ID = DRBI_WORK_TYPE_ID 
+        AND ((MATR_WORK_TYPE_TEXT = 'X'  and DRBI_WORK_TYPE_TEXT IS NULL) OR (MATR_WORK_TYPE_TEXT = DRBI_WORK_TYPE_TEXT) )
+        ) AS matr_cnt,
+        (select count(MATR_ID) FROM `materiali` WHERE MATR_RAKT_ID = DRBI_RAKT_ID 
+        and MATR_WORK_TYPE_ID = DRBI_WORK_TYPE_ID 
+        AND ((MATR_WORK_TYPE_TEXT = 'X'  and DRBI_WORK_TYPE_TEXT IS NULL) OR (MATR_WORK_TYPE_TEXT = DRBI_WORK_TYPE_TEXT) )
+        AND MATR_DAUDZUMS IS NOT NULL
+        ) AS filled_matr_cnt
+                    from `kl_darba_veidi`
+                    INNER JOIN `darbi` ON DRBI_WORK_TYPE_ID = KLDV_ID
+                    where `KLDV_IR_AKTIVS` = 1
+                    AND `DRBI_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                    ORDER BY  `KLDV_NOSAUKUMS`";
+
+    $oSQL = new dbLayer;
+    return $oSQL -> makeQuery($query);
+    }
+
+    // -----------------------------------------------------------------------------
     // Saglabaa darba veidu. Ja dots ID, izmaina esosho ierakstu, ja ne -
     // izveido jaunu.
     // Author: Tatjana Fedorkova
@@ -10884,8 +10968,37 @@ class dbProc extends dbLayer
         $oSQL = new dbLayer;
         $result = $oSQL -> makeQuery($query);
         return (($result[0]['cnt'] == 0 ) ? true : false);
-    }       
-        
-}
+    }    
+    
+    function checkEmptyAmountInputFields($actId, $work_type) {
+        $wta = false;
+        if ($work_type != false) {
+            $wta = explode('^', $work_type);
+        }
+
+        $query = "SELECT COUNT(*) as cnt
+            FROM `materiali`
+            WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId).
+            (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
+            " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "").
+            "AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')";
+            
+        $oSQL = new dbLayer;
+        $result = $oSQL -> makeQuery($query);
+        return (($result[0]['cnt'] == 0 ) ? false : true);
+    }
+
+    function getAllEmptyInputFields($actId) {
+        $query = "SELECT MATR_KODS, KLDV_NOSAUKUMS, MATR_WORK_TYPE_TEXT, 
+                CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE
+                FROM `materiali` 
+                inner join kl_darba_veidi on MATR_WORK_TYPE_ID = KLDV_ID
+                WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')
+                ORDER BY KLDV_ID, MATR_WORK_TYPE_TEXT";
+        $oSQL = new dbLayer;
+        return $oSQL->makeQuery($query);
+    }    
+}  
 
 ?>

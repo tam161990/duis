@@ -12,8 +12,10 @@ unset($oLink);
 
 // frame #2
 $oLink=new UrlQuery();
-$oLink->addPrm(FORM_ID, 'blank');
+$oLink->addPrm(FORM_ID, $url);
 $oLink->addPrm('isNew', '1');
+$oLink->addPrm('editMode',1);
+$oLink->addPrm('id',$id);
 $frame2Url = $oLink->getQuery();
 unset($oLink);
 

@@ -4,10 +4,10 @@ $userId = userAuthorization::getUserId();
 $isEdUser = (dbProc::isUserInRole($userId, ROLE_ED_USER) || dbProc::isUserInRole($userId, ROLE_AUDIT_USER));
 
 $workerCode = reqVar::get('id');
+$editMode = reqVar::get('editMode');
 
 if (userAuthorization::isAdmin() || $isEdUser )
 {
-	$editMode = reqVar::get('editMode');
 	// bottom frame
 	// if insert/update
 
@@ -43,7 +43,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
         }
 
 		// form elements
-		$oForm -> addElement('hidden', 'action', '');		
+		$oForm -> addElement('hidden', 'action', '');	
 		$oForm -> addElement('hidden', 'contractId', null, isset($contract['KCNT_ID'])? $contract['KCNT_ID']:'');
     	// trase
     	$oForm -> addElement('checkbox', 'isTrase',  text::get('TRASE'),  isset($contract['KCNT_IR_TRASE'])?$contract['KCNT_IR_TRASE']:'0', ''.(($isEdUser)?' disabled' : ''));
@@ -114,7 +114,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					if($check)
 					{
 						$r=dbProc::saveContractNo(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('contractId'):false),
-						$workerCode,
+						$workerCode, 
 						$oForm->getValue('isTrase',0),
 						$oForm->getValue('contractNo'),
 						$oForm->getValue('edArea'),

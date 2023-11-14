@@ -8,7 +8,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 	// bottom frame
 	// if insert/update
 
-     if($editMode)
+    if($editMode)
 	{
 		$workerId = reqVar::get('workerId');
 
@@ -72,7 +72,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                //Popup saites sagatave
               $oPopLink=new urlQuery;
 			  $oPopLink->addPrm(url, 'f.ktl.s.15');
-			  $oPopLink->addPrm(FORM_ID,'fmk_main_2_frame');
+			  $oPopLink->addPrm(FORM_ID,'fmk_main_2_frame');			  
               $oPopLink->addPrm('id',$worker['KWOI_KODS']);
 
 			  $oForm -> addElement('buttonImg', 'view', text::get('EDIT'), 'img/btn_edit.bmp', 'width="50" height="23" onclick="let newWin=window.open(\''.$oPopLink ->getQuery().'\', \'frmMain1\',\'toolbar=no,resizable=yes,scrollbars=yes,width=800,height=600\'); " '.(isset($worker['KWOI_KODS'])?'':' disabled '));
