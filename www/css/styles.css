@@ -294,7 +294,7 @@ h1 {
 
 table.errmsg{margin-left:auto;margin-right:auto;border:1px solid #ffcccc;margin-bottom:10px;background-color: #ffffff}
 table.errmsg th{width:12px;padding:12px;background-color: #ffffff;}
-table.errmsg td.error{text-align:left;vertical-align:top;padding:11px;background-color: #ffffff}\
+table.errmsg td.error{text-align:left;vertical-align:top;padding:11px;background-color: #ffffff}
 
 table.sucmsg{margin-left:auto;margin-right:auto;border:1px solid #30983E;margin-bottom:10px;background-color: #ffffff}
 table.sucmsg th{width:12px;padding:12px;background-color: #ffffff;}
@@ -588,3 +588,9 @@ filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 	z-index: 102;
 	visibility: hidden;
 	}
+
+	/* multicolor select */
+.italicText{ font-style:italic; }
+.blackText{ color:black; }
+.redText{ color:red; outline-color: red; }
+.attention{border-color: red; border-width: 2px;}

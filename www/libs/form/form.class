@@ -115,7 +115,7 @@ class form
 	// -----------------------------------------------------------------------------
 	// create element - return pointer
 	// -----------------------------------------------------------------------------
-	function &createElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false)
+	function &createElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false,$styles=array())
 	{
 		if (empty($name))
 		{
@@ -142,7 +142,8 @@ class form
 					'attributes'=>$attributes,
 					'features'=>$features,
 					'options'=>$options,
-					'isSubmitByEnter'=>$isSubmitByEnter
+					'isSubmitByEnter'=>$isSubmitByEnter,
+					'styles'=>$styles,
 					);		
 
 		return $this->aAllParam[$name];
@@ -154,9 +155,9 @@ class form
 	// $name - parametr name
 	// $attributes - html attributes
 	// -----------------------------------------------------------------------------
-	function addElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false)
+	function addElement($type,$name,$label='',$defaultValue='',$attributes='',$tInfo='',$features=false,$options=array(),$isSubmitByEnter=false,$styles=array())
 	{
-		$this->aParam[$name]=$this->createElement($type,$name,$label,$defaultValue,$attributes,$tInfo,$features,$options,$isSubmitByEnter);
+		$this->aParam[$name]=$this->createElement($type,$name,$label,$defaultValue,$attributes,$tInfo,$features,$options,$isSubmitByEnter,$styles);
 	}
 
     function delElement($name)
@@ -505,7 +506,7 @@ class form
 					return '<a '.$data['attributes'].' href="'.$this->getValue($data['name'],null,true).'">'.$data['label'].'</a>';
 					break;
 
-				case 'select':	
+				case 'select':
 				case 'radio':
 					return isset( $data['options'][$this->getValue($data['name'])] )?$data['options'][$this->getValue($data['name'])]:'';
 					break;
@@ -653,13 +654,17 @@ class form
 					{
 						foreach ($data['options'] as $i=>$v)
 						{
-							$r.='<option '.(($this->getValue($data['name'])==$i)?'selected':'').' value="'.$i.'">'.$v.'</option>';
+							$style = '';
+							if (is_array($data['styles'])) {
+								$style = ((isset($data['styles'][$i])) ? $data['styles'][$i] : '');								
+							}
+							$r.='<option class="'.$style.'" '.(($this->getValue($data['name'])==$i)?'selected':'').' value="'.$i.'" >'.$v.'</option>';
 						}
 					}
 					$r.='</select>';
 					return $r;
 					breal;
-
+				
 				case 'multiple_select':
 					$r='<select MULTIPLE class="flex" onKeyPress="if (event.keyCode==13) {return false;}" '.$data['attributes'].' name="'.$data['name'].'[]">';
 					if (is_array($data['options']))

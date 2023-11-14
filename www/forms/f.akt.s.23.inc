@@ -421,6 +421,7 @@ if ( $isAdmin || $isProjector)
                             break;
                           case  KL_MATERIALS:
                             $oRedirectLink->addPrm('tab', TAB_MATERIAL);
+                            $oRedirectLink->addPrm('work_types', $oFormPop->getValue('work_type'));
                             break;
 
                       }

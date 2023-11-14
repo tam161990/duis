@@ -263,6 +263,7 @@ if ( $isAdmin || $isSystemUser)
                         $oRedirectLink->addPrm('tab', TAB_MATERIAL);
                         if($isProject == 1) {
                            $oRedirectLink->addPrm('tametab', TAB_MATERIAL_T);
+                           $oRedirectLink->addPrm('work_types', $oFormPop->getValue('work_type'));
                         } 
                         break;
                   }

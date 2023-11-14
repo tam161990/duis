@@ -21,20 +21,31 @@ var sp2 = document.createElement('span');
 sp2.append('<?=text::get('ERROR_DOUBLE_VALUE');?>');
 sp2.style.color = 'red';
 </script>
+
 <h1><?=text::toUpper(text::get(TAB_MATERIAL));?></h1>
 <?= $oFormMaterialTab -> getFormHeader(); ?>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 	<tr>
 		<td align=center colspan="2"><?= $oFormMaterialTab -> getMessage(); ?></td>
-	</tr>
+    </tr>
     <tr>
-		<td valign="top">
-        <?
-        $x = 0;
-        foreach ($aMaterials as $d => $aGroupMaterials)
-        {
-        ?>
+        <td>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                    <td width="50"><img src="img/ico_attention.gif" alt="" width="41" height="37" class="block"></td>
+                    <td><span class="error" name="error_span" id="error_span"><?= $oFormMaterialTab->getElementHtml('error_msg'); ?></span></td>
+                </tr>
+            </table>
+        </td>
+        <td></td>
+	</tr>    
+    <tr>
+	<td valign="top">        
         <table cellpadding="5" cellspacing="1" border="0" width="100%">
+            <tr>
+                <td colspan="6"><?= $oFormMaterialTab -> getElementLabel('work_types'); ?>: <?= $oFormMaterialTab->getElementHtml('work_types'); ?></td>
+                <td align="right" colspan="6"><?=$listingHtml;?></td>
+           </tr>
 		   <tr class="table_head_2">
                 <th width="5%"><?=text::get('CODE');?>
                     <a href="#" onclick="doSort('MATR_KODS', 'ASC')">
@@ -93,6 +104,7 @@ sp2.style.color = 'red';
 			</tr>
 
 	  <?
+      $x = 0;
       foreach ($aGroupMaterials as $j => $actMaterial)
 	  {
            $changestyle = "font-weight:normal;"   ;
@@ -151,19 +163,19 @@ sp2.style.color = 'red';
             }
             ?>
             <tr>
-                 <td align="right" colspan="7">&nbsp;</td>
+                 <td align="right" colspan="12"><?=$listingHtml;?></td>
             </tr>
-            <?
            
-		}
-		?>
-        
 	    </table>
         </td>
         <td width="20%" valign="top">
             &nbsp;
         </td>
 	</tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td align="right"></td>
+    </tr>
 </table>
 <div class="navbar">
     <table cellpadding="5" cellspacing="1" border="0" align="left" width="100">
@@ -184,7 +196,12 @@ sp2.style.color = 'red';
            <td><?= $oFormMaterialTab -> getElementHtml('delete_all'); ?></td>
         <? } ?>        
         </tr>
+      <tr>
+        <td><?= $oFormMaterialTab -> getElementHtml('all'); ?></td>
+      </tr>
     </table>   
 </div>
+<?=$oFormMaterialTab->getElementHtml('jsRefresh2');?>
+
 <?= $oFormMaterialTab -> getFormBottom(); ?>
 
