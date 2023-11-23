@@ -198,6 +198,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.23');
       $oPopLink->addPrm('actId',$actId);
       $oPopLink->addPrm('catalog',KL_MATERIALS);     
+      $oPopLink->addPrm('work_types',$work_types);     
       $oPopLink->addPrm('st',1); 
       $favorit[$j]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
       $favorit[$j]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery(), false, 500, 500, true, false, true);
@@ -210,6 +211,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oPopLink->addPrm('catalog',KL_MATERIALS);
       $oPopLink->addPrm('isSearch', $isSearch);
       $oPopLink->addPrm('searchNum', $searchNum);
+      $oPopLink->addPrm('work_types',$work_types); 
       $oPopLink->addPrm('isProject',1);
       $oPopLink->addPrm('st',0);
       $favorit[$j]['TITLE'] = text::get('SEARCH_NEW_FROM_LIST');   ;
@@ -304,7 +306,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('actId', $actId);
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
-      $oLink->addPrm('tab', TAB_MATERIAL);        
+      $oLink->addPrm('tab', TAB_MATERIAL);    
+      $oLink->addPrm('work_types',$work_types);         
       if (reqVar::get('tab') == 'TAB_MATERIAL') {
         $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
         $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;

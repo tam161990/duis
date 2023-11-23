@@ -10,6 +10,8 @@ $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $actId  = reqVar::get('actId');
 // catalog
 $catalog  = reqVar::get('catalog');
+// work type from popup
+$work_types = reqVar::get('work_types');
 
 // Main form with XMLHTTP method load this code:
   if (reqVar::get('xmlHttp') == 1)
@@ -214,7 +216,7 @@ if ( $isAdmin || $isProjector)
             // set list title
             $title = text::toUpper(text::get('ST_MATERIAL'));   
              // get grupas nokluseto vertibu 
-            $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+             $defaultMaterial = (($work_types  !== false) ? $work_types : dbProc::getDefaultMaterial($actId));  
             // get grupas list           
             $res=dbProc::getWorkTypeListByWork($actId);
             if (is_array($res))
