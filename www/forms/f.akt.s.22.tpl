@@ -32,7 +32,7 @@ sp2.style.color = 'red';
         <td>
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                    <td width="50"><img src="img/ico_attention.gif" alt="" width="41" height="37" class="block"></td>
+                    <td width="50"></td>
                     <td><span class="error" name="error_span" id="error_span"><?= $oFormMaterialTab->getElementHtml('error_msg'); ?></span></td>
                 </tr>
             </table>

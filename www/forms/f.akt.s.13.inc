@@ -19,6 +19,8 @@ $isSearch  = reqVar::get('isSearch');
 $searchNum  = reqVar::get('searchNum');
 // pievienošana projektētajiem
 $isProject  = reqVar::get('isProject');
+// work type from popup
+$work_types = reqVar::get('work_types');
 
 $tame  = reqVar::get('tame');
 
@@ -95,7 +97,7 @@ if ( $isAdmin || $isSystemUser)
                // get grupas list             
                $res=dbProc::getWorkTypeListByWork($actId);  
                // get grupas nokluseto vertibu 
-               $defaultMaterial = dbProc::getDefaultMaterial($actId);  
+               $defaultMaterial = (($work_types  !== false) ? $work_types : dbProc::getDefaultMaterial($actId));  
                if (is_array($res))
                {
                   foreach ($res as $row)
