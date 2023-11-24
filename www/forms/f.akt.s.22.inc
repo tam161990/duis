@@ -177,6 +177,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('searchNum', $searchNum);
       $oLink->addPrm('tab', TAB_MATERIAL);
+      $oLink->addPrm('work_types',$work_types); 
       $orderLink = $oLink -> getQuery();
       unset($oLink);
 
@@ -230,6 +231,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       // get grupas list
       $workType=array();
+      $workTypeDefinetly=array();
       $workTypeStyle=array();
       $workType['']=text::get('EMPTY_SELECT_OPTION');		
       $res=dbProc::getWorkTypeListByWorkAndMaterials($actId);
@@ -246,6 +248,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           }
           $workTypeStyle[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] = $style;
           $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+          $workTypeDefinetly[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
         }
       }
       unset($res);
@@ -366,7 +369,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       
       $oFormMaterialTab -> addElement('select', 'work_types',  text::get('SINGLE_WORK_TYPE'), $matrWorkType, 
       'style="width:400px;" onchange="this.className=this.options[this.selectedIndex].className; document.forms[\'frmMaterialTab\'].submit();"', 
-      '', '', $workType, false, $workTypeStyle);
+      '', '', $workTypeDefinetly, false, $workTypeStyle);
       
       $oFormMaterialTab->addElement('static','jsRefresh2','','<script>document.all["work_types"].className="'.(($workTypeStyle[$matrWorkType] == 'redText')? 'attention' : '').'";</script>');
     
