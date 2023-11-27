@@ -235,6 +235,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $workTypeStyle=array();
       $workType['']=text::get('EMPTY_SELECT_OPTION');		
       $res=dbProc::getWorkTypeListByWorkAndMaterials($actId);
+      $q = 0;
       if (is_array($res))
       {
         foreach ($res as $row)
@@ -249,6 +250,10 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           $workTypeStyle[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] = $style;
           $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
           $workTypeDefinetly[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
+          if($q == 0 && $work_types == false) {
+              $work_types =  $row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X');
+          }  
+          $q =+ 1;
         }
       }
       unset($res);
@@ -333,21 +338,16 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
                                               $work_types,
                                               $listing->getStartPosition(),
                                               $listing->getAmountOnPage());
-
+      //print_r($aMaterialDb);
       $aMaterialExist = false;
-      $q = 0;
       $matrWorkType = $work_types;
-
+      $q = 0;
       foreach ($aMaterialDb as $material)
       {
         $material['MATR_PIEZIMES'] = ($material['MATR_PIEZIMES'] == 'NULL') ? '' : $material['MATR_PIEZIMES'];
-        $aGroupMaterials[$q] = $material; 
-        //echo $material['MATR_WORK_TYPE'];
-        if($q == 0 && $work_types == false) {
-          $matrWorkType =  $material['MATR_WORK_TYPE'];
-        }  
-        $aMaterialExist = true;    
-        $q++; 
+        $aGroupMaterials[$q] = $material;         
+        $aMaterialExist = true; 
+        $q ++;
       }
 
       if(!$aMaterialExist) {
