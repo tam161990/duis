@@ -43,8 +43,9 @@
 <table cellpadding="0" cellspacing="3" border="0" align="center"  color="#666666">
 	<tr>
 
-        <td><a href="" target="new" style="color: #666666;"><?= $oForm -> getElementLabel('instruction'); ?></a>&nbsp;|&nbsp;</td>
-        <td><a href="" target="new" style="color: #666666;"><?= $oForm -> getElementLabel('problem'); ?></a></td>
+        <td><a href="https://stinfo.energo.lv/dok/rokasgramatas/DU/SitePages/S%C4%81kums.aspx" 
+			target="new" style="color: #666666;"><?= $oForm -> getElementLabel('instruction'); ?></a>&nbsp;|&nbsp;</td>
+        <td><a href="mailto:isla@sadalestikls.lv" target="new" style="color: #666666;"><?= $oForm -> getElementLabel('problem'); ?></a></td>
 	</tr>
 </table>
 </td></tr>
