@@ -6709,14 +6709,25 @@ class dbProc extends dbLayer
 	// Saglabat konkrēta darba tipa tekstu pēc ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function updateWorkTypeText($ID, $work_type_text, $tame = 0)
+	function updateWorkTypeText($ID, $work_type_text, $tame = 0, $actId = false, $orig_work_type_id = false, $orig_work_type_text = '')
     {
-        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
+        $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';        
+        $oDB = new dbLayer;
+        if($orig_work_type_id !== false) {
+            $origin_text = ($orig_work_type_text == '') ? 'X' : $orig_work_type_text;
+            $matrtable_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+
+            $query = "UPDATE ".$matrtable_name." SET  
+            `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart(str_replace('\'', '"', $work_type_text))."'
+                    WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                    AND `MATR_WORK_TYPE_ID` = ".dbLayer::quote_smart($orig_work_type_id)."
+                    AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart(str_replace('\'', '"', $origin_text))."'";
+           $oDB -> makeQuery($query);
+        }
+        
         $query = "UPDATE ".$table_name." SET  `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'
                 WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
-
-
-        $oDB = new dbLayer;
+        
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
@@ -6743,14 +6754,24 @@ class dbProc extends dbLayer
 	// Saglabat konkrēta darba tipa tekstu pēc ieraksta ID.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function updateWorkType($ID, $work_type, $tame = 0)
+	function updateWorkType($ID, $work_type, $tame = 0, $actId = false, $orig_work_type_id = false, $orig_work_type_text = '')
     {
         $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
-        $query = "UPDATE ".$table_name." SET  `DRBI_WORK_TYPE_ID` = '".dbLayer::quote_smart($work_type)."'
-                WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);
-
-
         $oDB = new dbLayer;
+        if($orig_work_type_id !== false) {
+            $origin_text = ($orig_work_type_text == '') ? 'X' : $orig_work_type_text;
+            $matrtable_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
+
+            $query = "UPDATE ".$matrtable_name." SET  
+            `MATR_WORK_TYPE_ID` = '".dbLayer::quote_smart($work_type)."'
+                    WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
+                    AND `MATR_WORK_TYPE_ID` = ".dbLayer::quote_smart($orig_work_type_id)."
+                    AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart(str_replace('\'', '"', $origin_text))."'";
+            $oDB -> makeQuery($query);
+        }
+        
+        $query = "UPDATE ".$table_name." SET  `DRBI_WORK_TYPE_ID` = '".dbLayer::quote_smart($work_type)."'
+                WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);        
 		$result = $oDB -> makeQuery($query);
 
 		return ($result !== false);
