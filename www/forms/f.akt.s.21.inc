@@ -52,13 +52,21 @@ if (reqVar::get('xmlHttp') == 1)
         $workType=array();
         $res=dbProc::getWorkTypeListByWorkAndMaterials(reqVar::get('actId'));  
         $i = 0;
+        $wt = '';
         foreach ($res as $row)
         {					 
             ?>
             document.all["work_types"].options[<?=$i;?>] = new Option( '<?=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];?>', '<?=$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X');?>');           
             <?
+            if($row['KLDV_ID'] == reqVar::get('id')) {
+              $wt = $row['KLDV_NOSAUKUMS'];
+            }
             $i++;
-        }	     
+        }?>
+        alert('<?=sprintf(text::get('WARNING_RELOCATED_MATERIAL'), 
+                                  $wt.' '. reqVar::get('text'),
+                                  $wt.' '. str_replace('"', '\'', reqVar::get('work_type_text')));?>');  
+        <?
       }  
       if (reqVar::get('work_type')!='')
       {
@@ -69,16 +77,25 @@ if (reqVar::get('xmlHttp') == 1)
             document.all["work_types"].options[i] = null;
           }
         <?
+        $origWt = $res=dbProc::getWorkTypeList(reqVar::get('id'));
         $workType=array();
         $res=dbProc::getWorkTypeListByWorkAndMaterials(reqVar::get('actId'));  
         $i = 0;
+        $wt = '';
         foreach ($res as $row)
         {					 
             ?>
             document.all["work_types"].options[<?=$i;?>] = new Option( '<?=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];?>', '<?=$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X');?>');           
             <?
+            if($row['KLDV_ID'] == reqVar::get('work_type')) {
+              $wt = $row['KLDV_NOSAUKUMS'];
+            }
             $i++;
-        }	     
+        }	?>
+        alert('<?=sprintf(text::get('WARNING_RELOCATED_MATERIAL'), 
+                                  $origWt[0]['KLDV_NOSAUKUMS'].' '. reqVar::get('text'),
+                                  $wt.' '. str_replace('"', '\'', reqVar::get('text')));?>');  
+        <?     
       }
       if (reqVar::get('export_type')!='')
       {
