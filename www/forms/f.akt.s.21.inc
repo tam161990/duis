@@ -42,11 +42,60 @@ if (reqVar::get('xmlHttp') == 1)
       }
       if (reqVar::get('work_type_text')!='')
       {
-        dbProc::updateWorkTypeText(reqVar::get('saveId'), reqVar::get('work_type_text'));
-      }
+        dbProc::updateWorkTypeText(reqVar::get('saveId'), reqVar::get('work_type_text'), 0, reqVar::get('actId'), reqVar::get('id'), reqVar::get('text'));
+        ?>
+          for(i=document.all["work_types"].length; i>=0; i--)
+          {
+            document.all["work_types"].options[i] = null;
+          }
+        <?
+        $workType=array();
+        $res=dbProc::getWorkTypeListByWorkAndMaterials(reqVar::get('actId'));  
+        $i = 0;
+        $wt = '';
+        foreach ($res as $row)
+        {					 
+            ?>
+            document.all["work_types"].options[<?=$i;?>] = new Option( '<?=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];?>', '<?=$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X');?>');           
+            <?
+            if($row['KLDV_ID'] == reqVar::get('id')) {
+              $wt = $row['KLDV_NOSAUKUMS'];
+            }
+            $i++;
+        }?>
+        alert('<?=sprintf(text::get('WARNING_RELOCATED_MATERIAL'), 
+                                  $wt.' '. reqVar::get('text'),
+                                  $wt.' '. str_replace('"', '\'', reqVar::get('work_type_text')));?>');  
+        <?
+      }  
       if (reqVar::get('work_type')!='')
       {
-        dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'));
+        dbProc::updateWorkType(reqVar::get('saveId'), reqVar::get('work_type'), 0, reqVar::get('actId'), reqVar::get('id'), reqVar::get('text'));
+        ?>
+          for(i=document.all["work_types"].length; i>=0; i--)
+          {
+            document.all["work_types"].options[i] = null;
+          }
+        <?
+        $origWt = $res=dbProc::getWorkTypeList(reqVar::get('id'));
+        $workType=array();
+        $res=dbProc::getWorkTypeListByWorkAndMaterials(reqVar::get('actId'));  
+        $i = 0;
+        $wt = '';
+        foreach ($res as $row)
+        {					 
+            ?>
+            document.all["work_types"].options[<?=$i;?>] = new Option( '<?=$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];?>', '<?=$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X');?>');           
+            <?
+            if($row['KLDV_ID'] == reqVar::get('work_type')) {
+              $wt = $row['KLDV_NOSAUKUMS'];
+            }
+            $i++;
+        }	?>
+        alert('<?=sprintf(text::get('WARNING_RELOCATED_MATERIAL'), 
+                                  $origWt[0]['KLDV_NOSAUKUMS'].' '. reqVar::get('text'),
+                                  $wt.' '. str_replace('"', '\'', reqVar::get('text')));?>');  
+        <?     
       }
       if (reqVar::get('export_type')!='')
       {
@@ -322,11 +371,15 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             // save work_type_text
             $saveJs = "if(this.value != '') { 
               var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value));
+              var id = document.forms['frmWorkTab']['work_type_orig[" .$i. "]'];
+              var text = document.forms['frmWorkTab']['work_type_text_orig[" .$i. "]'];
+              var actId = document.forms['frmWorkTab']['actId'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value+'&id='+id.value+'&text='+text.value+'&actId='+actId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
             }";
+            $oFormWorkTab->addElement('hidden', 'work_type_orig['.$i.']', '', $actWork['DRBI_WORK_TYPE_ID']);
             $oFormWorkTab -> addElement('select', 'work_type['.$i.']',  '', $actWork['DRBI_WORK_TYPE_ID'], (($isReadonly)?' disabled ':''). '
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
             
@@ -334,11 +387,15 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
              // save work_type_text
              $saveJs = "if(this.value != '') { 
               var rowId = document.forms['frmWorkTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type_text='+this.value+'&saveId='+rowId.value));
+              var id = document.forms['frmWorkTab']['work_type_orig[" .$i. "]'];
+              var text = document.forms['frmWorkTab']['work_type_text_orig[" .$i. "]'];
+              var actId = document.forms['frmWorkTab']['actId'];
+              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type_text='+this.value+'&saveId='+rowId.value+'&id='+id.value+'&text='+text.value+'&actId='+actId.value));
               this.style.borderColor = '#16bb24cc'; 
               this.parentNode.prepend(sp1);
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
             }";
+            $oFormWorkTab->addElement('hidden', 'work_type_text_orig['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT']);
             $oFormWorkTab->addElement('text', 'work_type_text['.$i.']', '', $actWork['DRBI_WORK_TYPE_TEXT'], (($isReadonly)?' disabled ':'').'maxlength="50"'.'
             onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
             
