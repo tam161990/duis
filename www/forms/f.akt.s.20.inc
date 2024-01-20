@@ -235,6 +235,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
   $oForm -> addElement('hidden', 'status', null, $status);
   $oForm -> addElement('label', 'statusTxt',  text::get('STATUS'), $statusLabel);
   $oForm -> addElement('label', 'code',  text::get('CODE'), isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'');
+  $oForm -> addElement('hidden', 'codeval',  '', isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'');
   $oForm -> addElement('hidden', 'actNumber',  '', isset($act['RAKT_NUMURS'])?$act['RAKT_NUMURS']:'');
 
   $oLink=new urlQuery();
@@ -421,6 +422,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 1,
                 1,
                 $oForm->getValue('type'),
+                $oForm->getValue('codeval'),
                 $oForm->getValue('constract_company')
               );
 
@@ -483,7 +485,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
                               false,
                               false,
                               1,
-                              1
+                              1,
+                              $oForm->getValue('type'),
+                              $oForm->getValue('codeval'),
+                              $oForm->getValue('constract_company')
                   );
 
                   if ($r )
