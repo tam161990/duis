@@ -274,6 +274,20 @@ class dtime
 
     }
 
+	function get5YearsForward1YearBackwardArray()
+    {
+      $yearList = array();
+      $current_year = dtime::getSmartCurrentYear();
+
+      for($i = $current_year-1; $i <= $current_year + 5; $i ++)
+      {
+          $yearList[$i] = $i;
+      }
+      return $yearList;
+
+    }
+
+
 // returns current year, from user defined date from config file
     function getSmartCurrentYear()
     {

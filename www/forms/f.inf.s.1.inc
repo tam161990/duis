@@ -108,6 +108,15 @@ if ( $isAdmin || $isSystemUser )
 	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
 	$actSearchByNumberLink=$oLink ->getQuery();
 	unset($oLink);
+
+	// project search by number form
+	$oLink=new urlQuery();
+	$oLink->addPrm('isSearch', '2');
+	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
+	$oLink->addPrm('isProject', 1);
+	$projSearchByNumberLink=$oLink ->getQuery();
+	unset($oLink);
+
     // list of acts
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');
