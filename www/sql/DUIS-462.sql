@@ -7,3 +7,6 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
 ('WARNING_RELOCATED_MATERIAL', 'Darba veida `%s` materiālu saraksts tika pārvietots zem objekta `%s` materiālu sarakstā!');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('OTHER_MATERIAL', 'Pārējie materiāli');

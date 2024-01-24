@@ -233,6 +233,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $workType=array();
       $workTypeDefinetly=array();
       $workTypeStyle=array();
+      $workTypeDefinetly['X']=text::get('OTHER_MATERIAL');		
       $workType['']=text::get('EMPTY_SELECT_OPTION');		
       $res=dbProc::getWorkTypeListByWorkAndMaterials($actId);
       $q = 0;
@@ -247,6 +248,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           } else {
             $style = "blackText";
           }
+          $workTypeStyle['X'] = "redText";
           $workTypeStyle[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] = $style;
           $workType[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];
           $workTypeDefinetly[$row['KLDV_ID'].'^'.(isset($row['DRBI_WORK_TYPE_TEXT']) ? str_replace('"', '\'', $row['DRBI_WORK_TYPE_TEXT']) : 'X')] =$row['KLDV_NOSAUKUMS'].' '.$row['DRBI_WORK_TYPE_TEXT'];

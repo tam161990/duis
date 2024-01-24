@@ -3,6 +3,7 @@
 $userInfo = dbProc::getUserInfo($userId);
 // if came back from act
 $selectedId = reqVar::get('selectedId');
+$isProject = reqVar::get('isProject');
 // if operation
 if ($oForm -> isFormSubmitted())
 {
@@ -17,8 +18,7 @@ else
    $actNumber = '';
 }
 
-$oForm -> addElement('text', 'number', text::get('ACT_NUMBER'), isset($selectedId)?$selectedId:'', 'style="width:200px;"', false, false,false,true);
-
+$oForm -> addElement('text', 'number', text::get(($isProject == 1)? 'PROJRCT_NUMBER': 'ACT_NUMBER'), isset($selectedId)?$selectedId:'', 'style="width:200px;"', false, false,false,true);
 // form buttons
 $oForm -> addElement('submitImg', 'search', text::get('SEARCH'), 'img/btn_meklet.gif', 'width="70" height="20"');
 
