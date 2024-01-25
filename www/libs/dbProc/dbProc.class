@@ -7464,8 +7464,7 @@ class dbProc extends dbLayer
             } else {        
                 $wta = explode('^', $work_type);
             }
-        }
- 
+        } 
         $query = "select *,	REPLACE(FORMAT(`MATR_CENA_KOPA`, 2), ',', '')	AS MATR_CENA_KOPA  ". $group_name.",
                 CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE,
                 ".dbLayer::sqlParseDate('MATR_APPROVE_DATE') .", ".dbLayer::sqlParseDate('MATR_WORK_APROVE_DATE') ."
@@ -7479,7 +7478,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .       
                 (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
                 " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "").
-                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) not in ( ".$alt_work_codes .
+                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', IFNULL(REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\''), 'X')) not in ( ".$alt_work_codes .
                 ")" : "" ) .
                 " union
                 select *, FORMAT(0, 2) AS `MATR_CENA_KOPA` ". $group_name.",
@@ -7495,7 +7494,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .     
                 (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
                 " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "").
-                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) not in ( ".$alt_work_codes .
+                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', IFNULL(REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\''), 'X')) not in ( ".$alt_work_codes .
                 ")" : "" ) .
                 " ORDER BY " . $order;
                 if (($offset !== false) && $limit)
@@ -7537,8 +7536,6 @@ class dbProc extends dbLayer
                 $wta = explode('^', $work_type);
             }
         }
- 
-
         $query = " SELECT COUNT(MATR_ID) as amount FROM (".
                 "select MATR_ID from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `MATR_WORK_TYPE_ID` ': '')."
@@ -7547,7 +7544,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .       
                 (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
                 " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'" : "").
-                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) not in ( ".$alt_work_codes .
+                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', IFNULL(REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\''), 'X')) not in ( ".$alt_work_codes .
                 ")" : "" ) .
                 " union
                 select MATR_ID from " . $table_name . "
@@ -7557,7 +7554,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `MATR_APPROVE_DATE` IS NULL " : "" ) .     
                 (($wta != false) ? " and MATR_WORK_TYPE_ID = ".dbLayer::quote_smart($wta[0]) .
                 " and MATR_WORK_TYPE_TEXT = '".dbLayer::quote_smart($wta[1])."'": "").
-                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) not in ( ".$alt_work_codes .
+                (($work_type == 'X') ? " and CONCAT(MATR_WORK_TYPE_ID, '^', IFNULL(REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\''), 'X')) not in ( ".$alt_work_codes .
                 ")" : "" ) .
                 " ) x " ;
         //echo $query;
@@ -11054,13 +11051,28 @@ class dbProc extends dbLayer
     }
 
     function getAllEmptyInputFields($actId) {
+		
+        $alt_work_codes = '';        
+		$work_codes = array();
+		$res=dbProc::getWorkTypeListByWorkAndMaterials($actId);
+		if (is_array($res))
+		{
+			foreach ($res as $row) {
+				$work_codes[] = $row['KLDV_ID'];
+			}
+			$alt_work_codes = implode(',', $work_codes);                    
+			unset($res);
+		}       
         $query = "SELECT MATR_KODS, KLDV_NOSAUKUMS, MATR_WORK_TYPE_TEXT, 
                 CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE
                 FROM `materiali` 
                 inner join kl_darba_veidi on MATR_WORK_TYPE_ID = KLDV_ID
                 WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
-                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')
+                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')	
+				AND KLDV_ID IN (".$alt_work_codes.")
                 ORDER BY KLDV_ID, MATR_WORK_TYPE_TEXT";
+				//			
+	    //echo $query;    
         $oSQL = new dbLayer;
         return $oSQL->makeQuery($query);
     }    
