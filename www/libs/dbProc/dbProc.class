@@ -5080,6 +5080,41 @@ class dbProc extends dbLayer
             dbProc::deleteMMSWork($code);
          }
      }
+
+     // dzēst visus akta no importēta XLS faila 
+     function deleteCalcXLS($data)
+     {       
+        $vv_number = $data[0];
+        $ed_area = (isset($data[1]) ? $data[1] : false);
+        echo   $vv_number.' '.$ed_area.'<br>';
+
+        if ($ed_area !== false) {
+            // Dzēst no DUIS daļu, kalkulāciju, kas piesaistītas konkrētam VV numuram un iecirknim
+            $query = 'DELETE FROM `kl_kalkulacija` WHERE `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .
+            '" AND `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($ed_area).'"';
+
+            echo $query.'<br>';
+            $oDB = new dbLayer;
+            $r = $oDB -> makeQuery($query);
+            return $r !== false;
+        } else {
+            // Dzēst Kalkulācijas un VV no DUIS
+            $query = 'DELETE FROM `kl_kalkulacija` WHERE `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .'"';
+
+            echo $query.'<br>';
+            $oDB = new dbLayer;
+            $r = $oDB -> makeQuery($query);
+
+            if($r !== false) {
+                $query = 'DELETE FROM `kl_contract` WHERE `KCNT_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .'"';
+
+                echo $query.'<br>';
+                $oDB = new dbLayer;
+                $res = $oDB -> makeQuery($query);
+            }
+            return $res !== false;
+        }
+     }
     
 
     function CheckQuiqStepUnique($code)
@@ -10410,8 +10445,11 @@ class dbProc extends dbLayer
         $result = $oDB -> makeQuery($query);
         $type = isset($result[0]['KRFK_VERTIBA']) ? $result[0]['KRFK_VERTIBA'] : false;   
            
-    
-        $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_KODS` = "'.dbLayer::quote_smart($ed_kods).'"';
+        if( is_numeric($ed_kods)) {
+            $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_KODS` = "'.dbLayer::quote_smart($ed_kods).'"';
+        } else {
+            $query = 'SELECT `KEDI_ID` FROM `KL_ED_IECIRKNI` WHERE `KEDI_IR_AKTIVS` = 1 AND `KEDI_NOSAUKUMS` = "'.dbLayer::quote_smart($ed_kods).'"';
+        }
         $result = $oDB -> makeQuery($query);
         $ed_id = isset($result[0]['KEDI_ID']) ? $result[0]['KEDI_ID'] : false;
     
@@ -10479,19 +10517,29 @@ class dbProc extends dbLayer
                 $construct_company, // Būvkomersants
                 $key_object // Atslēgas objekts
               );
-                  
-            // save status changed time
-             $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
-             VALUES 	('.$actId.', '.MAIN_ADMIN_ID.', "'.STAT_AUTO.'" )';
+            
+            // get actid
+            $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($key).'"  
+            AND `RAKT_PROJECT` = 1 AND `RAKT_STATUS` NOT  IN ("'.STAT_DELETE.'")';
+            $result = $oDB -> makeQuery($query);        
+            $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+
+            // ja akts eksistē, pārbaudam vai nevajag atjaunot tammes, un ja vajag, tad atjaunojam            
+            if($actId !== false) {
+                // save status changed time
+                $query = 'INSERT INTO `AKTA_STATUSA_MAINA` (AAUD_RAKT_ID, AAUD_RLTT_ID, AAUD_STATUS) 	
+                VALUES 	('.$actId.', '.MAIN_ADMIN_ID.', "'.STAT_AUTO.'" )';
     
-             $r = $oDB -> makeQuery($query);
-             if ($r===false)    
-             {        
+                $r = $oDB -> makeQuery($query);
+                if ($r===false)    
+                {        
                 files::wh_log('ERROR INSERT INTO `AKTA_STATUSA_MAINA`: AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                     'AAST_ID:' .$act['AAST_ID'].PHP_EOL.$query
                 );
     
+                }
             }
+            
         }
 
         function getSTworkerCode() {

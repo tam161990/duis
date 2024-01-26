@@ -17,7 +17,8 @@ var importCatalogs = ['MATERIAL',
                      'MATERIAL_COMPLECTATION',
                      'COMPLECTATION',
                      'ACT_DELETE',
-                     'CALC_NORMAS'
+                     'CALC_NORMAS',
+                     'VV_DELETE'
                      ];
 
 function setImportColumnVisibility()
@@ -84,6 +85,7 @@ add2onload('setImportColumnVisibility()');
        <div id="MATERIAL_COMPLECTATION" style="display:none"><?=text::get('REQUIREMENTS_MATERIAL_COMPLECTATION');?></div>
        <div id="ACT_DELETE" style="display:none"><?=text::get('REQUIREMENTS_ACT_DELETE');?></div>
        <div id="CALC_NORMAS" style="display:none"><?=text::get('REQUIREMENTS_CALC_NORMAS');?></div>
+       <div id="VV_DELETE" style="display:none"><?=text::get('REQUIREMENTS_VV_DELETE');?></div>
        </td>
     </tr>
 </table>
