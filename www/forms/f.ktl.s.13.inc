@@ -362,6 +362,38 @@ if (userAuthorization::isAdmin() || $isEdUser )
                               }                            
                           }
                           break;
+                        // akta dzēšana
+                        case 'VV_DELETE':
+                        $j = 0;
+                        foreach ($objWorksheet->getRowIterator() as $row)
+                        {
+                            $cellIterator = $row->getCellIterator();
+                            $cellIterator->setIterateOnlyExistingCells(true);
+                            
+                            $i = 0;  
+                            $data = array();  
+                            foreach ($cellIterator as $cell)
+                            {
+                              if($i > 1 ) {
+                                $r2 = false;
+                                break 2;
+                              }                              
+                              if(!is_null($cell))
+                              {                                      
+                                  $j++;
+                                  if($j == 1)
+                                      break 1;
+                                  $data[$i] =  $cell->getValue();
+                                  $i++;                                      
+                                }
+                            }   
+                            // dzēst calculācijas
+                            if($j > 1)
+                            {
+                              $r2 = dbProc::deleteCalcXLS($data);
+                            }                                                        
+                        }
+                        break;
                         case 'CALC_NORMAS':
                           $j = 0;
                           $r = dbProc::createCalcNormTempTable();
@@ -413,14 +445,15 @@ if (userAuthorization::isAdmin() || $isEdUser )
             $oForm -> getValue('catalog') == 'MATERIAL_CATEGORY' ||
             $oForm -> getValue('catalog') == 'MATERIAL_COMPLECTATION' ||
             $oForm -> getValue('catalog') == 'COMPLECTATION' ||
-            $oForm -> getValue('catalog') == 'ACT_DELETE' 
+            $oForm -> getValue('catalog') == 'ACT_DELETE' || 
+            $oForm -> getValue('catalog') == 'VV_DELETE'
           )
           {
             $oLink=new urlQuery();
             $oLink->addPrm('isNew', '1');
             $oLink->addPrm(FORM_ID, 'f.ktl.s.13');
             $oLink->addPrm('successMessage', text::get('IMPORT_SUCCESS'));
-            RequestHandler::makeRedirect($oLink->getQuery());
+           // RequestHandler::makeRedirect($oLink->getQuery());
           }
           else
           {
