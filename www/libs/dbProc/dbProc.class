@@ -5086,14 +5086,14 @@ class dbProc extends dbLayer
      {       
         $vv_number = $data[0];
         $ed_area = (isset($data[1]) ? $data[1] : false);
-        echo   $vv_number.' '.$ed_area.'<br>';
+        //echo   $vv_number.' '.$ed_area.'<br>';
 
         if ($ed_area !== false) {
             // Dzēst no DUIS daļu, kalkulāciju, kas piesaistītas konkrētam VV numuram un iecirknim
             $query = 'DELETE FROM `kl_kalkulacija` WHERE `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .
             '" AND `KKAL_KEDI_KODS` = "'.dbLayer::quote_smart($ed_area).'"';
 
-            echo $query.'<br>';
+            //echo $query.'<br>';
             $oDB = new dbLayer;
             $r = $oDB -> makeQuery($query);
             return $r !== false;
@@ -5101,14 +5101,14 @@ class dbProc extends dbLayer
             // Dzēst Kalkulācijas un VV no DUIS
             $query = 'DELETE FROM `kl_kalkulacija` WHERE `KKAL_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .'"';
 
-            echo $query.'<br>';
+            //echo $query.'<br>';
             $oDB = new dbLayer;
             $r = $oDB -> makeQuery($query);
 
             if($r !== false) {
                 $query = 'DELETE FROM `kl_contract` WHERE `KCNT_VV_NUMBER` = "'.dbLayer::quote_smart($vv_number) .'"';
 
-                echo $query.'<br>';
+                //echo $query.'<br>';
                 $oDB = new dbLayer;
                 $res = $oDB -> makeQuery($query);
             }
