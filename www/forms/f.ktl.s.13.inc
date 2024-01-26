@@ -453,7 +453,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
             $oLink->addPrm('isNew', '1');
             $oLink->addPrm(FORM_ID, 'f.ktl.s.13');
             $oLink->addPrm('successMessage', text::get('IMPORT_SUCCESS'));
-           // RequestHandler::makeRedirect($oLink->getQuery());
+            RequestHandler::makeRedirect($oLink->getQuery());
           }
           else
           {
