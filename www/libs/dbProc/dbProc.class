@@ -6758,6 +6758,8 @@ class dbProc extends dbLayer
     {
         $table_name = ($tame == 1) ? '`TAME_DARBI`' : '`DARBI`';
         $oDB = new dbLayer;
+        /*
+        26.01.2024 Materialu atjaunosana atcelta lai nemulsinat lietotajus.
         if($orig_work_type_id !== false) {
             $origin_text = ($orig_work_type_text == '') ? 'X' : $orig_work_type_text;
             $matrtable_name = ($tame == 1) ? '`TAME_MATERIALI`' : '`MATERIALI`';
@@ -6769,7 +6771,7 @@ class dbProc extends dbLayer
                     AND `MATR_WORK_TYPE_TEXT` = '".dbLayer::quote_smart(str_replace('\'', '"', $origin_text))."'";
             $oDB -> makeQuery($query);
         }
-        
+        */
         $query = "UPDATE ".$table_name." SET  `DRBI_WORK_TYPE_ID` = '".dbLayer::quote_smart($work_type)."'
                 WHERE `DRBI_ID` = ".dbLayer::quote_smart($ID);        
 		$result = $oDB -> makeQuery($query);
@@ -11062,16 +11064,19 @@ class dbProc extends dbLayer
 			}
 			$alt_work_codes = implode(',', $work_codes);                    
 			unset($res);
-		}       
+		}
+           
+       
         $query = "SELECT MATR_KODS, KLDV_NOSAUKUMS, MATR_WORK_TYPE_TEXT, 
                 CONCAT(MATR_WORK_TYPE_ID, '^', REPLACE(MATR_WORK_TYPE_TEXT, '\"', '\'')) as MATR_WORK_TYPE
                 FROM `materiali` 
                 inner join kl_darba_veidi on MATR_WORK_TYPE_ID = KLDV_ID
                 WHERE `MATR_RAKT_ID` = ".dbLayer::quote_smart($actId)."
-                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL')	
-				AND KLDV_ID IN (".$alt_work_codes.")
-                ORDER BY KLDV_ID, MATR_WORK_TYPE_TEXT";
-				//			
+                AND (MATR_DAUDZUMS IS NULL OR MATR_DAUDZUMS ='NULL') ".	
+				(( $alt_work_codes != '' ) ? " AND KLDV_ID IN (".$alt_work_codes.")" : "" ).
+                "ORDER BY KLDV_ID, MATR_WORK_TYPE_TEXT";
+				//		
+        				
 	    //echo $query;    
         $oSQL = new dbLayer;
         return $oSQL->makeQuery($query);
