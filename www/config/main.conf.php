@@ -102,7 +102,8 @@ define ('DEBUG_MODE',true);
 define ('CURRENT_YEAR','current_year');
 
 // SOA service for KvikStep act status
-define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+// define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'https://test.lews.energo.lv/jira/v1/api/kviksteps/rem-status-api');
 
 // WS service for material request
 // documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/CreateRequisition
