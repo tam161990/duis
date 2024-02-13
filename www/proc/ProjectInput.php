@@ -79,6 +79,7 @@
 					(isset($data->customfield_11505) && !empty($data->customfield_11505)) ||
 					(isset($data->customfield_28740) && !empty($data->customfield_28740)) ||
 					(isset($data->issue_proj) && !empty($data->issue_proj))
+			)
 			{
 				if( isset($data->issue_invest_year) && !empty($data->issue_invest_year)  && 
 					isset($data->issue_designer) && !empty($data->issue_designer) &&
