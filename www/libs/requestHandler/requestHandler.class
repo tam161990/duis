@@ -780,8 +780,45 @@ class RequestHandler
 					
 				}
 			}
-		}		
+		}				
+	}
+
+	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+	function getPPAReport ($code, $pageNumber, $recordsPerPage) 
+	{			
+		// The data to send to the API		
+		files::wh_log('getLimitkarteReport report:'.$reportName.PHP_EOL.
+				'code: '.$code.PHP_EOL.
+				'pageNumber:' .$pageNumber.PHP_EOL.
+				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
+		$postData = [
+		"projectNr" => $code
+		];
 		
+		// Setup cURL		
+		$url = API_PPA;
+
+		//var_dump($postData);
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		//echo $response;
+		if (curl_errno($ch)) {
+			files::wh_log('getLimitkarteReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, TRUE);
+		}	
+		curl_close($ch);
+		return 	$responseData;
 	}
 }
 

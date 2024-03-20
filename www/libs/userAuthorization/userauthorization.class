@@ -68,11 +68,13 @@ class userAuthorization
 							session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
 							session::set('isContract', $rows[0]['RLTT_IR_LIGUMS'] );
 							session::set('isLimitcard', $rows[0]['RLTT_IR_LIMITCARD'] );
+							session::set('isPpaReport', $rows[0]['RLTT_IR_PPA'] );
 					}
 					else
 					{
 							session::set('isContract', 0);
 							session::set('isLimitcard', 0);
+							session::set('isPpaReport', 0);
 					}
 					return true;
 				}
@@ -114,6 +116,8 @@ class userAuthorization
                     session::set('isTrase',$rows[0]['RLTT_IR_TRASE']);
 					session::set('isContract',$rows[0]['RLTT_IR_LIGUMS']);
 					session::set('isLimitcard',$rows[0]['RLTT_IR_LIMITCARD']);
+					session::set('isPpaReport',$rows[0]['RLTT_IR_PPA']);
+					
                      if($rows[0]['RLTT_KWOI_KODS'] != "")
                         session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
 					return true;
@@ -194,6 +198,14 @@ class userAuthorization
 	function isLimitcard()
 	{
 		return session::get('isLimitcard');
+	}
+
+	// -----------------------------------------------------------------------------
+	// piekļuve sadaļai PPA
+	// -----------------------------------------------------------------------------
+	function isPpaReport()
+	{
+		return session::get('isPpaReport');
 	}
 
 	// -----------------------------------------------------------------------------
