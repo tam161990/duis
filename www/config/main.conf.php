@@ -102,9 +102,14 @@ define ('DEBUG_MODE',true);
 define ('CURRENT_YEAR','current_year');
 
 // SOA service for KvikStep act status
-// define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
-define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'https://test.lews.energo.lv/jira/v1/api/kviksteps/rem-status-api');
-
+define ('SOA_SERVISE_STATUS_TO_KVIKSTEP', 'http://dev.soa.energo.lv:8011/Jira/KVIKSTEP/REMStatusAPI');
+// API for Limitkarte reports
+define ('API_PPA', 'https://test.lews.energo.lv/jira/v1/api/kviksteps/ppa-report');
+// API for nepabeigtu projektu reports
+// API for Limitkarte reports
+define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
+// API for nepabeigtu projektu reports
+define ('API_UNCOMPLETED_PROJECT_REPORT', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-uncompleted-pr-report');
 // WS service for material request
 // documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/CreateRequisition
 define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/create-requisition');
@@ -112,11 +117,6 @@ define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/cre
 // WS service for project Number request
 // documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/GetRequisitionStatus
 define ('PRNUMBER_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-requisition-status');
-
-// API for Limitkarte rekords
-define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
-// API for nepabeigtu projektu reports
-define ('API_UNCOMPLETED_PROJECT_REPORT', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-uncompleted-pr-report');
 # =============================================================================
 # FMK configuration
 # =============================================================================

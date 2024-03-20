@@ -65,7 +65,11 @@
               </tr>
     </table>
       </td>
-  <td align="right"><?=$listingHtml;?></td>
+  <? if(isset($report) && $report == 'PPA') { ?>
+    <td>&nbsp;</td>    
+  <? } else { ?>
+    <td align="right"><?=$listingHtml;?></td>
+  <? } ?>
 </tr>
 </table>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
@@ -78,10 +82,13 @@
           {
           ?>
               <td class="block"><?=$col['nosaukums'];?>
+              <? if(isset($report) && $report == 'PPA') { ?>
+              <? } else { ?>
               <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'ASC')">
           <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
               <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'DESC')">
           <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+              <? } ?>
               </td>
           <?
           }
@@ -153,7 +160,7 @@ if (is_array($res))
   }
 }
 ?>
-<? if(isset($searchTitle) ) { ?>
+<? if(isset($searchTitle) && $report != 'PPA') { ?>
   <tr><td colspan="<?= $colCount; ?>" align="right"><b><?= text::get('TOTAL'); ?></b></td>
       <td align="right"><b><?= $subtotal; ?></b></td>
   </tr>
@@ -163,7 +170,12 @@ if (is_array($res))
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
 <tr>
-  <td align="right"><?=$listingHtml;?></td>
+  <? if(isset($report) && $report == 'PPA') { ?>
+    <td>&nbsp;</td>
+    
+  <? } else { ?>
+    <td align="right"><?=$listingHtml;?></td>
+  <? } ?>
 </tr>
 </table>
 
