@@ -789,7 +789,7 @@ class RequestHandler
 	function getPPAReport ($code, $pageNumber, $recordsPerPage) 
 	{			
 		// The data to send to the API		
-		files::wh_log('getLimitkarteReport report:'.$reportName.PHP_EOL.
+		files::wh_log('getPPAReport report:'.PHP_EOL.
 				'code: '.$code.PHP_EOL.
 				'pageNumber:' .$pageNumber.PHP_EOL.
 				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
@@ -814,7 +814,7 @@ class RequestHandler
 		$response = curl_exec($ch);	
 		//echo $response;
 		if (curl_errno($ch)) {
-			files::wh_log('getLimitkarteReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+			files::wh_log('getPPAReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
 		} else { 
 			// Decode the response
 			$responseData = json_decode($response, TRUE);

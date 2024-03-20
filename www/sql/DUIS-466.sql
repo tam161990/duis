@@ -5,7 +5,7 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ('PPA', 'Provizoriskai plānotais atslēgums');
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
-('PROJRCT_NUMBER', 'PPA kods');
+('PROJRCT_CODE', 'PPA kods');
 
 INSERT INTO `kl_ref_kolonnas` (`KLKL_COLUMN`, `KLKL_TITLE`, `KLKL_CATALOG`, `KLKL_IS_DEFAULT`)
 VALUES 
