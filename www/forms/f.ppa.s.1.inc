@@ -29,6 +29,7 @@ if($isPpaUser || $isAdmin)
     // get search column list
     $columns=dbProc::getKlklName('PPA');
     $report = 'PPA';
+    $mergedColumns = array(0,1,2,3);
     
     $searchTitle = text::get('ROJRCT_CODE');
     $searchText = ((reqVar::get('search') && reqVar::get('search') != '') || reqVar::get('search') == 0) ? reqVar::get('search') : false;
@@ -46,15 +47,17 @@ if($isPpaUser || $isAdmin)
     $oLink->addPrm('search', reqVar::get('search'));
     $searchLink = $oLink -> getQuery();
     unset($oLink);
-
+ 	
     if($searchText !== false) {
-        $reportData = RequestHandler::getPPAReport($searchText, 1, 30);            
-        $rows = $reportData['reportData'];
-
+        $reportData = RequestHandler::getPPAReport($searchText, 1, 30);
+      //  echo '<pre>';		
+	  //  print_r($reportData);		
+	  //  echo '</pre>';		
+        $rows = $reportData['ppaReport'];
+        $i = 0;
         if (is_array($rows))
         {
-            $res = array();
-            $i = 0;
+            $res = array();           
             $total2 = 0;
             foreach ($rows as $row) {
                 $res[$i] = $row;
@@ -63,6 +66,7 @@ if($isPpaUser || $isAdmin)
                 $i ++;					
             }
         }
+        $rowCount = $i;
     } 
     
     include('f.ktl.s.x.1.tpl');

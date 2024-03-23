@@ -74,7 +74,10 @@
 </table>
 <table cellpadding="5" cellspacing="1" border="0" width="100%">
 <tr class="table_head_2">
-  <td><?=text::get('CURRENT_NUMBER');?></td>
+  <? if(isset($report) && $report == 'PPA') { ?>    
+  <? } else { ?>
+    <td><?=text::get('CURRENT_NUMBER');?></td>
+  <? } ?>  
        <?
      if (is_array($columns))
      {
@@ -84,11 +87,11 @@
               <td class="block"><?=$col['nosaukums'];?>
               <? if(isset($report) && $report == 'PPA') { ?>
               <? } else { ?>
-              <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'ASC')">
-          <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
-              <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'DESC')">
-          <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
-              <? } ?>
+                  <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'ASC')">
+              <img src="img/sort_asc.gif" alt="A-Z" width="11" height="6" border="0"></a>
+                  <a href="#" onclick="doSort('<?= $col['kolonna'];?>', 'DESC')">
+              <img src="img/sort_desc.gif" alt="Z-A" width="11" height="6" border="0"></a>
+                  <? } ?>
               </td>
           <?
           }
@@ -116,7 +119,10 @@ if (is_array($res))
 	<? } else { ?>
 	    <tr id="recordRow<?=$i;?>" class="<?=$style;?>"  onClick="makeActiveRow(this, '<?=$row['URL'];?>');">
 	<? } ?>
+    <? if(isset($report) && $report == 'PPA') { ?>    
+    <? } else { ?>
       <td><?=$number;?></td>
+    <? } ?>        
             <?
             if (is_array($columns))
             {
@@ -144,9 +150,17 @@ if (is_array($res))
                 }
                 else
                 {
-                  ?>
-                    <td><?=$row[$col['kolonna']];?></td>
-                  <?
+                  if (is_array($mergedColumns) && in_array($colCount, $mergedColumns) ) {
+                      if ( $i == 0) { ?>
+                        <td Rowspan="<?=$rowCount;?>"><?=$row[$col['kolonna']];?></td>
+                      <? } else {  ?>
+                        
+                      <? } ?>
+                    
+                    <? } else { ?>
+                      <td><?=$row[$col['kolonna']];?></td>
+                    <? }
+                  
                 }
                 $colCount ++;
               }
