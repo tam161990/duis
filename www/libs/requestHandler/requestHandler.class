@@ -794,14 +794,11 @@ class RequestHandler
 				'pageNumber:' .$pageNumber.PHP_EOL.
 				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
 		$postData = [
-		"projectNr" => $code
+		"projCode" => $code,
 		];
-		
-		// Setup cURL		
-		$url = API_PPA;
-
 		//var_dump($postData);
-		$ch = curl_init($url);
+		// Setup cURL			
+		$ch = curl_init(API_PPA);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
@@ -820,6 +817,7 @@ class RequestHandler
 			$responseData = json_decode($response, TRUE);
 		}	
 		curl_close($ch);
+		//print_r( $responseData);
 		return 	$responseData;
 	}
 }
