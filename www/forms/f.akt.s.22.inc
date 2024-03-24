@@ -375,10 +375,12 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       
       $oFormMaterialTab->addElement('static','jsRefresh2','','<script>document.all["work_types"].className="'.(($workTypeStyle[$matrWorkType] == 'redText')? 'attention' : '').'";</script>');
     
-   
+      
       foreach ($aGroupMaterials as $j => $actMaterial)
-      {          
+      {  
+        //echo "<pre>";	  
         //print_r($actMaterial);
+		//echo "</pre>";	  
         $export_type_string = false;
         $crossection = false;
         $complectation = false;
@@ -407,6 +409,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         {
           $export_type_string = true;
         }
+		//echo $actMaterial['MATR_KODS'];
         $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
         $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
         $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);
@@ -414,6 +417,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         $oFormMaterialTab->addElement('label', 'unit['.$i.']', '', $actMaterial['MATR_MERVIENIBA']);
         $oFormMaterialTab->addElement('hidden', 'import_no['.$i.']', '', $actMaterial['MATR_IMPORT_NO']);
         $oFormMaterialTab->addElement('label', 'nomenklatura['.$i.']', '', $actMaterial['MATR_NOM_KODS']);
+		$oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
         $aMaterials[$j]['color'] ='#e4edd8';
         if($status == STAT_CLOSE) {
           switch ($actMaterial['MATR_NOM_STATUS']) {
@@ -430,7 +434,6 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
             $aMaterials[$j]['color'] ='#e4edd8';
           }
         }
-          
         if(!$crossection)
         {
           $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', '');
@@ -445,13 +448,93 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         $saveLink->addPrm(FORM_ID, 'f.akt.s.22');
         $saveLink->addPrm(DONT_USE_GLB_TPL, '1');
         $saveLink->addPrm('xmlHttp', '1');
+       
+	  if($complectation)
+	  {
+		// save crossection
+		$saveJs = "if(this.value != '') { 
+		  var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+		  eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&complectation='+this.value+'&saveId='+rowId.value));
+		  this.style.borderColor = '#16bb24cc'; 
+		  this.parentNode.prepend(sp1);
+		  setTimeout(savedField, 3000, this, '#8c8c8c'); 
+		}";
+		  $oFormMaterialTab->addElement('select', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION'], 
+		  (($isReadonly)?' disabled ':'').'
+		  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $complectationArray);
+		  $oFormMaterialTab -> addRule('complectation['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	  }
+	  if($crossection)
+	  {
+		// save crossection
+		$saveJs = "if(this.value != '') { 
+		  var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+		  eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&crossection='+this.value+'&saveId='+rowId.value));
+		  this.style.borderColor = '#16bb24cc'; 
+		  this.parentNode.prepend(sp1);
+		  setTimeout(savedField, 3000, this, '#8c8c8c'); 
+		}";
+		  $oFormMaterialTab->addElement('text', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION'], 
+		  (($isReadonly)?' disabled ':'').'maxlength="20"'.'
+		  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
+	  }         
+		// save amount
+		$saveJs = "var amount = isDoubleAuto(this.value,3); 
+		if(amount != '') { 
+		  if(this.parentNode.firstChild.nodeName == 'SPAN') {
+			this.parentNode.removeChild(sp2);
+			}
+		  this.value = amount;
+		  var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+		  var actId = " .$actId. ";
+		  var wtype = document.all['work_types'].value;
+		  eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&amount='+this.value+'&saveId='+rowId.value+'&actId='+actId+'&wtype='+wtype));
+		  this.style.background = '#ffffff'; this.style.borderColor = '#16bb24cc'; 
+		  this.parentNode.prepend(sp1);
+		  setTimeout(savedField, 3000, this, '#8c8c8c'); 
+		} else { 
+		  this.parentNode.prepend(sp2);
+		}";
+	  $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"'.
+	  ((isset($actMaterial['MATR_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
+	  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
+	  
+	  //$oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	  $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+	  // check Amaunt field
+	  $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
+	  // ja Amount ir definēts un > 100000
+	  $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
+	  // ja Amount ir definēts un < 0
+	  $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
+	  $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
+  
+	  // save notes
+	  $saveJs = "
+		var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+		var val = ((this.value != '') ? this.value : 'D');
+		eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+val+'&saveId='+rowId.value));
+		this.style.borderColor = '#16bb24cc'; 
+		this.parentNode.prepend(sp1);
+		setTimeout(savedField, 3000, this, '#8c8c8c'); 
+	  ";
+	  $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
+	  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
 
-        if($status == STAT_CLOSE && ($isAdmin ||  $projectApprover)){
-          $oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
-          $oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
-          $oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $workType[$actMaterial['MATR_WORK_TYPE']]);  
-          $oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
-          if($export_type_string) {
+	  $saveJs = "if(this.value != '') { 
+		var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+		eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value));
+		this.style.borderColor = '#16bb24cc'; 
+		this.parentNode.prepend(sp1);
+		setTimeout(savedField, 3000, this, '#8c8c8c'); 
+	  }";
+	  $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':''). '
+	  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
+	  //$oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+	  unset($saveLink);
+	  
+    if($status == STAT_CLOSE && ($isAdmin || $projectApprover)) {
+		  if($export_type_string) {
             $oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
           } else {
             // save export_type
@@ -463,118 +546,23 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               setTimeout(savedField, 3000, this, '#8c8c8c'); 
             }";
             $oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 
-              'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);
-            
+              'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);            
           }
-          if($crossection)
-          {
-              $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION']);
-          }
-          if($complectation)
-          {
-            $oFormMaterialTab->addElement('label', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION']);
-          }
-      } else {
-          if($complectation)
-          {
-            // save crossection
-            $saveJs = "if(this.value != '') { 
-              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&complectation='+this.value+'&saveId='+rowId.value));
-              this.style.borderColor = '#16bb24cc'; 
-              this.parentNode.prepend(sp1);
-              setTimeout(savedField, 3000, this, '#8c8c8c'); 
-            }";
-              $oFormMaterialTab->addElement('select', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION'], 
-              (($isReadonly)?' disabled ':'').'
-              onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $complectationArray);
-              $oFormMaterialTab -> addRule('complectation['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-          }
-          if($crossection)
-          {
-            // save crossection
-            $saveJs = "if(this.value != '') { 
-              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&crossection='+this.value+'&saveId='+rowId.value));
-              this.style.borderColor = '#16bb24cc'; 
-              this.parentNode.prepend(sp1);
-              setTimeout(savedField, 3000, this, '#8c8c8c'); 
-            }";
-              $oFormMaterialTab->addElement('text', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION'], 
-              (($isReadonly)?' disabled ':'').'maxlength="20"'.'
-              onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
-          }         
-        // save amount
-        $saveJs = "var amount = isDoubleAuto(this.value,3); 
-            if(amount != '') { 
-              if(this.parentNode.firstChild.nodeName == 'SPAN') {
-                this.parentNode.removeChild(sp2);
-                }
-              this.value = amount;
-              var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-              var actId = " .$actId. ";
-              var wtype = document.all['work_types'].value;
-              eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&amount='+this.value+'&saveId='+rowId.value+'&actId='+actId+'&wtype='+wtype));
-              this.style.background = '#ffffff'; this.style.borderColor = '#16bb24cc'; 
-              this.parentNode.prepend(sp1);
-              setTimeout(savedField, 3000, this, '#8c8c8c'); 
-            } else { 
-              this.parentNode.prepend(sp2);
-            }";
-          $oFormMaterialTab->addElement('text', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS'], (($isReadonly)?' disabled ':'').'maxlength="9"'.
-          ((isset($actMaterial['MATR_DAUDZUMS'])) ? '' : ' style="background:#fda8a5;border: 1px solid #f80f07;" ') .'
-          onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"' );
-          
-          //$oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-          $oFormMaterialTab -> addRule('amount_mat['.$i.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
-          // check Amaunt field
-          $v1=&$oFormMaterialTab->createValidation('amaunt1Validation_'.$i, array('amount_mat['.$i.']'), 'ifonefilled');
-          // ja Amount ir definēts un > 100000
-          $r1=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'maxAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','<');
-          // ja Amount ir definēts un < 0
-          $r2=&$oFormMaterialTab->createRule(array('amount_mat['.$i.']', 'minAmaunt'), text::get('ERROR_AMOUNT_VALUE_100000'), 'comparedouble','>');
-          $oFormMaterialTab->addRule(array($r1, $r2), 'groupRuleAmaunt1_'.$i, 'group', $v1);
-      
-          // save notes
-          $saveJs = "
-            var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-            var val = ((this.value != '') ? this.value : 'D');
-            eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&notes='+val+'&saveId='+rowId.value));
-            this.style.borderColor = '#16bb24cc'; 
-            this.parentNode.prepend(sp1);
-            setTimeout(savedField, 3000, this, '#8c8c8c'); 
-          ";
-          $oFormMaterialTab->addElement('text', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], (($isReadonly)?' disabled ':'').'maxlength="250"'.'
-          onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"');
-
-          $saveJs = "if(this.value != '') { 
-            var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
-            eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&work_type='+this.value+'&saveId='+rowId.value));
-            this.style.borderColor = '#16bb24cc'; 
-            this.parentNode.prepend(sp1);
-            setTimeout(savedField, 3000, this, '#8c8c8c'); 
-          }";
-          $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':''). '
-          onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
-          //$oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-          unset($saveLink);
-       
-          if ($oFormMaterialTab -> isFormSubmitted()){
-            $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
-            $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);
-            $oFormMaterialTab->setNewValue('unit['.$i.']',$actMaterial['MATR_MERVIENIBA']);
-            $oFormMaterialTab->setNewValue('import_no['.$i.']',$actMaterial['MATR_IMPORT_NO']);        
-            $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);  
-            $oFormMaterialTab->setNewValue('crossection['.$i.']',$actMaterial['MATR_CROSSECTION']);
-            $oFormMaterialTab->setNewValue('complectation['.$i.']',$actMaterial['MATR_COMPLECTATION']);        
-            $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
-            $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
-            $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  
-            $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);			  
-          }
-      }
-
-      
+	  }
+	  
+	  if ($oFormMaterialTab -> isFormSubmitted()){
+      $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
+      $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);
+      $oFormMaterialTab->setNewValue('unit['.$i.']',$actMaterial['MATR_MERVIENIBA']);
+      $oFormMaterialTab->setNewValue('import_no['.$i.']',$actMaterial['MATR_IMPORT_NO']);        
+      $oFormMaterialTab->setNewValue('notes['.$i.']',$actMaterial['MATR_PIEZIMES']);  
+      $oFormMaterialTab->setNewValue('crossection['.$i.']',$actMaterial['MATR_CROSSECTION']);
+      $oFormMaterialTab->setNewValue('complectation['.$i.']',$actMaterial['MATR_COMPLECTATION']);        
+      $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
+      $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
+      $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  
+      $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);			  
+	  }
 
         // ajax handler link for delete
         $delLink = new urlQuery();
@@ -626,5 +614,38 @@ else
 {
     RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
 }
+
+/*
+if($status == STAT_CLOSE && ($isAdmin || $projectApprover)) {
+//echo $actMaterial['MATR_DAUDZUMS'];
+$oFormMaterialTab->addElement('label', 'notes['.$i.']', '', $actMaterial['MATR_PIEZIMES'], ' maxlength="250"');
+$oFormMaterialTab->addElement('label', 'amount_mat['.$i.']', '', $actMaterial['MATR_DAUDZUMS']); 
+$oFormMaterialTab->addElement('label', 'work_type['.$i.']', '', $workType[$actMaterial['MATR_WORK_TYPE']]);  
+$oFormMaterialTab->addElement('hidden', 'work_type_id['.$i.']', '', $actMaterial['MATR_WORK_TYPE']);
+
+if($export_type_string) {
+$oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
+} else {
+// save export_type
+$saveJs = "if(this.value != '') { 
+  var rowId = document.forms['frmMaterialTab']['id[" .$i. "]'];
+  eval(xmlHttpGetValue('" .$saveLink -> getQuery() ."&export_type='+this.value+'&saveId='+rowId.value));
+  this.style.borderColor = '#16bb24cc'; 
+  this.parentNode.prepend(sp1);
+  setTimeout(savedField, 3000, this, '#8c8c8c'); 
+}";
+$oFormMaterialTab -> addElement('select', 'export_type['.$i.']',  '', $actMaterial['MATR_PROJECT_EXPORT'], 
+  'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);            
+}
+if($crossection)
+{
+  $oFormMaterialTab->addElement('label', 'crossection['.$i.']', '', $actMaterial['MATR_CROSSECTION']);
+}
+if($complectation)
+{
+$oFormMaterialTab->addElement('label', 'complectation['.$i.']', '', $actMaterial['MATR_COMPLECTATION']);
+}
+}
+*/
 
 ?>
