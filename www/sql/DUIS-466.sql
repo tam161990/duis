@@ -23,4 +23,7 @@ VALUES
 ('ConstructionMerchant', 'Būvkomersants', 'PPA', 0),
 ('ExpectedExecutionDate', 'Paradzemais izpildes datums', 'PPA', 0);
 
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES 
+('PPA_MODULE', 'PPA');
+
 
