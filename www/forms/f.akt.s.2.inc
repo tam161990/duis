@@ -78,8 +78,8 @@ if ( $isAdmin || $isSystemUser)
       {
         $isReadonly   = false;
       }
-
-      //Popup saites sagatave
+      
+      //Popup saites sagatave      
       $oPopLink=new urlQuery;
       $oPopLink->addPrm(FORM_ID, 'f.akt.s.8');
       $oPopLink->addPrm('actId',$actId);
@@ -88,10 +88,10 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('isTrase', $trase);
       $oPopLink->addPrm('tame', $tameWork ?'1':'0');
-     
+      /*
       $tameGroup['TITLE'] = text::get('TAB_ESTIMATE');   ;
       $tameGroup['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
-
+      */
       // get calgulation group
       $calcGroups=array();
       $j = 0;
@@ -527,7 +527,7 @@ if ( $isAdmin || $isSystemUser)
                    	
 		
                     // �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
-                    dbProc::sentDataToKvikStep($actId, $kvikstep, $trase);
+                    //dbProc::sentDataToKvikStep($actId, $kvikstep, $trase); !!!!!!!!!!!!!!!!!
                         // saglaba lietotaja darbiibu
                         dbProc::setUserActionDate($userId, ACT_UPDATE);
 

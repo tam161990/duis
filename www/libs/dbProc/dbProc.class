@@ -4500,6 +4500,7 @@ class dbProc extends dbLayer
         $oDB = new dbLayer;
         $r = $oDB -> makeQuery($query);
 
+        /* DUIS-480
         $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($code).'"  
                     AND `RAKT_STATUS` IN ("'.STAT_AUTO.'")';
         $result = $oDB -> makeQuery($query);
@@ -4519,7 +4520,7 @@ class dbProc extends dbLayer
             }
             return ($result !== false);
         }       
-        
+        */
         return ($r !== false);
 
 	}
@@ -4689,9 +4690,10 @@ class dbProc extends dbLayer
         
         $oDB = new dbLayer;
         $r = $oDB -> makeQuery($query);
-        
+        return ($r !== false);
         
         // update tammes
+        /* DUIS-480
         if($updateNeaded) {
             if($actId !== false) {
 
@@ -4714,6 +4716,7 @@ class dbProc extends dbLayer
 		}
 
 		return ($result !== false);
+        */
     }
 
     
@@ -9699,7 +9702,7 @@ class dbProc extends dbLayer
 			return true;
             
         }
-        
+        /* DUIS-480
         function processAutoActs($user) {
 
             $query = 'SELECT `KMSD_ID`,
@@ -9794,7 +9797,7 @@ class dbProc extends dbLayer
             
             }
         }
-
+        */
         function sentDataToKvikStep($actId, $mms_kods, $trase = 0) {
             $oDB = new dbLayer;
 
@@ -9822,7 +9825,7 @@ class dbProc extends dbLayer
                                                 );
            
         }
-
+        
         // -----------------------------------------------------------------------------
         // Atgriezh kalkulacijas pēc nomenklatūras koda
         // Author: Tatjana Fedorkova
@@ -9863,7 +9866,7 @@ class dbProc extends dbLayer
             $oSQL = new dbLayer;
             return $oSQL -> makeQuery($query);
         }
-
+        /* DUIS-480
         function deleteAutoActWorks($actId) {
             $query = 'DELETE FROM `TAME_DARBI` WHERE `DRBI_RAKT_ID` = ' .dbLayer::quote_smart($actId);
             $oDB = new dbLayer;
@@ -9875,7 +9878,7 @@ class dbProc extends dbLayer
             $oDB = new dbLayer;
             return  $oDB -> makeQuery($query);
         }
-
+        */
 	function getActSectionName($actId) {
 		$query = 'select `KEDI_SECTION`
                 from KL_ED_IECIRKNI e
@@ -9911,7 +9914,7 @@ class dbProc extends dbLayer
 		return false;
 
 	}
-
+        /* DUIS-480
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
@@ -10103,6 +10106,7 @@ class dbProc extends dbLayer
             }
             return true;
         }
+        */
 
         function setUnsetActItemsDate($actId, $set = false)
         {

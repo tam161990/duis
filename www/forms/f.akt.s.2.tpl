@@ -207,12 +207,12 @@ document.onmousemove=positiontip
         <td width="20%"  valign="top">
             <table cellpadding="5" cellspacing="1" border="0" align="center" width="100%">
             <? if(!$isReadonly)  {
-                if($tame == false) {
+                if($tame == false) { /*
                     ?>
                 <tr>
                     <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('tameLink'); ?></td>
                 </tr>
-                <? }
+                <?  */}
               foreach($calcGroups as $i=>$val){?>
              <tr>
                 <td bgcolor="white"><?= $oFormWorkTab->getElementHtml('group['.$i.']'); ?></td>
