@@ -159,10 +159,12 @@ if (userAuthorization::isAdmin() || $isEdUser )
                           } 
                           fclose($handle);   
                       } 
+                      /* DUIS-480
                       if($oForm -> getValue('catalog') == 'MMS_WORKS')
                       {
                         $r2 = dbProc::processAutoActs($userId);
                       }
+                      */
                   }
               }
               // calculation

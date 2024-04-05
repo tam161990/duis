@@ -45,7 +45,8 @@ if (reqVar::get('xmlHttp') == 1)
   
   if(reqVar::get('type') )
   {
-     /* if(dbProc::isActTypePlan(reqVar::get('type')))
+    /*
+      if(dbProc::isActTypePlan(reqVar::get('type')))
       {
         ?>
           //document.all['toid'].disabled = true;
@@ -57,20 +58,19 @@ if (reqVar::get('xmlHttp') == 1)
         ?>
           document.all["toid"].value = '';
           //document.all['toid'].disabled = false;
-        <?*/
+        <? */
         if(  reqVar::get('type') == ACT_TYPE_STIHIJA_ID )
         {
           ?>
             document.all["toid"].value = '---';
           <?
         }	 
-     /* } */
-
+      /*}*/
     }     
-  
+  /*
   $ouner[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
 	if(reqVar::get('worker') && dbProc::isActTypePlan(reqVar::get('type')))
-    {
+  {
         $res = dbProc::getUserWorkerList(reqVar::get('worker'));
         if (is_array($res))
         {
@@ -111,10 +111,9 @@ if (reqVar::get('xmlHttp') == 1)
 					  $i++;
 				}	
         }
-        unset($res);
-        
+        unset($res);        
 	}
-	
+	*/
     
     if(reqVar::get('type') && reqVar::get('contract'))
     {
@@ -130,8 +129,7 @@ if (reqVar::get('xmlHttp') == 1)
       <?
       // check is this type set as PLANS
       if(dbProc::isActTypePlan(reqVar::get('type')))
-      {
-          
+      {          
            if($trase == 1)
            {
              // define quickStep code
@@ -277,7 +275,7 @@ if ( $isAdmin || $isSystemUser)
 	{
 		foreach ($res as $row)
 		{
-        		if($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) continue;
+        		//if($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) continue;
         		$acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
 		}
 	}
@@ -326,24 +324,6 @@ unset($res);
         $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
         $sign = $act['RAKT_SIGNATURE'];
         $type = $act['RAKT_KAKV_ID'];
-
-	// get act type
-	$acttype=array();
-	$acttype['']=text::get('EMPTY_SELECT_OPTION');
-	if($trase == 1) {
-		$res=dbProc::getActTraseTypeActivList();
-	} else {
-		$res=dbProc::getActTypeActivList();
-	}
-	if (is_array($res))
-	{
-		foreach ($res as $row)
-		{
-				if(($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) &&  !$isPlan) continue;
-				$acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
-		}
-	}
-	unset($res);
 
 	if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
   	{
@@ -1539,7 +1519,7 @@ if(true)
 
     $oForm -> makeHtml();
     include('f.akt.s.1.tpl');
-
+    /* DUIS-480
     if ($isAuto == 1) {
       $tame = true;
       //$tameWork = $tame || (reqVar::get('tameWork') == 1);
@@ -1564,6 +1544,7 @@ if(true)
       $tame = false;        
 
   }
+  */
 
 
   $tabs = new tabs("akts", "");
