@@ -122,7 +122,7 @@ if (reqVar::get('xmlHttp') == 1)
     // get worker list
     $worker=array();
     $j = 0;
-    $res=dbProc::getWorkOwnerActivList();
+    $res=dbProc::getWorkOwnerWithActivContractList();
             if (is_array($res))
             {
                 foreach ($res as $row)

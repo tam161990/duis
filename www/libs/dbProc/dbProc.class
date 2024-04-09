@@ -2830,6 +2830,24 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
 	}
 
+    // -----------------------------------------------------------------------------
+	// Atgriezh aktivus vai neaktivus darba uz��m�jus.
+	// Author: Tatjana Fedorkova
+	// -----------------------------------------------------------------------------
+	function getWorkOwnerWithActivContractList($activ = true)
+	{
+            $column = dbProc::getKlklDefaultColumn(KL_WORK_OWNERS);
+			$query = 'select DISTINCT KWOI_KODS, KWOI_NOSAUKUMS 
+            from `KL_WORK_OWNERS`
+            INNER JOIN `KL_CONTRACT` ct  on KCNT_KWOI_KODS = KWOI_KODS
+            where `KWOI_IR_AKTIVS` = '.(($activ) ? 1 : 0).' 
+            and `KCNT_IR_AKTIVS` = '.(($activ) ? 1 : 0).' 
+            order by `'.dbLayer::quote_smart($column).'` asc';
+
+	   	$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
 	// -----------------------------------------------------------------------------
 	// Saglabaa darba uz��meju. Ja dots ID, izmaina esosho ierakstu, ja ne -
 	// izveido jaunu.
