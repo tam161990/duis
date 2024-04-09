@@ -2831,7 +2831,7 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus vai neaktivus darba uz��m�jus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getWorkOwnerWithActivContractList($activ = true)
+	function getWorkOwnerWithActivContractList($trase, $activ = true)
 	{
             $column = dbProc::getKlklDefaultColumn(KL_WORK_OWNERS);
 			$query = 'select DISTINCT KWOI_KODS, KWOI_NOSAUKUMS 
@@ -2839,6 +2839,7 @@ class dbProc extends dbLayer
             INNER JOIN `KL_CONTRACT` ct  on KCNT_KWOI_KODS = KWOI_KODS
             where `KWOI_IR_AKTIVS` = '.(($activ) ? 1 : 0).' 
             and `KCNT_IR_AKTIVS` = '.(($activ) ? 1 : 0).' 
+            and `KCNT_IR_TRASE` = '.(($trase) ? 1 : 0).' 
             order by `'.dbLayer::quote_smart($column).'` asc';
 
 	   	$oSQL = new dbLayer;
