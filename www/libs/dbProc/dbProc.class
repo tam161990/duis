@@ -4497,27 +4497,28 @@ class dbProc extends dbLayer
         $oDB = new dbLayer;
         $r = $oDB -> makeQuery($query);
 
-        /* DUIS-480
-        $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($code).'"  
-                    AND `RAKT_STATUS` IN ("'.STAT_AUTO.'")';
-        $result = $oDB -> makeQuery($query);
-        $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
+        /* DUIS-480 */
+        if ($trase == 1) {
+            $query = 'SELECT `RAKT_ID` FROM `AKTI` WHERE `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($code).'"  
+                        AND `RAKT_STATUS` IN ("'.STAT_AUTO.'")';
+            $result = $oDB -> makeQuery($query);
+            $actId = isset($result[0]['RAKT_ID']) ? $result[0]['RAKT_ID'] : false;
 
-        if($actId !== false) {
+            if($actId !== false) {
 
-            $result = dbProc::deleteAutoActWorks($actId);
-            if($result !== false) { 
-                $result = dbProc::deleteAutoActMaterial($actId);
-            }
-            if($result !== false) { 
-                $result = dbProc::processAutoActWorks($actId, $code, $trase);
-            }
-            if($result !== false) { 
-                $result = dbProc::processAutoActMaterial($actId, $code, $trase);
-            }
-            return ($result !== false);
-        }       
-        */
+                $result = dbProc::deleteAutoActWorks($actId);
+                if($result !== false) { 
+                    $result = dbProc::deleteAutoActMaterial($actId);
+                }
+                if($result !== false) { 
+                    $result = dbProc::processAutoActWorks($actId, $code, $trase);
+                }
+                if($result !== false) { 
+                    $result = dbProc::processAutoActMaterial($actId, $code, $trase);
+                }
+                return ($result !== false);
+            }       
+        }
         return ($r !== false);
 
 	}
@@ -4690,8 +4691,8 @@ class dbProc extends dbLayer
         return ($r !== false);
         
         // update tammes
-        /* DUIS-480
-        if($updateNeaded) {
+        /* DUIS-480 */
+        if($updateNeaded && $isEpla == 1) {
             if($actId !== false) {
 
                 $result = dbProc::deleteAutoActWorks($actId);
@@ -4707,13 +4708,12 @@ class dbProc extends dbLayer
                 return ($result !== false);
             }       
         }
-		if($insertneeded) {
-            
+		if($insertneeded) {            
 			$result = dbProc::processAutoActs($user);
 		}
 
 		return ($result !== false);
-        */
+ 
     }
 
     
@@ -9699,7 +9699,7 @@ class dbProc extends dbLayer
 			return true;
             
         }
-        /* DUIS-480
+        
         function processAutoActs($user) {
 
             $query = 'SELECT `KMSD_ID`,
@@ -9741,8 +9741,10 @@ class dbProc extends dbLayer
 
             if ($res!==false)
             {
+              /* DUIS-480 */
               foreach ($res as $i => $mms)
               {	
+                if ($mms['KMSD_IR_EPLA'] == 1) {
                   if($mms['KEDI_ID'] == 0) continue;
                   $r = false;
                   $r1 = false;
@@ -9790,11 +9792,12 @@ class dbProc extends dbLayer
                         }
                     }
                 }
-            return true;
+                return true;
+              }
             
             }
         }
-        */
+     
         function sentDataToKvikStep($actId, $mms_kods, $trase = 0) {
             $oDB = new dbLayer;
 
@@ -9863,7 +9866,7 @@ class dbProc extends dbLayer
             $oSQL = new dbLayer;
             return $oSQL -> makeQuery($query);
         }
-        /* DUIS-480
+
         function deleteAutoActWorks($actId) {
             $query = 'DELETE FROM `TAME_DARBI` WHERE `DRBI_RAKT_ID` = ' .dbLayer::quote_smart($actId);
             $oDB = new dbLayer;
@@ -9875,7 +9878,7 @@ class dbProc extends dbLayer
             $oDB = new dbLayer;
             return  $oDB -> makeQuery($query);
         }
-        */
+
 	function getActSectionName($actId) {
 		$query = 'select `KEDI_SECTION`
                 from KL_ED_IECIRKNI e
@@ -9911,7 +9914,7 @@ class dbProc extends dbLayer
 		return false;
 
 	}
-        /* DUIS-480
+        
         function processAutoActWorks($actId, $mms_code, $trase) {
 
             $mmsList = dbProc::getMmsWorksByCodeList($mms_code);
@@ -10103,7 +10106,6 @@ class dbProc extends dbLayer
             }
             return true;
         }
-        */
 
         function setUnsetActItemsDate($actId, $set = false)
         {

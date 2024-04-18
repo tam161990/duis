@@ -67,53 +67,53 @@ if (reqVar::get('xmlHttp') == 1)
         }	 
       /*}*/
     }     
-  /*
-  $ouner[$row['RLTT_ID']]=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];
-	if(reqVar::get('worker') && dbProc::isActTypePlan(reqVar::get('type')))
-  {
-        $res = dbProc::getUserWorkerList(reqVar::get('worker'));
-        if (is_array($res))
-        {
-			 ?>
-			  document.all['ouner'].disabled = false;
-			  for(i=document.all["ouner"].length; i>=0; i--)
-			  {
-				document.all["ouner"].options[i] = null;
-			  }
-			  <?
-			    $i = 1;
-				foreach ($res as $row)
-				{					 
-					  ?>
-					  document.all["ouner"].options[<?=$i;?>] = new Option( '<?=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];?>', '<?=$row['RLTT_ID'];?>');
-					  <?
-					  $i++;
-				}	
-        }
-        unset($res);
-       
-        $res=dbProc::getDuContractNo(reqVar::get('worker'), $trase, true);
-        if (is_array($res))
-        {
-			 ?>
-			  document.all['contract'].disabled = false;
-			  for(i=document.all["contract"].length; i>=0; i--)
-			  {
-				document.all["contract"].options[i] = null;
-			  }
-			  <?
-			    $i = 1;
-				foreach ($res as $row)
-				{					 
-					  ?>
-					  document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'];?>');
-					  <?
-					  $i++;
-				}	
-        }
-        unset($res);        
-	}
-	*/
+  
+  if($trase == 1) {
+    if(reqVar::get('worker') && dbProc::isActTypePlan(reqVar::get('type')))
+    {
+          $res = dbProc::getUserWorkerList(reqVar::get('worker'));
+          if (is_array($res))
+          {
+        ?>
+          document.all['ouner'].disabled = false;
+          for(i=document.all["ouner"].length; i>=0; i--)
+          {
+          document.all["ouner"].options[i] = null;
+          }
+          <?
+            $i = 1;
+          foreach ($res as $row)
+          {					 
+              ?>
+              document.all["ouner"].options[<?=$i;?>] = new Option( '<?=$row['RLTT_VARDS'].' '.$row['RLTT_UZVARDS'];?>', '<?=$row['RLTT_ID'];?>');
+              <?
+              $i++;
+          }	
+          }
+          unset($res);
+        
+          $res=dbProc::getDuContractNo(reqVar::get('worker'), $trase, true);
+          if (is_array($res))
+          {
+        ?>
+          document.all['contract'].disabled = false;
+          for(i=document.all["contract"].length; i>=0; i--)
+          {
+          document.all["contract"].options[i] = null;
+          }
+          <?
+            $i = 1;
+          foreach ($res as $row)
+          {					 
+              ?>
+              document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'];?>');
+              <?
+              $i++;
+          }	
+          }
+          unset($res);        
+    }
+  }
     
     if(reqVar::get('type') && reqVar::get('contract'))
     {
@@ -261,7 +261,7 @@ if ( $isAdmin || $isSystemUser)
   {
     $signature[$row['nosaukums']]=$row['nozime'];
   }
-  }
+  } 
 
   // get act type
   $acttype=array();
@@ -275,12 +275,11 @@ if ( $isAdmin || $isSystemUser)
 	{
 		foreach ($res as $row)
 		{
-        		//if($row['KAKV_ID'] == ACT_TYPE_PLAN_ID || $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) continue;
+        		if(/*$row['KAKV_ID'] == ACT_TYPE_PLAN_ID || */$row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) continue;
         		$acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
 		}
 	}
 unset($res);
-
   
   if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && dbProc::isActTypePlan($oForm -> getValue('type')) )
   {
@@ -324,6 +323,24 @@ unset($res);
         $actNumPostfix = $act['RAKT_NUM_POSTFIX'];
         $sign = $act['RAKT_SIGNATURE'];
         $type = $act['RAKT_KAKV_ID'];
+
+        // get act type
+        $acttype=array();
+        $acttype['']=text::get('EMPTY_SELECT_OPTION');
+        if($trase == 1) {
+          $res=dbProc::getActTraseTypeActivList();
+        } else {
+          $res=dbProc::getActTypeActivList();
+        }
+        if (is_array($res))
+        {
+          foreach ($res as $row)
+          {
+              if((/*$row['KAKV_ID'] == ACT_TYPE_PLAN_ID ||*/ $row['KAKV_ID'] == ACT_TYPE_PLAN_TR_ID) &&  !$isPlan) continue;
+              $acttype[$row['KAKV_ID']]=$row['KAKV_NOSAUKUMS'];
+          }
+        }
+        unset($res);
 
 	if ($oForm -> isFormSubmitted() && $oForm -> getValue('worker') && !dbProc::isActTypePlan($oForm -> getValue('type')) )
   	{
@@ -478,7 +495,7 @@ unset($res);
     }
   }
   unset($res);
-  
+ 
 
   $isReadonly   = true;
   $isReadonly1   = true;  
@@ -1221,8 +1238,9 @@ if(true)
             $returnStatus  = STAT_RETURN;
             $returnAction =  STAT_RETURN;
          }
-         if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE || $oForm -> getValue('status') == STAT_CLOSE) )
-    	 {
+         if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE ||  
+         $oForm->getValue('action')==OP_ACCEPT) )
+    	  {
     	      $checkRequiredFields = true;
             $_proces_date = false;
 
@@ -1231,6 +1249,7 @@ if(true)
                $returnStatus  = STAT_INSERT;
                $returnAction =  ACT_RETURN_INSERT;
             }
+            echo $oForm -> getValue('status');
             if($oForm -> getValue('status') == STAT_CLOSE)
             {
                $returnStatus  = STAT_ACCEPT;
@@ -1288,7 +1307,7 @@ if(true)
                       $oLink->addPrm('searchNum', $searchNum);
                       $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
 
-                      //RequestHandler::makeRedirect($oLink->getQuery());
+                      RequestHandler::makeRedirect($oLink->getQuery());
                 }
             
             }
@@ -1519,8 +1538,8 @@ if(true)
 
     $oForm -> makeHtml();
     include('f.akt.s.1.tpl');
-    /* DUIS-480
-    if ($isAuto == 1) {
+    
+    if ($isAuto == 1 && $trase == 1) {
       $tame = true;
       //$tameWork = $tame || (reqVar::get('tameWork') == 1);
       $tabs = new tabs("tame", "", true);
@@ -1544,7 +1563,7 @@ if(true)
       $tame = false;        
 
   }
-  */
+
 
 
   $tabs = new tabs("akts", "");

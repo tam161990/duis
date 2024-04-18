@@ -88,10 +88,10 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('isTrase', $trase);
       $oPopLink->addPrm('tame', $tameWork ?'1':'0');
-      /*
-      $tameGroup['TITLE'] = text::get('TAB_ESTIMATE');   ;
-      $tameGroup['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
-      */
+      if ($trase == 1) {
+        $tameGroup['TITLE'] = text::get('TAB_ESTIMATE');   ;
+        $tameGroup['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
+      }
       // get calgulation group
       $calcGroups=array();
       $j = 0;
@@ -447,6 +447,8 @@ if ( $isAdmin || $isSystemUser)
               $oLink->addPrm(FORM_ID, 'f.akt.s.1');
               $oLink->addPrm('actId', $actId);
               $oLink->addPrm('tab', TAB_ESTIMATE);
+              $oLink->addPrm('tame', $tameWork ?'1':'0');
+              $oLink->addPrm('isTrase', $trase );
               RequestHandler::makeRedirect($oLink->getQuery());
           }
           else {
@@ -508,6 +510,7 @@ if ( $isAdmin || $isSystemUser)
                 		       		  $oLink->addPrm(FORM_ID, 'f.akt.s.1');
                 		       		  $oLink->addPrm('actId', $actId);
                           			$oLink->addPrm('tab', TAB_WORKS.(($tameWork==1) ? '_T' : ''));
+                                $oLink->addPrm('tame', ($tameWork==1) ?'1':'0');
                            			$oLink->addPrm('isNew', RequestHandler::getMicroTime());
                            			$oLink->addPrm('successMessageTab', text::get('RECORD_WAS_SAVED'));
                            			$oLink->addPrm('isTrase', $trase );
@@ -524,15 +527,13 @@ if ( $isAdmin || $isSystemUser)
                   // p�rr��inat materi�la tame
                   //dbProc::processAutoActMaterial($actId, $kvikstep, $trase);			    
 		      	    }
-                   	
-		
-                    // �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
-                    //dbProc::sentDataToKvikStep($actId, $kvikstep, $trase); !!!!!!!!!!!!!!!!!
                         // saglaba lietotaja darbiibu
                         dbProc::setUserActionDate($userId, ACT_UPDATE);
 
 
                         if($trase == 1) {
+                          // �ener�ta akta labo�anas gad�jum� summas katru reizi tiek p�rs�t�tas uz kvikstepu.
+                          dbProc::sentDataToKvikStep($actId, $kvikstep, $trase); 
                               //$aWorkSums = dbProc::getActWorkSumms($actId, $tameWork);
                               foreach ($aWorkSums as $d => $aSum)
                                 {
