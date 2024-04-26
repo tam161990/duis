@@ -2104,6 +2104,7 @@ class dbProc extends dbLayer
             $column = dbProc::getKlklDefaultColumn(KL_VOLTAGE);
 			$query = 'select * from `KL_SPRIEGUMS`
             where `KSRG_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
+            AND `KSRG_TRASE` = 0
             order by `'.dbLayer::quote_smart($column).'` asc';
 
 	   	$oSQL = new dbLayer;
@@ -2521,111 +2522,7 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus vai neaktivus objektus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getObjectActivList($activ = true, $trase = 1
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    )
+	function getObjectActivList($activ = true)
 	{
             $column = dbProc::getKlklDefaultColumn(KL_OBJECTS);
 			$query = 'select * from `KL_OBJEKTI`
@@ -4225,7 +4122,7 @@ class dbProc extends dbLayer
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
         from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE'.'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         AND `KMTG_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
@@ -9913,9 +9810,9 @@ class dbProc extends dbLayer
                         }
                     }
                 }
-                return true;
+                
               }
-            
+              return true;
             }
         }
      
