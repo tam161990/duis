@@ -22,8 +22,14 @@
             <? } ?>
             </td>
             <td class="table_head" align="right">
-                <?= $oForm -> getElementLabel('code'); ?>:
-                <font color="red"><?=text::toUpper($oForm -> getElementHtml('code'));?></font></td>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>                        
+                            <td width="60%" align="right"><?= $oForm -> getElementLabel('CODEVAL'); ?>:</td>
+                            <td><font color="red"><?=text::toUpper($oForm -> getElementHtml('CODEVAL'));?></font></td>
+                       
+                    </tr>
+                </table>
+            </td>
             <td class="table_head" align="right">
                 <?= $oForm -> getElementLabel('statusTxt'); ?>:
                 <font color="red"><?=text::toUpper($oForm -> getElementHtml('statusTxt'));?></font></td>

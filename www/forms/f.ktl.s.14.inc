@@ -164,7 +164,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 		$oForm -> addElement('text', 'mms_y',  text::get('MMS_Y'), isset($mms['KMSD_Y'])?$mms['KMSD_Y']:'', ' tabindex=17  maxlength="20"'.(($mmsId || $isAuditUser)?' disabled' : ''));
 		$oForm -> addRule('mms_y', text::get('ERROR_DOUBLE_VALUE'), 'double', 8);
 
-        	$oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>KL_VOLTAGE_BY_CODE,'value'=>isset($mms['KMSD_KSRG_KODS'])?$mms['KMSD_KSRG_KODS']:'','readonly'=>false), 'tabindex=18 maxlength="2000"'.(($isAuditUser)?' disabled':''));
+        $oForm -> addElement('kls', 'voltage',  text::get('SINGLE_VOLTAGE'), array('classifName'=>KL_VOLTAGE_BY_CODE,'value'=>isset($mms['KMSD_KSRG_KODS'])?$mms['KMSD_KSRG_KODS']:'','readonly'=>false), 'tabindex=18 maxlength="2000"'.(($isAuditUser)?' disabled':''));
 		$oForm -> addRule('voltage', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
 
