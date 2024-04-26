@@ -2099,12 +2099,12 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus vai neaktivus spriegumus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getVoltageActivList($activ = true)
+	function getVoltageActivList($activ = true, $onlyRem = true)
 	{
             $column = dbProc::getKlklDefaultColumn(KL_VOLTAGE);
 			$query = 'select * from `KL_SPRIEGUMS`
             where `KSRG_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
-            AND `KSRG_TRASE` = 0
+            '.(($onlyRem) ? 'AND `KSRG_TRASE` = 0 ' : '').'
             order by `'.dbLayer::quote_smart($column).'` asc';
 
 	   	$oSQL = new dbLayer;
@@ -2522,12 +2522,12 @@ class dbProc extends dbLayer
 	// Atgriezh aktivus vai neaktivus objektus.
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getObjectActivList($activ = true)
+	function getObjectActivList($activ = true, $onlyRem = true )
 	{
             $column = dbProc::getKlklDefaultColumn(KL_OBJECTS);
 			$query = 'select * from `KL_OBJEKTI`
             where `KOBJ_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
-            AND `KOBJ_TRASE` = 0
+            '.(($onlyRem) ? 'AND `KOBJ_TRASE` = 0 ' : '').'
             order by `'.dbLayer::quote_smart($column).'` asc';
 
 	   	$oSQL = new dbLayer;
@@ -3793,7 +3793,7 @@ class dbProc extends dbLayer
             $query = 'select *, ' .dbLayer::sqlParseDateTime('KMAT_CREATED') .',
             ' .dbLayer::sqlParseDateTime('KMAT_EDITED') .'
             from `KL_MATERIALI`
-            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL AND "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL AND "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
             AND '.$searchString.'
             order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
 			if (($offset !== false) && $limit)
@@ -3817,7 +3817,7 @@ class dbProc extends dbLayer
             $column = dbProc::getKlklDefaultColumn(KL_MATERIALS);
 			$query = 'select *
             from `KL_MATERIALI`
-            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
 			AND`KMAT_IR_AKTIVS` = '.(($activ) ? 1 : 0).'
             order by `'.dbLayer::quote_smart($column).'` asc';
 
@@ -3928,7 +3928,7 @@ class dbProc extends dbLayer
     function getMaterialCategory(){
         
         $query = 'select `KMAT_KATEGORIJAS_KODS`, `KMAT_KATEGORIJAS_NOSAUKUNS` from `KL_MATERIALI`
-		WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+		WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';
 
         $oSQL = new dbLayer;
@@ -3939,7 +3939,7 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
 		AND `KMAT_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';        
@@ -3952,7 +3952,7 @@ class dbProc extends dbLayer
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         from `KL_MATERIALI`
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
 		AND UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_NOSAUKUNS` asc';        
@@ -4107,7 +4107,7 @@ class dbProc extends dbLayer
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
         from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         ' . (empty($group) ? '' : ' AND `KMTG_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
@@ -4122,7 +4122,7 @@ class dbProc extends dbLayer
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
         from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         AND `KMTG_KATEGORIJAS_KODS` LIKE "'.dbLayer::quote_smart($category).'%" 
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
@@ -4137,7 +4137,7 @@ class dbProc extends dbLayer
         KMTG_KATEGORIJAS_NOSAUKUNS as KMAT_KATEGORIJAS_NOSAUKUNS
         from `kl_materialu_grupas`
         INNER JOIN `KL_MATERIALI` ON KMTG_KATEGORIJAS_KODS = KMAT_KATEGORIJAS_KODS
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         AND UPPER(KMAT_KATEGORIJAS_NOSAUKUNS) LIKE UPPER("%'.dbLayer::quote_smart($text).'%")
         group by KMTG_KATEGORIJAS_KODS, KMTG_KATEGORIJAS_NOSAUKUNS
         order by `KMTG_KATEGORIJAS_KODS` asc';
@@ -4190,7 +4190,7 @@ class dbProc extends dbLayer
         
         $query ='SELECT DISTINCT `KMAT_GRUPAS_NOSAUKUNS`, KMAT_GRUPAS_KODS
 			from `KL_MATERIALI`
-            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+            WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
 			ORDER BY KMAT_GRUPAS_KODS';
 
 
@@ -4202,7 +4202,7 @@ class dbProc extends dbLayer
         
         $query = 'select DISTINCT `KMAT_APAKSGRUPAS_KODS`, `KMAT_APAKSGRUPAS_NOSAUKUNS` ,
         LPAD(KMAT_APAKSGRUPAS_KODS, 4, 0) as APAKSGRUPAS_KODS
-        from `KL_MATERIALI` WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        from `KL_MATERIALI` WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         ' . (empty($group) ? '' : ' AND `KMAT_GRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         order by `KMAT_APAKSGRUPAS_KODS` asc';
 
@@ -4213,7 +4213,7 @@ class dbProc extends dbLayer
     function getMaterialBySubGroup($group){
         
         $query = 'select MAX(KMAT_ID) as KMAT_ID, KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
-        from `KL_MATERIALI`  WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        from `KL_MATERIALI`  WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         ' . (empty($group) ? '' : ' AND `KMAT_APAKSGRUPAS_KODS` = '.dbLayer::quote_smart($group)).' 
         group by KMAT_KATEGORIJAS_KODS, KMAT_KATEGORIJAS_NOSAUKUNS
         order by `KMAT_KATEGORIJAS_KODS` asc';
@@ -4245,7 +4245,7 @@ class dbProc extends dbLayer
             $searchString .= ' and `KMAT_IR_AKTIVS` =1 ';
         }
         $query =  'select count(`KMAT_ID`) as `RECORDCOUNT` from `KL_MATERIALI`
-        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin(`KMAT_KATEGORIJAS_KLASE`).'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
+        WHERE (`KMAT_KATEGORIJAS_KLASE` IS NOT NULL OR "'. text::latvianToLatin('KMAT_KATEGORIJAS_KLASE').'" NOT IN ("' .CAT_CLASE_1 .'", "' .CAT_CLASE_2 .'")  )
         AND '.$searchString;
 		$result = $oDB -> makeQuery($query);
 
@@ -4918,7 +4918,7 @@ class dbProc extends dbLayer
                     $pers_number = false
                     )
 	{
-        
+     
 		if ($ID)
 		{ 
           $query = 'update `AKTI` set
@@ -5031,7 +5031,7 @@ class dbProc extends dbLayer
                 '.(($key_object) ? '"'.dbLayer::quote_smart($key_object).'"' : '"0"').'                  
                 )';
 		}
-       //echo $query;
+        //echo $query;
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 
@@ -7492,7 +7492,6 @@ class dbProc extends dbLayer
     function getActMaterialList($ID, $tame = false, $project = false, $onlyNotApproved = false,
     $sortOrder = false, $orderColumn = false, $work_type = false,
     $offset = false,  $limit = false) {
-
         $table_name = ($tame) ? '`TAME_MATERIALI`' : '`MATERIALI`';
         $column_name = ($tame) ? '`MATR_DAUDZUMS_KOR`' : '`MATR_DAUDZUMS`';
         $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : '';
@@ -9811,9 +9810,9 @@ class dbProc extends dbLayer
                         }
                     }
                 }
-                return true;
+                
               }
-            
+              return true;            
             }
         }
      

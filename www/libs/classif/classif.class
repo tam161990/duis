@@ -71,7 +71,7 @@ class classif
 				}
 				break;
 			case KL_VOLTAGE_BY_CODE:
-					$res=dbProc::getVoltageActivList();
+					$res=dbProc::getVoltageActivList(true, false);
 					if (is_array($res))
 					{
 						foreach ($res as $row)
@@ -141,7 +141,7 @@ class classif
 				}
 				break;
 			case KL_OBJECTS_BY_CODE:
-					$res=dbProc::getObjectActivList();
+					$res=dbProc::getObjectActivList(true, false);
 					if (is_array($res))
 					{
 						foreach ($res as $row)
