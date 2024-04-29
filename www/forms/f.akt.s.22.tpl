@@ -199,6 +199,9 @@ sp2.style.color = 'red';
       <tr>
         <td><?= $oFormMaterialTab -> getElementHtml('all'); ?></td>
       </tr>
+      <tr>
+        <td><?= $oFormMaterialTab -> getElementHtml('default_order'); ?></td>
+      </tr>
     </table>   
 </div>
 <?=$oFormMaterialTab->getElementHtml('jsRefresh2');?>

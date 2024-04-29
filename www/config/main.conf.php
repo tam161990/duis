@@ -373,7 +373,8 @@ define ('OP_DECLINE', 'N');
 define ('OP_EXPORT_ALL','Z');
 // Izveidot Materiālu pieprasījumu
 define ('OP_ORDER_MATERIAL','O');
-
+// Noklusētā kārtošana
+define ('OP_DEFAULT_ORDER','B');
 # =============================================================================
 # USER ACTION CODES
 # =============================================================================
