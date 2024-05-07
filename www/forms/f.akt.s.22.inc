@@ -535,7 +535,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 	  $oFormMaterialTab -> addElement('select', 'work_type['.$i.']',  '', $actMaterial['MATR_WORK_TYPE'], (($isReadonly)?' disabled ':''). '
 	  onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $workType);
 	  //$oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
-	  unset($saveLink);
+	  
 	  
     if($status == STAT_CLOSE && ($isAdmin || $projectApprover)) {
 		  if($export_type_string) {
@@ -553,6 +553,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);            
           }
 	  }
+    unset($saveLink);
 	  
 	  if ($oFormMaterialTab -> isFormSubmitted()){
       $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
