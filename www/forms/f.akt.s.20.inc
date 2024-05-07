@@ -2,6 +2,7 @@
 // Created by Tatjana Fedorkova
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
+$isSuperAdmin=userAuthorization::isSuperAdmin();
 $isEditor = (userAuthorization::getWorker() != false) ? true : false;
 $isProjector = dbProc::isExistsUserRoleWithProject($userId)  ;
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
@@ -233,9 +234,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
   $oForm -> addElement('hidden', 'action', '');
   $oForm -> addElement('hidden', 'actId', null, isset($act['RAKT_ID'])? $act['RAKT_ID']:'');
   $oForm -> addElement('hidden', 'status', null, $status);
-  $oForm -> addElement('label', 'statusTxt',  text::get('STATUS'), $statusLabel);
-  $oForm -> addElement('label', 'code',  text::get('CODE'), isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'');
-  $oForm -> addElement('hidden', 'codeval',  '', isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'');
+  $oForm -> addElement('label', 'statusTxt',  text::get('STATUS'), $statusLabel);  
   $oForm -> addElement('hidden', 'actNumber',  '', isset($act['RAKT_NUMURS'])?$act['RAKT_NUMURS']:'');
 
   $oLink=new urlQuery();
@@ -246,8 +245,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
  
   if($actId != false)
   {
-      $oForm -> addElement('label', 'actFullNumber',  text::get('ACT_NUMBER'), isset($act['RAKT_FULL_NUMBER'])?$act['RAKT_FULL_NUMBER']:''); 
-  }  
+      $oForm -> addElement('label', 'actFullNumber',  text::get('ACT_NUMBER'), isset($act['RAKT_FULL_NUMBER'])?$act['RAKT_FULL_NUMBER']:'', 'width="70" '); 
+  }   
+  
+  $oForm -> addElement('text', 'CODEVAL',  text::get('CODE'), isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'', 'maxlength="16" '.(($isAdmin || $isSuperAdmin)? '' : ' disabled').'');
 
   $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $edarea);
     
@@ -392,7 +393,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
         // if all is ok, do operation
 		  if($checkRequiredFields)
-		  {
+		  { 
 		        // save
             if($oForm->getValue('action')==OP_INSERT || $oForm->getValue('action')==OP_UPDATE)
             {
@@ -422,7 +423,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 1,
                 1,
                 $oForm->getValue('type'),
-                $oForm->getValue('codeval'),
+                $oForm->getValue(strtoupper('codeval')),
                 $oForm->getValue('constract_company')
               );
 
@@ -487,7 +488,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                               1,
                               1,
                               $oForm->getValue('type'),
-                              $oForm->getValue('codeval'),
+                              $oForm->getValue(strtoupper('codeval')),
                               $oForm->getValue('constract_company')
                   );
 

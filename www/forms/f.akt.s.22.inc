@@ -125,6 +125,7 @@ if (reqVar::get('xmlHttp') == 1)
       $o = $_GET['sort_o'];
       if (isset($o))
       {
+        session::set('project_material_order', $o);
         echo 'o = "'.$o.'";';
       }
       else
@@ -134,6 +135,7 @@ if (reqVar::get('xmlHttp') == 1)
       $k = $_GET['sort_k'];
       if ($k)
       {
+        session::set('project_material_kol', $k);
         echo 'k = "'.$k.'";';
       }
       else
@@ -301,14 +303,16 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
           else {
             $oFormWorkTab->addError(text::get('ERROR_NOT_CHECKED'));
           }  
-        }
+        }       
         $work_types = $oFormMaterialTab->getValue('work_types');
+        if($oFormMaterialTab->getValue('action_tt')== OP_DEFAULT_ORDER)  {
+          session::del('project_material_order');
+          session::del('project_material_kol');          
+        }
       }
       
       $aMaterials = array();
       $aMaterialExist = false;
-      $sortOrder = false;
-      $orderColumn = false;
 
       // add order params to listing
       $oLink = new urlQuery;
@@ -319,8 +323,8 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oLink->addPrm('tab', TAB_MATERIAL);    
       $oLink->addPrm('work_types',$work_types);         
       if (reqVar::get('tab') == 'TAB_MATERIAL') {
-        $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
-        $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;
+          $sortOrder = (session::get('project_material_order') && session::get('project_material_order') != '') ? session::get('project_material_order') : false; 
+          $orderColumn = (session::get('project_material_kol') && session::get('project_material_kol') != '') ? session::get('project_material_kol') : false;
         
         $oLink->addPrm('order', reqVar::get('order'));
         $oLink->addPrm('kol', reqVar::get('kol'));
@@ -331,12 +335,12 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 
       $listingHtml=$listing->getHtml($oLink ->getQuery());
       unset($oLink);
-      
+     
       //Ja eksistee akta materiāli, tad nolasaam taas darbus no datu baazes
       $aMaterialDb=dbProc::getActMaterialList($actId, 
                                               false, false, true,  
-                                              $sortOrder, 
-                                              $orderColumn, 
+                                              (session::get('project_material_order') && session::get('project_material_order') != '') ? session::get('project_material_order') : false, 
+                                              $orderColumn = (session::get('project_material_kol') && session::get('project_material_kol') != '') ? session::get('project_material_kol') : false, 
                                               $work_types,
                                               $listing->getStartPosition(),
                                               $listing->getAmountOnPage());
@@ -592,6 +596,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         }
         $oFormMaterialTab -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_save_material.gif', 'width="120" height="20" ');
         $oFormMaterialTab -> addElement('submitImg', 'delete_all', text::get('DELETE'), 'img/btn_delete_all_120.gif', 'width="120" height="20" onclick="if (isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action_tt\',\''.OP_DELETE.'\');} else {return false;}"');
+        $oFormMaterialTab -> addElement('submitImg', 'default_order', text::get('DEFAULT_ORDER'), 'img/btn_120_nokluseta_kartosana.gif', 'width="120" height="20" onclick="setValue(\'action_tt\',\''.OP_DEFAULT_ORDER.'\');"');
          //Popup saites sagatave
          $oPopLink=new urlQuery;
          $oPopLink->addPrm(FORM_ID, 'f.akt.s.25');
