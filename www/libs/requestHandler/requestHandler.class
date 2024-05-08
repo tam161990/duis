@@ -525,7 +525,7 @@ class RequestHandler
 		 
 		//Set the content type to application/json
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json',
-		'Content-Length: ' . strlen($data_json)
+		'Content-Length: ' . strlen($data_json),
 		'x-access-token: ' . SOA_ACCESS_TOCKEN)); 
 
 		// Send the request
