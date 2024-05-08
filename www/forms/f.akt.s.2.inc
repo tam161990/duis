@@ -88,10 +88,12 @@ if ( $isAdmin || $isSystemUser)
       $oPopLink->addPrm('searchNum', $searchNum);
       $oPopLink->addPrm('isTrase', $trase);
       $oPopLink->addPrm('tame', $tameWork ?'1':'0');
+      /* DUIS-487
       if ($trase == 1) {
         $tameGroup['TITLE'] = text::get('TAB_ESTIMATE');   ;
         $tameGroup['URL'] = RequestHandler::popupHref($oPopLink -> getQuery().'&estimate=1', false, 700, 450);
       }
+      */
       // get calgulation group
       $calcGroups=array();
       $j = 0;
