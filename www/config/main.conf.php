@@ -118,6 +118,11 @@ define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/cre
 // documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/GetRequisitionStatus
 define ('PRNUMBER_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-requisition-status');
 # =============================================================================
+# ACCESS TOCKENS
+# =============================================================================
+define ('SOA_ACCESS_TOCKEN', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWxsZXIiOiJkdWlzIiwidXNlcm5hbWUiOiJkZ3JpZ29yYyIsImVtYWlsIjoiZGlhbmEuZ3JpZ29yY2FrYUBsYXR2ZW5lcmdvLmx2IiwiY3JlYXRlZEF0IjoiMjAyNC0wMS0yNFQxMTo0MzozNS4xMThaIiwiaWF0IjoxNzA2MDk2NjE1fQ.bgaIag8nl69tzfDisOM0f2O10QjvhDef9fIB1uMjcJ0');
+
+# =============================================================================
 # FMK configuration
 # =============================================================================
 
