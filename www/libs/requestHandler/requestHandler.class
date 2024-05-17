@@ -780,8 +780,43 @@ class RequestHandler
 					
 				}
 			}
-		}		
-		
+		}				
+	}
+
+	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
+	function getPPAReport ($code, $pageNumber, $recordsPerPage) 
+	{			
+		// The data to send to the API		
+		files::wh_log('getPPAReport report:'.PHP_EOL.
+				'code: '.$code.PHP_EOL.
+				'pageNumber:' .$pageNumber.PHP_EOL.
+				'recordPerPage:' .$recordsPerPage.PHP_EOL  );	
+		$postData = [
+		"projCode" => $code,
+		];
+		//var_dump($postData);
+		// Setup cURL			
+		$ch = curl_init(API_PPA);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
+		// Send the request
+		$response = curl_exec($ch);	
+		//echo $response;
+		if (curl_errno($ch)) {
+			files::wh_log('getPPAReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
+		} else { 
+			// Decode the response
+			$responseData = json_decode($response, TRUE);
+		}	
+		curl_close($ch);
+		//print_r( $responseData);
+		return 	$responseData;
 	}
 }
 
