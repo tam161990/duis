@@ -107,6 +107,13 @@
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('worktitle'); ?>:<?=(($isReadonly)?'':'<font color="red">*</font>');?></td>
             <td class="table_cell_2" colspan="3"><?= $oForm -> getElementHtml('worktitle'); ?></td>            
          </tr>
+
+         <tr>
+            <td class="table_cell_c" width="16%">&nbsp;</td>
+            <td class="table_cell_2" width="24%">&nbsp;</td>
+            <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('construction_date'); ?>:</td>
+            <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('construction_date'); ?></td>
+        </tr>
       
        
     </table>

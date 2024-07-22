@@ -249,7 +249,9 @@ if ( $isAdmin || $isProjector || $projectApprover )
   }   
   
   $oForm -> addElement('text', 'CODEVAL',  text::get('CODE'), isset($act['RAKT_PROJECT_NO'])?$act['RAKT_PROJECT_NO']:'', 'maxlength="16" '.(($isAdmin || $isSuperAdmin)? '' : ' disabled').'');
-
+  
+  $oForm -> addElement('date', 'construction_date',  text::get('PLAN_CONSTRACTION_DATE'), isset($act['RAKT_CONSTRACTION_DATE'])?$act['RAKT_CONSTRACTION_DATE']:'', 'tabindex=4 maxlength="10"'.(($isAdmin || $isSuperAdmin)? '' : ' disabled'));
+  
   $oForm -> addElement('select', 'EDarea',  text::get('ED_AREA'), isset($act['RAKT_KEDI_ID'])?$act['RAKT_KEDI_ID']:'', ''.(($isReadonlyExceptAdmin )?' disabled':'').'', '', '', $edarea);
     
   $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), isset($act['RAKT_RLTT_ID'])?$act['RAKT_RLTT_ID']:(($isEditor) ? '' : $userId), ''.((!$isReadonlyExceptAdmin || !$isReadonly )? '' :' disabled').'', '', '', $ouner);
@@ -424,7 +426,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 1,
                 $oForm->getValue('type'),
                 $oForm->getValue(strtoupper('codeval')),
-                $oForm->getValue('constract_company')
+                $oForm->getValue('constract_company'),
+                false,
+                false,
+                $oForm->getValue('construction_date')
               );
 
               // get inserted record ID
@@ -489,7 +494,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
                               1,
                               $oForm->getValue('type'),
                               $oForm->getValue(strtoupper('codeval')),
-                              $oForm->getValue('constract_company')
+                              $oForm->getValue('constract_company'),
+                              false,
+                              false,
+                              $oForm->getValue('construction_date')
                   );
 
                   if ($r )

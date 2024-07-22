@@ -553,8 +553,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
               'onchange="' . $saveJs . ';return false;" onkeypress = "this.onchange();" onpaste = "this.onchange();"', '', '', $type);            
           }
 	  }
-    unset($saveLink);
-	  
+	  unset($saveLink);
 	  if ($oFormMaterialTab -> isFormSubmitted()){
       $oFormMaterialTab->setNewValue('code['.$i.']',$actMaterial['MATR_KODS']);
       $oFormMaterialTab->setNewValue('title['.$i.']',$actMaterial['MATR_NOSAUKUMS']);

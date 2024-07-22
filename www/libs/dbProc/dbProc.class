@@ -4918,7 +4918,8 @@ class dbProc extends dbLayer
                     $project_code = false,
                     $construct_company = false, // Būvkomersants
                     $key_object = false, // Atslēgas objekts
-                    $pers_number = false
+                    $pers_number = false,
+                    $construction_date = false
                     )
 	{
      
@@ -4929,6 +4930,7 @@ class dbProc extends dbLayer
           '.(($number !==false)?',`RAKT_NUMURS`="'.dbLayer::quote_smart($numurs).'"':'').'
           '.(($objNumber !==false)?',`RAKT_NUMURS_OBJEKTA` = "'.dbLayer::quote_smart($objNumber).'"':'').'
           '.(($proces_date !==false)?',`RAKT_IZPILDES_DATUMS` = "'.dbLayer::parseDate($proces_date).'"':'').'
+          '.(($construction_date !==false)?',`RAKT_CONSTRACTION_DATE` = "'.dbLayer::parseDate($construction_date).'"':'').'
           '.(($proces_date !==false)?',`RAKT_GADS` = '.substr($proces_date,6,4):'').'
           '.(($isObjectFinished !==false)?',`RAKT_IR_OBJEKTS_PABEIGTS` = "'.dbLayer::quote_smart($isObjectFinished).'"':'').'
           '.(($decription !==false)?',`RAKT_PIEZIMES` = "'.dbLayer::quote_smart($decription).'"':'').'
@@ -4995,7 +4997,8 @@ class dbProc extends dbLayer
                 `RAKT_PROJECT_TYPE`,
                 `RAKT_PROJECT_NO`,
                 `RAKT_CONSTRUCT_COMPANY`,
-                `RAKT_KEY_OBJECT`
+                `RAKT_KEY_OBJECT`,
+                `RAKT_CONSTRACTION_DATE`
                 )
 			values
                 ('.(( !$number ) ? dbProc::getNextActNumber(dbLayer::quote_smart($EDarea), $trase) : dbLayer::quote_smart($number)) .',
@@ -5031,7 +5034,8 @@ class dbProc extends dbLayer
                 '.(($project && $project_type !== false) ? '"'.dbLayer::quote_smart($project_type).'"' : '"NULL"').',
                 '.(($project_code) ? '"'.dbLayer::quote_smart($project_code).'"' : '"NULL"').',
                 '.(($construct_company) ? '"'.dbLayer::quote_smart($construct_company).'"' : '"NULL"').',
-                '.(($key_object) ? '"'.dbLayer::quote_smart($key_object).'"' : '"0"').'                  
+                '.(($key_object) ? '"'.dbLayer::quote_smart($key_object).'"' : '"0"').',
+                '.(($construction_date) ? '"'.dbLayer::parseDate($construction_date).'"' : '"NULL"').'                  
                 )';
 		}
         //echo $query;
@@ -5174,7 +5178,8 @@ class dbProc extends dbLayer
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS` , l.RLTT_USER_NAME,
             (SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE RAKT_CONSTRUCT_COMPANY ) as CONSTRACT_COMPANY,
             ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
-            a.RAKT_WORK_TITLE AS `WORK_TITLE`, ".dbLayer::sqlParseDate('RAKT_IZPILDES_DATUMS')."
+            a.RAKT_WORK_TITLE AS `WORK_TITLE`, ".dbLayer::sqlParseDate('RAKT_IZPILDES_DATUMS').",
+            ".dbLayer::sqlParseDate('RAKT_CONSTRACTION_DATE')."
             from `AKTI` a
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
@@ -9489,10 +9494,11 @@ class dbProc extends dbLayer
                                         $user_name = false, 
                                         $end_date = false,
                                         $accept_date = false,
-                                        $project_code = false
+                                        $project_code = false,
+                                        $need_by_date = false
                                         )
         { 
-            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code;
+            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.need_by_date;
            
             $oDB = new dbLayer;
             $query = 'insert into `AUTO_ACT_STATUS`
@@ -9503,7 +9509,8 @@ class dbProc extends dbLayer
                             `USER_NAME`,
                             `END_DATE`,
                             `ACCEPT_DATE`,
-                            `AAST_PROJECT_NO`
+                            `AAST_PROJECT_NO`,
+                            `AAST_CONSTRACTION_DATE`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
@@ -9511,7 +9518,8 @@ class dbProc extends dbLayer
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
                           '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
-                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .'
+                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .',
+                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -9525,7 +9533,8 @@ class dbProc extends dbLayer
                             `USER_NAME`,
                             `END_DATE`,
                             `ACCEPT_DATE`,
-                            `AAST_PROJECT_NO`
+                            `AAST_PROJECT_NO`,
+                            `AAST_CONSTRACTION_DATE`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
@@ -9533,7 +9542,8 @@ class dbProc extends dbLayer
 						 '.(($user_name !== false) ? '"' .$user_name .'"' : '"NULL"') .',
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
                           '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
-                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .'
+                          '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .',
+                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -9547,7 +9557,8 @@ class dbProc extends dbLayer
         { 
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
-                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`, `AAST_PROJECT_NO`
+                                 `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`, `AAST_PROJECT_NO`,
+                                 `AAST_CONSTRACTION_DATE`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -9578,6 +9589,7 @@ class dbProc extends dbLayer
 				$actId = $act['RAKT_ID'];
                 $cur_user_id = $act['RAKT_RLTT_ID'];
                 $project_code = false;
+                $constraction_date = false;
 
                 if(isset($act['USER_NAME'])){
                     $userInfo = dbProc::getUserInfo('', $act['USER_NAME']);
@@ -9601,7 +9613,10 @@ class dbProc extends dbLayer
                 {
                     $project_code = $act['AAST_PROJECT_NO'];
                 }
-
+                if(isset($act['AAST_CONSTRACTION_DATE']))
+                {
+                    $constraction_date = $act['AAST_CONSTRACTION_DATE'];
+                }
                 switch ($act['AAST_STATUS']) {
                     /*Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + cits lietotājs  tad uz Ievadu nepāriet un nomainās tikai lietotājs
                     Ja Akts ir statusā  “Saskaņošana” un no KS atnāks “Ievads” + tas pats lietotājs  tad uz Ievadu pāriet;
@@ -9627,7 +9642,7 @@ class dbProc extends dbLayer
                 {
                     $accept_date = dbLayer::parseDate(dtime::now());
                 }
-
+               
                 files::wh_log('Update act status: ' .date("d.m.Y H:i:s").PHP_EOL. 
 									'AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
 									'RAKT_STATUS: '.$status.PHP_EOL.
@@ -9635,7 +9650,8 @@ class dbProc extends dbLayer
 									'RAKT_MSTK_ID: '.$place.PHP_EOL.
                                     'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL.
                                     'RAKT_PROJECT_NO:' .$project_code.PHP_EOL.
-                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL
+                                    'AAST_ID:' .$act['AAST_ID'].PHP_EOL.
+                                    'AAST_CONSTRACTION_DATE:' .$act['AAST_CONSTRACTION_DATE'].PHP_EOL
 							);						
 
                 				
@@ -9643,6 +9659,7 @@ class dbProc extends dbLayer
 						'.(($user_id !== false ) ? ',`RAKT_RLTT_ID`  = ' .$user_id : '' ) .'						
                         '.(($place !== false ) ? ',`RAKT_MSTK_ID`  = ' .$place : '' ) .'
                         '.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
+                        '.(($constraction_date !== false ) ? ',`RAKT_CONSTRACTION_DATE`  = "' .$constraction_date .'"' : '' ) .'
                         '.(($project_code !== false ) ? ',`RAKT_PROJECT_NO`  = "' .$project_code .'"' : '' ) .'
                         WHERE `RAKT_ID` = '.$actId;  
 				
