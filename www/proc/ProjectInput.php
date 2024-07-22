@@ -71,7 +71,7 @@
 										'customfield_28740:' .(isset($data->customfield_28740) ? $data->customfield_28740 :'').PHP_EOL. // transition_ID
 										'issue_needByDate:' .(isset($data->issue_needByDate) ? $data->issue_needByDate :'').PHP_EOL // Plānotais izbūves sākums
 								);						
-			//var_dump($data);
+			var_dump($data);
 			if( (isset($data->issue_invest_year) && !empty($data->issue_invest_year))  || 
 					(isset($data->issue_designer) && !empty($data->issue_designer)) ||
 					(isset($data->issue_territory) && !empty($data->issue_territory))  ||
@@ -100,11 +100,7 @@
 								$err_message								
 							);					
 				} else {
-					throw new Exception('not all data set');
-				}			
-				
-			} else {
-				$r = dbProc::saveKvikStepActStatus($data->issue_key, 
+					$r = dbProc::saveKvikStepActStatus($data->issue_key, 
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
 										isset($data->issue_end_date) && !empty($data->issue_end_date) ? substr($data->issue_end_date, 0, 10) : false,
@@ -112,6 +108,10 @@
 										isset($data->issue_proj) && !empty($data->issue_proj) ? substr($data->issue_proj, 0, 10) : false,
 										isset($data->issue_needByDate) && !empty($data->issue_needByDate) ? substr($data->issue_needByDate, 0, 10) : false
 										);	
+				}			
+				
+			} else {
+				throw new Exception('not all data set');
 			}
 			
 			$response = ob_get_clean();	
