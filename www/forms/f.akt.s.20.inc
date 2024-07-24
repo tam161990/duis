@@ -429,7 +429,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                 $oForm->getValue('constract_company'),
                 false,
                 false,
-                $oForm->getValue('construction_date')
+                ($oForm->getValue('construction_date'))? $oForm->getValue('construction_date'):false
               );
 
               // get inserted record ID
@@ -497,7 +497,7 @@ if ( $isAdmin || $isProjector || $projectApprover )
                               $oForm->getValue('constract_company'),
                               false,
                               false,
-                              $oForm->getValue('construction_date')
+                              ($oForm->getValue('construction_date'))? $oForm->getValue('construction_date'):false
                   );
 
                   if ($r )
