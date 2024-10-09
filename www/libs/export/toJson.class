@@ -49,14 +49,10 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
-                    /*$additionalAttributes[] = array(
-                        'field_name' => '', 
-                        'field_value' => ''
-                    ) ;*/   
-                    
+                                        
                     $manerialLines[] = array(						              
                             'itemNo' => $mate['NOMENKLATURA'], 
-                            'quantity' =>  $mate['MATR_DAUDZUMS'], 
+                            'quantity' =>  (int)$mate['MATR_DAUDZUMS'], 
                             'needByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
                             'location' =>  'RIGA.STI.8', 
                             'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
@@ -64,15 +60,18 @@ class toJson {
                             'expenditureType' =>  text::get('MATERIALS'),  
                             'expenditureDate' =>  date('Y-m-t'),                          
                             'warehouse' =>  'ST_RPRN',
-                            'additionalAttributes' => array() 
+                            'additionalAttributes' => array(
+                                'field_name' => "LineAttributeName",
+                                'field_value' => "LineAttributeValue"
+                            ) ;    
                     );  
                     $i++;
 
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }  
                 $additionalAttributes[] = array(
-                    'field_name' => 'Buvnieks', 
-                    'field_value' =>empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY']
+                    'field_name' => empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY'],
+                    'field_value' => ""
                 ) ;         
                 $array = array(
                         'orderNum' => $act['RAKT_NUM_POSTFIX'], 
