@@ -49,6 +49,11 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
+
+                    $additionalAttributesInner[] = array(
+                        'field_name' => "LineAttributeName",
+                        'field_value' => "LineAttributeValue"
+                    ) ;         
                                         
                     $manerialLines[] = array(						              
                             'itemNo' => $mate['NOMENKLATURA'], 
@@ -60,16 +65,15 @@ class toJson {
                             'expenditureType' =>  text::get('MATERIALS'),  
                             'expenditureDate' =>  date('Y-m-t'),                          
                             'warehouse' =>  'ST_RPRN',
-                            'additionalAttributes' => array(
-                                'field_name' => "LineAttributeName",
-                                'field_value' => "LineAttributeValue")
-                            ) ;  
+                            'additionalAttributes' => $additionalAttributesInner
+                            ) ; 
+
                     $i++;
 
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }  
                 $additionalAttributes[] = array(
-                    'field_name' => empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY'],
+                    'field_name' => empty($act['WORKER'])? "" : $act['WORKER'],
                     'field_value' => ""
                 ) ;         
                 $array = array(
