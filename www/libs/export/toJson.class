@@ -62,7 +62,7 @@ class toJson {
                             'warehouse' =>  'ST_RPRN',
                             'additionalAttributes' => array(
                                 'field_name' => "LineAttributeName",
-                                'field_value' => "LineAttributeValue"
+                                'field_value' => "LineAttributeValue")
                             ) ;    
                     );  
                     $i++;
