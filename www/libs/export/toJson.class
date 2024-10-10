@@ -38,8 +38,8 @@ class toJson {
                 $manerialLines = array();
                 $i = 0;
                 $additionalAttributesInner[] = array(
-                    'field_name' => "LineAttributeName",
-                    'field_value' => "LineAttributeValue"
+                    'fieldName' => "LineAttributeName",
+                    'fieldValue' => "LineAttributeValue"
                 ) ;         
                 foreach ($aMaterialDb as $mate) {
 
@@ -72,8 +72,8 @@ class toJson {
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }  
                 $additionalAttributes[] = array(
-                    'field_name' => empty($act['WORKER'])? "" : $act['WORKER'],
-                    'field_value' => ""
+                    'fieldName' => empty($act['WORKER'])? "" : $act['WORKER'],
+                    'fieldValue' => ""
                 ) ;         
                 $array = array(
                         'orderNum' => $act['RAKT_NUM_POSTFIX'], 
