@@ -63,8 +63,7 @@ class toJson {
                             'additionalAttributes' => array(
                                 'field_name' => "LineAttributeName",
                                 'field_value' => "LineAttributeValue")
-                            ) ;    
-                    );  
+                            ) ;  
                     $i++;
 
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
