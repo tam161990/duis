@@ -57,7 +57,7 @@ class toJson {
                     $manerialLines[] = array(						              
                             'itemNo' => $mate['NOMENKLATURA'], 
                             'quantity' =>  (int)$mate['MATR_DAUDZUMS'], 
-                            'needByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
+                            'needByDate' =>  $act['CONSTRACTION_DATE'],  
                             'location' =>  'RIGA.STI.8', 
                             'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
                             'taskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : "1"),  
