@@ -7581,6 +7581,7 @@ class dbProc extends dbLayer
         $wta = false;
         $alt_work_codes = '';
         $alt_work_codes_arr=array(); 
+        $project = true;
         if ($work_type != false ) { 
             if ($work_type == 'X')   {
                 $workType=array();      
@@ -9498,7 +9499,7 @@ class dbProc extends dbLayer
                                         $need_by_date = false
                                         )
         { 
-            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.need_by_date;
+            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.$need_by_date;
            
             $oDB = new dbLayer;
             $query = 'insert into `AUTO_ACT_STATUS`
