@@ -53,17 +53,18 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
+                    $nomenklatura = array('0000001','0000002','0000003','0000004','0000005','0000075','0000008','0000047','0000052','0000122','0000165');
                                         
                     $manerialLines[] = array(						              
                             'itemNo' => $mate['NOMENKLATURA'], 
-                            'quantity' =>  (int)$mate['MATR_DAUDZUMS'], 
+                            'quantity' =>  floatval($mate['MATR_DAUDZUMS']), 
                             'needByDate' =>  $act['CONSTRACTION_DATE'],  
-                            'location' =>  'RIGA.STI.8', 
+                            'location' =>  (in_array($mate['NOMENKLATURA'], $nomenklatura) ? 'RIGA.STI.8' : 'RIGA.STI.8'), 
                             'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
                             'taskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : "1"),  
                             'expenditureType' =>  text::get('MATERIALS'),  
                             'expenditureDate' =>  date('Y-m-t'),                          
-                            'warehouse' =>  'ST_RPRN',
+                            'warehouse' =>  (in_array($mate['NOMENKLATURA'], $nomenklatura) ? 'ST_KBR' : 'ST_RPRN'),
                             'additionalAttributes' => $additionalAttributesInner
                             ) ; 
 
