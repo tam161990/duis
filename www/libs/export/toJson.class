@@ -45,7 +45,7 @@ class toJson {
 
 
                     $matr_status = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
-                    if($mate['MATR_PROJECT_EXPORT'] == dbProc::getKrfkInfoByName(DU_DELIVERY_TYPE)['KRFK_NOZIME']) {
+                    if($mate['MATR_PROJECT_EXPORT'] == 'MAN') {
                         $matr_status = null;
                         continue;
                     }
