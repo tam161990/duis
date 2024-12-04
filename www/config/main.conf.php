@@ -451,6 +451,11 @@ define('WORKER_SECTION_EPW','Daugavpils,Preili,Ludza,Kraslava,Rezekne');
 define('CAT_CLASE_1','Aprīkojums');
 define('CAT_CLASE_2','Neprojektēt');
 
-
+#=================================================
+#  material export codes
+#=================================================
+define('PROJECT_EXPORT_ST_MAM','ST vai MAN');
+define('PROJECT_EXPORT_ST','ST piegāde');
+define('PROJECT_EXPORT_ST_CODE','ST_DELIVER');
 
 ?>
