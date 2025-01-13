@@ -468,5 +468,10 @@ define('CAT_CLASE_2','Neprojektēt');
 #  ST worker 
 #=================================================
 define('ST_WORKER_CODE','40003857687');
+#  material export codes
+#=================================================
+define('PROJECT_EXPORT_ST_MAM','ST vai MAN');
+define('PROJECT_EXPORT_ST','ST piegāde');
+define('PROJECT_EXPORT_ST_CODE','ST_DELIVER');
 
 ?>

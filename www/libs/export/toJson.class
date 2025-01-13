@@ -35,6 +35,7 @@ class toJson {
                 print_r($aMaterialDb);
                 echo '</pre>';
                 */
+                
                 $manerialLines = array();
                 $i = 0;
                 $additionalAttributesInner[] = array(
@@ -45,7 +46,9 @@ class toJson {
 
 
                     $matr_status = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
-                    if($mate['MATR_PROJECT_EXPORT'] == 'MAN') {
+                    if($mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST_MAM &&
+                        $mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST_CODE &&
+                        $mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST ) {
                         $matr_status = null;
                         continue;
                     }
