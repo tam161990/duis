@@ -35,13 +35,20 @@ class toJson {
                 print_r($aMaterialDb);
                 echo '</pre>';
                 */
+                
                 $manerialLines = array();
                 $i = 0;
+                $additionalAttributesInner[] = array(
+                    'fieldName' => "LineAttributeName",
+                    'fieldValue' => "LineAttributeValue"
+                ) ;         
                 foreach ($aMaterialDb as $mate) {
 
 
                     $matr_status = (($mate['COUNT'] == 0) ? 3 : (($mate['COUNT'] == 1) ? 1 : 2 ) );
-                    if($mate['MATR_PROJECT_EXPORT'] == dbProc::getKrfkInfoByName(DU_DELIVERY_TYPE)['KRFK_NOZIME']) {
+                    if($mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST_MAM &&
+                        $mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST_CODE &&
+                        $mate['MATR_PROJECT_EXPORT'] != PROJECT_EXPORT_ST ) {
                         $matr_status = null;
                         continue;
                     }
@@ -49,30 +56,28 @@ class toJson {
                         dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], false, $matr_status);
                         continue;
                     }
-                    /*$additionalAttributes[] = array(
-                        'field_name' => '', 
-                        'field_value' => ''
-                    ) ;*/   
-                    
+                    $nomenklatura = array('0000001','0000002','0000003','0000004','0000005','0000075','0000008','0000047','0000052','0000122','0000165');
+                                        
                     $manerialLines[] = array(						              
                             'itemNo' => $mate['NOMENKLATURA'], 
-                            'quantity' =>  $mate['MATR_DAUDZUMS'], 
-                            'needByDate' =>  date('Y-m-d',mktime(0,0,0,1,1,$act['RAKT_GADS'])),  
-                            'location' =>  'RIGA.STI.8', 
+                            'quantity' =>  floatval($mate['MATR_DAUDZUMS']), 
+                            'needByDate' =>  $act['CONSTRACTION_DATE'],  
+                            'location' =>  (in_array($mate['NOMENKLATURA'], $nomenklatura) ? 'RIGA.STI.8' : 'RIGA.STI.8'), 
                             'projectNum' =>  (!empty($project_codes[0]) ? $project_codes[0] : ""), 
                             'taskNum' =>  (isset($project_codes[1]) ? $project_codes[1] : "1"),  
                             'expenditureType' =>  text::get('MATERIALS'),  
                             'expenditureDate' =>  date('Y-m-t'),                          
-                            'warehouse' =>  'ST_RPRN',
-                            'additionalAttributes' => array() 
-                    );  
+                            'warehouse' =>  (in_array($mate['NOMENKLATURA'], $nomenklatura) ? 'ST_KBR' : 'ST_RPRN'),
+                            'additionalAttributes' => $additionalAttributesInner
+                            ) ; 
+
                     $i++;
 
                     dbProc::updateMaterialNomenklaturu($mate['MATR_ID'], $mate['NOMENKLATURA'], $matr_status);              
                 }  
                 $additionalAttributes[] = array(
-                    'field_name' => 'Buvnieks', 
-                    'field_value' =>empty($act['CONSTRACT_COMPANY'])? "" : $act['CONSTRACT_COMPANY']
+                    'fieldName' => empty($act['WORKER'])? "" : $act['WORKER'],
+                    'fieldValue' => ""
                 ) ;         
                 $array = array(
                         'orderNum' => $act['RAKT_NUM_POSTFIX'], 

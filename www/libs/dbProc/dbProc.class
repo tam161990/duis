@@ -5179,7 +5179,7 @@ class dbProc extends dbLayer
             (SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE RAKT_CONSTRUCT_COMPANY ) as CONSTRACT_COMPANY,
             ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
             a.RAKT_WORK_TITLE AS `WORK_TITLE`, ".dbLayer::sqlParseDate('RAKT_IZPILDES_DATUMS').",
-            ".dbLayer::sqlParseDate('RAKT_CONSTRACTION_DATE')."
+            DATE_FORMAT(a.RAKT_CONSTRACTION_DATE,'%Y-%m-%d') CONSTRACTION_DATE
             from `AKTI` a
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
