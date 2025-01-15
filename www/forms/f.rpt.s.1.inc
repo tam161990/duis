@@ -139,32 +139,31 @@ if(true/*$isEdUser || $isAdmin*/)
         print_r($area);
         echo "</pre>";*/
         // write off summ table
-        
-        $res1 = dbProc::getWriteOffSumm($sCriteria, implode(',',$actIds));
-        /*echo "<pre>";
-        print_r($res1);
-        echo "</pre>";*/
+        if(count($actIds) > 0) {
+            $res1 = dbProc::getWriteOffSumm($sCriteria, implode(',',$actIds));
+            /*echo "<pre>";
+            print_r($res1);
+            echo "</pre>";*/
 
-        $WriteOffTotalsumma = 0;
-        $WriteOffTotalpct = 0;
-        $WriteOffTotaltotal = 0;
+            $WriteOffTotalsumma = 0;
+            $WriteOffTotalpct = 0;
+            $WriteOffTotaltotal = 0;
 
-        if (is_array($res1))
-		{
-            foreach ($res1 as $i=>$row)
-			{
-                $konts[$row['KWRC_KODS']]  = array (
-                    'writeoftitle' => $row['KWRC_NOSAUKUMS'],
-                    'Total' => $row['WRITEOFF_SUMM']
-                   );
+            if (is_array($res1))
+            {
+                foreach ($res1 as $i=>$row)
+                {
+                    $konts[$row['KWRC_KODS']]  = array (
+                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'Total' => $row['WRITEOFF_SUMM']
+                    );
 
-                $WriteOffTotalsumma += $row['WRITEOFF_SUMM'];
-            }
-            $WriteOffTotalpct =  ($WriteOffTotalsumma*(100+ $pvn )/ 100 ) - $WriteOffTotalsumma;
-            $WriteOffTotaltotal = ($WriteOffTotalsumma*(100+ $pvn )/ 100 );
+                    $WriteOffTotalsumma += $row['WRITEOFF_SUMM'];
+                }
+                $WriteOffTotalpct =  ($WriteOffTotalsumma*(100+ $pvn )/ 100 ) - $WriteOffTotalsumma;
+                $WriteOffTotaltotal = ($WriteOffTotalsumma*(100+ $pvn )/ 100 );
+            }        
         }
-      
-
 		include('f.rpt.s.1.tpl');
 	}
 }
