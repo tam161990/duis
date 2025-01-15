@@ -19,9 +19,7 @@
 		{
 ?>
             <tr class="table_cell_3">
-
-                <td colspan="2" align="right"><b><?=text::get('WRITE_OFF_ACCOUNT');?>:</b></td>
-                <td colspan="5" align="left"><?= $row['writeoftitle']; ?></td>
+                <td colspan="7" align="center"><b><?= $row['acttypetitle']; ?></b></td>
             </tr>
             <tr class="table_head_2">
     			<td width="10%"><?= text::get('ACT_NUMBER'); ?></td>
@@ -82,5 +80,39 @@
             </tr>
             <tr><td colspan="7">&nbsp;</td></tr>
 </table>
-
+<table cellpadding="5" cellspacing="1" border="0" width="50%" align="center">
+    <?
+        if (is_array($konts) && count($konts) > 0)
+        {
+    ?>
+    <tr class="table_head_2">
+        <td width="80%"><?= text::get('WRITE_OFF_ACCOUNT'); ?></td>
+        <td width="20%"><?= text::get('ACT_TOTAL_PRICE'); ?></td>
+    </tr>
+    <?
+            foreach ($konts as $row)
+            {
+    ?>
+                <tr class="table_cell_3">
+                    <td align="left"><?= $row['writeoftitle']; ?></td>
+                    <td align="center"><?= $row['Total']; ?></td>
+                </tr>
+    <?
+            }
+    ?>
+        <tr class="table_head_2">
+            <td align="right"><b><?=text::get('TOTAL');?>: </b></td>
+            <td align="center"><b><?=number_format($WriteOffTotalsumma,2,'.','');?></b></td>
+        </tr>
+        <tr class="table_head_2">
+            <td align="right"><b><?=text::get('PCT').' '. $pvn . '%';?>: </b></td>
+            <td align="center"><b><?=number_format($WriteOffTotalpct,2,'.','');?></b></td>
+        </tr>
+        <tr class="table_head_2">
+            <td align="right"><b><?=text::get('TOTAL_WITH_PCT');?>: </b></td>
+            <td align="center"><b><?=number_format($WriteOffTotaltotal,2,'.','');?></b></td>
+       </tr>
+    <?
+        }
+    ?>   
 </body>

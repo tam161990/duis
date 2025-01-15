@@ -5177,7 +5177,6 @@ class dbProc extends dbLayer
             m.KMSD_KODS `MMS`, s.KSRG_NOSAUKUMS `SPRIEGUMS`, o.KOBJ_NOSAUKUMS `OBJECT`,  w.KWOI_NOSAUKUMS `WORKER`,
             CONCAT(l.RLTT_VARDS,' ', l.RLTT_UZVARDS) `AUTORS` , l.RLTT_USER_NAME,
             (SELECT `KWOI_KODS` FROM `kl_work_owners` WHERE `KWOI_IR_AKTIVS` = 1 AND `KWOI_NOSAUKUMS2` LIKE RAKT_CONSTRUCT_COMPANY ) as CONSTRACT_COMPANY,
-            ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
             a.RAKT_WORK_TITLE AS `WORK_TITLE`, ".dbLayer::sqlParseDate('RAKT_IZPILDES_DATUMS').",
             DATE_FORMAT(a.RAKT_CONSTRACTION_DATE,'%Y-%m-%d') CONSTRACTION_DATE,
             ".dbLayer::sqlParseDate('RAKT_CONSTRACTION_DATE')."
@@ -5190,7 +5189,6 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_SPRIEGUMS` s ON (a.RAKT_KSRG_ID = s.KSRG_ID)
             LEFT JOIN `KL_OBJEKTI` o ON (a.RAKT_KOBJ_ID = o.KOBJ_ID)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID)
-            LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
 				where `RAKT_ID` = '".dbLayer::quote_smart($ID)."'";
         //echo $query;
 		$oSQL = new dbLayer;
@@ -6286,10 +6284,9 @@ class dbProc extends dbLayer
           //(SELECT ".dbLayer::sqlParseDate('AAUD_DATUMS')." FROM `AKTA_STATUSA_MAINA`  WHERE a.RAKT_ID = AAUD_RAKT_ID AND AAUD_STATUS = 'CLOSE' ORDER BY AAUD_DATUMS DESC LIMIT 1) AS `AAUD_DATUMS`
           $query = " SELECT * FROM ( select *,
             e.KEDI_SECTION `ED`,
+            v.KAKV_NOSAUKUMS `ACTA_VEIDS`,
             w.KWOI_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
-            ww.KWRC_ID AS `WRITE_OFF_ID`,
-            ww.KWRC_TITLE  AS `WRITE_OFF_ACCOUNT`,
             e.KEDI_REGIONS AS `REGION` ,
              NVL((SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER = 1
 		AND ((a.RAKT_IS_AUTO = 1 and ( MATR_WORK_APROVE_DATE BETWEEN 
@@ -6309,8 +6306,8 @@ class dbProc extends dbLayer
             ) as `DRBI_APPROVE_DATE`
             from `AKTI` a
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
-            LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)
-            LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
+            LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
+            LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)            
             LEFT JOIN 
                 (SELECT MAX(AAUD_STATUS) AAUD_STATUS, MAX(AAUD_DATUMS) AAUD_DATUMS, AAUD_RAKT_ID 
                     FROM `AKTA_STATUSA_MAINA` 
@@ -6353,15 +6350,61 @@ class dbProc extends dbLayer
                 and y.AAUD_STATUS = 'CLOSE'
                 AND y.AAUD_DATUMS BETWEEN '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
-        $query .= " GROUP BY  RAKT_ID ORDER BY WRITE_OFF_ID, RAKT_FULL_NUMBER";
+        $query .= " GROUP BY  RAKT_ID ORDER BY RAKT_KAKV_ID, RAKT_FULL_NUMBER";
 
        // echo $query;
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
 
+     function getWriteOffSumm($searchString, $actIds) {
+        $sCriteria = explode("^", $searchString);
 
+        $searcCriteria['year'] = $sCriteria[0];
+        $searcCriteria['month'] = $sCriteria[1];
 
+        $query = " 
+        SELECT KWRC_KODS, KWRC_NOSAUKUMS, SUM(DRBI_CILVEKSTUNDAS) as WRITEOFF_SUMM
+        FROM (
+        SELECT ww.KWRC_KODS, ww.KWRC_NOSAUKUMS, d.DRBI_CILVEKSTUNDAS
+        from `AKTI` a 
+        INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
+        LEFT JOIN `KL_WRITEOFF_CODE_NEW` ww  ON (ww.KWRC_KKAL_SHIFRS = d.DRBI_KKAL_SHIFRS)
+        WHERE a.RAKT_ID IN (".$actIds.")
+        AND a.RAKT_KAKV_ID NOT IN (".ACT_TYPE_STIHIJA_ID.", ".ACT_TYPE_PERS_ID.")
+		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+		) or ( a.RAKT_IS_AUTO = 0 ) ) 
+        UNION
+         SELECT  71882 as KWRC_KODS, '''".text::get('WRITE_OFF_CODE_ELEMENT')."''' as KWRC_NOSAUKUMS, 
+         d.DRBI_CILVEKSTUNDAS
+        from `AKTI` a 
+        INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
+        WHERE a.RAKT_ID IN (".$actIds.")
+        AND a.RAKT_KAKV_ID IN (".ACT_TYPE_STIHIJA_ID.")
+		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+		) or ( a.RAKT_IS_AUTO = 0 ) ) 
+        UNION
+          SELECT  71889 as KWRC_KODS, '''".text::get('WRITE_OFF_CODE_PERS')."''' as KWRC_NOSAUKUMS, 
+          d.DRBI_CILVEKSTUNDAS
+        from `AKTI` a 
+        INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
+        WHERE a.RAKT_ID IN (".$actIds.")
+        AND a.RAKT_KAKV_ID IN (".ACT_TYPE_PERS_ID.")
+		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+		) or ( a.RAKT_IS_AUTO = 0 ) ) 
+        ) x
+         GROUP BY KWRC_KODS, KWRC_NOSAUKUMS";
+
+        //echo $query;
+        $oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+     }
 
     // -----------------------------------------------------------------------------
 	// Atgriezh kopeejo aktus skaitu.
@@ -6648,7 +6691,7 @@ class dbProc extends dbLayer
                 $order = $orderColumn . ' ' . $sortOrder;
             }
             
-            $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
+            $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .",                     
                     ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                     (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
                     AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
@@ -6656,6 +6699,7 @@ class dbProc extends dbLayer
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
                 ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_writeoff_code_new` ON `KWRC_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -6670,6 +6714,7 @@ class dbProc extends dbLayer
                 from " . $table_name . "
                 ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
                 ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_writeoff_code_new` ON `KWRC_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
                 WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
@@ -11170,7 +11215,163 @@ class dbProc extends dbLayer
 	    //echo $query;    
         $oSQL = new dbLayer;
         return $oSQL->makeQuery($query);
-    }    
+    }
+    
+    //###############################
+    // WRITE OFF CODES
+    //###############################
+    function getWriteOffCodesList($ID = false, $offset = false, $limit = false,
+                            $search =  false,
+                            $column = false,
+                            $order =  'ASC',
+                            $orderColumn = false)
+	{
+		if ($ID)
+		{
+			$query = 'select *,  ' .dbLayer::sqlParseDateTime('KWRC_CREATED') .',  
+            ' .dbLayer::sqlParseDateTime('KWRC_EDITED') .'
+				from `KL_WRITEOFF_CODE_NEW`
+				where `KWRC_ID` = "'.dbLayer::quote_smart($ID).'"';
+		}
+		else
+		{
+		    if($column === false)
+            {
+                  $column = dbProc::getKlklDefaultColumn(KL_WRITEOFF_CODES);
+            }
+            if($orderColumn === false)
+            {
+                  $orderColumn = dbProc::getKlklDefaultColumn(KL_WRITEOFF_CODES);
+            }
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+            
+            $query = 'select * ,  ' .dbLayer::sqlParseDateTime('KWRC_CREATED') .',  
+                    ' .dbLayer::sqlParseDateTime('KWRC_EDITED') .'
+            from `KL_WRITEOFF_CODE_NEW`
+            where '.$searchString.'
+            order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order).'';
+			if (($offset !== false) && $limit)
+			{
+				$query .= ' limit '.
+					($offset ? (int)$offset.', ' : '').
+					(int)$limit;
+			}
+		}
+        $oDB = new dbLayer;
+        $res=$oDB->makeQuery($query);
+		return $res;
+    }
+
+        function writeOffCodesCodeExists($code, $writeOffCodeId = false)
+        {
+            $query = 'select `KWRC_ID` from `KL_WRITEOFF_CODE_NEW`
+                where `KWRC_KODS` = "'.dbLayer::quote_smart($code).'"';
+            if ($writeOffCodeId)
+            {
+                $query .= ' and `KWRC_ID` != "'.dbLayer::quote_smart($writeOffCodeId).'"';
+            }
+
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['KWRC_ID']);
+        }
+
+        function saveWriteOffCode($ID, $code, $title, $calc_code, $calc_title, $user )
+        {
+        
+            if ($ID)
+            {
+                $query = 'update `KL_WRITEOFF_CODE_NEW`
+                    set `KWRC_KODS` = "'.dbLayer::quote_smart($code).'",
+                        `KWRC_NOSAUKUMS` = "'.dbLayer::quote_smart($title).'",
+                        `KWRC_KKAL_SHIFRS` = "'.dbLayer::quote_smart($calc_code).'" ,
+                        `KWRC_KKAL_NOSAUKUMS` = "'.dbLayer::quote_smart($calc_title).'",
+                        `KWRC_EDITOR` = "'.dbLayer::quote_smart($user).'",
+                        `KWRC_EDITED` = now()
+                    where `KWRC_ID` = "'.dbLayer::quote_smart($ID).'"';
+
+            }
+            elseif ($code)
+            {
+                $query = 'insert into  `KL_WRITEOFF_CODE_NEW`
+                            (
+                            `KWRC_KODS`, 
+                            `KWRC_NOSAUKUMS`, 
+                            `KWRC_KKAL_SHIFRS`, 
+                            `KWRC_KKAL_NOSAUKUMS`,
+                            `KWRC_CREATOR`,
+                            `KWRC_CREATED`)
+                values
+                    (
+                    "'.dbLayer::quote_smart($code).'",
+                    "'.dbLayer::quote_smart($title).'",
+                    "'.dbLayer::quote_smart($calc_code).'",
+                    "'.dbLayer::quote_smart($calc_title).'",
+                    "'.dbLayer::quote_smart($user).'", 
+                    now()
+                    )';
+            }
+
+            $oDB = new dbLayer;
+            $result = $oDB -> makeQuery($query);
+
+            return ($result !== false);
+        }
+
+        function getWriteOffCodesCount($search = false, $column = false)
+        {
+            $oDB = new dbLayer;
+            if($column === false)
+            {
+            $column = dbProc::getKlklDefaultColumn(KL_WRITEOFF_CODES);
+            }
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+            
+            $query =  'select count(`KWRC_ID`) as `KWRC_COUNT` from `KL_WRITEOFF_CODE_NEW`
+            where '.$searchString;
+            $result = $oDB -> makeQuery($query);
+
+            return isset($result[0]['KWRC_COUNT']) ? $result[0]['KWRC_COUNT'] : false;
+        }
+
+        function saveWriteOffCodesFromExcel($data, $user){
+            $oSQL=new dbLayer();       
+            $sql = 'insert into  `KL_WRITEOFF_CODE_NEW`
+                            (                            
+                            `KWRC_KKAL_SHIFRS`, 
+                            `KWRC_KKAL_NOSAUKUMS`,
+                            `KWRC_KODS`, 
+                            `KWRC_NOSAUKUMS`, 
+                            `KWRC_CREATOR`,
+                            `KWRC_CREATED`)
+                    SELECT
+                            "'.dbLayer::quote_smart($data[0]).'",
+                             "'.dbLayer::quote_smart($data[1]).'",
+                             "'.dbLayer::quote_smart($data[2]).'",
+                             "'.dbLayer::quote_smart($data[3]).'",
+                             '.dbLayer::quote_smart($user).',
+                             now() FROM DUAL
+                             WHERE NOT EXISTS(SELECT 1 FROM `KL_WRITEOFF_CODE_NEW` 
+                             WHERE `KWRC_KODS` = "'.dbLayer::quote_smart($data[2]).'") 
+                    LIMIT 1';
+            
+            $res=$oSQL->makeQuery($sql);
+            if ($res!==false)
+            {
+                return true;
+            }
+            return false;
+        }
+
 }  
 
 ?>
