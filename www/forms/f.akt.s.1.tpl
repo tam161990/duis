@@ -128,13 +128,8 @@
         <tr>
             <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('voltage'); ?>:<font color="red">*</font></td>
             <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('voltage'); ?></td>
-             <? if($actId != false)  {?>
-                <td class="table_cell_c" width="16%"><?= $oForm -> getElementLabel('writeoffAccount'); ?>:</td>
-                <td class="table_cell_2" width="24%"><?= $oForm -> getElementHtml('writeoffAccount'); ?></td>
-            <? } else { ?>
-                <td class="table_cell_c" width="16%">&nbsp;</td>
-                <td class="table_cell_2" width="24%">&nbsp;</td>
-            <? } ?>
+            <td class="table_cell_c" width="16%">&nbsp;</td>
+            <td class="table_cell_2" width="24%">&nbsp;</td>
            </tr>
         
         <tr>

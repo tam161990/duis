@@ -132,6 +132,11 @@ document.onmousemove=positiontip
                     <th  width="10%"><?=text::get('CALC_WORK_H_NORM');?></th>
                     <th  width="10%"><?=text::get('CALC_WORK_H_NORM_SUM');?></th>
 				<? } ?>
+                <? if(!$tame) { ?>
+					<th  width="10%"><?=text::get('WRITE_OFF_ACCOUNT');?></th>
+                    <th  width="3%"><?=text::get('ELEMENT');?></th>
+                    <th  width="3%"><?=text::get('PERS');?></th>
+				<? } ?>
 			 	<th width="3%">&nbsp;</th>
 			</tr>
 
@@ -175,6 +180,11 @@ document.onmousemove=positiontip
                     <td><?= $oFormWorkTab->getElementHtml('work_norm['.$x.']'); ?></td>
                     <td><?= $oFormWorkTab->getElementHtml('work_norm_sum['.$x.']'); ?></td>
 				<? } ?>
+                <? if(!$tame) { ?>
+					<td><?= $oFormWorkTab->getElementHtml('write_off_code['.$x.']'); ?></td>
+                    <td><?= $oFormWorkTab->getElementHtml('act_element['.$x.']'); ?></td>
+                    <td><?= $oFormWorkTab->getElementHtml('act_pers['.$x.']'); ?></td>					
+				<? }  ?>	
              	<td>
                     <? if(!$isReadonly &&  (empty($actWork['DRBI_APPROVE_DATE']) || $tame))  {?>
                     <?= $oFormWorkTab->getElementHtml('work_del['.$x.']'); ?>

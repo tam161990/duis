@@ -316,6 +316,9 @@ if ( $isAdmin || $isSystemUser)
           $oFormWorkTab->addElement('label', 'measure['.$i.']', '', $actWork['DRBI_MERVIENIBA']);   
           $oFormWorkTab->addElement('label', 'work_norm['.$i.']', '', $actWork['KKNO_NORM']);   
           $oFormWorkTab->addElement('label', 'work_norm_sum['.$i.']', '', number_format($actWork['WORK_NORM_SUM'], 2, '.', ''));   
+          $oFormWorkTab->addElement('label', 'write_off_code['.$i.']', '', $actWork['KWRC_KODS']); 
+          $oFormWorkTab->addElement('label', 'act_element['.$i.']', '', ($act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID) ? text::get('YES'): text::get('NO'));   
+          $oFormWorkTab->addElement('label', 'act_pers['.$i.']', '', ($act['RAKT_KAKV_ID'] == ACT_TYPE_PERS_ID) ? text::get('YES'): text::get('NO'));   
           if ($oFormWorkTab -> isFormSubmitted()){
             $oFormWorkTab->setNewValue('chipher['.$i.']',$actWork['DRBI_KKAL_SHIFRS']);
             $oFormWorkTab->setNewValue('title['.$i.']',$actWork['DRBI_KKAL_NOSAUKUMS']);
