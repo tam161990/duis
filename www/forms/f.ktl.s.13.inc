@@ -235,6 +235,34 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 }
                               }                            
                               break;
+                            // izmaksu konti
+                            case 'WRITE_OFF_CODES':                           
+                              $j = 0;
+                              foreach ($objWorksheet->getRowIterator() as $row)
+                              {
+                                  $cellIterator = $row->getCellIterator();
+                                  $cellIterator->setIterateOnlyExistingCells(true);
+    
+                                  $i = 0;    
+                                  foreach ($cellIterator as $cell)
+                                  {
+                                    if(!is_null($cell))
+                                    {                                      
+                                        $j++;
+                                        if($j == 1)
+                                            break 1;
+                                        $data[$i] =  $cell->getValue();
+                                        $i++;                                      
+                                      }
+                                  }
+                                  // save 
+                                  if($j > 1)
+                                  {
+                                    $r2 = dbProc::saveWriteOffCodesFromExcel($data, $userId);
+                                    
+                                  }
+                                }                            
+                                break;
                             // materiālu kategorijas
                             case 'MATERIAL_CATEGORY':                           
                             $j = 0;
@@ -493,6 +521,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
                   break;  
                 case 'CALC_NORMAS':      
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.23');
+                  break; 
+                case 'WRITE_OFF_CODES':
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.24');
                   break;                                          
                
             }
@@ -534,7 +565,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 case 'CALC_NORMAS':      
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.23');
                   break;                                                                 
-                
+                case 'WRITE_OFF_CODES':
+                    $oLink->addPrm(FORM_ID, 'f.ktl.s.24');
+                    break;      
             }
             $oLink->addPrm('editMode', '1');
             $editLink = $oLink->getQuery();

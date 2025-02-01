@@ -62,6 +62,7 @@
         print_r($res);
         echo "</pre>";*/
         $area = array();
+        $actIds = array();
 
         $summa = 0;
         $pct = 0;
@@ -80,11 +81,13 @@
                $pct =  ($totalPrice*(100+ $pvn )/ 100 ) - $totalPrice;
                $summa = ($totalPrice*(100+ $pvn )/ 100 );
 
-               $area[$row['WRITE_OFF_ACCOUNT']]  = array (
-                'writeoftitle' => $row['WRITE_OFF_ACCOUNT'],
-                'Cena' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Cena'])?$area[$row['WRITE_OFF_ACCOUNT']]['Cena']:0) + $totalPrice,
-                'Pct' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Pct'])?$area[$row['WRITE_OFF_ACCOUNT']]['Pct']:0) + $pct,
-                'Total' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Total'])?$area[$row['WRITE_OFF_ACCOUNT']]['Total']:0) + $summa,
+               $actIds[] = $row['RAKT_ID'];
+
+               $area[$row['ACT_TYPE']]  = array (
+                'writeoftitle' => $row['ACTA_VEIDS'],
+                'Cena' => (isset($area[$row['ACT_TYPE']]['Cena'])?$area[$row['ACT_TYPE']]['Cena']:0) + $totalPrice,
+                'Pct' => (isset($area[$row['ACT_TYPE']]['Pct'])?$area[$row['ACT_TYPE']]['Pct']:0) + $pct,
+                'Total' => (isset($area[$row['ACT_TYPE']]['Total'])?$area[$row['ACT_TYPE']]['Total']:0) + $summa,
                 'work' => array()
                );
 
@@ -112,6 +115,31 @@
             }
 
 		}
+        if(count($actIds) > 0) {
+            $res1 = dbProc::getWriteOffSumm($sCriteria, implode(',',$actIds));
+            /*echo "<pre>";
+            print_r($res1);
+            echo "</pre>";*/
+
+            $WriteOffTotalsumma = 0;
+            $WriteOffTotalpct = 0;
+            $WriteOffTotaltotal = 0;
+
+            if (is_array($res1))
+            {
+                foreach ($res1 as $i=>$row)
+                {
+                    $konts[$row['KWRC_KODS']]  = array (
+                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'Total' => $row['WRITEOFF_SUMM']
+                    );
+
+                    $WriteOffTotalsumma += $row['WRITEOFF_SUMM'];
+                }
+                $WriteOffTotalpct =  ($WriteOffTotalsumma*(100+ $pvn )/ 100 ) - $WriteOffTotalsumma;
+                $WriteOffTotaltotal = ($WriteOffTotalsumma*(100+ $pvn )/ 100 );
+            }
+        }
         $pdf=new FPDF('l');
                 $pdf->AddFont('Arial','','arial.php');
                 $pdf->AddFont('Arial','BI','arialbi.php');
@@ -188,8 +216,7 @@
                            }
                         }
                         $pdf->SetFont('Arial','',9);
-                        $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT').
-                        ": ".$row['writeoftitle']),0,1,'L');
+                        $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
 
                         $pdf->FancyTable($headers,$data, $width, $align);
 
@@ -206,6 +233,41 @@
                         $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
                     }
 
+                }
+
+                if (is_array($konts) && count($konts) > 0)
+                {
+                    $dataWriteOff = array();
+                    $i = 0;
+                    foreach ($konts as $r)
+                    {
+                        $dataWriteOff[$i] = array(
+                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
+                            'ACT_TOTAL_PRICE' => $r['Total']                            
+                            );
+                            $i++;
+                    }
+                    $headersWriteOff = array(
+                        'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
+                        'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
+                        );
+
+                    $pdf->SetFont('Arial','',9);
+                    $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
+
+                    $pdf->FancyTable($headersWriteOff,$dataWriteOff, $widthWriteOff, $alignWriteOff);
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($row['Cena'], 2),0,1,'C');
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($row['Pct'], 2),0,1,'C');
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
                 }
                 //$pdf->SetFont('Arial','B',8);
                 $pdf->Cell(0,4,"","B",1);
@@ -227,6 +289,41 @@
                 $pdf->SetFont('Arial','BI',8);
                 $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_PRINT_DATE').': '.date('d.m.Y') ), 0,1);                               
  
+                if (is_array($konts) && count($konts) > 0)
+                {
+                    $dataWriteOff = array();
+                    $i = 0;
+                    foreach ($konts as $r)
+                    {
+                        $dataWriteOff[$i] = array(
+                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
+                            'ACT_TOTAL_PRICE' => $r['Total']                            
+                            );
+                            $i++;
+                    }    
+
+                    $headersWriteOff = array(
+                        'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
+                        'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
+                        );
+
+                    $pdf->SetFont('Arial','',9);
+                    $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
+
+                    $pdf->FancyTable($headersWriteOff,$dataWriteOff, $width, $align);
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($WriteOffTotalsumma, 2),0,1,'C');
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($WriteOffTotalpct, 2),0,1,'C');
+
+                    $pdf->SetFont('Arial','B',8);
+                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
+                    $pdf->Cell(40,4,number_format($WriteOffTotaltotal, 2),0,1,'C');
+                }
 
 		  $actFooter = array(
                     array(

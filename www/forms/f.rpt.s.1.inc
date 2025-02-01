@@ -61,10 +61,10 @@ if(true/*$isEdUser || $isAdmin*/)
           $month = $sCr[1];
         }
         //if(date("d.m.Y", strtotime("01.".$month.".".$year) ) >= date("d.m.Y", strtotime("01.07.2012") ) )
-           if(strtotime("01.".$month.".".$year)  >= strtotime("01.07.2012")  )         
+        if(strtotime("01.".$month.".".$year)  >= strtotime("01.07.2012")  )         
             $pvn = PCT_21  ;         
         else
-                  $pvn = PCT_22  ;
+            $pvn = PCT_22  ;
   
         // URL  export
     	$oLink = new urlQuery;
@@ -82,6 +82,7 @@ if(true/*$isEdUser || $isAdmin*/)
         print_r($res);
         echo "</pre>";*/
         $area = array();
+        $actIds = array();
 
         $summa = 0;
         $pct = 0;
@@ -100,14 +101,16 @@ if(true/*$isEdUser || $isAdmin*/)
                $pct =  ($totalPrice*(100+ $pvn )/ 100 ) - $totalPrice;
                $summa = ($totalPrice*(100+ $pvn )/ 100 );
 
-               $area[$row['WRITE_OFF_ACCOUNT']]  = array (
-                'writeoftitle' => $row['WRITE_OFF_ACCOUNT'],
-                'Cena' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Cena'])?$area[$row['WRITE_OFF_ACCOUNT']]['Cena']:0) + $totalPrice,
-                'Pct' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Pct'])?$area[$row['WRITE_OFF_ACCOUNT']]['Pct']:0) + $pct,
-                'Total' => (isset($area[$row['WRITE_OFF_ACCOUNT']]['Total'])?$area[$row['WRITE_OFF_ACCOUNT']]['Total']:0) + $summa,
-                'work' => array()
-               );
+               $actIds[] = $row['RAKT_ID'];
 
+               $area[$row['ACT_TYPE']]  = array (
+                'acttypetitle' => $row['ACTA_VEIDS'],
+                'Cena' => (isset($area[$row['ACT_TYPE']]['Cena'])?$area[$row['ACT_TYPE']]['Cena']:0) + $totalPrice,
+                'Pct' => (isset($area[$row['ACT_TYPE']]['Pct'])?$area[$row['ACT_TYPE']]['Pct']:0) + $pct,
+                'Total' => (isset($area[$row['ACT_TYPE']]['Total'])?$area[$row['ACT_TYPE']]['Total']:0) + $summa,
+                'work' => array()
+               );               
+               
                $Totalsumma += $totalPrice;
                $Totalpct += $pct;
                $Totaltotal += $summa;
@@ -120,7 +123,7 @@ if(true/*$isEdUser || $isAdmin*/)
                                 (isset($row['AAUD_DATUMS']) ? $row['AAUD_DATUMS'] :'')
                 );  
                $totalPrice =  $row['MATER_TOTAL'] + $row['WORK_TOTAL'];
-               $area[$row['WRITE_OFF_ACCOUNT']]['act'][$row['RAKT_ID']]  = array (
+               $area[$row['ACT_TYPE']]['act'][$row['RAKT_ID']]  = array (
                 'number' => $row['NUMURS'],
                 'designation' => $row['RAKT_OPERATIVAS_APZIM'],
                 'date' => $approveDate,
@@ -135,7 +138,32 @@ if(true/*$isEdUser || $isAdmin*/)
         /*echo "<pre>";
         print_r($area);
         echo "</pre>";*/
+        // write off summ table
+        if(count($actIds) > 0) {
+            $res1 = dbProc::getWriteOffSumm($sCriteria, implode(',',$actIds));
+            /*echo "<pre>";
+            print_r($res1);
+            echo "</pre>";*/
 
+            $WriteOffTotalsumma = 0;
+            $WriteOffTotalpct = 0;
+            $WriteOffTotaltotal = 0;
+
+            if (is_array($res1))
+            {
+                foreach ($res1 as $i=>$row)
+                {
+                    $konts[$row['KWRC_KODS']]  = array (
+                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'Total' => $row['WRITEOFF_SUMM']
+                    );
+
+                    $WriteOffTotalsumma += $row['WRITEOFF_SUMM'];
+                }
+                $WriteOffTotalpct =  ($WriteOffTotalsumma*(100+ $pvn )/ 100 ) - $WriteOffTotalsumma;
+                $WriteOffTotaltotal = ($WriteOffTotalsumma*(100+ $pvn )/ 100 );
+            }        
+        }
 		include('f.rpt.s.1.tpl');
 	}
 }

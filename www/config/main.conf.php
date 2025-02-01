@@ -252,6 +252,7 @@ define ('KL_CALCULALATION_MATERIAL','KL_KALKULACIJA_MATERIALI');
 define ('KL_SYSTEM_PROCESS','KL_SISTEMAS_PROCESI');
 define ('KL_WORK_TYPS','KL_DARBA_VEIDI');
 define ('KL_CALC_NORM','KL_KALKULACIJAS_NORMAS');
+define ('KL_WRITEOFF_CODES','KL_IZMAKSU_KONTI');
 
 # =============================================================================
 # sistemas procesi kodes
@@ -404,7 +405,7 @@ define ('ACT_TYPE_DEFECT_TR_ID', 3);
 define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);
 define ('ACT_TYPE_PLAN_TR_ID', 9);
-
+define ('ACT_TYPE_PERS_ID', 12);
 # =============================================================================
 # PCT
 # =============================================================================

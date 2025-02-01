@@ -179,6 +179,19 @@ if ( $isAdmin || $isSystemUser )
 	$editEdAreaLink = $oLink->getQuery();
 	unset($oLink);
 
+	// list of write off codes
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.24');
+	$writeOffCodeListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit write off codes
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.24');
+	$oLink->addPrm('editMode', '1');
+	$editWriteOffCodeLink = $oLink->getQuery();
+	unset($oLink);
+
     // list of voltage
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');

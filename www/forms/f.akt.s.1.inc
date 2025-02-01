@@ -642,8 +642,7 @@ unset($res);
     }
     if(!$trase && ($type == ACT_TYPE_DAMAGE_ID || $type == ACT_TYPE_DEFECT_ID  || $type == ACT_TYPE_STIHIJA_ID)) {
       $oForm -> addElement('text', 'pers_number',  text::get('PERS_NUMBER'), isset($act['RAKT_PERS_NUMBER'])?$act['RAKT_PERS_NUMBER']:'', 'maxlength="100"'.($isReadonlyExceptSuperAdmin && ($isReadonly2 || $isCopy)?' disabled':''));
-    }
-    $oForm -> addElement('label', 'writeoffAccount',  text::get('WRITE_OFF_ACCOUNT'), isset($act['WRITE_OFF_ACCOUNT'])?$act['WRITE_OFF_ACCOUNT']:'');
+    }    
   }
   
   $oForm -> addElement('select', 'type',  text::get('SINGLE_ACT_TYPE'), isset($act['RAKT_KAKV_ID'])?$act['RAKT_KAKV_ID']:'', ''.($isReadonlyExceptSuperAdmin && ($isReadonly1 || $isCopy || $isAuto == 1)?' disabled':'').' onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&type=\'+this.value+\'&contract=\'+document.all[\'contract\'].options[document.all[\'contract\'].selectedIndex].value))"', '', '', $acttype);
@@ -1249,7 +1248,7 @@ if(true)
                $returnStatus  = STAT_INSERT;
                $returnAction =  ACT_RETURN_INSERT;
             }
-            echo $oForm -> getValue('status');
+            
             if($oForm -> getValue('status') == STAT_CLOSE)
             {
                $returnStatus  = STAT_ACCEPT;
