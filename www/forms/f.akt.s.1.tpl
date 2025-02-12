@@ -52,7 +52,10 @@
                  <? if($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))  {?>
                     <tr><td><?=$oForm->getElementHtml('return');?></td></tr>
                  <? } ?>
-                 <?if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist))  {?>
+                 <? if($trase == 1) {
+                    if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist))  {?>
+                    <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
+                 <? } } elseif (!$isReadonlyExceptEconomist) { ?>
                     <tr><td><?=$oForm->getElementHtml('accept');?></td></tr>
                  <? } ?>
                 

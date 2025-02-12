@@ -791,10 +791,8 @@ if(true)
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN.'\');} else {return false;}"');
   }
-  if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist)) {
-    
-      if($trase == 1)
-      {
+  if($trase == 1) {
+    if (($isAuto && ($isAdmin || $isSuperAdmin)) || (!$isAuto && !$isReadonlyExceptEconomist)) {      
         //Popup saites sagatave
         $oPopLink=new urlQuery;
         $oPopLink->addPrm(FORM_ID, 'f.akt.s.17');
@@ -804,12 +802,13 @@ if(true)
         $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {'.RequestHandler::popupHref($oPopLink -> getQuery().'&toid=\'+document.all[\'toid\'].value+\'&numPostfix=\'+document.all[\'numPostfix\'].value+\'').' } return false;"');
         unset($oPopLink);
       }
-      else
-      {         
-        $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
-      }
-    
   }
+  elseif (!$isReadonlyExceptEconomist)
+  {         
+    $oForm -> addElement('submitImg', 'accept', text::get('ACCEPT'), 'img/btn_apstiprinat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_ACCEPT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+  }
+    
+  
   if ($isAdmin && ($actId != false) && ($status == STAT_DELETE || $status == STAT_CLOSE))
   {
     $oForm -> addElement('submitImg', 'return', text::get('RETURN'), 'img/btn_atgriezt.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')&& isDeleteWithMessage(\''.text::get('WARNING_RETURN').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_RETURN_CONFIRMED.'\');} else {return false;}"');
