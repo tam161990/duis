@@ -9545,6 +9545,9 @@ class dbProc extends dbLayer
                                         $need_by_date = false
                                         )
         { 
+            if (substr( $code, 0, 3 ) === 'REM') {
+                return;
+            }
             $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.$need_by_date;
            
             $oDB = new dbLayer;
