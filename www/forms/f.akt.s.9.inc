@@ -46,10 +46,12 @@ if ( $isAdmin || $isSystemUser)
 	}
     elseif($searchMode == 2)
 	{
-        
+        $isProject = reqVar::get('isProject');
         $oLink=new urlQuery();
     	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
     	$oLink->addPrm('isSearch', 2 );
+        $oLink->addPrm('isProject', $isProject );
+        
     	// form inicialization
     	$oForm = new Form('frmMain','post',$oLink->getQuery());
     	unset($oLink);
@@ -60,7 +62,7 @@ if ( $isAdmin || $isSystemUser)
             $oListLink=new urlQuery();
             $oListLink->addPrm(FORM_ID, 'f.akt.s.9');
             $oListLink->addPrm('isNumber', 1 );
-            $oListLink->addPrm('isProject', 0 );
+            $oListLink->addPrm('isProject', $isProject );
         }
         $searchTitle = text::toUpper(text::toUpper(text::get('SEARCH_BY_NUMBER')));
         include('f.akt.m.3.inc');
