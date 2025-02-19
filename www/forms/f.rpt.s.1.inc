@@ -78,7 +78,7 @@ if(true/*$isEdUser || $isAdmin*/)
 
         // gel list of users
 		$res = dbProc::getActTotalReportList($sCriteria, $trase, $sign);
-       /* echo "<pre>";
+        /*echo "<pre>";
         print_r($res);
         echo "</pre>";*/
         $area = array();
@@ -103,11 +103,11 @@ if(true/*$isEdUser || $isAdmin*/)
 
                $actIds[] = $row['RAKT_ID'];
 
-               $area[$row['ACT_TYPE']]  = array (
+               $area[$row['ACTA_VEIDS']]  = array (
                 'acttypetitle' => $row['ACTA_VEIDS'],
-                'Cena' => (isset($area[$row['ACT_TYPE']]['Cena'])?$area[$row['ACT_TYPE']]['Cena']:0) + $totalPrice,
-                'Pct' => (isset($area[$row['ACT_TYPE']]['Pct'])?$area[$row['ACT_TYPE']]['Pct']:0) + $pct,
-                'Total' => (isset($area[$row['ACT_TYPE']]['Total'])?$area[$row['ACT_TYPE']]['Total']:0) + $summa,
+                'Cena' => (isset($area[$row['ACTA_VEIDS']]['Cena'])?$area[$row['ACTA_VEIDS']]['Cena']:0) + $totalPrice,
+                'Pct' => (isset($area[$row['ACTA_VEIDS']]['Pct'])?$area[$row['ACTA_VEIDS']]['Pct']:0) + $pct,
+                'Total' => (isset($area[$row['ACTA_VEIDS']]['Total'])?$area[$row['ACTA_VEIDS']]['Total']:0) + $summa,
                 'work' => array()
                );               
                
@@ -123,7 +123,7 @@ if(true/*$isEdUser || $isAdmin*/)
                                 (isset($row['AAUD_DATUMS']) ? $row['AAUD_DATUMS'] :'')
                 );  
                $totalPrice =  $row['MATER_TOTAL'] + $row['WORK_TOTAL'];
-               $area[$row['ACT_TYPE']]['act'][$row['RAKT_ID']]  = array (
+               $area[$row['ACTA_VEIDS']]['act'][$row['RAKT_ID']]  = array (
                 'number' => $row['NUMURS'],
                 'designation' => $row['RAKT_OPERATIVAS_APZIM'],
                 'date' => $approveDate,
