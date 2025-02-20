@@ -6356,13 +6356,13 @@ class dbProc extends dbLayer
 		return $oSQL -> makeQuery($query);
 	}
 
-     function getWriteOffSumm($searchString, $actIds) {
+    function getWriteOffSumm($searchString, $actIds) {
         $sCriteria = explode("^", $searchString);
 
         $searcCriteria['year'] = $sCriteria[0];
         $searcCriteria['month'] = $sCriteria[1];
-
-        $query = " 
+		 
+		 $query = " 
         SELECT KWRC_KODS, KWRC_NOSAUKUMS, SUM(DRBI_CILVEKSTUNDAS) as WRITEOFF_SUMM
         FROM (
         SELECT ww.KWRC_KODS, ww.KWRC_NOSAUKUMS, d.DRBI_CILVEKSTUNDAS
@@ -6374,9 +6374,9 @@ class dbProc extends dbLayer
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
-		) or ( a.RAKT_IS_AUTO = 0 ) ) 
-        UNION
-         SELECT  71882 as KWRC_KODS, '''".text::get('WRITE_OFF_CODE_ELEMENT')."''' as KWRC_NOSAUKUMS, 
+		) or ( a.RAKT_IS_AUTO = 0 ) )    
+		UNION ALL
+         SELECT  '71882' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_ELEMENT')."' as KWRC_NOSAUKUMS, 
          d.DRBI_CILVEKSTUNDAS
         from `AKTI` a 
         INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
@@ -6386,8 +6386,8 @@ class dbProc extends dbLayer
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) 
-        UNION
-          SELECT  71889 as KWRC_KODS, '''".text::get('WRITE_OFF_CODE_PERS')."''' as KWRC_NOSAUKUMS, 
+		UNION ALL
+          SELECT  '71889' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_PERS')."' as KWRC_NOSAUKUMS, 
           d.DRBI_CILVEKSTUNDAS
         from `AKTI` a 
         INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
@@ -6397,7 +6397,7 @@ class dbProc extends dbLayer
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) 
-        ) x
+       ) x
          GROUP BY KWRC_KODS, KWRC_NOSAUKUMS";
 
         //echo $query;
