@@ -130,7 +130,7 @@
                 foreach ($res1 as $i=>$row)
                 {
                     $konts[$row['KWRC_KODS']]  = array (
-                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'writeoftitle' => $row['KWRC_KODS'] . " " . $row['KWRC_NOSAUKUMS'],
                         'Total' => $row['WRITEOFF_SUMM']
                     );
 
@@ -242,7 +242,7 @@
                     foreach ($konts as $r)
                     {
                         $dataWriteOff[$i] = array(
-                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
+                            'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',$r['writeoftitle']),                                          
                             'ACT_TOTAL_PRICE' => $r['Total']                            
                             );
                             $i++;
@@ -251,6 +251,8 @@
                         'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
                         'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
                         );
+                    $widthWriteOff=array(230, 40);
+                    $alignWriteOff=array('R','C');
 
                     $pdf->SetFont('Arial','',9);
                     $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');

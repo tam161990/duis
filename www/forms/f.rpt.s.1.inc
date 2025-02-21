@@ -154,7 +154,7 @@ if(true/*$isEdUser || $isAdmin*/)
                 foreach ($res1 as $i=>$row)
                 {
                     $konts[$row['KWRC_KODS']]  = array (
-                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'writeoftitle' => $row['KWRC_KODS'] . " " . $row['KWRC_NOSAUKUMS'],
                         'Total' => $row['WRITEOFF_SUMM']
                     );
 

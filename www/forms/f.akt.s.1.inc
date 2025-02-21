@@ -1236,6 +1236,9 @@ if(true)
             $returnStatus  = STAT_RETURN;
             $returnAction =  STAT_RETURN;
          }
+         if($trase == 0 && ($isAdmin || $isEconomist) && $oForm->getValue('action')==OP_ACCEPT) {
+          $r= dbProc::setApproveDate($oForm->getValue('actId'), dtime::now());
+         }
          if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE ||  
          $oForm->getValue('action')==OP_ACCEPT) )
     	  {
