@@ -130,7 +130,7 @@
                 foreach ($res1 as $i=>$row)
                 {
                     $konts[$row['KWRC_KODS']]  = array (
-                        'writeoftitle' => $row['KWRC_NOSAUKUMS'],
+                        'writeoftitle' => $row['KWRC_KODS'] . " " . $row['KWRC_NOSAUKUMS'],
                         'Total' => $row['WRITEOFF_SUMM']
                     );
 
@@ -242,7 +242,7 @@
                     foreach ($konts as $r)
                     {
                         $dataWriteOff[$i] = array(
-                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
+                            'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',$r['writeoftitle']),                            
                             'ACT_TOTAL_PRICE' => $r['Total']                            
                             );
                             $i++;
@@ -251,6 +251,9 @@
                         'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
                         'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
                         );
+						
+					$widthWriteOff=array(230, 40);
+                    $alignWriteOff=array('R','C');
 
                     $pdf->SetFont('Arial','',9);
                     $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
@@ -289,41 +292,7 @@
                 $pdf->SetFont('Arial','BI',8);
                 $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_PRINT_DATE').': '.date('d.m.Y') ), 0,1);                               
  
-                if (is_array($konts) && count($konts) > 0)
-                {
-                    $dataWriteOff = array();
-                    $i = 0;
-                    foreach ($konts as $r)
-                    {
-                        $dataWriteOff[$i] = array(
-                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
-                            'ACT_TOTAL_PRICE' => $r['Total']                            
-                            );
-                            $i++;
-                    }    
-
-                    $headersWriteOff = array(
-                        'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
-                        'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
-                        );
-
-                    $pdf->SetFont('Arial','',9);
-                    $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
-
-                    $pdf->FancyTable($headersWriteOff,$dataWriteOff, $width, $align);
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($WriteOffTotalsumma, 2),0,1,'C');
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($WriteOffTotalpct, 2),0,1,'C');
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($WriteOffTotaltotal, 2),0,1,'C');
-                }
+                
 
 		  $actFooter = array(
                     array(
@@ -362,12 +331,5 @@
 
                 // redirect output to client browser
                 $pdf->Output("actreport.pdf", 'D');
-
-
-
-
-
-
-
 
 ?>
