@@ -1238,7 +1238,7 @@ if(true)
          }
 
          if($trase == 0 && ($isAdmin || $isEconomist) && $oForm->getValue('action')==OP_ACCEPT) {
-          $r= dbProc::setApproveDate($oForm->getValue('actId'), dtime::now());
+          $r= dbProc::setApproveDate($oForm->getValue('actId'), dbLayer::parseDate(dtime::now()));
          }
          
          if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE ||  
