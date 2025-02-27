@@ -84,7 +84,7 @@
                $actIds[] = $row['RAKT_ID'];
 
                $area[$row['ACTA_VEIDS']]  = array (
-                'writeoftitle' => $row['ACTA_VEIDS'],
+                'acttypetitle' => $row['ACTA_VEIDS'],
                 'Cena' => (isset($area[$row['ACTA_VEIDS']]['Cena'])?$area[$row['ACTA_VEIDS']]['Cena']:0) + $totalPrice,
                 'Pct' => (isset($area[$row['ACTA_VEIDS']]['Pct'])?$area[$row['ACTA_VEIDS']]['Pct']:0) + $pct,
                 'Total' => (isset($area[$row['ACTA_VEIDS']]['Total'])?$area[$row['ACTA_VEIDS']]['Total']:0) + $summa,
