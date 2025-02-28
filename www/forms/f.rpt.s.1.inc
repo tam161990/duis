@@ -91,6 +91,7 @@ if(true/*$isEdUser || $isAdmin*/)
         $Totalsumma = 0;
         $Totalpct = 0;
         $Totaltotal = 0;
+        $duMaterials = 0;
 
         if (is_array($res))
 		{
@@ -132,6 +133,7 @@ if(true/*$isEdUser || $isAdmin*/)
                 'total' => number_format($totalPrice,2,'.',''),
                 'finished' => (($row['RAKT_IR_OBJEKTS_PABEIGTS'] == 1) ? text::get('YES') : text::get('NO'))
                );
+               $duMaterials += $row['MATER_TOTAL'];
             }
 
 		}
@@ -155,11 +157,12 @@ if(true/*$isEdUser || $isAdmin*/)
                 {
                     $konts[$row['KWRC_KODS']]  = array (
                         'writeoftitle' => $row['KWRC_KODS'] . " " . $row['KWRC_NOSAUKUMS'],
-                        'Total' => $row['WRITEOFF_SUMM']
+                        'Total' => (($row['KWRC_KODS'] == 71867 ) ? $row['WRITEOFF_SUMM'] + $duMaterials : $row['WRITEOFF_SUMM'] )
                     );
 
                     $WriteOffTotalsumma += $row['WRITEOFF_SUMM'];
                 }
+                $WriteOffTotalsumma += $duMaterials;
                 $WriteOffTotalpct =  ($WriteOffTotalsumma*(100+ $pvn )/ 100 ) - $WriteOffTotalsumma;
                 $WriteOffTotaltotal = ($WriteOffTotalsumma*(100+ $pvn )/ 100 );
             }        
