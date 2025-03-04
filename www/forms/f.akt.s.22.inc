@@ -413,6 +413,7 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
         {
           $export_type_string = true;
         }
+        //echo "export_type_string=".(($export_type_string)?1:0)."<br>";
 		//echo $actMaterial['MATR_KODS'];
         $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
         $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
@@ -537,8 +538,9 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
 	  //$oFormMaterialTab -> addRule('work_type['.$i.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
 	  
 	  
-    if($status == STAT_CLOSE && ($isAdmin || $projectApprover)) {
+    if($status == STAT_CLOSE && ($isAdmin || $projectApprover)) {      
 		  if($export_type_string) {
+        //echo $actMaterial['MATR_PROJECT_EXPORT']."<br>";
             $oFormMaterialTab->addElement('label', 'export_type['.$i.']', '', $actMaterial['MATR_PROJECT_EXPORT']); 
           } else {
             // save export_type
@@ -565,7 +567,10 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
       $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
       $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  
-      $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);			  
+      $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);	
+      $oFormMaterialTab->setNewValue('export_type['.$i.']',$actMaterial['MATR_PROJECT_EXPORT']);	
+      $oFormMaterialTab->setNewValue('nomenklatura['.$i.']',$actMaterial['MATR_NOM_KODS']);
+      	  
 	  }
 
         // ajax handler link for delete
