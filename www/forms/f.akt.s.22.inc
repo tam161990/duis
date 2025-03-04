@@ -565,7 +565,9 @@ if ( $isAdmin || $isProjector ||  $projectApprover)
       $oFormMaterialTab->setNewValue('amount_mat['.$i.']',$actMaterial['MATR_DAUDZUMS']);        
       $oFormMaterialTab->setNewValue('work_type['.$i.']',$actMaterial['MATR_WORK_TYPE']);      
       $oFormMaterialTab->setNewValue('work_type_id['.$i.']',$actMaterial['MATR_WORK_TYPE']);  
-      $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);			  
+      $oFormMaterialTab -> setNewValue('id['.$i.']', $actMaterial['MATR_ID']);	
+      $oFormMaterialTab->setNewValue('export_type['.$i.']',$actMaterial['MATR_PROJECT_EXPORT']);	
+      $oFormMaterialTab->setNewValue('nomenklatura['.$i.']',$actMaterial['MATR_NOM_KODS']);		  
 	  }
 
         // ajax handler link for delete
