@@ -235,9 +235,25 @@
                         $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
                         $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
                     }
-
+ 
                 }
+				$pdf->Cell(0,4,"","B",1);
+				
+				$pdf->SetFont('Arial','B',8);
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
+                $pdf->Cell(40,4,number_format($Totalsumma, 2),0,1,'C');
 
+                $pdf->SetFont('Arial','B',8);
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
+                $pdf->Cell(40,4,number_format($Totalpct, 2),0,1,'C');
+
+                $pdf->SetFont('Arial','B',8);
+                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
+                $pdf->Cell(40,4,number_format($Totaltotal, 2),0,1,'C');
+
+                
+                $pdf->Cell(0,4,"","B",1);
+				
                 if (is_array($konts) && count($konts) > 0)
                 {
                     $dataWriteOff = array();
@@ -257,65 +273,10 @@
                     $widthWriteOff=array(230, 40);
                     $alignWriteOff=array('R','C');
 
-                    $pdf->SetFont('Arial','',9);
-                    $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
+                    //$pdf->SetFont('Arial','',9);
+                    //$pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
 
                     $pdf->FancyTable($headersWriteOff,$dataWriteOff, $widthWriteOff, $alignWriteOff);
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($row['Cena'], 2),0,1,'C');
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($row['Pct'], 2),0,1,'C');
-
-                    $pdf->SetFont('Arial','B',8);
-                    $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
-                    $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
-                }
-                //$pdf->SetFont('Arial','B',8);
-                $pdf->Cell(0,4,"","B",1);
-		     //$pdf->Ln();
-
-
-                $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
-                $pdf->Cell(40,4,number_format($Totalsumma, 2),0,1,'C');
-
-                $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('PCT').' '. $pvn . '%').":",0,0,'R');
-                $pdf->Cell(40,4,number_format($Totalpct, 2),0,1,'C');
-
-                $pdf->SetFont('Arial','B',8);
-                $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
-                $pdf->Cell(40,4,number_format($Totaltotal, 2),0,1,'C');
-
-                $pdf->SetFont('Arial','BI',8);
-                $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_PRINT_DATE').': '.date('d.m.Y') ), 0,1);                               
- 
-                if (is_array($konts) && count($konts) > 0)
-                {
-                    $dataWriteOff = array();
-                    $i = 0;
-                    foreach ($konts as $r)
-                    {
-                        $dataWriteOff[$i] = array(
-                            'WRITE_OFF_ACCOUNT' => $r['writeoftitle'],                            
-                            'ACT_TOTAL_PRICE' => $r['Total']                            
-                            );
-                            $i++;
-                    }    
-
-                    $headersWriteOff = array(
-                        'WRITE_OFF_ACCOUNT' => iconv('UTF-8', 'windows-1257',text::get('WRITE_OFF_ACCOUNT')),
-                        'ACT_TOTAL_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_PRICE'))
-                        );
-
-                    $pdf->SetFont('Arial','',9);
-                    $pdf->Cell(0,6,iconv('UTF-8', 'windows-1257',$row['acttypetitle']),0,1,'L');
-
-                    $pdf->FancyTable($headersWriteOff,$dataWriteOff, $width, $align);
 
                     $pdf->SetFont('Arial','B',8);
                     $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL')).":",0,0,'R');
@@ -328,7 +289,14 @@
                     $pdf->SetFont('Arial','B',8);
                     $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
                     $pdf->Cell(40,4,number_format($WriteOffTotaltotal, 2),0,1,'C');
-                }
+                }				
+				
+                //$pdf->SetFont('Arial','B',8);
+                //$pdf->Cell(0,4,"","B",1);
+		        //$pdf->Ln();      
+ 
+                $pdf->SetFont('Arial','BI',8);
+                $pdf->Cell(0,10,iconv('UTF-8', 'windows-1257',text::get('REPORT_PRINT_DATE').': '.date('d.m.Y') ), 0,1);              
 
 		  $actFooter = array(
                     array(
