@@ -20,6 +20,10 @@ if(isset($tame))
 else 
   $tameMaterial   = reqVar::get('tame_mat');
 
+// TRASE act
+$trase =  reqVar::get('isTrase');
+if($trase === false) $trase = 0;
+
 // Main form with XMLHTTP method load this code:
 if (reqVar::get('xmlHttp') == 1)
 {
@@ -86,20 +90,22 @@ if ( $isAdmin || $isSystemUser)
         $favorit[0]['TITLE'] ='';
         $favorit[0]['URL'] = '';
       }
-
-      $oPopLink=new urlQuery;
-      $oPopLink->addPrm(FORM_ID, 'f.akt.s.11');
-      $oPopLink->addPrm('actId',$actId);
-      $oPopLink->addPrm('catalog',KL_MATERIALS);
-      $oPopLink->addPrm('isSearch', $isSearch);
-      $oPopLink->addPrm('searchNum', $searchNum);
-      $oPopLink->addPrm('st',1);
-      $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');      
+      if($trase == 1) {
+        $oPopLink=new urlQuery;
+        $oPopLink->addPrm(FORM_ID, 'f.akt.s.11');
+        $oPopLink->addPrm('actId',$actId);
+        $oPopLink->addPrm('catalog',KL_MATERIALS);
+        $oPopLink->addPrm('isSearch', $isSearch);
+        $oPopLink->addPrm('searchNum', $searchNum);
+        $oPopLink->addPrm('st',1);
+        $oPopLink->addPrm('tame', $tameMaterial ?'1':'0');      
 
       //$next =  count($favorit);
-      $favorit[1]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
-      $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
-      unset($oPopLink);
+      
+        $favorit[1]['TITLE'] = text::get('SEARCH_ST_MATERIAL');   ;
+        $favorit[1]['URL'] = RequestHandler::popupHref($oPopLink -> getQuery());
+        unset($oPopLink);
+      }
 
       //Popup saites sagatave
       $oPopLink=new urlQuery;
@@ -274,7 +280,10 @@ if ( $isAdmin || $isSystemUser)
         $totalPriceSt = 0;
         $st = 1;
         foreach ($aDayMaterial as $j => $actMaterial)
-        {    
+        {  
+          if($trase == 0 && $actMaterial['MATR_IS_WORKER'] == 0) {
+            continue;
+          }  
             $oFormMaterialTab->addElement('hidden', 'id['.$i.']', '', $actMaterial['MATR_ID']);
             $oFormMaterialTab->addElement('hidden', 'st['.$i.']', '', $actMaterial['MATR_IS_WORKER']);
             $oFormMaterialTab->addElement('label', 'code['.$i.']', '', $actMaterial['MATR_KODS']);

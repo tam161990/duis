@@ -68,7 +68,9 @@
             <td align="right" colspan="5"><b><?=text::get('TOTAL');?>:</b></td>
             <td align="center"><b><?= isset($totalTime[$d])?$totalTimeSt[$d]:''; ?></b></td>           
        </tr>
-       <? } ?>
+       <? }
+       if($trase == 1 ) {
+       ?>
 
 		   <tr class="table_head_2">
 
@@ -129,6 +131,7 @@
             $x++;
             }
         }
+    }
         ?>
         <tr>
             <td align="right" colspan="2"><b><?=text::get('WORK_APPROVE_DATE');?>:</b></td>
