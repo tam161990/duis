@@ -1259,8 +1259,14 @@ if(true)
          }
          if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
         {
+          if ($oForm->getValue('type') == ACT_TYPE_DEFECT_ID && $oForm->getValue('isFinished', 0) == 0) {
+
             $returnStatus  = STAT_INSERT;
             $returnAction =  ACT_INSERT;
+          } else {
+            $returnStatus  = STAT_CLOSE;
+            $returnAction =  ACT_CLOSE;
+          }
         }
          if($checkRequiredFields)
          {
