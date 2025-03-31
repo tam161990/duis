@@ -780,7 +780,8 @@ if(true)
     } else {
       $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     
-      if($act['RAKT_IS_AUTO'] == 1) {
+      //if($act['RAKT_IS_AUTO'] == 1) {
+      if ($act['RAKT_KAKV_ID'] == ACT_TYPE_DEFECT_ID) {
         $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
       }
     }
@@ -1239,8 +1240,7 @@ if(true)
          if($trase == 0 && ($isAdmin || $isEconomist) && $oForm->getValue('action')==OP_ACCEPT) {
           $r= dbProc::setApproveDate($oForm->getValue('actId'), dbLayer::parseDate(dtime::now()));
          }
-         if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE ||  
-         $oForm->getValue('action')==OP_ACCEPT) )
+         if ($isAdmin && ($oForm -> getValue('status') == STAT_DELETE || $oForm->getValue('action')==OP_ACCEPT) )
     	  {
     	      $checkRequiredFields = true;
             $_proces_date = false;
@@ -1255,15 +1255,26 @@ if(true)
             {
                $returnStatus  = STAT_ACCEPT;
                $returnAction =  ACT_RETURN_ACCEPT;
-            }
+            }            
          }
+         if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
+        {
+          if ($oForm->getValue('type') == ACT_TYPE_DEFECT_ID && $oForm->getValue('isFinished', 0) == 0) {
+
+            $returnStatus  = STAT_INSERT;
+            $returnAction =  ACT_INSERT;
+          } else {
+            $returnStatus  = STAT_CLOSE;
+            $returnAction =  ACT_CLOSE;
+          }
+        }
          if($checkRequiredFields)
          {
             // atgriezt vai apstiprin?t
             if($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)
             {
                 $r=dbProc::updateActStatus($oForm->getValue('actId'), 
-                  ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE)
+                  ( ($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT || $oForm->getValue('action')==OP_RETURN_CONFIRMED)? $returnStatus : STAT_CLOSE)
                 );
 
                 $r2 = false;
@@ -1284,8 +1295,8 @@ if(true)
                 if($r)
                 {
                     // save status changed time
-                    $r1 = dbProc::saveAuditRecord($actId, $userId, ($oForm->getValue('action')==OP_RETURN)? $returnStatus : STAT_CLOSE);
-                    dbProc::setUserActionDate($userId, ($oForm->getValue('action')=='OP_RETURN')? $returnAction : STAT_CLOSE);
+                    $r1 = dbProc::saveAuditRecord($actId, $userId, (($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT)? $returnStatus : STAT_CLOSE));
+                    dbProc::setUserActionDate($userId, (($oForm->getValue('action')==OP_RETURN || $oForm->getValue('action')==OP_ACCEPT)? $returnAction : STAT_CLOSE));
 
                     if (!$r1)
                     {
