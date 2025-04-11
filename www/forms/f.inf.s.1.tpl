@@ -121,6 +121,7 @@ if($isAdmin)
            <td class="menu_cell" nowrap><a target="frame_1" href="<?=$warningLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('WARNING');?></a></td>
 		   <td class="menu_cell" nowrap><a target="frame_1" href="<?=$kvikStepLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('ACT_NUMBER_TEMPLATE');?></a></td>
 		   <td class="menu_cell" nowrap><a target="frame_1" href="<?=$superadminLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('SUPERADMIN');?></a></td>
+		   <td class="menu_cell" nowrap><a target="frame_1" href="<?=$inflationStepLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('INFLATION');?></a></td>
 		   <td class="menu_cell" nowrap><a  target="frame_1" href="<?=$jobListLink;?>" onclick="reloadFrame(2,'<?=$editJobLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('SYSTEM_PROCESS');?></a></td>	
 		   <td class="menu_cell_2" nowrap><a  target="frame_1" href="<?=$eventSearchLink;?>" onclick="reloadFrame(2,'<?=$eventListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('EVENT_LOG');?></a></td>
 		</tr>

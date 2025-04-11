@@ -462,6 +462,12 @@ if ( $isAdmin || $isSystemUser )
 	$oLink->addPrm(FORM_ID, 'blank');
 	$eventListLink=$oLink ->getQuery();
 	unset($oLink);
+
+	// inflation
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.adm.s.7');
+	$inflationStepLink=$oLink ->getQuery();
+	unset($oLink);
 }
 else
 {
