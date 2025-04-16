@@ -781,7 +781,7 @@ if(true)
       $oForm -> addElement('submitImg', 'export', text::get('EXPORT'), 'img/btn_120_nodosana.gif', ' height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') && isDeleteWithMessage(\''.text::get('WARNING_EXPORT').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
     
       //if($act['RAKT_IS_AUTO'] == 1) {
-      if ($act['RAKT_KAKV_ID'] == ACT_TYPE_DEFECT_ID) {
+        if ($act['RAKT_KAKV_ID'] == ACT_TYPE_DEFECT_ID || $act['RAKT_KAKV_ID'] == ACT_TYPE_PLAN_ID) {
         $oForm -> addElement('submitImg', 'export_part', text::get('ACT_MIDDLE_RESULT'), 'img/btn_nodot_saskanosanai.gif', 'height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
       }
     }
