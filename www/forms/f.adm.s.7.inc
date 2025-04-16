@@ -16,9 +16,9 @@ if (userAuthorization::isAdmin())
 
 
 
-  $oForm -> addElement('text', 'inflation_persent',  text::get('INFLATION_PERCENT'), isset($info['SNFO_INFLATION'])?$info['SNFO_INFLATION']:'1', 'tabindex=1 maxlength="4"' );
+  $oForm -> addElement('text', 'inflation_persent',  text::get('INFLATION_PERCENT'), isset($info['INFLATION_PERCENT'])?$info['INFLATION_PERCENT']:'1', 'tabindex=1 maxlength="6"' );
   $oForm -> addRule('inflation_persent', text::get('ERROR_REQUIRED_FIELD'), 'required');
-  $oForm -> addRule('inflation_persent', text::get('ERROR_DOUBLE_VALUE'), 'double', 2);
+  $oForm -> addRule('inflation_persent', text::get('ERROR_DOUBLE_VALUE'), 'double', 4);
 
   $oForm -> addElement('submitImg', 'submit', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20"');
 
