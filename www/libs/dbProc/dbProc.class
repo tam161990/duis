@@ -9660,7 +9660,10 @@ class dbProc extends dbLayer
               //files::wh_log('Update act status $res!==false ' .date("d.m.Y H:i:s").PHP_EOL);
               $status = '';
               foreach ($res as $i => $act)
-              {	    
+              {	  
+                if (substr( $act['AAST_KODS'], 0, 3 ) === 'REM') {
+                    continue;
+                } 
                 files::wh_log('Update act status AAST_KODS: '.$act['AAST_KODS'].PHP_EOL.
                                     'AAST_ID:' .$act['AAST_ID'].PHP_EOL  );		
                                     
