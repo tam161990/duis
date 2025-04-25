@@ -1259,14 +1259,19 @@ if(true)
          }
          if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
         {
-          if (($oForm->getValue('type') == ACT_TYPE_DEFECT_ID || $oForm->getValue('type') == ACT_TYPE_PLAN_ID)
-          && $oForm->getValue('isFinished', 0) == 0) {
-
-            $returnStatus  = STAT_INSERT;
-            $returnAction =  ACT_INSERT;
-          } else {
-            $returnStatus  = STAT_CLOSE;
-            $returnAction =  ACT_CLOSE;
+          if ($oForm->getValue('type') == ACT_TYPE_DEFECT_ID || $oForm->getValue('type') == ACT_TYPE_PLAN_ID) {
+            if ($oForm->getValue('action')==OP_ACCEPT) {
+              $returnStatus  = STAT_CLOSE;
+              $returnAction =  ACT_CLOSE;
+            } else {
+              if ($oForm->getValue('isFinished', 0) == 0) {
+                $returnStatus  = STAT_INSERT;
+                $returnAction =  ACT_INSERT;
+              } else {
+                $returnStatus  = STAT_RETURN;
+                $returnAction =  STAT_RETURN;
+              }
+            }
           }
         }
          if($checkRequiredFields)
