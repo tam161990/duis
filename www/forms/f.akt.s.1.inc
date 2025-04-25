@@ -1259,7 +1259,8 @@ if(true)
          }
          if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
         {
-          if ($oForm->getValue('type') == ACT_TYPE_DEFECT_ID && $oForm->getValue('isFinished', 0) == 0) {
+          if (($oForm->getValue('type') == ACT_TYPE_DEFECT_ID || $oForm->getValue('type') == ACT_TYPE_PLAN_ID)
+          && $oForm->getValue('isFinished', 0) == 0) {
 
             $returnStatus  = STAT_INSERT;
             $returnAction =  ACT_INSERT;

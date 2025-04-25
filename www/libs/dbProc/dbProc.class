@@ -3139,7 +3139,7 @@ class dbProc extends dbLayer
             {
                 $orderColumn = 'w.KWOI_NOSAUKUMS';
             }
-            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP ("'.dbLayer::quote_smart(text::toUpper($search)).'") ';
             if($search === false || $search == '')
             {
                 $searchString = '1 ';
@@ -3353,18 +3353,21 @@ class dbProc extends dbLayer
 		$oDB = new dbLayer;
         if($selectedColumn === false)
         {
-           $selectedColumn = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
+            $selectedColumn = dbProc::getKlklDefaultColumn(KL_CALCULALATION);
         } 
         
         if($selectedColumn == 'GROUP')
         {
            $column = 'g.KKLG_NOSAUKUMS';
         }
-        if($selectedColumn == 'WORKER')
+        elseif($selectedColumn == 'WORKER')
                                                                {
             $column = 'w.KWOI_NOSAUKUMS';
         }
-        $searchString = 'UPPER('.dbLayer::quote_smart($selectedColumn).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+        else {
+            $column = $selectedColumn;
+        }
+        $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP ("'.dbLayer::quote_smart(text::toUpper($search)).'") ';
         if($search === false || $search == '')
         {
             $searchString = '1 ';
