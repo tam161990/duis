@@ -1276,6 +1276,7 @@ if(true)
             if ($oForm->getValue('action')==OP_ACCEPT) {
               $returnStatus  = STAT_CLOSE;
               $returnAction =  ACT_CLOSE;
+              // DUIS-532
             }
           }
         }
