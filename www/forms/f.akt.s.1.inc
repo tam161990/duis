@@ -1257,7 +1257,7 @@ if(true)
                $returnAction =  ACT_RETURN_ACCEPT;
             }            
          }
-         if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
+        if($isEconomist && $oForm -> getValue('status') == STAT_ACCEPT)
         {
           if ($oForm->getValue('type') == ACT_TYPE_DEFECT_ID || $oForm->getValue('type') == ACT_TYPE_PLAN_ID) {
             if ($oForm->getValue('action')==OP_ACCEPT) {
@@ -1271,6 +1271,11 @@ if(true)
                 $returnStatus  = STAT_RETURN;
                 $returnAction =  STAT_RETURN;
               }
+            }
+          } else {
+            if ($oForm->getValue('action')==OP_ACCEPT) {
+              $returnStatus  = STAT_CLOSE;
+              $returnAction =  ACT_CLOSE;
             }
           }
         }
