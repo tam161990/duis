@@ -1928,7 +1928,7 @@ class dbProc extends dbLayer
                         `KEDI_IR_AKTIVS`, 
                         `KEDI_SECTION`, 
                         `KEDI_IS_ELEMENT`,
-                        `KEDI_EDITOR`)
+                        `KEDI_CREATED`)
 			values
                 (
                 "'.dbLayer::quote_smart($code).'",

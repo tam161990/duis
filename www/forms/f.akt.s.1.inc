@@ -1010,7 +1010,7 @@ if(true)
                             false,
                             $oForm->getValue('toid'),
                             $oForm->getValue('signature'),
-							            (dbProc::isActTypePlan($oForm -> getValue('type')))?1:0,
+                            (dbProc::isActTypePlan($oForm -> getValue('type')) || $oForm -> getValue('type') == ACT_TYPE_DEFECT_ID )?1:0,
                           false,false,false,false,false,
                           ($oForm->getValue('isTrase') != 1 && ($oForm -> getValue('type') == ACT_TYPE_DAMAGE_ID || 
                           $oForm -> getValue('type') == ACT_TYPE_DEFECT_ID || 
