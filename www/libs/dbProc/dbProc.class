@@ -2676,6 +2676,16 @@ class dbProc extends dbLayer
 // =============================================================================
 // KL_WORK_OUNERS
 // =============================================================================
+    function workerWithCodeExists($code)
+	{
+		$query = 'select `KWOI_ID` from `KL_WORK_OWNERS`
+            where `KWOI_KODS` = "'.dbLayer::quote_smart($code).'"';
+		
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['KWOI_ID']);
+    }
     // -----------------------------------------------------------------------------
 	// Atgriezh darba uznem�ja nosaukumu
 	// Author: Tatjana Fedorkova
