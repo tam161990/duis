@@ -118,11 +118,17 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			}
 			if ($checkRequiredFields)
 			{
+				if ($oForm->getValue('action')==OP_INSERT){
+					// chech that DU with same code not set
+					if (dbProc::workerWithCodeExists($oForm->getValue('kods')))
+					{
+						$oForm->addError(text::get('ERROR_EXISTS_WORKER_CODE'));
+						$check = false;
+					}
+				}	
 				// save
 				if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('workerId'))))
 				{
-
-
 					// if all is ok, do operation
 					if($check)
 					{
