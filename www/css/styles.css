@@ -213,12 +213,14 @@ textarea.flex {
 	color: #606C71;
 	text-align: right;
 	vertical-align: top;
+	padding: 2px 5px;
 	}
 	
 .table_cell_c {
 	background-color: #a4b6c3;
 	color: #606C71;
 	text-align: right;
+	padding: 2px 5px;
 	}
 	
 .table_cell_bl {
@@ -226,11 +228,13 @@ textarea.flex {
 	color: #606C71;
 	text-align: left;
 	vertical-align: bottom;
+	padding: 2px 5px;
 	}	
 
 .table_cell_2 {
 	background-color: #81a8c2;
 	vertical-align: center;
+	padding: 2px 5px;
 	}
 	
 /* --- Green tables --- */
@@ -434,6 +438,12 @@ table.list td a:hover{
 	text-align: center;
 }
 
+/* Specific styling for Upload Statistics tab */
+#tab_akts_Augšupielādes\ statistika.tab_active,
+#tab_akts_Augšupielādes\ statistika.tab_inactive {
+	width: 150px;
+}
+
 .tab_content_alt {
 	-moz-border-radius: 0px 10px 10px 10px;
 	width: 100%;
@@ -564,7 +574,7 @@ filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 .navbar {
 	overflow: hidden;
 	position: fixed; /* Set the navbar to fixed position */
-	top: 320; /* Position the navbar at the top of the page */
+	top: 360; /* Position the navbar at the top of the page */
 	width: 20%; /* Full width */
 	right: 0px;
   }

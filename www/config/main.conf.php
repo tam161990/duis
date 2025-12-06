@@ -70,6 +70,8 @@ define ('PROJECT_FILES_STORE_PATH', ZR_SERVER_PATH.'/excel');
 define ('XML_FILES_STORE_PATH', ZR_SERVER_PATH.'/xml');
 //  json file stored dir
 define ('JSON_FILES_STORE_PATH', ZR_SERVER_PATH.'/json');
+// Estimate files stored dir
+define ('ESTIMATE_FILES_STORE_PATH', ZR_SERVER_PATH.'/estimate_files');
 
 // Temp import files stored name
 define ('IMPORT_FILES_STORE_NAME', 'RCD_TEMP.xls');
@@ -316,6 +318,7 @@ define('TAB_WORKS', 'TAB_WORKS');
 define('TAB_MATERIAL', 'TAB_MATERIAL');
 define('TAB_EXPORT', 'TAB_EXPORT');
 define('TAB_AUDIT', 'TAB_AUDIT');
+define('TAB_UPLOAD_STAT', 'TAB_UPLOAD_STAT');
 define('TAB_ESTIMATE', 'TAB_ESTIMATE');
 define('TAB_WORKS_T', 'TAB_WORKS_T');
 define('TAB_MATERIAL_T', 'TAB_MATERIAL_T');

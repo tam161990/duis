@@ -11423,6 +11423,395 @@ class dbProc extends dbLayer
             return false;
         }
 
+    // =============================================================================
+    // ESTIMATE FILES METHODS
+    // =============================================================================
+
+    // -----------------------------------------------------------------------------
+    // Insert new estimate file record
+    // Returns: inserted ID on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertEstimateFile($fileName, $actId, $userId, $rowCount = 0)
+    {
+        $query = 'INSERT INTO `estimate_files` 
+                    (`ESTM_NAME`, `ESTM_RAKT_ID`, `ESTM_RLTT_ID`, `ESTM_ROWS`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($fileName).'",
+                     "'.dbLayer::quote_smart($actId).'",
+                     "'.dbLayer::quote_smart($userId).'",
+                     "'.dbLayer::quote_smart($rowCount).'")';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        if ($result !== false)
+        {
+            return dbLayer::getInsertId();
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Update estimate file with Excel file ID
+    // Returns: true on success, false on failure
+    // -----------------------------------------------------------------------------
+    function updateEstimateFileExcelId($estimateId, $excelFileId)
+    {
+        $query = 'UPDATE `estimate_files` 
+                  SET `ESTM_EXCEL_FILE_ID` = "'.dbLayer::quote_smart($excelFileId).'"
+                  WHERE `ESTM_ID` = "'.dbLayer::quote_smart($estimateId).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get estimate file info by ID
+    // Returns: array with file info or false
+    // -----------------------------------------------------------------------------
+    function getEstimateFileInfo($estimateId)
+    {
+        $oSQL = new dbLayer();
+        $query = 'SELECT e.*, 
+                         CONCAT(l.RLTT_VARDS, " ", l.RLTT_UZVARDS) AS `AUTORS`,
+                         a.RAKT_FULL_NUMBER AS `ACT_NUMBER`,
+                         '.dbLayer::sqlParseDateTime('ESTM_DATE').'
+                  FROM `estimate_files` e
+                  LEFT JOIN `LIETOTAJI` l ON (e.ESTM_RLTT_ID = l.RLTT_ID)
+                  LEFT JOIN `AKTI` a ON (e.ESTM_RAKT_ID = a.RAKT_ID)
+                  WHERE e.ESTM_ID = "'.dbLayer::quote_smart($estimateId).'"';
+        
+        $res = $oSQL->makeQuery($query);
+        
+        if (isset($res[0]))
+        {
+            return $res[0];
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get all estimate files for a specific act
+    // Returns: array of estimate files or false
+    // -----------------------------------------------------------------------------
+    function getEstimateFilesByActId($actId)
+    {
+        $oSQL = new dbLayer();
+        $query = 'SELECT e.*, 
+                         CONCAT(l.RLTT_VARDS, " ", l.RLTT_UZVARDS) AS `AUTORS`,
+                         '.dbLayer::sqlParseDateTime('ESTM_DATE').'
+                  FROM `estimate_files` e
+                  LEFT JOIN `LIETOTAJI` l ON (e.ESTM_RLTT_ID = l.RLTT_ID)
+                  WHERE e.ESTM_RAKT_ID = "'.dbLayer::quote_smart($actId).'"
+                  ORDER BY e.ESTM_DATE DESC';
+        
+        return $oSQL->makeQuery($query);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Insert estimate file detail record
+    // Returns: true on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertEstimateFileDetail($estimateId, $type, $code, $status, $saved = 0)
+    {
+        $query = 'INSERT INTO `estimate_files_detales` 
+                    (`ESFD_ESTM_ID`, `ESFD_TYPE`, `ESFD_CODE`, `ESFD_STATUS`, `ESFD_SAVED`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($estimateId).'",
+                     "'.dbLayer::quote_smart($type).'",
+                     '.((!empty($code)) ? '"'.dbLayer::quote_smart($code).'"' : 'NULL').',
+                     "'.dbLayer::quote_smart($status).'",
+                     "'.dbLayer::quote_smart($saved).'")';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get estimate file details by estimate ID
+    // Returns: array of details or false
+    // -----------------------------------------------------------------------------
+    function getEstimateFileDetails($estimateId, $type = false)
+    {
+        $oSQL = new dbLayer();
+        $query = 'SELECT d.*, 
+                         CASE 
+                            WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NOT NULL THEN w.DRBI_KKAL_NOSAUKUMS
+                            WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NULL AND kw.KKAL_ID IS NOT NULL THEN kw.KKAL_NOSAUKUMS
+                            WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NOT NULL THEN m.MATR_NOSAUKUMS
+                            WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NULL AND km.KMAT_ID IS NOT NULL THEN km.KMAT_NOSAUKUMS
+                            ELSE NULL
+                         END AS `TITLE`,
+                         CASE 
+                            WHEN d.ESFD_TYPE = 1 AND wt.KLDV_ID IS NOT NULL THEN wt.KLDV_NOSAUKUMS
+                            WHEN d.ESFD_TYPE = 2 AND mt.KLDV_ID IS NOT NULL THEN mt.KLDV_NOSAUKUMS
+                            ELSE NULL
+                         END AS `WORK_TYPE_NAME`
+                  FROM `estimate_files_detales` d
+                  LEFT JOIN `DARBI` w ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE COLLATE utf8_general_ci = w.DRBI_KKAL_SHIFRS COLLATE utf8_general_ci AND w.DRBI_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
+                  LEFT JOIN `kl_darba_veidi` wt ON (w.DRBI_WORK_TYPE_ID = wt.KLDV_ID)
+                  LEFT JOIN `KL_KALKULACIJA` kw ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE COLLATE utf8_general_ci = kw.KKAL_SHIFRS COLLATE utf8_general_ci)
+                  LEFT JOIN `MATERIALI` m ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = m.MATR_KODS COLLATE utf8_general_ci AND m.MATR_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
+                  LEFT JOIN `kl_darba_veidi` mt ON (m.MATR_WORK_TYPE_ID = mt.KLDV_ID)
+                  LEFT JOIN `KL_MATERIALI` km ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = km.KMAT_KODS COLLATE utf8_general_ci)
+                  WHERE d.ESFD_ESTM_ID = "'.dbLayer::quote_smart($estimateId).'"';
+        
+        if ($type !== false)
+        {
+            $query .= ' AND d.ESFD_TYPE = "'.dbLayer::quote_smart($type).'"';
+        }
+        
+        $query .= ' ORDER BY d.ESFD_ID ASC';
+        
+        return $oSQL->makeQuery($query);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Update estimate file row count
+    // Returns: true on success, false on failure
+    // -----------------------------------------------------------------------------
+    function updateEstimateFileRowCount($estimateId, $rowCount)
+    {
+        $query = 'UPDATE `estimate_files` 
+                  SET `ESTM_ROWS` = "'.dbLayer::quote_smart($rowCount).'"
+                  WHERE `ESTM_ID` = "'.dbLayer::quote_smart($estimateId).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Update estimate file detail status
+    // Returns: true on success, false on failure
+    // -----------------------------------------------------------------------------
+    function updateEstimateFileDetailStatus($detailId, $status, $saved = false)
+    {
+        $query = 'UPDATE `estimate_files_detales` 
+                  SET `ESFD_STATUS` = "'.dbLayer::quote_smart($status).'"';
+        
+        if ($saved !== false)
+        {
+            $query .= ', `ESFD_SAVED` = "'.dbLayer::quote_smart($saved).'"';
+        }
+        
+        $query .= ' WHERE `ESFD_ID` = "'.dbLayer::quote_smart($detailId).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Delete estimate file (will cascade delete details)
+    // Returns: true on success, false on failure
+    // -----------------------------------------------------------------------------
+    function deleteEstimateFile($estimateId)
+    {
+        $query = 'DELETE FROM `estimate_files` 
+                  WHERE `ESTM_ID` = "'.dbLayer::quote_smart($estimateId).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return ($result !== false);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get count of estimate files for a specific act
+    // Returns: count or 0
+    // -----------------------------------------------------------------------------
+    function getEstimateFilesCount($actId)
+    {
+        $oSQL = new dbLayer();
+        $query = 'SELECT COUNT(*) AS `COUNT`
+                  FROM `estimate_files`
+                  WHERE `ESTM_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+        
+        $result = $oSQL->makeQuery($query);
+        
+        return isset($result[0]['COUNT']) ? $result[0]['COUNT'] : 0;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Check if work code exists in KL_KALKULACIJA table
+    // Returns: true if exists, false otherwise
+    // -----------------------------------------------------------------------------
+    function workCodeExists($code)
+    {
+        $query = 'SELECT `KKAL_ID` FROM `KL_KALKULACIJA`
+                  WHERE `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]['KKAL_ID']);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get work info from KL_KALKULACIJA by code
+    // Returns: array with KKAL_ID, KKAL_PLANA, KKAL_NOSAUKUMS or false
+    // -----------------------------------------------------------------------------
+    function getWorkInfoByCode($code)
+    {
+        $query = 'SELECT `KKAL_ID`, `KKAL_PLANA`, `KKAL_NOSAUKUMS`
+                  FROM `KL_KALKULACIJA`
+                  WHERE `KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"
+                  LIMIT 1';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]) ? $result[0] : false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Check if work code already exists in DARBI for specific act and work type
+    // Returns: true if exists, false otherwise
+    // -----------------------------------------------------------------------------
+    function workExistsInDarbi($actId, $code, $workTypeId = false)
+    {
+        $query = 'SELECT `DRBI_ID` FROM `DARBI`
+                  WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+                  AND `DRBI_KKAL_SHIFRS` = "'.dbLayer::quote_smart($code).'"';
+        
+        if ($workTypeId !== false)
+        {
+            $query .= ' AND `DRBI_WORK_TYPE_ID` = "'.dbLayer::quote_smart($workTypeId).'"';
+        }
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]['DRBI_ID']);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Get work type ID by name from kl_darba_veidi
+    // Returns: KLDV_ID or false
+    // -----------------------------------------------------------------------------
+    function getWorkTypeIdByName($name)
+    {
+        $query = 'SELECT `KLDV_ID` FROM `kl_darba_veidi`
+                  WHERE `KLDV_NOSAUKUMS` = "'.dbLayer::quote_smart($name).'"
+                  LIMIT 1';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]['KLDV_ID']) ? $result[0]['KLDV_ID'] : false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Insert work into DARBI table from estimate file
+    // Returns: inserted ID on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertWorkToDarbiFromEstimate($actId, $code, $title, $normativ, $amount, $measure, $kkalId, $isWorker, $workTypeId, $notes)
+    {
+        $query = 'INSERT INTO `DARBI` 
+                    (`DRBI_RAKT_ID`, `DRBI_KKAL_SHIFRS`, `DRBI_KKAL_NOSAUKUMS`, 
+                     `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_MERVIENIBA`, 
+                     `DRBI_KKAL_ID`, `DRBI_IS_WORKER`, `DRBI_WORK_TYPE_ID`, `DRBI_PIEZIMES`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($actId).'",
+                     '.((!empty($code)) ? '"'.dbLayer::quote_smart($code).'"' : 'NULL').',
+                     '.((!empty($title)) ? '"'.dbLayer::quote_smart($title).'"' : 'NULL').',
+                     '.((!empty($normativ)) ? '"'.dbLayer::quote_smart($normativ).'"' : 'NULL').',
+                     '.((!empty($amount)) ? '"'.dbLayer::quote_smart($amount).'"' : 'NULL').',
+                     '.((!empty($measure)) ? '"'.dbLayer::quote_smart($measure).'"' : 'NULL').',
+                     '.((!empty($kkalId)) ? '"'.dbLayer::quote_smart($kkalId).'"' : 'NULL').',
+                     "'.dbLayer::quote_smart($isWorker).'",
+                     '.(($workTypeId !== false) ? '"'.dbLayer::quote_smart($workTypeId).'"' : 'NULL').',
+                     '.((!empty($notes)) ? '"'.dbLayer::quote_smart($notes).'"' : 'NULL').')';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        if ($result !== false)
+        {
+            return dbLayer::getInsertId();
+        }
+        return false;
+    }
+
+    // =============================================================================
+    // MATERIAL PROCESSING METHODS
+    // =============================================================================
+
+    // -----------------------------------------------------------------------------
+    // Get material info from KL_MATERIALI by code
+    // Returns: array with KMAT_ID, KMAT_NOSAUKUMS, KMAT_MERVIENIBA or false
+    // -----------------------------------------------------------------------------
+    function getMaterialInfoByCode($code)
+    {
+        $query = 'SELECT `KMAT_ID`, `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`
+                  FROM `KL_MATERIALI`
+                  WHERE `KMAT_KODS` = "'.dbLayer::quote_smart($code).'"
+                  LIMIT 1';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]) ? $result[0] : false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Check if material code already exists in MATERIALI for specific act and work type
+    // Returns: true if exists, false otherwise
+    // -----------------------------------------------------------------------------
+    function materialExistsInMateriali($actId, $code, $workTypeId = false)
+    {
+        $query = 'SELECT `MATR_ID` FROM `MATERIALI`
+                  WHERE `MATR_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+                  AND `MATR_KODS` = "'.dbLayer::quote_smart($code).'"';
+        
+        if ($workTypeId !== false)
+        {
+            $query .= ' AND `MATR_WORK_TYPE_ID` = "'.dbLayer::quote_smart($workTypeId).'"';
+        }
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        return isset($result[0]['MATR_ID']);
+    }
+
+    // -----------------------------------------------------------------------------
+    // Insert material into MATERIALI table from estimate file
+    // Returns: inserted ID on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertMaterialToMaterialiFromEstimate($actId, $code, $title, $amount, $measure, $isWorker, $workTypeId, $notes)
+    {
+        $query = 'INSERT INTO `MATERIALI` 
+                    (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, 
+                     `MATR_DAUDZUMS`, `MATR_MERVIENIBA`, 
+                     `MATR_IS_WORKER`, `MATR_WORK_TYPE_ID`, `MATR_PIEZIMES`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($actId).'",
+                     '.((!empty($code)) ? '"'.dbLayer::quote_smart($code).'"' : 'NULL').',
+                     '.((!empty($title)) ? '"'.dbLayer::quote_smart($title).'"' : 'NULL').',
+                     '.((!empty($amount)) ? '"'.dbLayer::quote_smart($amount).'"' : 'NULL').',
+                     '.((!empty($measure)) ? '"'.dbLayer::quote_smart($measure).'"' : 'NULL').',
+                     "'.dbLayer::quote_smart($isWorker).'",
+                     '.(($workTypeId !== false) ? '"'.dbLayer::quote_smart($workTypeId).'"' : 'NULL').',
+                     '.((!empty($notes)) ? '"'.dbLayer::quote_smart($notes).'"' : 'NULL').')';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        if ($result !== false)
+        {
+            return dbLayer::getInsertId();
+        }
+        return false;
+    }
+
 }  
 
 ?>
