@@ -338,6 +338,9 @@ if ( $isAdmin || $isProjector)
                                   // Generate Excel file with statistics
                                   $excelFileId = toExcel::exportEstimateStatistics($estimateId, $userId, $actId);
                                   
+                                  // Save Excel file ID to estimate_files table for future use
+                                  dbProc::updateEstimateFileExcelId($estimateId, $excelFileId);
+
                                   // Refresh parent window tabs to show inserted rows
                                   $oRedirectLink = new urlQuery();
                                   $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.20');

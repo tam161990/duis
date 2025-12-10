@@ -975,14 +975,12 @@ function exportTameMaterial($actId, $userId, $type){
             {
                 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
                 $objWriter->setOffice2003Compatibility(true);
-                $objWriter->save(EXCEL_FILES_STORE_PATH . "/" . $idFile);
+                $objWriter->save(PROJECT_FILES_STORE_PATH . "/" . $idFile);
             }
             return $idFile;
         }
         
         return false;
     }
-   
-
 }
 ?>

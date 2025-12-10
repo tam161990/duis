@@ -21,21 +21,7 @@
                 <td class="table_cell_2"><?=htmlspecialchars($fileInfo['ESTM_NAME']);?></td>
                 <td class="table_cell_2"><?=$fileInfo['AUTORS'];?></td>
                 <td class="table_cell_2" align="center"><?=$fileInfo['ESTM_ROWS'];?></td>
-                <td class="table_cell_2" align="center">
-                    <?
-                    // Create download link for Excel statistics
-                    $oLinkFile = new urlQuery();
-                    $oLinkFile->addPrm(FORM_ID, 'f.akt.s.28');
-                    $oLinkFile->addPrm(DONT_USE_GLB_TPL, '1');
-                    $oLinkFile->addPrm('estimateId', $fileInfo['ESTM_ID']);
-                    ?>
-                    <a href="<?=$oLinkFile->getQuery();?>" title="<?=text::get('VIEW_DETAILS');?>">
-                        <img src="img/ico_excel.gif" alt="Excel" width="16" height="16" border="0">
-                    </a>
-                    <?
-                    unset($oLinkFile);
-                    ?>
-                </td>
+                <td class="table_cell_2" align="center"><a href="<?=$fileInfo['getFileURL'];?>"><img src="img/ico_excel.gif" alt="<?=text::get('VIEW_DETAILS');?>" width="16" height="16"></a></td>
             </tr>
         <?
         }
