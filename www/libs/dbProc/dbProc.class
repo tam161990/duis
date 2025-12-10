@@ -11423,6 +11423,226 @@ class dbProc extends dbLayer
             return false;
         }
 
+// =============================================================================
+// KL_RBF_DARBUZNEMEJI - RBF Employees catalog
+// =============================================================================
+
+	// -----------------------------------------------------------------------------
+	// Get RBF Employee list or single record with territories
+	// -----------------------------------------------------------------------------
+	function getRbfEmployeeList($ID = false, $offset = false, $limit = false,
+                            $search =  false,
+                            $column = false,
+                            $order =  'ASC',
+                            $orderColumn = false)
+	{
+		if ($ID)
+		{
+			$query = 'select d.*,
+				GROUP_CONCAT(
+					CASE 
+						WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+						ELSE t.RBTR_DID_NOSAUKUMS
+					END 
+					ORDER BY 
+						CASE 
+							WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+							ELSE t.RBTR_DID_NOSAUKUMS
+						END 
+					SEPARATOR ", "
+				) as TERRITORIES
+				from `kl_rbf_darbuznemeji` d
+				LEFT JOIN `kl_rbf_du_teritorijas` dt ON d.RBDU_ID = dt.RBDT_RBDU_ID
+				LEFT JOIN `kl_rbf_teritorijas` t ON dt.RBDT_RBTR_ID = t.RBTR_ID
+				where d.`RBDU_ID` = "'.dbLayer::quote_smart($ID).'"
+				GROUP BY d.RBDU_ID';
+		}
+		else
+		{
+		    if($column === false)
+            {
+                  $column = 'RBDU_KODS';
+            }
+            if($orderColumn === false)
+            {
+                  $orderColumn = 'RBDU_NOSAUKUMS';
+            }
+            $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+            if($search === false || $search == '')
+            {
+                $searchString = '1 ';
+            }
+			$query = 'select d.*,
+				GROUP_CONCAT(
+					CASE 
+						WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+						ELSE t.RBTR_DID_NOSAUKUMS
+					END 
+					ORDER BY 
+						CASE 
+							WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+							ELSE t.RBTR_DID_NOSAUKUMS
+						END 
+					SEPARATOR ", "
+				) as TERRITORIES
+				from `kl_rbf_darbuznemeji` d
+				LEFT JOIN `kl_rbf_du_teritorijas` dt ON d.RBDU_ID = dt.RBDT_RBDU_ID
+				LEFT JOIN `kl_rbf_teritorijas` t ON dt.RBDT_RBTR_ID = t.RBTR_ID
+				where '.$searchString.'
+				GROUP BY d.RBDU_ID
+				order by `'.dbLayer::quote_smart($orderColumn).'` '.dbLayer::quote_smart($order).'';
+			if (($offset !== false) && $limit)
+			{
+				$query .= ' limit '.
+					($offset ? (int)$offset.', ' : '').
+					(int)$limit;
+			}
+		}
+
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get count of RBF Employees for pagination
+	// -----------------------------------------------------------------------------
+	function getRbfEmployeeCount($search = false, $column = false)
+	{
+	    if($column === false)
+        {
+              $column = 'RBDU_KODS';
+        }
+        $searchString = 'UPPER('.dbLayer::quote_smart($column).') REGEXP "('.dbLayer::quote_smart(text::toUpper($search)).')" ';
+        if($search === false || $search == '')
+        {
+            $searchString = '1 ';
+        }
+		$query = 'select count(*) as CNT from `kl_rbf_darbuznemeji`
+                  where '.$searchString;
+
+	   	$oSQL = new dbLayer;
+	   	$result = $oSQL -> makeQuery($query);
+	   	return $result[0]['CNT'];
+	}
+
+	// -----------------------------------------------------------------------------
+	// Save RBF Employee. If ID provided - update, else - insert new
+	// -----------------------------------------------------------------------------
+	function saveRbfEmployee($ID, $code, $name, $vvType, $vvNumber, $contacts, $isActive, $territories = array())
+	{
+		$oDB = new dbLayer;
+		
+		if ($ID)
+		{
+			$query = 'update `kl_rbf_darbuznemeji`
+				set `RBDU_KODS` = "'.dbLayer::quote_smart($code).'",
+				    `RBDU_NOSAUKUMS` = "'.dbLayer::quote_smart($name).'",
+				    `RBDU_VV_VEIDS` = "'.dbLayer::quote_smart($vvType).'",
+				    `RBDU_VV_NUMURS` = "'.dbLayer::quote_smart($vvNumber).'",
+				    `RBDU_KONTAKTI` = "'.dbLayer::quote_smart($contacts).'",
+                    `RBDU_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'"
+				where `RBDU_ID` = "'.dbLayer::quote_smart($ID).'"';
+			$result = $oDB -> makeQuery($query);
+		}
+		elseif ($name)
+		{
+			$query = 'insert into `kl_rbf_darbuznemeji`
+                (`RBDU_KODS`, `RBDU_NOSAUKUMS`, `RBDU_VV_VEIDS`, `RBDU_VV_NUMURS`, `RBDU_KONTAKTI`, `RBDU_IR_AKTIVS`)
+			values
+                ("'.dbLayer::quote_smart($code).'",
+                "'.dbLayer::quote_smart($name).'",
+                "'.dbLayer::quote_smart($vvType).'",
+                "'.dbLayer::quote_smart($vvNumber).'",
+                "'.dbLayer::quote_smart($contacts).'",
+                "'.dbLayer::quote_smart($isActive).'")';
+			$result = $oDB -> makeQuery($query);
+			if ($result !== false) {
+				$ID = dbLayer::getInsertId();
+			}
+		}
+
+		// Save territories
+		if ($ID && $result !== false) {
+			// Delete existing territories
+			$deleteQuery = 'delete from `kl_rbf_du_teritorijas` where `RBDT_RBDU_ID` = "'.dbLayer::quote_smart($ID).'"';
+			$oDB -> makeQuery($deleteQuery);
+			
+			// Insert new territories
+			if (is_array($territories) && count($territories) > 0) {
+				foreach ($territories as $terID) {
+					if ($terID) {
+						$insertQuery = 'insert into `kl_rbf_du_teritorijas` (`RBDT_RBDU_ID`, `RBDT_RBTR_ID`) 
+						values ("'.dbLayer::quote_smart($ID).'", "'.dbLayer::quote_smart($terID).'")';
+						$oDB -> makeQuery($insertQuery);
+					}
+				}
+			}
+		}
+
+		return ($result !== false);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Check if RBF Employee with given code exists
+	// -----------------------------------------------------------------------------
+	function rbfEmployeeWithCodeExists($code, $employeeId = false)
+	{
+		$query = 'select `RBDU_ID` from `kl_rbf_darbuznemeji`
+            where `RBDU_KODS` = "'.dbLayer::quote_smart($code).'"';
+		if ($employeeId)
+		{
+			$query .= ' and `RBDU_ID` != "'.dbLayer::quote_smart($employeeId).'"';
+		}
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['RBDU_ID']);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Check if RBF Employee with given VV number exists
+	// -----------------------------------------------------------------------------
+	function rbfEmployeeWithVVNumberExists($vvNumber, $employeeId = false)
+	{
+		$query = 'select `RBDU_ID` from `kl_rbf_darbuznemeji`
+            where `RBDU_VV_NUMURS` = "'.dbLayer::quote_smart($vvNumber).'"';
+		if ($employeeId)
+		{
+			$query .= ' and `RBDU_ID` != "'.dbLayer::quote_smart($employeeId).'"';
+		}
+
+		$oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return isset($result[0]['RBDU_ID']);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get active RBF Territories for dropdown
+	// -----------------------------------------------------------------------------
+	function getRbfTerritoryActiveList()
+	{
+		$query = 'select * from `kl_rbf_teritorijas`
+            where `RBTR_IR_AKTIVS` = 1
+            order by `RBTR_NOSAUKUMS` asc';
+
+	   	$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get employee territories
+	// -----------------------------------------------------------------------------
+	function getRbfEmployeeTerritories($employeeId)
+	{
+		$query = 'select `RBDT_RBTR_ID` from `kl_rbf_du_teritorijas`
+            where `RBDT_RBDU_ID` = "'.dbLayer::quote_smart($employeeId).'"';
+
+	   	$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
 }  
 
 ?>

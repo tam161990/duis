@@ -376,6 +376,45 @@ if ( $isAdmin || $isSystemUser )
 	$editCalcNormsLink = $oLink->getQuery();
 	unset($oLink);
 
+	// list RBF territories
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.25');
+	$rbfTerritoriesListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit RBF territories form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.25');
+	$oLink->addPrm('editMode', '1');
+	$editRbfTerritoriesLink = $oLink->getQuery();
+	unset($oLink);
+
+	// list RBF employees
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.26');
+	$rbfEmployeesListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit RBF employees form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.26');
+	$oLink->addPrm('editMode', '1');
+	$editRbfEmployeesLink = $oLink->getQuery();
+	unset($oLink);
+
+	// list RBF calculations
+	$oLink=new urlQuery();
+	$oLink->addPrm('isNew', '1');
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.27');
+	$rbfCalculationsListLink=$oLink ->getQuery();
+	unset($oLink);
+	// add/edit RBF calculations form
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.ktl.s.27');
+	$oLink->addPrm('editMode', '1');
+	$editRbfCalculationsLink = $oLink->getQuery();
+	unset($oLink);
+
     // calalog imports
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');
