@@ -69,12 +69,14 @@ class userAuthorization
 							session::set('isContract', $rows[0]['RLTT_IR_LIGUMS'] );
 							session::set('isLimitcard', $rows[0]['RLTT_IR_LIMITCARD'] );
 							session::set('isPpaReport', $rows[0]['RLTT_IR_PPA'] );
+							session::set('isRbfUser', $rows[0]['RLTT_IR_RBF'] );
 					}
 					else
 					{
 							session::set('isContract', 0);
 							session::set('isLimitcard', 0);
 							session::set('isPpaReport', 0);
+							session::set('isRbfUser', 0);
 					}
 					return true;
 				}
@@ -117,6 +119,7 @@ class userAuthorization
 					session::set('isContract',$rows[0]['RLTT_IR_LIGUMS']);
 					session::set('isLimitcard',$rows[0]['RLTT_IR_LIMITCARD']);
 					session::set('isPpaReport',$rows[0]['RLTT_IR_PPA']);
+					session::set('isRbfUser',$rows[0]['RLTT_IR_RBF']);
 					
                      if($rows[0]['RLTT_KWOI_KODS'] != "")
                         session::set('workerCode',$rows[0]['RLTT_KWOI_KODS']);
@@ -206,6 +209,14 @@ class userAuthorization
 	function isPpaReport()
 	{
 		return session::get('isPpaReport');
+	}
+
+	// -----------------------------------------------------------------------------
+	// piekļuve sadaļai RBF
+	// -----------------------------------------------------------------------------
+	function isRbfUser()
+	{
+		return session::get('isRbfUser');
 	}
 
 	// -----------------------------------------------------------------------------

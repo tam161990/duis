@@ -33,6 +33,22 @@ function hideMenu()
 	var c=getElement('tdOptions',true); c.className="menu_cell_top";
 	var c=getElement('projectSubMenuDiv',true); c.style.visibility="hidden";
 	var c=getElement('tdProject',true); c.className="menu_cell_top";
+	var c=getElement('rbfSubMenuDiv',true); c.style.visibility="hidden";
+}
+
+function showRbfSubMenu(event)
+{
+	var a=getElement('rbfSubMenuDiv',true);
+	if (a.style.visibility=='visible')
+	{
+		a.style.visibility='hidden';
+	} 
+	else 
+	{
+		a.style.visibility='visible';
+	}
+	event.stopPropagation();
+	return false;
 }
 
 function disableFrameControl()
@@ -75,7 +91,18 @@ if($isAdmin || $isEdUser || $isAuditor )
   	?>
 	<table cellpadding="0" cellspacing="0" border="0">
 		<tr>
-
+		   <td class="menu_cell" style="position:relative;">
+		   		<a href="#" onclick="return showRbfSubMenu(event);"><?=text::get('RBF');?></a>
+		   		<div id="rbfSubMenuDiv" class="sub_menu" style="position: absolute;left: 100%;top: 0px;visibility:hidden; z-index:10; background-color:#D0E6C3; border:1px solid #ccc; margin-left: -1px;">
+		   			<table cellpadding="0" cellspacing="0" border="0">
+		   				<tr>
+		   					<td class="menu_cell" nowrap><a target="frame_1" href="<?=$rbfTerritoriesListLink;?>" onclick="reloadFrame(2,'<?=$editRbfTerritoriesLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('RBF_TERRITORIES');?></a></td>
+		   					<td class="menu_cell" nowrap><a target="frame_1" href="<?=$rbfEmployeesListLink;?>" onclick="reloadFrame(2,'<?=$editRbfEmployeesLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('RBF_EMPLOYEES');?></a></td>
+		   					<td class="menu_cell" nowrap><a target="frame_1" href="<?=$rbfCalculationsListLink;?>" onclick="reloadFrame(2,'<?=$editRbfCalculationsLink;?>');reloadFrame(3,'');enableFrameControl();window.top.min(0);window.top.normal();hideMenu();"><?=text::get('RBF_CALCULATIONS');?></a></td>
+		   				</tr>
+		   			</table>
+		   		</div>
+		   </td>
 		   <td class="menu_cell"><a  target="frame_1" href="<?=$materialListLink;?>" onclick="reloadFrame(2,'<?=$editMaterialLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('MATERIALS');?></a></td>
            <!--td class="menu_cell"><a  target="frame_1" href="<?=$regionListLink;?>" onclick="reloadFrame(2,'<?=$editRegionLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('REGIONS');?></a></td--> 
            <td class="menu_cell"><a  target="frame_1" href="<?=$edAreaListLink;?>" onclick="reloadFrame(2,'<?=$editEdAreaLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ED_AREA');?></a></td>
@@ -262,7 +289,7 @@ if($isAdmin || $isSystemUser)
 		<td class="head_table_bot">
 
 		</td>
-		<td class="head_table_bot_brown"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="color: #716F60;"></td><td nowrap ><img src="img/0.gif" alt="" width="1" height="20" class="block"></td></tr></table></td>
+		<td class="head_table_bot_brown"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="color:rgb(226, 243, 229);"></td><td nowrap ><img src="img/0.gif" alt="" width="1" height="20" class="block"></td></tr></table></td>
 		<td class="head_table_bot">
 			<table cellpadding="2" cellspacing="0" border="0">
 				<tr>
