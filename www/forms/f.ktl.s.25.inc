@@ -30,25 +30,28 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		// if territoryId>0 ==> territory selected from the list
 		if($territoryId != false)
 		{
-			// get info about territory - placeholder for database call
-			// $territoryInfo = dbProc::getRbfTerritoryList($territoryId);
-			// if(count($territoryInfo)>0)
-			// {
-			//	$territory = $territoryInfo[0];
-			// }
+			// get info about territory
+			$territoryInfo = dbProc::getRbfTerritoryList($territoryId);
+			if(count($territoryInfo)>0)
+			{
+				$territory = $territoryInfo[0];
+			}
         }
 
 		// form elements
 		$oForm -> addElement('hidden', 'action', '');
-		$oForm -> addElement('hidden', 'territoryId', null, isset($territory['ID'])? $territory['ID']:'');
+		$oForm -> addElement('hidden', 'territoryId', null, isset($territory['RBTR_ID'])? $territory['RBTR_ID']:'');
 
-        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($territory['KODS'])?$territory['KODS']:'', 'maxlength="20"' . (($territoryId || $isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($territory['RBTR_KODS'])?$territory['RBTR_KODS']:'', 'maxlength="10"' . (($territoryId || $isEdUser)?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($territory['NOSAUKUMS'])?$territory['NOSAUKUMS']:'', 'maxlength="100"'.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($territory['RBTR_NOSAUKUMS'])?$territory['RBTR_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($territory['IR_AKTIVS'])?$territory['IR_AKTIVS']:1, ''.(($isEdUser)?' disabled' : ''));
+        $oForm -> addElement('text', 'didNosaukums',  text::get('RBF_DID_NAME'), isset($territory['RBTR_DID_NOSAUKUMS'])?$territory['RBTR_DID_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('didNosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
+		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($territory['RBTR_IR_AKTIVS'])?$territory['RBTR_IR_AKTIVS']:1, ''.(($isEdUser)?' disabled' : ''));
 
 		// form buttons
         if(!$isEdUser)
@@ -82,7 +85,28 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-			if ($oForm -> getValue('kods') && $oForm -> getValue('nosaukums') )
+			
+			// For UPDATE: use existing data for disabled fields, for INSERT: use form values
+			if ($oForm->getValue('action')==OP_UPDATE && is_numeric($oForm->getValue('territoryId'))) {
+				// Updating - load territory data to fill disabled fields
+				if (!isset($territory)) {
+					$territoryInfo = dbProc::getRbfTerritoryList($oForm->getValue('territoryId'));
+					if(count($territoryInfo)>0)
+					{
+						$territory = $territoryInfo[0];
+					}
+				}
+				$kods = isset($territory['RBTR_KODS']) ? $territory['RBTR_KODS'] : '';
+				$nosaukums = $oForm->getValue('nosaukums') ? $oForm->getValue('nosaukums') : (isset($territory['RBTR_NOSAUKUMS']) ? $territory['RBTR_NOSAUKUMS'] : '');
+				$didNosaukums = $oForm->getValue('didNosaukums') ? $oForm->getValue('didNosaukums') : (isset($territory['RBTR_DID_NOSAUKUMS']) ? $territory['RBTR_DID_NOSAUKUMS'] : '');
+			} else {
+				// Inserting - use form values
+				$kods = $oForm->getValue('kods');
+				$nosaukums = $oForm->getValue('nosaukums');
+				$didNosaukums = $oForm->getValue('didNosaukums');
+			}
+			
+			if ($kods && $nosaukums && $didNosaukums)
 			{
 				$checkRequiredFields = true;
 			}
@@ -91,33 +115,33 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				// save
 				if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('territoryId'))))
 				{
-					// TODO: Add database validation
-					// if (dbProc::rbfTerritoryWithCodeExists(
-                    //                            $oForm->getValue('kods'),
-                    //                            ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('territoryId'):false)
-                    //                            )
-					// {
-					//	$oForm->addError(text::get('ERROR_EXISTS_CODE'));
-					//	$check = false;
-					// }
+					// Check if code already exists (only for INSERT)
+					if ($oForm->getValue('action')==OP_INSERT && 
+					    dbProc::rbfTerritoryWithCodeExists($kods, false))
+					{
+						$oForm->addError(text::get('ERROR_EXISTS_RBF_TERRITORY_CODE'));
+						$check = false;
+					}
 
 					// if all is ok, do operation
 					if($check)
 					{
-						// TODO: Implement database save
-						// $r=dbProc::saveRbfTerritory(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):false),
-						// $oForm->getValue('kods'),
-						// $oForm->getValue('nosaukums'),
-						// $oForm->getValue('isActive',0)
-						// );
-
-						// Placeholder - remove when database is implemented
-						$oForm->addError(text::get('ERROR_IN_DB_QUERY').' - Database not yet implemented for RBF Territories');
-						$r = false;
+						$r=dbProc::saveRbfTerritory(
+							($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):false),
+							$kods,
+							$nosaukums,
+							$didNosaukums,
+							$oForm->getValue('isActive',0)
+						);
 
 						if (!$r)
 						{
-							$oForm->addError(text::get('ERROR_IN_DB_QUERY'));
+							$errorMsg = dbProc::getError();
+							$oForm->addError(text::get('ERROR_IN_DB_QUERY') . ($errorMsg ? ' - ' . $errorMsg : ' - No error details'));
+							// Debug info
+							$oForm->addError('Debug: ID=' . ($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):'NEW') . 
+							                 ', Kods=' . $kods . ', Nosaukums=' . $nosaukums . ', DID=' . $didNosaukums . 
+							                 ', Active=' . $oForm->getValue('isActive',0));
 						}
 					}
 				}
@@ -154,18 +178,120 @@ if (userAuthorization::isAdmin() || $isEdUser )
 	// top frame
 	else
 	{
+        // Check if this form was requested via xmlHttpRequest and search
+    	if (isset($_GET['xml']) && isset($_GET['search_q']) && isset($_GET['search_c']))
+    	{
+    		ob_clean();
+    		$q = $_GET['search_q'];
+            if (isset($q) || $q == 0)
+    		{
+    			echo 'q = "'.trim($q).'";';
+    		}
+            else
+            {
+    			echo 'q = "";';
+    		}
+            $c = $_GET['search_c'];
+            if ($c)
+    		{
+    			echo 'c = "'.$c.'";';
+    		}
+            else
+            {
+    			echo 'c = "";';
+    		}
+		    exit;
+    	}
+        if (isset($_GET['xml']) && isset($_GET['sort_k']) && isset($_GET['sort_o']))
+    	{
+    		ob_clean();
+    		$o = $_GET['sort_o'];
+            if (isset($o))
+    		{
+    			echo 'o = "'.$o.'";';
+    		}
+            else
+            {
+    			echo 'o = "";';
+    		}
+            $k = $_GET['sort_k'];
+            if ($k)
+    		{
+    			echo 'k = "'.$k.'";';
+    		}
+            else
+            {
+    			echo 'k = "";';
+    		}
+		    exit;
+    	}
         // set list title
         $title = text::toUpper(text::get('RBF_TERRITORIES'));
-        
-        // TODO: Implement listing functionality when database is ready
-        // For now, show placeholder message
-        
-        echo '<body class="frame_1">';
-        echo '<h1>'.$title.'</h1>';
-        echo '<div style="padding: 20px;">';
-        echo '<p>'.text::get('RBF_TERRITORIES').' - Database implementation pending</p>';
-        echo '</div>';
-        echo '</body>';
+        // get search column list
+        $columns=array(
+            array('kolonna'=>'RBTR_KODS', 'nosaukums'=>text::get('CODE'), 'def'=>1),
+            array('kolonna'=>'RBTR_NOSAUKUMS', 'nosaukums'=>text::get('NAME'), 'def'=>0),
+            array('kolonna'=>'RBTR_DID_NOSAUKUMS', 'nosaukums'=>text::get('DID_NAME'), 'def'=>0),
+            array('kolonna'=>'RBTR_IR_AKTIVS', 'nosaukums'=>text::get('IS_ACTIVE'), 'def'=>0)
+        );
+        $searchText = ((reqVar::get('search') && reqVar::get('search') != '') || reqVar::get('search') == 0) ? reqVar::get('search') : false;
+        $searchColumn = (reqVar::get('column') && reqVar::get('column') != '') ? reqVar::get('column') : false;
+        $sortOrder = (reqVar::get('order') && reqVar::get('order') != '') ? reqVar::get('order') : false;
+        $orderColumn = (reqVar::get('kol') && reqVar::get('kol') != '') ? reqVar::get('kol') : false;
+
+        // default sort column
+        $defaultColumn = 'RBTR_KODS';
+
+        // URL to search
+    	$oLink = new urlQuery;
+    	$oLink -> addPrm(FORM_ID, 'f.ktl.s.25');
+    	$oLink->addPrm('isNew', '1');
+
+        // add search/order params to listing
+        $oLink->addPrm('search', reqVar::get('search'));
+        $oLink->addPrm('column', reqVar::get('column'));
+        $oLink->addPrm('order', reqVar::get('order'));
+        $oLink->addPrm('kol', reqVar::get('kol'));
+        $searchLink = $oLink -> getQuery();
+
+		// inicialising of listing object
+		$amount=dbProc::getRbfTerritoryCount($searchText,
+                (($searchColumn === false) ? $defaultColumn : $searchColumn));
+		$listing=new listing();
+		$listing->setAmount($amount);
+
+		$listingHtml=$listing->getHtml($oLink ->getQuery());
+		unset($oLink);
+
+		//link for frame2
+		$oLink=new urlQuery();
+		$oLink->addPrm(FORM_ID, 'f.ktl.s.25');
+		$oLink->addPrm('editMode', 1);
+
+		// get list of territories
+		$res = dbProc::getRbfTerritoryList( false,
+                                        $listing->getStartPosition(),
+                                        $listing->getAmountOnPage(),
+                                        $searchText,
+                                        (($searchColumn === false) ? $defaultColumn : $searchColumn),
+                                        $sortOrder,
+                                        $orderColumn);
+
+		if (is_array($res))
+		{
+			foreach ($res as $i=>$row)
+			{
+				// add territory Id to each link
+				$oLink->addPrm('territoryId', $row['RBTR_ID']);
+				$res[$i]['URL']=$oLink ->getQuery();
+			}
+		}
+		unset($oLink);
+
+		// inicial state of number
+		$number=$listing->getStartPosition()+1;
+
+		include('f.ktl.s.x.1.tpl');
 	}
 }
 else
@@ -173,4 +299,3 @@ else
 	RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
 }
 ?>
-

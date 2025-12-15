@@ -19,7 +19,8 @@ var importCatalogs = ['MATERIAL',
                      'ACT_DELETE',
                      'CALC_NORMAS',
                      'VV_DELETE',
-                     'WRITE_OFF_CODES'
+                     'WRITE_OFF_CODES',
+                     'RBF_KALKULATION'
                      ];
 
 function setImportColumnVisibility()
@@ -88,6 +89,7 @@ add2onload('setImportColumnVisibility()');
        <div id="CALC_NORMAS" style="display:none"><?=text::get('REQUIREMENTS_CALC_NORMAS');?></div>
        <div id="VV_DELETE" style="display:none"><?=text::get('REQUIREMENTS_VV_DELETE');?></div>
        <div id="WRITE_OFF_CODES" style="display:none"><?=text::get('REQUIREMENTS_WRITE_OFF_CODE');?></div>
+       <div id="RBF_KALKULATION" style="display:none"><?=text::get('REQUIREMENTS_RBF_KALKULATION');?></div>
        </td>
     </tr>
 </table>

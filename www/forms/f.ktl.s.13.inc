@@ -121,6 +121,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
                                 case 'KALKULATION':
                                   $r2 = dbProc::saveCalculationFromCsv($data, $userId);
                                   break;
+                                // catalog RBF Kalkulācija
+                                case 'RBF_KALKULATION':
+                                  $r2 = dbProc::saveRbfCalculationFromExcel($data, $userId);
+                                  break;
                                 // catalog MMS-Kalkulacija
                                 case 'MMS_KALKULATION':
                                   $r2 = dbProc::saveMmsCalculationFromCsv($data, $userId);
@@ -207,6 +211,34 @@ if (userAuthorization::isAdmin() || $isEdUser )
                               }
                             }                            
                             break;
+                            // RBF Kalkulācija
+                            case 'RBF_KALKULATION':                           
+                            $j = 0;
+                            foreach ($objWorksheet->getRowIterator() as $row)
+                            {
+                                $cellIterator = $row->getCellIterator();
+                                $cellIterator->setIterateOnlyExistingCells(true);
+
+                                $i = 0;    
+                                foreach ($cellIterator as $cell)
+                                {
+                                  if(!is_null($cell))
+                                  {                                      
+                                      $j++;
+                                      if($j == 1)
+                                          break 1;
+                                      $data[$i] =  $cell->getValue();
+                                      $i++;                                      
+                                    }
+                                }
+                                // save RBF kalkulācijas record
+                                if($j > 1)
+                                {
+                                  $r2 = dbProc::saveRbfCalculationFromExcel($data, $userId);
+                                  
+                                }
+                              }                            
+                              break;
                             // DU lietotāji
                             case 'DUUSERS':                           
                             $j = 0;
@@ -524,6 +556,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
                   break; 
                 case 'WRITE_OFF_CODES':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.24');
+                  break;
+                // catalog RBF Kalkulācija
+                case 'RBF_KALKULATION':
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.27');
                   break;                                          
                
             }
@@ -541,6 +577,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
                 // catalog Kalulācija
                 case 'KALKULATION':
                   $oLink->addPrm(FORM_ID, 'f.ktl.s.10');
+                    break;
+                // catalog RBF Kalkulācija
+                case 'RBF_KALKULATION':
+                  $oLink->addPrm(FORM_ID, 'f.ktl.s.27');
                     break;
                 // catalog MMS-Kalulācija
                 case 'MMS_KALKULATION':

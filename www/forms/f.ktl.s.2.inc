@@ -97,6 +97,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oForm -> addElement('checkbox', 'limitCard',  text::get('LIMITCARD_ACCESS'), isset($user['RLTT_IR_LIMITCARD'])?$user['RLTT_IR_LIMITCARD']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
 
 		$oForm -> addElement('checkbox', 'ppaReport',  text::get('PPA_ACCESS'), isset($user['RLTT_IR_PPA'])?$user['RLTT_IR_PPA']:0,'tabindex=12 '.(($isEdUser)?' disabled' : ''));
+
+		$oForm -> addElement('checkbox', 'rbfAccess',  text::get('RBF_ACCESS'), isset($user['RLTT_IR_RBF'])?$user['RLTT_IR_RBF']:0,'tabindex=13 '.(($isEdUser)?' disabled' : ''));
 		// form buttons
         if(!$isEdUser)
         {
@@ -181,7 +183,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('contract', 0),
 						$oForm->getValue('projector', 0),
 						$oForm->getValue('limitCard', 0),
-						$oForm->getValue('ppaReport', 0)
+						$oForm->getValue('ppaReport', 0),
+						$oForm->getValue('rbfAccess', 0)
 						);
 
 						if (!$r)

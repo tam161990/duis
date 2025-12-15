@@ -178,7 +178,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$oForm->getValue('section'),
 						0,
 						0,
-						$oForm->getValue('projector', 0)
+						$oForm->getValue('projector', 0),
+						0,
+						0,
+						0
 						);
 
 						if (!$r)

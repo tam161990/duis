@@ -26,8 +26,8 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$oForm->addElement('static','jsRefresh2','','<script>refreshFrame(1);</script>');
 		}
 
-		// inicial state: employeeId=0;
-		// if employeeId>0 ==> employee selected from the list
+		// Get existing VV entries if editing
+		$existingVVEntries = array();
 		if($employeeId != false)
 		{
 			// get info about employee
@@ -37,17 +37,14 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				$employee = $employeeInfo[0];
 			}
 			
-			// Get selected territories
-			$selectedTerritories = array();
-			$terInfo = dbProc::getRbfEmployeeTerritories($employeeId);
-			if (is_array($terInfo)) {
-				foreach ($terInfo as $ter) {
-					$selectedTerritories[] = $ter['RBDT_RBTR_ID'];
-				}
+			// Get VV entries
+			$vvInfo = dbProc::getRbfEmployeeVVEntries($employeeId);
+			if (is_array($vvInfo)) {
+				$existingVVEntries = $vvInfo;
 			}
         }
 
-		// Get territories for dropdown - both NOSAUKUMS and DID_NOSAUKUMS
+		// Get territories for dropdown (both types)
 		$territoriesNosaukums = array();
 		$territoriesDID = array();
 		$terList = dbProc::getRbfTerritoryActiveList();
@@ -57,10 +54,6 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				$territoriesDID[$ter['RBTR_ID']] = $ter['RBTR_DID_NOSAUKUMS'];
 			}
 		}
-		
-		// Determine which list to use based on VV type
-		$currentVVType = isset($employee['RBDU_VV_VEIDS']) ? $employee['RBDU_VV_VEIDS'] : 'U';
-		$territories = ($currentVVType == 'U') ? $territoriesNosaukums : $territoriesDID;
 
 		// VV Types
 		$vvTypes = array(
@@ -71,6 +64,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		// form elements
 		$oForm -> addElement('hidden', 'action', '');
 		$oForm -> addElement('hidden', 'employeeId', null, isset($employee['RBDU_ID'])? $employee['RBDU_ID']:'');
+		$oForm -> addElement('hidden', 'vvRowCount', '', '0');
 
         $oForm -> addElement('text', 'kods',  text::get('CODE'), isset($employee['RBDU_KODS'])?$employee['RBDU_KODS']:'', 'maxlength="11"' . (($employeeId || $isEdUser)?' disabled' : ''));
 		$oForm -> addRule('kods', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -79,28 +73,24 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($employee['RBDU_NOSAUKUMS'])?$employee['RBDU_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-		$oForm -> addElement('select', 'vvType',  text::get('RBF_VV_TYPE'), isset($employee['RBDU_VV_VEIDS'])?$employee['RBDU_VV_VEIDS']:'U', 'onchange="updateTerritories()"'.(($isEdUser)?' disabled' : ''), '', '', $vvTypes);
+		$oForm -> addElement('select', 'vvType',  text::get('RBF_VV_TYPE'), isset($employee['RBDU_VV_VEIDS'])?$employee['RBDU_VV_VEIDS']:'U', 'onchange="updateAllTerritories()"'.(($isEdUser)?' disabled' : ''), '', '', $vvTypes);
 		$oForm -> addRule('vvType', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
-        $oForm -> addElement('text', 'vvNumber',  text::get('RBF_VV_NUMBER'), isset($employee['RBDU_VV_NUMURS'])?$employee['RBDU_VV_NUMURS']:'', 'maxlength="15"'.(($isEdUser)?' disabled' : ''));
-		$oForm -> addRule('vvNumber', text::get('ERROR_REQUIRED_FIELD'), 'required');
-
-        $oForm -> addElement('textarea', 'kontakti',  text::get('RBF_CONTACTS'), isset($employee['RBDU_KONTAKTI'])?$employee['RBDU_KONTAKTI']:'', 'rows="3"'.(($isEdUser)?' disabled' : ''));
-
-		$oForm -> addElement('multiple_select', 'territories',  text::get('RBF_SERVICE_TERRITORY'), isset($selectedTerritories)?$selectedTerritories:array(), (($isEdUser)?' disabled ':'').'size="10"', '', '', $territories);
-		$oForm -> addRule('territories', text::get('ERROR_REQUIRED_FIELD'), 'required');
-		
-		// Pass territory data to template as JSON for JavaScript
-		$territoriesNosaukumsJSON = json_encode($territoriesNosaukums);
-		$territoriesDIDJSON = json_encode($territoriesDID);
+        $oForm -> addElement('textarea', 'kontakti',  text::get('RBF_CONTACTS'), isset($employee['RBDU_KONTAKTI'])?$employee['RBDU_KONTAKTI']:'', 'rows="2"'.(($isEdUser)?' disabled' : ''));
 
 		$oForm -> addElement('checkbox', 'isActive',  text::get('IS_ACTIVE'), isset($employee['RBDU_IR_AKTIVS'])?$employee['RBDU_IR_AKTIVS']:1, ''.(($isEdUser)?' disabled' : ''));
+
+		// Pass data to template
+		$territoriesNosaukumsJSON = json_encode($territoriesNosaukums);
+		$territoriesDIDJSON = json_encode($territoriesDID);
+		$vvTypesJSON = json_encode($vvTypes);
+		$existingVVEntriesJSON = json_encode($existingVVEntries);
 
 		// form buttons
         if(!$isEdUser)
         {
-    		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');"');
-    		$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'employeeId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+    		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');return validateVVEntries();"');
+    		$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'employeeId\')) {setValue(\'action\',\''.OP_UPDATE.'\');return validateVVEntries();} else {return false;}"');
     		$oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshButton(\'employeeId\');parent.frame_1.unActiveRow();'));
 
          	$oForm -> addElement('static', 'jsButtonsControl', '', '
@@ -128,11 +118,35 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
-			$territories = $oForm -> getValue('territories');
-			if ($oForm -> getValue('kods') && $oForm -> getValue('nosaukums') && $oForm -> getValue('vvType') && $oForm -> getValue('vvNumber') && is_array($territories) && count($territories) > 0)
+			if ($oForm -> getValue('kods') && $oForm -> getValue('nosaukums'))
 			{
 				$checkRequiredFields = true;
 			}
+			
+			// Collect VV entries from POST data
+			$vvEntries = array();
+			$vvRowCount = reqVar::get('vvRowCount');
+			if ($vvRowCount > 0) {
+				for ($i = 0; $i < $vvRowCount; $i++) {
+					$vvNumber = reqVar::get('vvNumber_' . $i);
+					$territory = reqVar::get('territory_' . $i);
+					$deleted = reqVar::get('deleted_' . $i);
+					
+					if ($deleted != '1' && $vvNumber && $territory) {
+						$vvEntries[] = array(
+							'vvNumber' => $vvNumber,
+							'territory' => $territory
+						);
+					}
+				}
+			}
+			
+			// Check if at least one VV entry exists
+			if (count($vvEntries) == 0) {
+				$oForm->addError(text::get('ERROR_MIN_ONE_VV'));
+				$checkRequiredFields = false;
+			}
+			
 			if ($checkRequiredFields)
 			{
 				// save
@@ -148,14 +162,13 @@ if (userAuthorization::isAdmin() || $isEdUser )
 						$check = false;
 					}
 
-					// Check if VV number already exists
-					if (dbProc::rbfEmployeeWithVVNumberExists(
-                                                            $oForm->getValue('vvNumber'),
-                                                            ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('employeeId'):false)
-                                                            )
-					{
-						$oForm->addError(text::get('ERROR_EXISTS_RBF_EMPLOYEE_VV_NUMBER'));
-						$check = false;
+					// Check if any VV number already exists
+					foreach ($vvEntries as $entry) {
+						if (dbProc::rbfEmployeeWithVVNumberExists($entry['vvNumber'], $oForm->getValue('employeeId'))) {
+							$oForm->addError(text::get('ERROR_EXISTS_RBF_EMPLOYEE_VV_NUMBER') . ' (' . $entry['vvNumber'] . ')');
+							$check = false;
+							break;
+						}
 					}
 
 					// if all is ok, do operation
@@ -166,10 +179,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
 							$oForm->getValue('kods'),
 							$oForm->getValue('nosaukums'),
 							$oForm->getValue('vvType'),
-							$oForm->getValue('vvNumber'),
 							$oForm->getValue('kontakti'),
 							$oForm->getValue('isActive',0),
-							$oForm->getValue('territories')
+							$vvEntries
 						);
 
 						if (!$r)
@@ -264,8 +276,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $columns=array(
             array('kolonna'=>'RBDU_KODS', 'nosaukums'=>text::get('CODE'), 'def'=>1),
             array('kolonna'=>'RBDU_NOSAUKUMS', 'nosaukums'=>text::get('NAME'), 'def'=>0),
-            array('kolonna'=>'RBDU_VV_NUMURS', 'nosaukums'=>text::get('RBF_VV_NUMBER'), 'def'=>0),
-            array('kolonna'=>'TERRITORIES', 'nosaukums'=>text::get('RBF_SERVICE_TERRITORY'), 'def'=>0),
+            array('kolonna'=>'RBDU_VV_VEIDS_TEXT', 'nosaukums'=>text::get('RBF_VV_TYPE'), 'def'=>0),
+            array('kolonna'=>'RBDU_KONTAKTI', 'nosaukums'=>text::get('RBF_CONTACTS'), 'def'=>0),
+            array('kolonna'=>'VV_TERRITORIES', 'nosaukums'=>text::get('RBF_VV_ENTRIES'), 'def'=>0),
             array('kolonna'=>'RBDU_IR_AKTIVS', 'nosaukums'=>text::get('IS_ACTIVE'), 'def'=>0)
         );
         $searchText = ((reqVar::get('search') && reqVar::get('search') != '') || reqVar::get('search') == 0) ? reqVar::get('search') : false;
