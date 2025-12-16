@@ -169,6 +169,50 @@ ALTER TABLE `lietotaji` ADD COLUMN `RLTT_IR_RBF` INT(1) DEFAULT 0 AFTER `RLTT_IR
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES
 ('RBF_ACCESS', 'Piekļūve RBF aktiem');
+
+-- ============================================================================
+-- RBF Acts - Add new fields to AKTI table
+-- ============================================================================
+
+-- Add field to mark if expenses should be capitalized
+ALTER TABLE `AKTI` ADD COLUMN `RAKT_CAPITALIZED` TINYINT(1) NULL DEFAULT NULL AFTER `RAKT_IS_AUTO`;
+
+-- Add field to mark RBF acts
+ALTER TABLE `AKTI` ADD COLUMN `RAKT_IS_RBF` TINYINT(1) NOT NULL DEFAULT 0 AFTER `RAKT_CAPITALIZED`;
+
+-- ============================================================================
+-- Text translations for RBF Acts
+-- ============================================================================
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ACT', 'RBF Akts');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ACT_INFO', 'RBF akta informācija');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_EMPLOYEE', 'Darbuzņēmējs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTHOR', 'Autors');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ACT_TYPE', 'Akta veids');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DEPARTMENT', 'RBF nodaļa');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ORDER_ID', 'Pasūtījuma ID');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_SIGNING_METHOD', 'Parakstīšanas veids');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_TITLE', 'Darba nosaukums (izdrukām)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_NOTES', 'Piezīmes');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_CAPITALIZE', 'Izmaksas kapitalizē');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS', 'Statuss');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORKS', 'Darbi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ATTACHMENTS', 'Pielikumi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY', 'Statusa vēsture');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORKS_EMPTY', 'Saglabājiet aktu, lai pievienotu darbus');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ATTACHMENTS_EMPTY', 'Saglabājiet aktu, lai pievienotu pielikumus');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY_EMPTY', 'Nav statusa vēstures');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_SUBMIT_FOR_APPROVAL', 'Nodot saskaņošanai');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_APPROVE', 'Apstiprināt');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_RETURN', 'Atgriezt');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ACT_NUMBER', 'Akta numurs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('STATUS_INSERT', 'Ievads');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('CONFIRM_EXPORT', 'Vai tiešām vēlaties nodot aktu saskaņošanai?');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('CONFIRM_ACCEPT', 'Vai tiešām vēlaties apstiprināt aktu?');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('CONFIRM_RETURN', 'Vai tiešām vēlaties atgriezt aktu?');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('ACT_SUBMITTED_FOR_APPROVAL', 'Akts nodots saskaņošanai');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('ACT_APPROVED', 'Akts apstiprināts');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('ACT_RETURNED', 'Akts atgriezts');
  
  
   
@@ -227,3 +271,26 @@ CREATE TABLE `kl_rbf_kalkulacija` (
 )
 COLLATE='utf8_latvian_ci'
 ENGINE=MyISAM;
+
+-- Sample data for testing RBF functionality
+-- Insert sample territories
+INSERT INTO `kl_rbf_teritorijas` (`RBTR_KODS`, `RBTR_NOSAUKUMS`, `RBTR_DID_NOSAUKUMS`, `RBTR_IR_AKTIVS`) VALUES
+('11223', 'Rīgas nodaļa', 'Vidzeme DID', 1),
+('308313', 'Balvu nodaļa', 'Austrumu DID', 1),
+('308314', 'Daugavpils nodaļa', 'Austrumu DID', 1);
+
+-- Insert sample employees
+INSERT INTO `kl_rbf_darbuznemeji` (`RBDU_KODS`, `RBDU_NOSAUKUMS`, `RBDU_VV_VEIDS`, `RBDU_KONTAKTI`, `RBDU_IR_AKTIVS`) VALUES
+('40003524433', 'Delta EM SIA', 'U', 'info@deltaem.lv; +371 29123456', 1),
+('41503087204', 'Ceļu būvnieks SIA', 'C', 'info@celubuvnieks.lv', 1);
+
+-- Insert sample VV entries for employees
+-- For Delta EM SIA (ID will be 1 if this is first insert)
+INSERT INTO `kl_rbf_du_vv` (`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_ID`) VALUES
+(1, '300000/23-112', 1),
+(1, '300000/24-113', 2);
+
+-- For Ceļu būvnieks SIA (ID will be 2)
+INSERT INTO `kl_rbf_du_vv` (`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_ID`) VALUES
+(2, '300000/25-113', 3),
+(2, '300000/26-114', 1);

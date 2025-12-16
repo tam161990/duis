@@ -53,10 +53,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$res=dbProc::getRbfVVTerritories(reqVar::get('vvNumber'));
 			if (is_array($res) && count($res)>0)
 			{
-				?>
-				document.all["section"].options[0] = new Option('<?=text::get('EMPTY_SELECT_OPTION');?>', '');
-				<?
-
+				
 				$i = 1;
 				foreach ($res as $row)
 				{

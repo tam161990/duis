@@ -165,24 +165,24 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					// if all is ok, do operation
 					if($check)
 					{
-						$r=dbProc::saveUser(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('usrId'):false),
-						$oForm->getValue('login'),
-						$oForm->getValue('name'),
-						$oForm->getValue('surname'),
-						$oForm->getValue('irAdmin',0),
-						$oForm->getValue('edArea'),
-						(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
-						$oForm->getValue('isActive', 0),
-                        $oForm->getValue('role'),
-                        '',
-						$oForm->getValue('section'),
-						0,
-						0,
-						$oForm->getValue('projector', 0),
-						0,
-						0,
-						0
-						);
+					$r=dbProc::saveUser(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('usrId'):false),
+					$oForm->getValue('login'),
+					$oForm->getValue('name'),
+					$oForm->getValue('surname'),
+					$oForm->getValue('irAdmin',0),
+					$oForm->getValue('edArea'),
+					(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
+					$oForm->getValue('isActive', 0),
+                    $oForm->getValue('role'),
+                    '',
+					$oForm->getValue('section'),
+					0,
+					0,
+					$oForm->getValue('projector', 0),
+					0,
+					0,
+					0
+					);
 
 						if (!$r)
 						{

@@ -32,7 +32,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		if($usrId != false)
 		{
 			// get info about user
-            $userInfo = dbProc::getUsersList($usrId, false);
+            $userInfo = dbProc::getUsersListCombined($usrId, false);
 			//print_r($userInfo);
             if(count($userInfo)>0)
 			{
@@ -56,6 +56,18 @@ if (userAuthorization::isAdmin() || $isEdUser )
             	    $section[$row['KEDI_SECTION']]=$row['KEDI_SECTION'];
               }
           }
+
+        // get combined worker list (from both KL_WORK_OWNERS and kl_rbf_darbuznemeji)
+        $workers = array();
+        $workerRes = dbProc::getWorkOwnerActivListCombined(true);
+        if (is_array($workerRes))
+        {
+            $workers[''] = text::get('EMPTY_SELECT_OPTION');
+            foreach ($workerRes as $row)
+            {
+                $workers[$row['KWOI_KODS']] = $row['KWOI_KODS'].' - '.$row['KWOI_NOSAUKUMS'];
+            }
+        }
 
         // form elements
 		$oForm -> addElement('hidden', 'action', '');
@@ -83,7 +95,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
         $oForm -> addElement('checkbox', 'trase',  text::get('TRASE_USER'), isset($user['RLTT_IR_TRASE'])?$user['RLTT_IR_TRASE']:0,'tabindex=10 '.(($isEdUser)?' disabled' : ''));
 
-		$oForm -> addElement('kls', 'worker',  text::get('SINGL_WORK_OWNER'), array('classifName'=>KL_WORK_OWNERS,'value'=>isset($user['RLTT_KWOI_KODS'])?$user['RLTT_KWOI_KODS']:'','readonly'=>false), 'tabindex=12 maxlength="2000" '.(( $isEdUser)? ' disabled ': ''));
+		$oForm -> addElement('select', 'worker',  text::get('SINGL_WORK_OWNER'), isset($user['RLTT_KWOI_KODS'])?$user['RLTT_KWOI_KODS']:'', 'tabindex=12 '.(( $isEdUser)? ' disabled ': ''), '', '', $workers);
         $oForm -> addRule('worker', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
        	/*$oForm -> addElement('kls', 'section',  text::get('ED_SECTION'), array('classifName'=>KL_ED_SECTIONS,'value'=>isset($user['RLTT_KEDI_SECTION'])?$user['RLTT_KEDI_SECTION']:'','readonly'=>false), 'tabindex=13 maxlength="2000" ');   */
@@ -168,24 +180,24 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					// if all is ok, do operation
 					if($check)
 					{
-						$r=dbProc::saveUser(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('usrId'):false),
-						$oForm->getValue('login'),
-						$oForm->getValue('name'),
-						$oForm->getValue('surname'),
-						$oForm->getValue('irAdmin',0),
-						$oForm->getValue('edArea'),
-						(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
-						$oForm->getValue('isActive', 0),
-                        $oForm->getValue('role'),
-                        $oForm->getValue('worker'),
-                        '',
-                        $oForm->getValue('trase', 0),
-						$oForm->getValue('contract', 0),
-						$oForm->getValue('projector', 0),
-						$oForm->getValue('limitCard', 0),
-						$oForm->getValue('ppaReport', 0),
-						$oForm->getValue('rbfAccess', 0)
-						);
+					$r=dbProc::saveUser(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('usrId'):false),
+					$oForm->getValue('login'),
+					$oForm->getValue('name'),
+					$oForm->getValue('surname'),
+					$oForm->getValue('irAdmin',0),
+					$oForm->getValue('edArea'),
+					(($oForm->getValue('action')==OP_INSERT) || ($oForm->getValue('changePass')==1))?$oForm->getValue('password'):false,
+					$oForm->getValue('isActive', 0),
+                    $oForm->getValue('role'),
+                    $oForm->getValue('worker'),
+                    '',
+                    $oForm->getValue('trase', 0),
+					$oForm->getValue('contract', 0),
+					$oForm->getValue('projector', 0),
+					$oForm->getValue('limitCard', 0),
+					$oForm->getValue('ppaReport', 0),
+					$oForm->getValue('rbfAccess', 0)
+					);
 
 						if (!$r)
 						{
@@ -312,7 +324,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$oLink->addPrm('editMode', 1);
 
 		// gel list of users
-		$res = dbProc::getUsersList( false, false,
+		$res = dbProc::getUsersListCombined( false, false,
                                         $listing->getStartPosition(),
                                         $listing->getAmountOnPage(),
                                         $searchText,

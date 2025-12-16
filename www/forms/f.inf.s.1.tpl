@@ -6,46 +6,50 @@ function subMenu(subMenuName,tdName)
 	var a=getElement(subMenuName,true); 
 	var b=getElement(tdName,true);
 
-	if (a.style.visibility=='visible')
-	{
-		a.style.visibility='hidden';
-		b.className='menu_cell_top';
-	} 
-	else 
-	{
-		hideMenu();
-		a.style.visibility='visible';
-		b.className='menu_cell_a';
+	if(a && b) {
+		if (a.style.visibility=='visible')
+		{
+			a.style.visibility='hidden';
+			b.className='menu_cell_top';
+		} 
+		else 
+		{
+			hideMenu();
+			a.style.visibility='visible';
+			b.className='menu_cell_a';
+		}
 	}
 }
 
 function hideMenu()
 {
 
-	var c=getElement('catalogSubMenuDiv',true); c.style.visibility="hidden";
-	var c=getElement('tdCatalog',true); c.className="menu_cell_top";
-	var c=getElement('actSubMenuDiv',true); c.style.visibility="hidden";
-	var c=getElement('tdAct',true); c.className="menu_cell_top";
-	var c=getElement('reportSubMenuDiv',true); c.style.visibility="hidden";
-	var c=getElement('tdReport',true); c.className="menu_cell_top";
-	var c=getElement('tdLimitcard',true); c.className="menu_cell_top";
-    var c=getElement('optionSubMenuDiv',true); c.style.visibility="hidden";
-	var c=getElement('tdOptions',true); c.className="menu_cell_top";
-	var c=getElement('projectSubMenuDiv',true); c.style.visibility="hidden";
-	var c=getElement('tdProject',true); c.className="menu_cell_top";
-	var c=getElement('rbfSubMenuDiv',true); c.style.visibility="hidden";
+	var c=getElement('catalogSubMenuDiv',true); if(c) c.style.visibility="hidden";
+	var c=getElement('tdCatalog',true); if(c) c.className="menu_cell_top";
+	var c=getElement('actSubMenuDiv',true); if(c) c.style.visibility="hidden";
+	var c=getElement('tdAct',true); if(c) c.className="menu_cell_top";
+	var c=getElement('reportSubMenuDiv',true); if(c) c.style.visibility="hidden";
+	var c=getElement('tdReport',true); if(c) c.className="menu_cell_top";
+	var c=getElement('tdLimitcard',true); if(c) c.className="menu_cell_top";
+    var c=getElement('optionSubMenuDiv',true); if(c) c.style.visibility="hidden";
+	var c=getElement('tdOptions',true); if(c) c.className="menu_cell_top";
+	var c=getElement('projectSubMenuDiv',true); if(c) c.style.visibility="hidden";
+	var c=getElement('tdProject',true); if(c) c.className="menu_cell_top";
+	var c=getElement('rbfSubMenuDiv',true); if(c) c.style.visibility="hidden";
 }
 
 function showRbfSubMenu(event)
 {
 	var a=getElement('rbfSubMenuDiv',true);
-	if (a.style.visibility=='visible')
-	{
-		a.style.visibility='hidden';
-	} 
-	else 
-	{
-		a.style.visibility='visible';
+	if(a) {
+		if (a.style.visibility=='visible')
+		{
+			a.style.visibility='hidden';
+		} 
+		else 
+		{
+			a.style.visibility='visible';
+		}
 	}
 	event.stopPropagation();
 	return false;
@@ -54,14 +58,14 @@ function showRbfSubMenu(event)
 function disableFrameControl()
 {
 	var a=getElement('disabledFrameControl',true);
-	a.style.visibility='visible';
+	if(a) a.style.visibility='visible';
 	window.top.disableResize();
 }
 
 function enableFrameControl()
 {
 	var a=getElement('disabledFrameControl',true);
-	a.style.visibility='hidden';
+	if(a) a.style.visibility='hidden';
 	window.top.enableResize();
 }
 
@@ -163,15 +167,20 @@ if($isAdmin)
 
 <div id="actSubMenuDiv"  class="sub_menu" style="position: absolute;left: 100px;top: 26px;visibility:hidden;">
 <?
-if($isAdmin || $isSystemUser)
+if($isAdmin || $isSystemUser || $isRbfUser)
 {
   ?>
 	<table cellpadding="0" cellspacing="0" border="0">
 		<tr>
             
+            <?
+            if($isAdmin || $isSystemUser)
+            {
+            ?>
 			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
             
             <?
+            }
             			
             if($isAdmin || $isEconomist || $isAuditor || $isEditor )
             {
@@ -181,10 +190,16 @@ if($isAdmin || $isSystemUser)
             <?          			
            
             }
-            if((($isAdmin || $isEditor) && $isContractUser ))
+            if((($isAdmin || $isEditor) && $isContractUser && !$isRbfUser))
             {
                 ?>
 			    <td class="menu_cell<?= (!$isAdmin && !$isEditor)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('NEW');?></a></td>
+                <?
+            }
+            if($isAdmin || $isRbfUser )
+            {
+                ?>
+			    <td class="menu_cell<?= (!$isAdmin && !$isRbfUser)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actRbfLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('RBF');?></a></td>
                 <?
             }
             if($isAdmin || $isTraseUser )
@@ -263,7 +278,7 @@ if($isAdmin || $isSystemUser)
 					<td nowrap id="tdCatalog" class="menu_cell_top" <?=($isAdmin || $isEdUser|| $isAuditor)?'':'disabled';?>><?=($isAdmin || $isEdUser|| $isAuditor)?'<a onclick="subMenu(\'catalogSubMenuDiv\',\'tdCatalog\');return false;" href="#">':'';?><?=text::get('CATALOGS');?><?=($isAdmin || $isEdUser|| $isAuditor)?'</a>':'';?></td>
 
 
-					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser || $isEconomist)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist)?'</a>':'';?></td>
+					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'</a>':'';?></td>
 					<td nowrap id="tdProject" class="menu_cell_top" <?=($isAdmin ||  $isProjector || $projectApprover)?'':'disabled';?>><?=($isAdmin ||  $isProjector ||  $projectApprover)?'<a onclick="subMenu(\'projectSubMenuDiv\',\'tdProject\');return false;" href="#">':'';?><?=text::get('PROJECTS');?><?=($isAdmin ||  $isProjector || $isEconomist)?'</a>':'';?></td>
 					<td nowrap id="tdReport" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser)?'':'disabled';?>><?=($isAdmin || $isContractUser || $isTraseUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cRepMain.'" target="frame_1">':'';?><?=text::get('REPORT');?><?=($isAdmin || $isContractUser || $isTraseUser)?'</a>':'';?></td>
 					<td nowrap id="tdLimitcard" class="menu_cell_top" <?=($isAdmin || $isLimitCardUser)?'':'disabled';?>><?=($isAdmin || $isLimitCardUser)?'<a onclick="reloadFrame(23,\'\');disableFrameControl();window.top.min(1);hideMenu();" href="'.$cLimitcardMain.'" target="frame_1">':'';?><?=text::get('LIMITCARD');?><?=($isAdmin || $isLimitCardUser)?'</a>':'';?></td>

@@ -218,6 +218,8 @@ if ( $isAdmin || $isSystemUser)
 			{
                 if( $row['RAKT_PROJECT'] == 1) {
                     $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                } elseif ($row['RAKT_IS_RBF'] == 1) { 
+                    $oLink->addPrm(FORM_ID, 'f.akt.s.30');    
                 } else {
                     $oLink->addPrm(FORM_ID, 'f.akt.s.1');
                     $oLink->addPrm('isTrase', $row['RAKT_TRASE']);  
