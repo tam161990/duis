@@ -997,6 +997,203 @@ class toPdf {
 		return $idFile;
 
 	}
+
+	// -----------------------------------------------------------------------------
+	// Export RBF Act to PDF
+	// Created for DUIS-549
+	// -----------------------------------------------------------------------------
+	function exportRbfActPdf($actId, $userId) {
+
+		// Get RBF act info
+		$act = dbProc::getRbfActInfo($actId);
+		if(!$act) {
+			return false;
+		}
+
+		// Create PDF
+		$pdf = new FPDF();
+		$pdf->AddFont('Arial','','arial.php');
+		$pdf->AddFont('Arial','BI','arialbi.php');
+		$pdf->AddFont('Arial','I','ariali.php');
+		$pdf->AddFont('Arial','B','arialbd.php');
+		$pdf->SetDisplayMode('real');
+		$pdf->SetAutoPageBreak(true,20);
+		$pdf->AliasNbPages();
+		$pdf->SetTitle(iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER1').' '.$act['RAKT_FULL_NUMBER']));
+		$pdf->SetLeftMargin(20);
+		$pdf->AddPage();
+		
+		// Header
+		$pdf->SetFont('Arial','B',10);
+		$pdf->Cell(0,5,iconv('UTF-8', 'windows-1257',text::get('TRASE_ACT_HEADER1')), 0,1,'C');
+		$pdf->Ln(5);
+
+		// Act header info
+		$actHeader = array(
+			array(
+				array(iconv('UTF-8', 'windows-1257',dtime::dateToLvStringEmpty(date('d.m.Y'))), 'L', '', 8),
+				array(iconv('UTF-8', 'windows-1257',text::get('NUMBER_SIMBOL').'. '.$act['RAKT_FULL_NUMBER']), 'R', 'B', 10)
+			),
+			array(
+				array('', 'L', '', 8),
+				array('', 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',text::get('SUPORT_ACT_HEADER5')), 'L', '', 8),
+				array('', 'L', '', 8)
+			),
+			array(
+				array('', 'L', '', 8),
+				array('', 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_OFFER').':'), 'L', '', 8),
+				array(iconv('UTF-8', 'windows-1257',text::get('REPORT_WORK_DONE').':'), 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',text::get('ST_COMPANY_NAME').', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.text::get('ST_REG_NR')), 'L', 'B', 8),
+				array(iconv('UTF-8', 'windows-1257',$act['EMPLOYEE_NAME'].', '.text::get('REGISTRATION_SIMBOL').'. '.text::get('NUMBER_SIMBOL').': '.$act['RAKT_KWOI_KODS']), 'L', 'B', 8)
+			),
+			array(
+				array('', 'L', '', 8),
+				array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', 'B', 8),
+				array('', 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',$act['DEPARTMENT_NAME']), 'L', 'B', 8),
+				array('', 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',text::get('SINGLE_ACT_TYPE').':'), 'L', '', 8),
+				array(iconv('UTF-8', 'windows-1257',text::get('RBF_ORDER_ID').':'), 'L', '', 8)
+			),
+			array(
+				array(iconv('UTF-8', 'windows-1257',$act['ACT_TYPE_NAME']), 'L', 'B', 8),
+				array(iconv('UTF-8', 'windows-1257',$act['RAKT_NUM_POSTFIX']), 'L', 'B', 8)
+			)
+		);
+		$pdf->HeaderStyledTable($actHeader);
+
+		// Work title
+		$pdf->SetFont('Arial','BI',8);
+		$pdf->Cell(0,8,iconv('UTF-8', 'windows-1257', $act['RAKT_WORK_TITLE']),0,1);
+
+		// Works section
+		$pdf->SetFont('Arial','BI',10);
+		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257','Darbi'), 0,1);
+
+		$width = array(12, 12, 65, 18, 18, 18, 20);
+		$alignHeader = array('C','C','C','C','C','C','C');
+		$align = array('C','C','L','C','R','R','R');
+
+		$headers = array(
+			'DRBI_KKAL_SHIFRS' => iconv('UTF-8', 'windows-1257',text::get('CHIPHER')),
+			'DRBI_APROVE_DATE' => iconv('UTF-8', 'windows-1257',text::get('WORK_APPROVE_DATE')),
+			'DRBI_KKAL_NOSAUKUMS' => iconv('UTF-8', 'windows-1257',text::get('EXPORT_CALCULATION_NAME')),
+			'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',text::get('UNIT_OF_MEASURE')),
+			'DRBI_KKAL_NORMATIVS' => iconv('UTF-8', 'windows-1257',text::get('PRICE')),
+			'DRBI_DAUDZUMS' => iconv('UTF-8', 'windows-1257',text::get('AMOUNT')),
+			'DRBI_CILVEKSTUNDAS' => iconv('UTF-8', 'windows-1257',text::get('PRICE_TOTAL'))
+		);
+
+		// Get work list
+		$aWorkDb = dbProc::getActWorkList($actId, 0);
+		$data = array();
+		$total = 0;
+		
+		if(is_array($aWorkDb) && count($aWorkDb) > 0) {
+			$i = 0;
+			foreach ($aWorkDb as $work) {
+				$data[$i] = array(
+					'DRBI_KKAL_SHIFRS' => $work['DRBI_KKAL_SHIFRS'],
+					'DRBI_APROVE_DATE' => $work['DRBI_APROVE_DATE'],
+					'DRBI_KKAL_NOSAUKUMS' => text::returnsplit(iconv('UTF-8', 'windows-1257',$work['DRBI_KKAL_NOSAUKUMS']), '', "\n", 40, false, $lines),
+					'DRBI_MERVIENIBA' => iconv('UTF-8', 'windows-1257',$work['DRBI_MERVIENIBA']),
+					'DRBI_KKAL_NORMATIVS' => number_format($work['DRBI_KKAL_NORMATIVS'], 2),
+					'DRBI_DAUDZUMS' => number_format($work['DRBI_DAUDZUMS'], 2),
+					'DRBI_CILVEKSTUNDAS' => number_format($work['DRBI_CILVEKSTUNDAS'], 2),
+					'LINES' => $lines
+				);
+				$i++;
+				$total += $work['DRBI_CILVEKSTUNDAS'];
+			}
+			$pdf->FancyTableTrase($headers, $data, $width, $align, $alignHeader);
+		}
+
+		// Subtotal
+		$pdf->SetFont('Arial','',8);
+		$pdf->Cell(143,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL').':'),0,0,'R');
+		$pdf->SetFont('Arial','B',8);
+		$pdf->Cell(20,6,number_format($total, 2), 0,1,'R');
+
+		// Total
+		$pdf->SetFont('Arial','',8);
+		$pdf->Cell(143,6,iconv('UTF-8', 'windows-1257',text::get('TOTAL').':'),0,0,'R');
+		$pdf->SetFont('Arial','B',8);
+		$pdf->Cell(20,6,number_format($total, 2), 0,1,'R');
+
+		$pdf->Ln(5);
+
+		// Footer
+		$rows = dbProc::getUserInfo($userId);
+		if (count($rows) == 1) {
+			$actAutorName = $rows[0]['RLTT_VARDS'].' '.$rows[0]['RLTT_UZVARDS'];
+		}
+
+		$actFooter = array(
+			array(
+				iconv('UTF-8', 'windows-1257',text::get('ACT_CREATER').': '.$act['AUTHOR_NAME'].' '.$act['AUTHOR_SURNAME']),
+				''
+			),
+			array(
+				iconv('UTF-8', 'windows-1257',text::get('DATE').': '.date('d.m.Y')),
+				iconv('UTF-8', 'windows-1257',text::get('IS_NOT_ENDORSED'))
+			),
+			array(
+				iconv('UTF-8', 'windows-1257',''),
+				iconv('UTF-8', 'windows-1257','')
+			),
+			array(
+				iconv('UTF-8', 'windows-1257',text::get('REPORT_WORKER_FINISHED').': '),
+				''
+			),
+			array(
+				iconv('UTF-8', 'windows-1257',$act['EMPLOYEE_NAME']),
+				''
+			),
+			array(
+				iconv('UTF-8', 'windows-1257',$actAutorName),
+				''
+			)
+		);
+		$pdf->FooterTablePortraitAsimetrikal($actFooter);
+
+		if($act['RAKT_SIGNATURE'] == 'E') {
+		  $pdf->Cell(0,0,iconv('UTF-8', 'windows-1257',text::get('ELRCTRONIC_SIGNATURE')), 0, 1,'C');
+		}
+
+		// Save file to database
+		$res = dbProc::replaceFile(
+			'RBF_'.$act['RAKT_FULL_NUMBER'].'_'.dtime::now().'.'.EXPORT_FILE_EXTENTION,
+			$userId,
+			$actId,
+			FILE_EXPORT,
+			EXPORT_FILE_TYPE
+		);
+		
+		if ($res) {
+			$idFile = dbLayer::getInsertId();
+		}
+
+		if ($idFile !== false) {
+			$pdf->Output(FILES_STORE_PATH."/".$idFile, 'F');
+		}
+
+		return $idFile;
+	}
 	
 }
 ?>

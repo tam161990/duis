@@ -190,7 +190,7 @@ $oForm->addElement('hidden', 'status', '', $status);
 // Act number display
 if($actId != false)
 {
-    $oForm->addElement('label', 'actFullNumber', text::get('RBF_ACT_NUMBER'), 
+    $oForm->addElement('label', 'actFullNumber', '', 
         isset($act['RAKT_FULL_NUMBER']) ? $act['RAKT_FULL_NUMBER'] : '');
 }
 
@@ -371,7 +371,7 @@ if(!$isReadonly || !$isReadonlyExceptAdmin)
         'width="70" height="20" onclick="setValue(\'action\',\''.OP_UPDATE.'\');"');
 }
 
-if($actId != false && $status == STAT_INSERT && !$isReadonly)
+if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))
 {
     $oForm->addElement('submitImg', 'export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_120_nodosana.gif', 
         ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
@@ -473,7 +473,7 @@ if($oForm->getValue('action'))
                     dbProc::setUserActionDate($userId, ACT_INSERT);
                     
                     // save status changed time
-                    $r1 = dbProc::saveAuditRecord($actId, $userId, $status);
+                    $r1 = dbProc::updateRbfActStatus($actId, $status, $userId);
                 }
                 else
                 {
@@ -504,29 +504,57 @@ if($oForm->getValue('action'))
     }
     else if($oForm->getValue('action') == OP_EXPORT)
     {
-        // Submit for approval (INPUT → ACCEPT)
-        $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
-        if($r)
+        // Generate PDF
+        $idFile = toPdf::exportRbfActPdf($actId, $userId);
+        
+        if ($idFile !== false)
         {
-            $oLink=new urlQuery();
-            $oLink->addPrm(FORM_ID, 'f.akt.s.30');
-            $oLink->addPrm('actId', $actId);
-            $oLink->addPrm('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
-            RequestHandler::makeRedirect($oLink->getQuery());
+            // Update act status (INPUT → ACCEPT) - also saves audit record automatically
+            $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
+            
+            // Save user action
+            dbProc::setUserActionDate($userId, ACT_EXPORT);
+            
+            if($r)
+            {
+                $oLink=new urlQuery();
+                $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+                $oLink->addPrm('actId', $actId);
+                $oLink->addPrm('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
+                RequestHandler::makeRedirect($oLink->getQuery());
+            }
+            else
+            {
+                $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
+            }
         }
         else
         {
-            $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
+            $oForm->addError(text::get('ERROR_GENERATING_PDF'));
         }
     }
     else if($oForm->getValue('action') == OP_ACCEPT)
     {
         // Approve (ACCEPT → CLOSE)
+        // Save capitalize checkbox value
         $capitalizeValue = $oForm->getValue('capitalize') ? 1 : 0;
         $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);
-        $r2 = dbProc::updateRbfActStatus($actId, STAT_CLOSE, $userId);
         
-        if($r && $r2)
+        // Set approve date for works and materials (optional - may fail if no materials)
+        dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
+        
+        // Update act status to CLOSE - also saves audit record automatically
+        $r3 = dbProc::updateRbfActStatus($actId, STAT_CLOSE, $userId);
+        
+        // Save user action
+        dbProc::setUserActionDate($userId, ACT_CLOSE);
+        
+        // Debug logging
+        if($r === false) error_log("RBF Act Approve - Step 1 updateRbfActCapitalize failed: " . dbProc::getError());
+        if($r3 === false) error_log("RBF Act Approve - Step 3 updateRbfActStatus failed: " . dbProc::getError());
+        
+        // Check critical operations only (setApproveDate is optional for RBF acts)
+        if($r !== false && $r3 !== false)
         {
             $oLink=new urlQuery();
             $oLink->addPrm(FORM_ID, 'f.akt.s.30');
@@ -536,13 +564,18 @@ if($oForm->getValue('action'))
         }
         else
         {
-            $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
+            $errorDetails = dbProc::getError();
+            $oForm->addError(text::get('ERROR_IN_DB_QUERY') . ($errorDetails ? ' - ' . $errorDetails : ''));
         }
     }
     else if($oForm->getValue('action') == OP_RETURN)
     {
-        // Return (ACCEPT → RETURN)
+        // Return (ACCEPT → RETURN) - also saves audit record automatically
         $r = dbProc::updateRbfActStatus($actId, STAT_RETURN, $userId);
+        
+        // Save user action
+        dbProc::setUserActionDate($userId, ACT_RETURN_ACCEPT);
+        
         if($r)
         {
             $oLink=new urlQuery();
@@ -658,6 +691,7 @@ include('f.akt.s.30.tpl');
 
 // Add tabs (show for both new and existing acts) - rendered AFTER the form
 $tabs = new tabs("rbfAct", "");
+$tabs->active = text::get($tab);
 
 $tabs->start(text::get('RBF_WORKS'));
 if($actId != false)
@@ -692,7 +726,6 @@ else
 }
 $tabs->end();
 
-$tabs->active = text::get($tab);
 $tabs->run();
 ?>
 

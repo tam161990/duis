@@ -90,7 +90,7 @@ else
 
 <div id="catalogSubMenuDiv"  class="sub_menu" style="position: absolute;left: 33px;top: 26px;visibility:hidden; z-index:5; ">
 <?
-if($isAdmin || $isEdUser || $isAuditor )
+if($isAdmin || $isEdUser || $isAuditor || $isEconomist )
 {
   	?>
 	<table cellpadding="0" cellspacing="0" border="0">
@@ -199,7 +199,7 @@ if($isAdmin || $isSystemUser || $isRbfUser)
             if($isAdmin || $isRbfUser )
             {
                 ?>
-			    <td class="menu_cell<?= (!$isAdmin && !$isRbfUser)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actRbfLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('RBF');?></a></td>
+		    <td class="menu_cell<?= (!$isAdmin && !$isRbfUser && !$isEconomist)? '_2': '';?>" nowrap><a target="frame_1" href="<?=$actRbfLink;?>" onclick="reloadFrame(23,'');disableFrameControl();window.top.min(1);hideMenu();"><?=text::get('RBF');?></a></td>
                 <?
             }
             if($isAdmin || $isTraseUser )
@@ -275,7 +275,7 @@ if($isAdmin || $isSystemUser || $isRbfUser)
 				<tr>
 
                     <td nowrap class="menu_cell_left"><img src="img/0.gif" alt="" width="10" height="1" class="block"></td>
-					<td nowrap id="tdCatalog" class="menu_cell_top" <?=($isAdmin || $isEdUser|| $isAuditor)?'':'disabled';?>><?=($isAdmin || $isEdUser|| $isAuditor)?'<a onclick="subMenu(\'catalogSubMenuDiv\',\'tdCatalog\');return false;" href="#">':'';?><?=text::get('CATALOGS');?><?=($isAdmin || $isEdUser|| $isAuditor)?'</a>':'';?></td>
+					<td nowrap id="tdCatalog" class="menu_cell_top" <?=($isAdmin || $isEdUser|| $isAuditor || $isEconomist)?'':'disabled';?>><?=($isAdmin || $isEdUser|| $isAuditor || $isEconomist)?'<a onclick="subMenu(\'catalogSubMenuDiv\',\'tdCatalog\');return false;" href="#">':'';?><?=text::get('CATALOGS');?><?=($isAdmin || $isEdUser|| $isAuditor || $isEconomist)?'</a>':'';?></td>
 
 
 					<td nowrap id="tdAct" class="menu_cell_top" <?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'':'disabled';?>><?=($isAdmin|| $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'<a onclick="subMenu(\'actSubMenuDiv\',\'tdAct\');return false;" href="#">':'';?><?=text::get('ACTS');?><?=($isAdmin || $isContractUser || $isTraseUser || $isEconomist || $isRbfUser)?'</a>':'';?></td>

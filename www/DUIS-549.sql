@@ -202,6 +202,7 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY', 'Statu
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORKS_EMPTY', 'Saglabājiet aktu, lai pievienotu darbus');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ATTACHMENTS_EMPTY', 'Saglabājiet aktu, lai pievienotu pielikumus');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY_EMPTY', 'Nav statusa vēstures');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('NO_FILES', 'Nav pielikumu');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_SUBMIT_FOR_APPROVAL', 'Nodot saskaņošanai');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_APPROVE', 'Apstiprināt');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_RETURN', 'Atgriezt');
@@ -294,3 +295,42 @@ INSERT INTO `kl_rbf_du_vv` (`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_ID`) VA
 INSERT INTO `kl_rbf_du_vv` (`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_ID`) VALUES
 (2, '300000/25-113', 3),
 (2, '300000/26-114', 1);
+
+-- ============================================================================
+-- Text translations for RBF Works Tab
+-- ============================================================================
+
+-- Insert text code for RBF Works Tab title
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_WORKS_TAB', 'Darbi');
+
+-- Insert text code for Add Work button
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ADD_WORK', 'Pievienot darbu');
+
+-- Insert text code for error when no calculation is selected
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_SELECT_CALCULATION', 'Lūdzu, izvēlieties vismaz vienu kalkulāciju!');
+
+-- Insert text code for search code field
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('SEARCH_CODE', 'Meklēt pēc šifra');
+
+-- Insert text code for calculations list
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('CALCULATIONS', 'Kalkulācijas');
+
+-- Insert text code for Add to Act button
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ADD_TO_ACT', 'Pievienot aktam');
+
+-- Insert text code for PDF generation error
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_GENERATING_PDF', 'Kļūda PDF faila izveidošanā');

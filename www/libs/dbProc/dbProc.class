@@ -12403,6 +12403,73 @@ class dbProc extends dbLayer
 		return $res;
 	}
 
+	// =============================================================================
+	// Get RBF calculation list for act work popup
+	// =============================================================================
+	function getRbfCalculationListForAct($vvNumber, $employeeCode, $searchText = '')
+	{
+		$query = 'SELECT `RBKL_ID`, `RBKL_SHIFRS`, `RBKL_NOSAUKUMS`, `RBKL_CENA`, `RBKL_MERVIENIBA`
+				  FROM `kl_rbf_kalkulacija`
+				  WHERE `RBKL_VV_NUMBER` = "'.dbLayer::quote_smart($vvNumber).'"
+				  AND `RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($employeeCode).'"
+				  AND `RBKL_IR_AKTIVS` = 1';
+		
+		if(!empty($searchText))
+		{
+			$query .= ' AND (`RBKL_SHIFRS` LIKE "%'.dbLayer::quote_smart($searchText).'%"
+						OR `RBKL_NOSAUKUMS` LIKE "%'.dbLayer::quote_smart($searchText).'%")';
+		}
+		
+		$query .= ' ORDER BY `RBKL_SHIFRS` ASC';
+		
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		
+		return $result;
+	}
+
+	// =============================================================================
+	// Save RBF act work record from RBF calculation
+	// =============================================================================
+	function saveRbfActWorkRecord($actId, $calcId, $planDate = false)
+	{
+		if($planDate === false)
+		{
+			$planDate = date('Y-m-d');
+		}
+		else
+		{
+			// Parse date from form format to database format
+			$planDate = dbLayer::parseDate($planDate);
+		}
+		
+		$query = 'INSERT INTO `DARBI` 
+				  (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
+				   `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
+				   `DRBI_MERVIENIBA`, `DRBI_DAUDZUMS`, `DRBI_PLAN_DATE`)
+				  SELECT 
+				   "'.dbLayer::quote_smart($actId).'",
+				   `RBKL_ID`,
+				   `RBKL_SHIFRS`,
+				   `RBKL_NOSAUKUMS`,
+				   `RBKL_CENA`,
+				   `RBKL_MERVIENIBA`,
+				   1,
+				   "'.dbLayer::quote_smart($planDate).'"
+				  FROM `kl_rbf_kalkulacija`
+				  WHERE `RBKL_ID` = "'.dbLayer::quote_smart($calcId).'"';
+		
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		
+		if($result === false)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+
 	
 
 }  

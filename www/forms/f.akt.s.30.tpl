@@ -71,7 +71,7 @@ window.onload = function() {
 		<tr>
 			<td colspan="2" class="table_head" align="right">
 			<? if($actId != false)  {?>
-				<?= $oForm -> getElementLabel('actFullNumber'); ?>: <?= $oForm -> getElementHtml('actFullNumber'); ?>
+				<?= $oForm -> getElementHtml('actFullNumber'); ?>
 			<? } ?>
 			</td>
 			<td colspan="2" class="table_head" align="right">
@@ -84,7 +84,7 @@ window.onload = function() {
 					<tr><td><?= $oForm -> getElementHtml('save'); ?></td></tr>
 				<? } ?>
 				
-				<? if($actId != false && $status == STAT_INSERT && !$isReadonly)  {?>
+				<? if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))  {?>
 					<tr><td><?=$oForm->getElementHtml('export');?></td></tr>
 				<? } ?>
 				
