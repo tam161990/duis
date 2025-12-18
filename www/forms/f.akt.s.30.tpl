@@ -72,6 +72,8 @@ window.onload = function() {
 			<td colspan="2" class="table_head" align="right">
 			<? if($actId != false)  {?>
 				<?= $oForm -> getElementHtml('actFullNumber'); ?>
+			<? } else { ?>
+				&nbsp;
 			<? } ?>
 			</td>
 			<td colspan="2" class="table_head" align="right">

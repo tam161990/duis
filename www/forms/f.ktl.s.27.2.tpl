@@ -27,7 +27,7 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('cena'); ?></td>
 	</tr>
 	<tr>
-     	<td class="table_cell_c" valign="top"><?= $oForm -> getElementLabel('section'); ?>:</td>
+     	<td class="table_cell_c" valign="top"><?= $oForm -> getElementLabel('section'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2" colspan="5"><?= $oForm -> getElementHtml('section'); ?></td>
 	</tr>
 	<tr>

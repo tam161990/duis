@@ -179,6 +179,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		unset($oLink);
 
         $oForm -> addElement('select', 'section',  text::get('RBF_SECTION'), isset($calc['RBKL_RBTR_CODE'])?$calc['RBKL_RBTR_CODE']:'', (($isEdUser)?' disabled' : ''), '', '', $sections);
+		$oForm -> addRule('section', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
         $oForm -> addElement('text', 'cena',  text::get('RBF_PRICE'), isset($calc['RBKL_CENA'])?$calc['RBKL_CENA']:'', 'maxlength="10"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('cena', text::get('ERROR_REQUIRED_FIELD'), 'required');

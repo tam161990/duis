@@ -148,12 +148,6 @@ if($actId != false)
     
     $act = $actInfo;
     $status = $act['RAKT_STATUS'];
-    
-    // Check if economist can view this act
-    if($isEconomist && !$isAdmin && $status != STAT_ACCEPT)
-    {
-        RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
-    }
 }
 else
 {
@@ -194,9 +188,16 @@ if($actId != false)
         isset($act['RAKT_FULL_NUMBER']) ? $act['RAKT_FULL_NUMBER'] : '');
 }
 
-// Status display
-$oForm->addElement('label', 'statusTxt', text::get('RBF_STATUS'), 
-    isset($act['STATUS_TEXT']) ? $act['STATUS_TEXT'] : text::get('STATUS_INSERT'));
+// Status display - get status text from database or use act's status text
+if(isset($act['STATUS_TEXT']) && !empty($act['STATUS_TEXT'])) {
+    $statusText = $act['STATUS_TEXT'];
+} else {
+    // For new acts or when status text is not available, get it from KRFK table
+    $statusInfo = dbProc::getKrfkInfoByName($status);
+    $statusText = $statusInfo ? $statusInfo['KRFK_NOZIME'] : '';
+}
+
+$oForm->addElement('label', 'statusTxt', text::get('RBF_STATUS'), $statusText);
 
 // Employee dropdown (from kl_rbf_darbuznemeji)
 $employeeOptions = array();
@@ -604,7 +605,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         
         echo 'console.log("Loading VV for employee: '.$employeeCode.'");';
         echo 'vvNumbers = [];';
-        echo 'vvNumbers[0] = ["", "'.text::get('EMPTY_SELECT_OPTION').'"];';
+        echo 'vvNumbers[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
         
         if(is_array($vvList) && count($vvList) > 0)
         {
@@ -634,7 +635,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         
         echo 'console.log("Loading departments for VV: '.$vvNumber.'");';
         echo 'departments = [];';
-        echo 'departments[0] = ["", "'.text::get('EMPTY_SELECT_OPTION').'"];';
+        echo 'departments[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
         
         if(is_array($territories) && count($territories) > 0)
         {
@@ -663,7 +664,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         $authors = dbProc::getUsersList(false, false, false, false, false, false, 'ASC', false);
         
         echo 'authors = [];';
-        echo 'authors[0] = ["", "'.text::get('EMPTY_SELECT_OPTION').'"];';
+        echo 'authors[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
         
         if(is_array($authors) && count($authors) > 0)
         {

@@ -8396,25 +8396,27 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	// Pievienoja faula ierakstu
 	// Author: Tatjana Fedorkova
+	// Modified for RBF with description field
 	// -----------------------------------------------------------------------------
-	function replaceFile($filename,  $userId='', $actId='', $type='', $metaInfo='')
+	function replaceFile($filename,  $userId='', $actId='', $type='', $metaInfo='', $description='')
 	{
 		$oSQL=new dbLayer();
         $res=$oSQL->makeQuery('insert into `FAILI`
-						(`RFLS_NOSAUKUMS`,`RFLS_RLTT_ID`,`RFLS_RAKT_ID`,`RFLS_DATUMS`,`RFLS_TYPE`,`RFLS_META_INFO`) values
-						("'.dbLayer::quote_smart($filename).'",
-						 "'.dbLayer::quote_smart($userId).'",
-						 "'.dbLayer::quote_smart($actId).'",
-						 now(),
-						 "'.dbLayer::quote_smart($type).'",
-                         "'.dbLayer::quote_smart($metaInfo).'");');
+					(`RFLS_NOSAUKUMS`,`RFLS_RLTT_ID`,`RFLS_RAKT_ID`,`RFLS_DATUMS`,`RFLS_TYPE`,`RFLS_META_INFO`,`RFLS_DESCRIPTION`) values
+					("'.dbLayer::quote_smart($filename).'",
+					 "'.dbLayer::quote_smart($userId).'",
+					 "'.dbLayer::quote_smart($actId).'",
+					 now(),
+					 "'.dbLayer::quote_smart($type).'",
+                         "'.dbLayer::quote_smart($metaInfo).'",
+                         "'.dbLayer::quote_smart($description).'");');
 
 		if ($res!==false)
 		{
 			return true;
 		}
 		return false;
-    }
+	}
     
     function updateFileDescription($fileId,  $description='')
 	{
@@ -8439,7 +8441,7 @@ class dbProc extends dbLayer
 	function getFileInfo($id, $type = 'PDF' )
 	{
 		$oSQL=new dbLayer();
-        if($type == "PDF" || $type == "XML" || $type == "JSON")
+        if($type == "PDF" || $type == "XML" || $type == "JSON" || $type == "RBF")
         {
               $res=$oSQL->makeQuery('select RFLS_NOSAUKUMS AS NOSAUKUMS, RFLS_META_INFO AS META_INFO
                from `FAILI` where RFLS_ID="'.dbLayer::quote_smart($id).'"');
@@ -8448,7 +8450,7 @@ class dbProc extends dbLayer
         {
           $res=$oSQL->makeQuery('select EFLS_NOSAUKUMS  AS NOSAUKUMS, EFLS_META_INFO AS META_INFO
                from `EXCEL_FAILI` where EFLS_ID="'.dbLayer::quote_smart($id).'"');
-            }
+        }
 
             if (isset($res[0]))
             {
