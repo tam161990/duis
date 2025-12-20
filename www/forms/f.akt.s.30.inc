@@ -292,10 +292,13 @@ $oForm->addElement('select', 'vvNumber', text::get('RBF_VV_NUMBER'),
     ($isReadonlyExceptAdmin ? ' disabled' : '') . ' onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&vvNumber=\'+this.value+\'\'))"',
     '', '', $vvOptions);
 
-// Act Type dropdown (only NĪAD code=50 and Ceļu remonts code=100)
+// Act Type dropdown - different types based on RAKT_IS_AUTO
+// Manual acts (RAKT_IS_AUTO = 0): NĪAD (50) and Ceļu remonts (100)
+// Automatic acts (RAKT_IS_AUTO = 1): Bojājums (20), Stihija(40), Pers(90), Plāns(10), Defekts (30)
+$isAuto = isset($act['RAKT_IS_AUTO']) ? $act['RAKT_IS_AUTO'] : 0;
 $actTypeOptions = array();
 $actTypeOptions[''] = text::get('EMPTY_SELECT_OPTION');
-$actTypesList = dbProc::getRbfActTypes();
+$actTypesList = dbProc::getRbfActTypes($isAuto);
 if(is_array($actTypesList))
 {
     foreach($actTypesList as $type)
@@ -342,8 +345,14 @@ $oForm->addElement('text', 'orderId', text::get('RBF_ORDER_ID'),
 // Signature dropdown
 $signatureOptions = array();
 $signatureOptions[''] = text::get('EMPTY_SELECT_OPTION');
-$signatureOptions['E'] = 'E-paraksts';
-$signatureOptions['R'] = 'Rokraksta paraksts';
+$res=dbProc::getKrfkName('SIGNATURE');
+if (is_array($res))  {
+  foreach ($res as $row)
+  {
+    $signatureOptions[$row['nosaukums']]=$row['nozime'];
+  }
+} 
+
 
 $oForm->addElement('select', 'signature', text::get('RBF_SIGNING_METHOD'), 
     isset($act['RAKT_SIGNATURE']) ? $act['RAKT_SIGNATURE'] : '',

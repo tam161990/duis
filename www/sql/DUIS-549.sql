@@ -383,3 +383,105 @@ ON DUPLICATE KEY UPDATE `text` = VALUES(`text`);
 INSERT INTO `FMK_MESSAGES` (`code`, `text`) VALUES 
 ('CONFIRM_DELETE_FILE', 'Vai tiešām vēlaties dzēst šo failu?')
 ON DUPLICATE KEY UPDATE `text` = VALUES(`text`);
+
+-- ============================================================================
+-- RBF Akts Upload - Menu and Text Translations
+-- ============================================================================
+
+-- Add text code for RBF Export menu item
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_EXPORT', 'Upload RBF akti');
+
+-- Add text code for file upload field
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_AKTS_FILE', 'Excel fails');
+
+-- Add text codes for import messages
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_IMPORT_SUCCESS', 'Veiksmīgi importēti ieraksti:');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_IMPORT_SKIPPED', 'Izlaisti jau eksistējoši ieraksti:');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_IMPORT_ERRORS', 'Kļūdas importējot:');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_INVALID_FILE_TYPE', 'Nederīgs faila tips! Atļautie tipi: .xls, .xlsx');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_FILE_UPLOAD', 'Kļūda augšupielādējot failu!');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_PROCESSING_FILE', 'Kļūda apstrādājot failu');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_SAVING_FILE', 'Kļūda saglabājot failu!');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ERROR_SAVING_FILE_INFO', 'Kļūda saglabājot faila informāciju!');
+
+-- Add requirements text for RBF Akts import
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('REQUIREMENTS_RBF_AKTS', '<h3 align="left">RBF aktu importam lūdzam izmantot Excel 97-2003 vai Excel 2007+ formātā (.xls vai .xlsx)</h3>
+        <p align="left"><strong>Kolonnu secība un nosaukumi (izmantojiet šos kā kolonnu galvenes Excel failā):</strong></p>
+        <table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas nr.</th><th>Kolonas nosaukums Excel</th><th>Obligāts</th><th>Datu tips</th><th>Maksimālais garums</th><th>Apraksts</th></tr>
+        <tr><td>A</td><td>Darbuzņēmēja kods</td><td>+</td><td>VARCHAR</td><td>11</td><td>Darbuzņēmēja identifikācijas kods</td></tr>
+        <tr><td>B</td><td>VV numurs</td><td>+</td><td>VARCHAR</td><td>20</td><td>Vispārīgās vienošanās numurs</td></tr>
+        <tr><td>C</td><td>RBF nodaļa</td><td>+</td><td>VARCHAR</td><td>10</td><td>RBF teritorijas/nodaļas kods</td></tr>
+        <tr><td>D</td><td>Autors</td><td>+</td><td>VARCHAR</td><td>200</td><td>Akta autora vārds un uzvārds</td></tr>
+        <tr><td>E</td><td>Akta veids</td><td>+</td><td>CHAR</td><td>3</td><td>Akta veida kods no akta veidi kataloga (piemēram, "50", "100")</td></tr>
+        <tr><td>F</td><td>Pasūtījuma ID</td><td>+</td><td>VARCHAR</td><td>20</td><td>Unikāls pasūtījuma identifikators. Sistēma neimportēs ierakstus ar jau eksistējošu Pasūtījuma ID.</td></tr>
+        <tr><td>G</td><td>Darba nosaukums</td><td>+</td><td>VARCHAR</td><td>500</td><td>Darba nosaukums izdrukām</td></tr>
+        <tr><td>H</td><td>Piezīmes</td><td>-</td><td>VARCHAR</td><td>150</td><td>Papildus piezīmes par aktu (nav obligāts)</td></tr>
+        </table>
+        <p align="left"><strong>Piezīmes:</strong></p>
+        <ul style="margin-left: 20px;" align="left">
+            <li>Pirmā rinda (galvene) tiek izlaista importēšanas procesā</li>
+            <li>Ja ieraksts ar tādu pašu Pasūtījuma ID jau eksistē tabulā, tas netiks importēts atkārtoti</li>
+            <li>Tukšas rindas tiek automātiski izlaistas</li>
+            <li>Visiem obligātajiem laukiem jābūt aizpildītiem</li>
+        </ul>');
+
+-- ============================================================================
+-- RBF Akti Tables
+-- ============================================================================
+
+CREATE TABLE `rbf_akti` (
+	`FAKT_ID` INT(11) NOT NULL AUTO_INCREMENT,
+    `FAKT_KWOI_KODS` VARCHAR(11) NOT NULL COLLATE 'utf8_latvian_ci', -- Darbuzņēmēja kods
+	`FAKT_VV_NUMBER` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Vispārīgās vienošanās nr.
+    `FAKT_RBTR_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- RBF nodaļa
+    `FAKT_RLTT_TEXT` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Autors
+	`FAKT_KAKV_KODS` CHAR(3) NOT NULL COLLATE 'utf8_latvian_ci', -- Akta veids
+    `FAKT_NUM_POSTFIX` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Pasūtījuma ID (unikāls)
+	`FAKT_WORK_TITLE` VARCHAR(500) NOT NULL COLLATE 'utf8_latvian_ci', -- Darba nosaukums
+	`FAKT_PIEZIMES` VARCHAR(150) NULL COLLATE 'utf8_latvian_ci', -- Piezīmes
+	PRIMARY KEY (`FAKT_ID`),
+	UNIQUE INDEX `U_FAKT_NUM_POSTFIX` (`FAKT_NUM_POSTFIX`)
+)
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM;
+
+CREATE TABLE `rbf_akta_files` (
+	`FFLS_ID` INT(11) NOT NULL AUTO_INCREMENT,
+    `FFLS_NAME_ORIGINAL` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Faila originālais nosaukums
+	`FFLS_NAME_GENERATED` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Fala sistēmas nosaukums
+    `FFLS_UPLOADED_DATE` DATETIME NOT NULL DEFAULT current_timestamp(), -- Importa daums
+    `FFLS_PROCESSED_DATE` DATETIME NULL, -- Process date
+	`FFLS_PROCESSED` CHAR(1) NOT NULL DEFAULT 0, -- Is processed
+	PRIMARY KEY (`FFLS_ID`))
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM;

@@ -516,6 +516,11 @@ if ( $isAdmin || $isSystemUser )
 	$oLink->addPrm(FORM_ID, 'f.adm.s.7');
 	$inflationStepLink=$oLink ->getQuery();
 	unset($oLink);
+
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.adm.s.8');
+	$rbfExportLink=$oLink ->getQuery();
+	unset($oLink);
 }
 else
 {

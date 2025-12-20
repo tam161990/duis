@@ -11803,11 +11803,23 @@ class dbProc extends dbLayer
 
 	function getRbfVVTerritories($vvNumber)
 	{
-		$query = 'select DISTINCT t.RBTR_ID, t.RBTR_KODS, t.RBTR_NOSAUKUMS
+		$query = 'select DISTINCT t.RBTR_ID, t.RBTR_KODS, 
+			CASE 
+				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+				ELSE t.RBTR_DID_NOSAUKUMS
+			END as RBTR_NOSAUKUMS,
+			t.RBTR_NOSAUKUMS as RBTR_NOSAUKUMS_ORIG,
+			t.RBTR_DID_NOSAUKUMS as RBTR_DID_NOSAUKUMS_ORIG,
+			d.RBDU_VV_VEIDS
 			from `kl_rbf_du_vv` vv
 			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
+			INNER JOIN `kl_rbf_darbuznemeji` d ON vv.RBDV_RBDU_ID = d.RBDU_ID
 			where vv.RBDV_VV_NUMURS = "'.dbLayer::quote_smart($vvNumber).'"
-			order by t.RBTR_NOSAUKUMS';
+			order by 
+				CASE 
+					WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+					ELSE t.RBTR_DID_NOSAUKUMS
+				END';
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
@@ -12103,12 +12115,21 @@ class dbProc extends dbLayer
 	 * Get RBF act types (NĪAD and Ceļu remonts)
 	 * @return array List of act types
 	 */
-	function getRbfActTypes()
+	function getRbfActTypes($isAuto = 0)
 	{
-		$query = 'SELECT * FROM `kl_akta_veids`
-			WHERE `KAKV_KODS` IN ("50", "100")
-			AND `KAKV_IR_AKTIVS` = 1
-			ORDER BY `KAKV_NOSAUKUMS`';
+		if($isAuto == 1) {
+			// Automatic acts: Bojājums (20), Stihija(40), Pers(90), Plāns(10), Defekts (30)
+			$query = 'SELECT * FROM `kl_akta_veids`
+				WHERE `KAKV_KODS` IN ("10", "20", "30", "40", "90")
+				AND `KAKV_IR_AKTIVS` = 1
+				ORDER BY `KAKV_NOSAUKUMS`';
+		} else {
+			// Manual acts: NĪAD (50) and Ceļu remonts (100)
+			$query = 'SELECT * FROM `kl_akta_veids`
+				WHERE `KAKV_KODS` IN ("50", "100")
+				AND `KAKV_IR_AKTIVS` = 1
+				ORDER BY `KAKV_NOSAUKUMS`';
+		}
 
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
@@ -12272,6 +12293,94 @@ class dbProc extends dbLayer
 			AND `RAKT_IS_RBF` = 1';
 
 		$result = $oDB -> makeQuery($query);
+		return ($result !== false);
+	}
+
+	/**
+	 * Get RBF Akt by NUM_POSTFIX
+	 * @param string $numPostfix Pasūtījuma ID
+	 * @return array|false Record if exists, false otherwise
+	 */
+	function getRbfAktByPostfix($numPostfix)
+	{
+		$query = 'SELECT * FROM `rbf_akti`
+			WHERE `FAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($numPostfix).'"
+			LIMIT 1';
+
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		
+		if (is_array($result) && count($result) > 0)
+		{
+			return $result[0];
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Save RBF Akt from Excel import
+	 * @param string $kwoiKods Darbuzņēmēja kods
+	 * @param string $vvNumber VV numurs
+	 * @param string $rbtrKods RBF nodaļa
+	 * @param string $rlttText Autors
+	 * @param string $kakvKods Akta veids
+	 * @param string $numPostfix Pasūtījuma ID
+	 * @param string $workTitle Darba nosaukums
+	 * @param string $piezimes Piezīmes
+	 * @return bool Success
+	 */
+	function saveRbfAkt($kwoiKods, $vvNumber, $rbtrKods, $rlttText, $kakvKods, $numPostfix, $workTitle, $piezimes = '')
+	{
+		$query = 'INSERT INTO `rbf_akti` (
+				`FAKT_KWOI_KODS`,
+				`FAKT_VV_NUMBER`,
+				`FAKT_RBTR_KODS`,
+				`FAKT_RLTT_TEXT`,
+				`FAKT_KAKV_KODS`,
+				`FAKT_NUM_POSTFIX`,
+				`FAKT_WORK_TITLE`,
+				`FAKT_PIEZIMES`
+			) VALUES (
+				"'.dbLayer::quote_smart($kwoiKods).'",
+				"'.dbLayer::quote_smart($vvNumber).'",
+				"'.dbLayer::quote_smart($rbtrKods).'",
+				"'.dbLayer::quote_smart($rlttText).'",
+				"'.dbLayer::quote_smart($kakvKods).'",
+				"'.dbLayer::quote_smart($numPostfix).'",
+				"'.dbLayer::quote_smart($workTitle).'",
+				"'.dbLayer::quote_smart($piezimes).'"
+			)';
+
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		
+		return ($result !== false);
+	}
+
+	/**
+	 * Save RBF Akt File metadata
+	 * @param string $originalName Original file name
+	 * @param string $generatedName System generated file name
+	 * @return bool Success
+	 */
+	function saveRbfAktFile($originalName, $generatedName)
+	{
+		$query = 'INSERT INTO `rbf_akta_files` (
+				`FFLS_NAME_ORIGINAL`,
+				`FFLS_NAME_GENERATED`,
+				`FFLS_UPLOADED_DATE`,
+				`FFLS_PROCESSED`
+			) VALUES (
+				"'.dbLayer::quote_smart($originalName).'",
+				"'.dbLayer::quote_smart($generatedName).'",
+				NOW(),
+				"0"
+			)';
+
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		
 		return ($result !== false);
 	}
 
