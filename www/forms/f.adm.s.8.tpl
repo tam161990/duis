@@ -7,19 +7,20 @@
 	</tr>
 	<tr>
 		<td colspan="2" class="table_separator">&nbsp;</td>
+	</tr>	
+	<tr>
+		<td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('rbf_akts_file'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('rbf_akts_file'); ?></td>
+	</tr>
+	<tr>
+		<td colspan="2" class="table_separator">&nbsp;</td>
 	</tr>
 	<tr>
 		<td colspan="2" class="table_cell_c">
 			<?= text::get('REQUIREMENTS_RBF_AKTS'); ?>
 		</td>
 	</tr>
-	<tr>
-		<td colspan="2" class="table_separator">&nbsp;</td>
-	</tr>
-	<tr>
-		<td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('rbf_akts_file'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2"><?= $oForm -> getElementHtml('rbf_akts_file'); ?></td>
-	</tr>
+	
 </table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">

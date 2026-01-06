@@ -202,6 +202,23 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY', 'Statu
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORKS_EMPTY', 'Saglabājiet aktu, lai pievienotu darbus');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ATTACHMENTS_EMPTY', 'Saglabājiet aktu, lai pievienotu pielikumus');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_STATUS_HISTORY_EMPTY', 'Nav statusa vēstures');
+--
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_INFO', 'Automātiski importēti darbi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_INFO_DESC', 'Šie darbi tika automātiski importēti no Excel faila un ir tikai skatāmi. Lai veiktu izmaiņas, lūdzu, augšupielādējiet jaunu Excel failu ar atjauninātiem datiem.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_EMPTY', 'Nav importētu darbu');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NO', 'Nr.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_ORDER_NUMBER', 'Uzturēšanas darba numurs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_CALC_CODE', 'Kalkulāciju kategorijas šifrs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_CODE', 'MMS nosacījums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_TITLE', 'MMS Darbība/Nosacījums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_STATUS', 'Darbības statuss');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NORMA', 'C.st.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PLAN_DATE', 'Izpildes datums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_APPROVE_DATE', 'Apstiprināšanas datums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_TOTAL', 'Kopā');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_RECORDS', 'ieraksti');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PROCESS_ERROR', 'Darbs statusā "Novēršana" nevar tikt iekļauts Starpaktā');
+
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('NO_FILES', 'Nav pielikumu');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_SUBMIT_FOR_APPROVAL', 'Nodot saskaņošanai');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_APPROVE', 'Apstiprināt');
@@ -435,24 +452,49 @@ VALUES
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES
 ('REQUIREMENTS_RBF_AKTS', '<h3 align="left">RBF aktu importam lūdzam izmantot Excel 97-2003 vai Excel 2007+ formātā (.xls vai .xlsx)</h3>
-        <p align="left"><strong>Kolonnu secība un nosaukumi (izmantojiet šos kā kolonnu galvenes Excel failā):</strong></p>
+        <p align="left" style="color: #ff6600;"><strong>SVARĪGI: Excel failam jābūt ar 2 lapām (sheets):</strong></p>
+        <ul style="margin-left: 20px;" align="left">
+            <li><strong>1. lapa (Sheet1):</strong> Aktu dati</li>
+            <li><strong>2. lapa (Sheet2):</strong> Darbu dati</li>
+        </ul>
+        
+        <h4 align="left">1. LAPA (SHEET1): AKTU DATI</h4>
+        <p align="left"><strong>Kolonnu secība un nosaukumi:</strong></p>
         <table cellpadding="3" cellspacing="0" border="1" width="100%">
         <tr><th>Kolonas nr.</th><th>Kolonas nosaukums Excel</th><th>Obligāts</th><th>Datu tips</th><th>Maksimālais garums</th><th>Apraksts</th></tr>
         <tr><td>A</td><td>Darbuzņēmēja kods</td><td>+</td><td>VARCHAR</td><td>11</td><td>Darbuzņēmēja identifikācijas kods</td></tr>
         <tr><td>B</td><td>VV numurs</td><td>+</td><td>VARCHAR</td><td>20</td><td>Vispārīgās vienošanās numurs</td></tr>
         <tr><td>C</td><td>RBF nodaļa</td><td>+</td><td>VARCHAR</td><td>10</td><td>RBF teritorijas/nodaļas kods</td></tr>
         <tr><td>D</td><td>Autors</td><td>+</td><td>VARCHAR</td><td>200</td><td>Akta autora vārds un uzvārds</td></tr>
-        <tr><td>E</td><td>Akta veids</td><td>+</td><td>CHAR</td><td>3</td><td>Akta veida kods no akta veidi kataloga (piemēram, "50", "100")</td></tr>
+        <tr><td>E</td><td>Akta veids</td><td>+</td><td>CHAR</td><td>3</td><td>Akta veida kods no akta veidi kataloga (piemēram, "10", "20", "30")</td></tr>
         <tr><td>F</td><td>Pasūtījuma ID</td><td>+</td><td>VARCHAR</td><td>20</td><td>Unikāls pasūtījuma identifikators. Sistēma neimportēs ierakstus ar jau eksistējošu Pasūtījuma ID.</td></tr>
         <tr><td>G</td><td>Darba nosaukums</td><td>+</td><td>VARCHAR</td><td>500</td><td>Darba nosaukums izdrukām</td></tr>
-        <tr><td>H</td><td>Piezīmes</td><td>-</td><td>VARCHAR</td><td>150</td><td>Papildus piezīmes par aktu (nav obligāts)</td></tr>
+        <tr><td>H</td><td>Parakstīšanas veids</td><td>-</td><td>CHAR</td><td>1</td><td>E - ar eparakstu, P - ar fizisko parakstu, K - KVIKSTEPS (nav obligāts)</td></tr>
+        <tr style="background-color: #f0f0f0;"><td>I</td><td>Piezīmes</td><td>-</td><td>VARCHAR</td><td>150</td><td>Papildus piezīmes par aktu (nav obligāts)</td></tr>
         </table>
+        
+        <h4 align="left">2. LAPA (SHEET2): DARBU DATI</h4>
+        <p align="left"><strong>Kolonnu secība un nosaukumi:</strong></p>
+        <table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas nr.</th><th>Kolonas nosaukums Excel</th><th>Obligāts</th><th>Datu tips</th><th>Maksimālais garums</th><th>Apraksts</th></tr>
+        <tr><td>A</td><td>Uzturēšanas darba numurs</td><td>+</td><td>VARCHAR</td><td>20</td><td>Pasūtījuma ID no 1. lapas (Sheet1 kolona F)</td></tr>
+        <tr><td>B</td><td>Kalkulāciju kategorijas šifrs</td><td>+</td><td>CHAR</td><td>5</td><td>Kalkulācijas šifrs no kalkulāciju kataloga</td></tr>
+        <tr><td>C</td><td>MMS nosacījums ID</td><td>+</td><td>VARCHAR</td><td>10</td><td>MMS sistēmas nosacījuma identifikators</td></tr>
+        <tr><td>D</td><td>MMS darbība/Nosacījums</td><td>+</td><td>VARCHAR</td><td>250</td><td>MMS darbības vai nosacījuma nosaukums</td></tr>
+        <tr><td>E</td><td>Darbības statusa kods</td><td>+</td><td>VARCHAR</td><td>20</td><td>Darba izpildes statuss (piemēram: "Iesākts" - PROCESS, "Novēršana" - COMPLETED)</td></tr>
+        <tr><td>F</td><td>Normatīvais koeficients (C.st.)</td><td>+</td><td>FLOAT</td><td>7,2</td><td>Normatīvais koeficients (c.st. vienībās)</td></tr>
+        <tr style="background-color: #f0f0f0;"><td>G</td><td>Izpildes datums</td><td>-</td><td>DATE/DATETIME</td><td>-</td><td>Plānotais vai faktiskais izpildes datums (nav obligāts)</td></tr>
+		</table>
+        
         <p align="left"><strong>Piezīmes:</strong></p>
         <ul style="margin-left: 20px;" align="left">
-            <li>Pirmā rinda (galvene) tiek izlaista importēšanas procesā</li>
-            <li>Ja ieraksts ar tādu pašu Pasūtījuma ID jau eksistē tabulā, tas netiks importēts atkārtoti</li>
-            <li>Tukšas rindas tiek automātiski izlaistas</li>
-            <li>Visiem obligātajiem laukiem jābūt aizpildītiem</li>
+            <li><strong>1. lapa:</strong> Pirmā rinda (galvene) tiek izlaista importēšanas procesā</li>
+            <li><strong>1. lapa:</strong> Ja ieraksts ar tādu pašu Pasūtījuma ID jau eksistē tabulā, tas netiks importēts atkārtoti</li>
+            <li><strong>2. lapa:</strong> Pirmā rinda (galvene) tiek izlaista importēšanas procesā</li>
+            <li><strong>2. lapa:</strong> Pirms jauno datu importēšanas, vecā darbu tabula (rbf_akta_darbi_tmp) tiek pilnībā iztīrīta</li>
+            <li><strong>2. lapa:</strong> Kolona A (Uzturēšanas darba numurs) jāsasaista ar 1. lapas kolonu F (Pasūtījuma ID)</li>
+            <li>Tukšas rindas abās lapās tiek automātiski izlaistas</li>
+            <li>Ja 2. lapa (Sheet2) neeksistē, tiek importēta tikai 1. lapa</li>
         </ul>');
 
 -- ============================================================================
@@ -466,11 +508,17 @@ CREATE TABLE `rbf_akti` (
     `FAKT_RBTR_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- RBF nodaļa
     `FAKT_RLTT_TEXT` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Autors
 	`FAKT_KAKV_KODS` CHAR(3) NOT NULL COLLATE 'utf8_latvian_ci', -- Akta veids
+	`FAKT_SIGNATURE` CHAR(1) NULL COLLATE 'utf8_latvian_ci', -- Paraksts (E/P/K)
     `FAKT_NUM_POSTFIX` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Pasūtījuma ID (unikāls)
 	`FAKT_WORK_TITLE` VARCHAR(500) NOT NULL COLLATE 'utf8_latvian_ci', -- Darba nosaukums
 	`FAKT_PIEZIMES` VARCHAR(150) NULL COLLATE 'utf8_latvian_ci', -- Piezīmes
+	`FAKT_FFLS_ID` INT(11) NULL, -- Reference to uploaded file
+	`FAKT_PROCESSED_DATE` DATETIME NULL, -- Processing date
+	`FAKT_PROCESSED` CHAR(1) NOT NULL DEFAULT '0', -- Is processed (0 - no, 1 - yes)
 	PRIMARY KEY (`FAKT_ID`),
-	UNIQUE INDEX `U_FAKT_NUM_POSTFIX` (`FAKT_NUM_POSTFIX`)
+	UNIQUE INDEX `U_FAKT_NUM_POSTFIX` (`FAKT_NUM_POSTFIX`),
+	INDEX `IDX_FAKT_FFLS_ID` (`FAKT_FFLS_ID`),
+	INDEX `IDX_FAKT_PROCESSED` (`FAKT_PROCESSED`)
 )
 COLLATE='utf8_latvian_ci'
 ENGINE=MyISAM;
@@ -478,10 +526,58 @@ ENGINE=MyISAM;
 CREATE TABLE `rbf_akta_files` (
 	`FFLS_ID` INT(11) NOT NULL AUTO_INCREMENT,
     `FFLS_NAME_ORIGINAL` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Faila originālais nosaukums
-	`FFLS_NAME_GENERATED` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Fala sistēmas nosaukums
-    `FFLS_UPLOADED_DATE` DATETIME NOT NULL DEFAULT current_timestamp(), -- Importa daums
-    `FFLS_PROCESSED_DATE` DATETIME NULL, -- Process date
-	`FFLS_PROCESSED` CHAR(1) NOT NULL DEFAULT 0, -- Is processed
-	PRIMARY KEY (`FFLS_ID`))
+	`FFLS_NAME_GENERATED` VARCHAR(200) NOT NULL COLLATE 'utf8_latvian_ci', -- Faila sistēmas nosaukums
+    `FFLS_UPLOADED_DATE` DATETIME NOT NULL DEFAULT current_timestamp(), -- Importa datums
+	PRIMARY KEY (`FFLS_ID`)
+)
 COLLATE='utf8_latvian_ci'
 ENGINE=MyISAM;
+
+-- ============================================================================
+-- ALTER TABLE for existing databases
+-- ============================================================================
+
+-- Add FAKT_SIGNATURE column if it doesn't exist
+ALTER TABLE `rbf_akti` 
+ADD COLUMN `FAKT_SIGNATURE` CHAR(1) NULL COLLATE 'utf8_latvian_ci' COMMENT 'Paraksts (E/P/K)' AFTER `FAKT_KAKV_KODS`;
+
+CREATE TABLE `rbf_akta_darbi_tmp` (
+	`FADR_ID` INT(11) NOT NULL AUTO_INCREMENT,
+    `FADR_NUM_POSTFIX` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Uzturēšanas darba numurs
+	`FADR_RBKL_SHIFRS` CHAR(5) NOT NULL COLLATE 'utf8_latvian_ci', -- Kalkulāciju kategorijas šifrs
+    `FADR_MMS_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- MMS nosacījums ID
+    `FADR_MMS_TITLE` VARCHAR(250) NOT NULL COLLATE 'utf8_latvian_ci', -- MMS darbība/Nosacījums
+	`FADR_STATUS` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Darbības status
+	`FADR_PLAN_DATE` DATETIME NULL, -- Izpildes datums
+    `FADR_NORMA` FLOAT(7,2) NOT NULL,	-- C.st.
+	PRIMARY KEY (`FADR_ID`),
+	INDEX `IDX_FADR_AKT` (`FADR_NUM_POSTFIX`),
+	INDEX `IDX_FADR_PROCESSED` (`FADR_RBKL_SHIFRS`)
+)
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM;
+
+CREATE TABLE `rbf_akta_darbi` (
+	`RADR_ID` INT(11) NOT NULL AUTO_INCREMENT,
+    `RADR_FAKT_ID` INT(11) NOT NULL, -- Act ID
+	`RADR_RBKL_SHIFRS` CHAR(5) NOT NULL COLLATE 'utf8_latvian_ci', -- Kalkulāciju kategorijas šifrs
+    `RADR_MMS_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- MMS nosacījums ID
+    `RADR_MMS_TITLE` VARCHAR(250) NOT NULL COLLATE 'utf8_latvian_ci', -- MMS darbība/Nosacījums
+	`RADR_STATUS` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Darbības status
+	`RADR_PLAN_DATE` DATETIME NULL, -- Izpildes datums
+    `RADR_NORMA` FLOAT(7,2) NOT NULL,	-- C.st.
+	`RADR_APPROVE_DATE` DATETIME NULL, -- Apstiprināšanas datums
+	`RADR_IS_PROCESSED` TINYINT(1) NOT NULL DEFAULT 0, -- Is processed (0 - no, 1 - yes)
+	PRIMARY KEY (`RADR_ID`),
+	INDEX `IDX_RADR_FAKT_ID` (`RADR_FAKT_ID`),
+	INDEX `IDX_RADR_RBKL_SHIFRS` (`RADR_RBKL_SHIFRS`)
+)
+COLLATE='utf8_latvian_ci'
+ENGINE=MyISAM;
+
+INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALUES 
+('WORK_STATUS', 'PROCESS', 'Novēršana'),
+('WORK_STATUS', 'COMPLETED', 'Pabeigts');
+INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALUES 
+('WORK_STATUS', 'NOTHING_TO_DO', 'Nav darāmā'),
+('WORK_STATUS', 'CANT_DO', 'Nevarēja izpildīt');

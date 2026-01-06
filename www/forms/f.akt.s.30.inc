@@ -12,6 +12,7 @@ $isSearch  = reqVar::get('isSearch');
 // search act by number
 $searchNum  = reqVar::get('searchNum');
 $isNew  = reqVar::get('isNew');
+$isAuto  = reqVar::get('isAuto');
 // act ID
 $actId  = reqVar::get('actId');
 // tab name
@@ -385,6 +386,10 @@ if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))
 {
     $oForm->addElement('submitImg', 'export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_120_nodosana.gif', 
         ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+    if($isAuto == 1) {
+        $oForm->addElement('submitImg', 'middle_export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_nodot_saskanosanai.gif', 
+        ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
+    }
 }
 
 if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
@@ -514,11 +519,7 @@ if($oForm->getValue('action'))
     }
     else if($oForm->getValue('action') == OP_EXPORT)
     {
-        // Generate PDF
-        $idFile = toPdf::exportRbfActPdf($actId, $userId);
         
-        if ($idFile !== false)
-        {
             // Update act status (INPUT → ACCEPT) - also saves audit record automatically
             $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
             
@@ -537,45 +538,51 @@ if($oForm->getValue('action'))
             {
                 $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
             }
+       
+    }
+    else if($oForm->getValue('action') == OP_ACCEPT)
+    {
+        // Generate PDF
+        $idFile = toPdf::exportRbfActPdf($actId, $userId);
+        
+        if ($idFile !== false)
+        {
+            // Approve (ACCEPT → CLOSE)
+            // Save capitalize checkbox value
+            $capitalizeValue = $oForm->getValue('capitalize') ? 1 : 0;
+            $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);
+            
+            // Set approve date for works and materials (optional - may fail if no materials)
+            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
+            
+            // Update act status to CLOSE - also saves audit record automatically
+            $r3 = dbProc::updateRbfActStatus($actId, STAT_CLOSE, $userId);
+            
+            // Save user action
+            dbProc::setUserActionDate($userId, ACT_CLOSE);
+            
+            // Debug logging
+            if($r === false) error_log("RBF Act Approve - Step 1 updateRbfActCapitalize failed: " . dbProc::getError());
+            if($r3 === false) error_log("RBF Act Approve - Step 3 updateRbfActStatus failed: " . dbProc::getError());
+            
+            // Check critical operations only (setApproveDate is optional for RBF acts)
+            if($r !== false && $r3 !== false)
+            {
+                $oLink=new urlQuery();
+                $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+                $oLink->addPrm('actId', $actId);
+                $oLink->addPrm('successMessage', text::get('ACT_APPROVED'));
+                RequestHandler::makeRedirect($oLink->getQuery());
+            }
+            else
+            {
+                $errorDetails = dbProc::getError();
+                $oForm->addError(text::get('ERROR_IN_DB_QUERY') . ($errorDetails ? ' - ' . $errorDetails : ''));
+            }
         }
         else
         {
             $oForm->addError(text::get('ERROR_GENERATING_PDF'));
-        }
-    }
-    else if($oForm->getValue('action') == OP_ACCEPT)
-    {
-        // Approve (ACCEPT → CLOSE)
-        // Save capitalize checkbox value
-        $capitalizeValue = $oForm->getValue('capitalize') ? 1 : 0;
-        $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);
-        
-        // Set approve date for works and materials (optional - may fail if no materials)
-        dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
-        
-        // Update act status to CLOSE - also saves audit record automatically
-        $r3 = dbProc::updateRbfActStatus($actId, STAT_CLOSE, $userId);
-        
-        // Save user action
-        dbProc::setUserActionDate($userId, ACT_CLOSE);
-        
-        // Debug logging
-        if($r === false) error_log("RBF Act Approve - Step 1 updateRbfActCapitalize failed: " . dbProc::getError());
-        if($r3 === false) error_log("RBF Act Approve - Step 3 updateRbfActStatus failed: " . dbProc::getError());
-        
-        // Check critical operations only (setApproveDate is optional for RBF acts)
-        if($r !== false && $r3 !== false)
-        {
-            $oLink=new urlQuery();
-            $oLink->addPrm(FORM_ID, 'f.akt.s.30');
-            $oLink->addPrm('actId', $actId);
-            $oLink->addPrm('successMessage', text::get('ACT_APPROVED'));
-            RequestHandler::makeRedirect($oLink->getQuery());
-        }
-        else
-        {
-            $errorDetails = dbProc::getError();
-            $oForm->addError(text::get('ERROR_IN_DB_QUERY') . ($errorDetails ? ' - ' . $errorDetails : ''));
         }
     }
     else if($oForm->getValue('action') == OP_RETURN)
@@ -706,7 +713,17 @@ $tabs->active = text::get($tab);
 $tabs->start(text::get('RBF_WORKS'));
 if($actId != false)
 {
-    include('f.akt.s.31.inc');
+    // Use different work management based on act type
+    // Automatic acts (RAKT_IS_AUTO = 1) use f.akt.s.34.inc
+    // Manual acts (RAKT_IS_AUTO = 0) use f.akt.s.31.inc
+    if($isAuto == 1)
+    {
+        include('f.akt.s.34.inc');
+    }
+    else
+    {
+        include('f.akt.s.31.inc');
+    }
 }
 else
 {

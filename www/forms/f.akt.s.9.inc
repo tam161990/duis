@@ -211,7 +211,7 @@ if ( $isAdmin || $isSystemUser)
                                     );
             $oLink->addPrm('isSearch', 2 );
         }
-
+        
 		if (is_array($res))
 		{
 			foreach ($res as $i=>$row)
