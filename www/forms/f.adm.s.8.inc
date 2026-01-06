@@ -90,15 +90,15 @@ if (userAuthorization::isAdmin())
 								// Column I: FAKT_PIEZIMES (Piezīmes) - OPTIONAL
 								
 								// Read data and ensure UTF-8 encoding for Latvian characters
-								$kwoi_kods = mb_convert_encoding(trim($sheet->getCell('A' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$vv_number = mb_convert_encoding(trim($sheet->getCell('B' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$rbtr_kods = mb_convert_encoding(trim($sheet->getCell('C' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$rltt_text = mb_convert_encoding(trim($sheet->getCell('D' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$kakv_kods = mb_convert_encoding(trim($sheet->getCell('E' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$num_postfix = mb_convert_encoding(trim($sheet->getCell('F' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$work_title = mb_convert_encoding(trim($sheet->getCell('G' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$signature = mb_convert_encoding(trim($sheet->getCell('H' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$piezimes = mb_convert_encoding(trim($sheet->getCell('I' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+								$kwoi_kods = trim($sheet->getCell('A' . $row)->getCalculatedValue());
+								$vv_number = trim($sheet->getCell('B' . $row)->getCalculatedValue());
+								$rbtr_kods = trim($sheet->getCell('C' . $row)->getCalculatedValue());
+								$rltt_text = trim($sheet->getCell('D' . $row)->getCalculatedValue());
+								$kakv_kods = trim($sheet->getCell('E' . $row)->getCalculatedValue());
+								$num_postfix = trim($sheet->getCell('F' . $row)->getCalculatedValue());
+								$work_title = trim($sheet->getCell('G' . $row)->getCalculatedValue());
+								$signature = trim($sheet->getCell('H' . $row)->getCalculatedValue());
+								$piezimes = trim($sheet->getCell('I' . $row)->getCalculatedValue());
 								
 								// Skip empty rows
 								if (empty($kwoi_kods) && empty($vv_number) && empty($num_postfix))
@@ -197,14 +197,14 @@ if (userAuthorization::isAdmin())
 										// Column F: FADR_NORMA (Normatīvais koeficients / C.st.) - REQUIRED
 										// Column G: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
 										
-								// Read data and ensure UTF-8 encoding for Latvian characters
-								$numPostfix = mb_convert_encoding(trim($sheet2->getCell('A' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$rbklShifrs = mb_convert_encoding(trim($sheet2->getCell('B' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$mmsKods = mb_convert_encoding(trim($sheet2->getCell('C' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$mmsTitle = mb_convert_encoding(trim($sheet2->getCell('D' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$status = mb_convert_encoding(trim($sheet2->getCell('E' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-								$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
-								$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
+										// Read data and ensure UTF-8 encoding for Latvian characters
+										$numPostfix = mb_convert_encoding(trim($sheet2->getCell('A' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$rbklShifrs = mb_convert_encoding(trim($sheet2->getCell('B' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$mmsKods = mb_convert_encoding(trim($sheet2->getCell('C' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$mmsTitle = mb_convert_encoding(trim($sheet2->getCell('D' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$status = mb_convert_encoding(trim($sheet2->getCell('E' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
+										$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
 										
 										// Skip empty rows
 										if (empty($numPostfix) && empty($rbklShifrs) && empty($mmsKods))
