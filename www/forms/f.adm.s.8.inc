@@ -198,13 +198,14 @@ if (userAuthorization::isAdmin())
 										// Column G: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
 										
 										// Read data and ensure UTF-8 encoding for Latvian characters
-										$numPostfix = mb_convert_encoding(trim($sheet2->getCell('A' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-										$rbklShifrs = mb_convert_encoding(trim($sheet2->getCell('B' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-										$mmsKods = mb_convert_encoding(trim($sheet2->getCell('C' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-										$mmsTitle = mb_convert_encoding(trim($sheet2->getCell('D' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
-										$status = mb_convert_encoding(trim($sheet2->getCell('E' . $row)->getCalculatedValue()), 'UTF-8', 'UTF-8');
+										$numPostfix = trim($sheet2->getCell('A' . $row)->getCalculatedValue());
+										$rbklShifrs = trim($sheet2->getCell('B' . $row)->getCalculatedValue());
+										$mmsKods = trim($sheet2->getCell('C' . $row)->getCalculatedValue());
+										$mmsTitle = trim($sheet2->getCell('D' . $row)->getCalculatedValue());
+										$status = trim($sheet2->getCell('E' . $row)->getCalculatedValue());
 										$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
 										$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
+										
 										
 										// Skip empty rows
 										if (empty($numPostfix) && empty($rbklShifrs) && empty($mmsKods))
