@@ -537,10 +537,6 @@ ENGINE=MyISAM;
 -- ALTER TABLE for existing databases
 -- ============================================================================
 
--- Add FAKT_SIGNATURE column if it doesn't exist
-ALTER TABLE `rbf_akti` 
-ADD COLUMN `FAKT_SIGNATURE` CHAR(1) NULL COLLATE 'utf8_latvian_ci' COMMENT 'Paraksts (E/P/K)' AFTER `FAKT_KAKV_KODS`;
-
 CREATE TABLE `rbf_akta_darbi_tmp` (
 	`FADR_ID` INT(11) NOT NULL AUTO_INCREMENT,
     `FADR_NUM_POSTFIX` VARCHAR(20) NOT NULL COLLATE 'utf8_latvian_ci', -- Uzturēšanas darba numurs

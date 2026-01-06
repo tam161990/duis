@@ -36,7 +36,7 @@ define ('TEST_MODE', true);
 define ('LDAP_AUTH_MODE', false);
 
 // list of system admins, autentification with out LDAP
-define ('RCDIS_ADMIN_LIST', 'admin,ttest,tam,auditor');
+define ('RCDIS_ADMIN_LIST', 'admin,ttest,tam,auditor,rbf');
 
 # =============================================================================
 # Main configuration
