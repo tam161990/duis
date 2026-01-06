@@ -45,6 +45,18 @@ class files
 	}
 
 	// -----------------------------------------------------------------------------
+	// Check if uploaded file has valid extension for RBF attachments
+	// -----------------------------------------------------------------------------
+	function isValidRbfFile($fieldName)
+	{
+		$allowedExtensions = array('docx', 'pdf', 'xls', 'xlsx', 'gif', 'jpeg', 'jpg', 'png');
+		$filename = $_FILES[$fieldName]['name'];
+		$ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+		
+		return in_array($ext, $allowedExtensions);
+	}
+
+	// -----------------------------------------------------------------------------
 	// nodzes failu no diska
 	// -----------------------------------------------------------------------------
 	function eraseFileFromStore($idFile, $type = 'PDF')
@@ -53,6 +65,10 @@ class files
         if($type == "PDF")
         {
              return @unlink(FILES_STORE_PATH.'/'.$idFile);
+        }
+        elseif($type == "RBF")
+        {
+             return @unlink(RBF_FILES_STORE_PATH.'/'.$idFile);
         }
         else
         {
@@ -90,22 +106,22 @@ class files
 	// -----------------------------------------------------------------------------
 	// saglaba failu
 	// -----------------------------------------------------------------------------
-	function saveFile($fieldName,$description=false,$userId,$messagesId,$idFile=false)
+	function saveFile($fieldName,$description=false,$userId,$messagesId,$idFile=false,$type=false)
 	{
 	        if (files::isUploadFile($fieldName))
 	        {
 	        	if (!empty($idFile))
 	        	{
-		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $description, $userId, $messagesId, $_FILES[$fieldName]['type'],$idFile);
+		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $userId, $messagesId, ($type ? $type : 'PDF'), $_FILES[$fieldName]['type'], $description);
 		        	if (!$res)
 		        	{
 		        		return false;
 		        	}
-		        	files::eraseFileFromStore($idFile);
+		        	files::eraseFileFromStore($idFile, ($type ? $type : 'PDF'));
 	        	}
 	        	else
 	        	{
-		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $description, $userId, $messagesId, $_FILES[$fieldName]['type']);
+		        	$res=dbProc::replaceFile($_FILES[$fieldName]['name'], $userId, $messagesId, ($type ? $type : 'PDF'), $_FILES[$fieldName]['type'], $description);
 		        	if ($res)
 		        	{
 		        		$idFile=dbLayer::getInsertId();
@@ -119,7 +135,8 @@ class files
 		        		return false;
 		        	}
 	        	}
-	        	$res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],FILES_STORE_PATH.'/'.$idFile);
+	        	$storePath = ($type == 'RBF') ? RBF_FILES_STORE_PATH : FILES_STORE_PATH;
+	        	$res=@move_uploaded_file($_FILES[$fieldName]['tmp_name'],$storePath.'/'.$idFile);
 	        	if ($res)
 	        	{
 	        		return $idFile;
@@ -171,6 +188,10 @@ class files
 			if($type == "PDF")
             {
                  $c=@file_get_contents(FILES_STORE_PATH.'/'.$idFile);
+            }
+            else if($type == "RBF")
+            {
+                 $c=@file_get_contents(RBF_FILES_STORE_PATH.'/'.$idFile);
             }
             else if($type == "EXCEL")
             {

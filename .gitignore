@@ -6,6 +6,6 @@ logs/
 temp/
 output/
 gps_files/
-info.php
-tests/
 rbf_act_files/
+tests/
+info.php

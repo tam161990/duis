@@ -8,12 +8,15 @@ $isTraseUser = userAuthorization::isTrase();
 $isContractUser = userAuthorization::isContract();
 $isLimitCardUser = userAuthorization::isLimitcard();
 $isPpaUser = userAuthorization::isPpaReport();
+$isRbfUser = userAuthorization::isRbfUser();
 $isSystemUser = dbProc::isExistsUserRole($userId) || $isEditor;
 $isEdUser = dbProc::isUserInRole($userId, ROLE_ED_USER);
 $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 $isAuditor = dbProc::isUserInRole($userId, ROLE_AUDIT_USER);
 $isProjector = dbProc::isExistsUserRoleWithProject($userId) ;
 $projectApprover = dbProc::isUserInRole($userId, ROLE_PROJ_APPROVER);
+
+
 
 if($isContractUser)
     $isRight = true;
@@ -54,6 +57,12 @@ if ( $isAdmin || $isSystemUser )
     $oLink->addPrm('isTrase', '1');
    	$oLink->addPrm(FORM_ID, 'f.akt.s.1');
 	$actTrLink=$oLink ->getQuery();
+	unset($oLink);
+
+	// act for RBF
+	$oLink=new urlQuery();
+   	$oLink->addPrm(FORM_ID, 'f.akt.s.30');
+	$actRbfLink=$oLink ->getQuery();
 	unset($oLink);
 
 	// project
@@ -506,6 +515,11 @@ if ( $isAdmin || $isSystemUser )
 	$oLink=new urlQuery();
 	$oLink->addPrm(FORM_ID, 'f.adm.s.7');
 	$inflationStepLink=$oLink ->getQuery();
+	unset($oLink);
+
+	$oLink=new urlQuery();
+	$oLink->addPrm(FORM_ID, 'f.adm.s.8');
+	$rbfExportLink=$oLink ->getQuery();
 	unset($oLink);
 }
 else

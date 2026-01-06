@@ -211,13 +211,15 @@ if ( $isAdmin || $isSystemUser)
                                     );
             $oLink->addPrm('isSearch', 2 );
         }
-
+        
 		if (is_array($res))
 		{
 			foreach ($res as $i=>$row)
 			{
                 if( $row['RAKT_PROJECT'] == 1) {
                     $oLink->addPrm(FORM_ID, 'f.akt.s.20');
+                } elseif ($row['RAKT_IS_RBF'] == 1) { 
+                    $oLink->addPrm(FORM_ID, 'f.akt.s.30');    
                 } else {
                     $oLink->addPrm(FORM_ID, 'f.akt.s.1');
                     $oLink->addPrm('isTrase', $row['RAKT_TRASE']);  

@@ -126,29 +126,30 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					// if all is ok, do operation
 					if($check)
 					{
+						// Debug: Check what we're passing
+						$territoryId = ($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):false);
+						$isActive = $oForm->getValue('isActive',0);
+						
 						$r=dbProc::saveRbfTerritory(
-							($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):false),
+							$territoryId,
 							$kods,
 							$nosaukums,
 							$didNosaukums,
-							$oForm->getValue('isActive',0)
+							$isActive
 						);
 
-						if (!$r)
+						if ($r === false)
 						{
-							$errorMsg = dbProc::getError();
+							$oDB = new dbLayer();
+							$errorMsg = $oDB->getError();
 							$oForm->addError(text::get('ERROR_IN_DB_QUERY') . ($errorMsg ? ' - ' . $errorMsg : ' - No error details'));
-							// Debug info
-							$oForm->addError('Debug: ID=' . ($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('territoryId'):'NEW') . 
-							                 ', Kods=' . $kods . ', Nosaukums=' . $nosaukums . ', DID=' . $didNosaukums . 
-							                 ', Active=' . $oForm->getValue('isActive',0));
 						}
 					}
 				}
 
 
 				// if operation was compleated succefully, show success mesage and redirect current frame
-				if ($r)
+				if ($r !== false)
 				{
 					$oLink=new urlQuery();
 					$oLink->addPrm(FORM_ID, 'f.ktl.s.25');
@@ -231,7 +232,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $columns=array(
             array('kolonna'=>'RBTR_KODS', 'nosaukums'=>text::get('CODE'), 'def'=>1),
             array('kolonna'=>'RBTR_NOSAUKUMS', 'nosaukums'=>text::get('NAME'), 'def'=>0),
-            array('kolonna'=>'RBTR_DID_NOSAUKUMS', 'nosaukums'=>text::get('DID_NAME'), 'def'=>0),
+            array('kolonna'=>'RBTR_DID_NOSAUKUMS', 'nosaukums'=>text::get('RBF_DID_NAME'), 'def'=>0),
             array('kolonna'=>'RBTR_IR_AKTIVS', 'nosaukums'=>text::get('IS_ACTIVE'), 'def'=>0)
         );
         $searchText = ((reqVar::get('search') && reqVar::get('search') != '') || reqVar::get('search') == 0) ? reqVar::get('search') : false;

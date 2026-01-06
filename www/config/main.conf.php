@@ -60,6 +60,9 @@ define ('ZR_SERVER_PATH',preg_replace('/config$/','',dirname(__FILE__)));
 define ('LOG_STORE_PATH', ZR_SERVER_PATH.'/logs');
 // Files stored dir
 define ('FILES_STORE_PATH', ZR_SERVER_PATH.'/files');
+// RBF files stored dir
+define ('RBF_FILES_STORE_PATH', ZR_SERVER_PATH.'/rbf_files');
+define ('RBF_ACT_FILES_STORE_PATH', ZR_SERVER_PATH.'/rbf_act_files');
 // GPS files stored dir
 define ('GPS_FILES_STORE_PATH', ZR_SERVER_PATH.'/gps_files');
 //  file stored dir
@@ -334,6 +337,7 @@ define ('MSG_BUG',1);
 # file types
 # =============================================================================
 define ('FILE_EXPORT','EXPORT');
+define ('FILE_RBF','RBF');
 define ('FILE_ESTIMATE','ESTIMATE');
 
 # =============================================================================
@@ -411,6 +415,7 @@ define ('ACT_TYPE_STIHIJA_TR_ID', 11);
 define ('ACT_TYPE_PLAN_ID', 1);
 define ('ACT_TYPE_PLAN_TR_ID', 9);
 define ('ACT_TYPE_PERS_ID', 12);
+define ('ACT_TYPE_ROAD_ID', 13);
 # =============================================================================
 # PCT
 # =============================================================================
