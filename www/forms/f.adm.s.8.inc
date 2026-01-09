@@ -150,9 +150,11 @@ if (userAuthorization::isAdmin())
 							}
 							
 							// Display results for Sheet 1
+							$sheet1SuccessMsg = "";
 							if ($successCount > 0)
 							{
 								$oForm->addSuccess("Akti (Sheet 1) veiksmīgi importēti: $successCount");
+								$sheet1SuccessMsg = "Akti (Sheet 1) veiksmīgi importēti: $successCount";
 							}
 							if ($skipCount > 0)
 							{
@@ -165,6 +167,7 @@ if (userAuthorization::isAdmin())
 								{
 									$oForm->addError($error);
 								}
+								exit;
 							}
 							
 							// STEP 3: Process Sheet 2 (Work data)
@@ -272,7 +275,7 @@ if (userAuthorization::isAdmin())
 									// Display results for Sheet 2
 									if ($sheet2SuccessCount > 0)
 									{
-										$oForm->addSuccess("Darbi (Sheet 2) veiksmīgi importēti: $sheet2SuccessCount");
+										$oForm->addSuccess($sheet1SuccessMsg."<br>Darbi (Sheet 2) veiksmīgi importēti: $sheet2SuccessCount");
 									}
 									if ($sheet2ErrorCount > 0)
 									{

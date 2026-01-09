@@ -86,5 +86,86 @@ class email
 			}
 		}
 	}
+
+	// -----------------------------------------------------------------------------
+	// Send email notification when RBF act status changes
+	// Public
+	// Author: AI Assistant
+	// -----------------------------------------------------------------------------
+	function sendRbfActStatusChangeNotification($actId, $oldStatus, $newStatus, $userId = null)
+	{
+		// Get act details
+		$act = dbProc::getRbfActById($actId);
+		if ($act === false) {
+			return false;
+		}
+
+		// Get contractor emails from kl_rbf_darbuznemeji
+		$contractorEmails = dbProc::getContractorEmails($act['RAKT_KWOI_KODS']);
+		if (empty($contractorEmails)) {
+			return false; // No email addresses to send to
+		}
+
+		// Get user info (who made the change)
+		$userInfo = '';
+		$userEmail = '';
+		if ($userId !== null) {
+			$user = dbProc::getUserInfo($userId);
+			if (isset($user[0]) && is_array($user[0])) {
+				$userEmail = $user[0]['RLTT_EPASTA_ADRESE'];
+				$userInfo = $user[0]['RLTT_VARDS'].' '.$user[0]['RLTT_UZVARDS'];
+			}
+		}
+
+		// Get status labels
+		$oldStatusLabel = ($oldStatus) ? dbProc::getKrfkInfoByName($oldStatus) : text::get('RBF_EMAIL_NEW_ACT');
+		$newStatusLabel = dbProc::getKrfkInfoByName($newStatus);
+
+		// Build email subject
+		$actNumber = $act['RAKT_NUM_PILNS'];
+		$subject = text::get('RBF_EMAIL_SUBJECT') . ' ' . $actNumber;
+
+		// Build email body
+		$body = text::get('RBF_EMAIL_GREETING') . "\n\n";
+		$body .= text::get('RBF_EMAIL_ACT_NUMBER') . ': ' . $actNumber . "\n";
+		$body .= text::get('RBF_EMAIL_ACT_TITLE') . ': ' . $act['RAKT_WORK_TITLE'] . "\n";
+		$body .= text::get('RBF_EMAIL_ACT_AUTHOR') . ': ' . $act['RAKT_RLTT_TEXT'] . "\n";
+		$body .= text::get('RBF_EMAIL_DATE') . ': ' . strftime("%d.%m.%Y %H:%M", time()) . "\n\n";
+		
+		if ($oldStatus) {
+			$body .= text::get('RBF_EMAIL_STATUS_CHANGE') . ': ' . $oldStatusLabel . ' → ' . $newStatusLabel . "\n";
+		} else {
+			$body .= text::get('RBF_EMAIL_NEW_ACT_CREATED') . ': ' . $newStatusLabel . "\n";
+		}
+		
+		if ($userInfo) {
+			$body .= text::get('RBF_EMAIL_CHANGED_BY') . ': ' . $userInfo . "\n";
+		}
+		
+		$body .= "\n" . text::get('RBF_EMAIL_FOOTER');
+
+		// Prepare email headers
+		$headers  = "MIME-Version: 1.0\r\n";
+		$headers .= "Content-type: text/plain; charset=utf-8\r\n";
+		if ($userEmail) {
+			$headers .= "From: " . $userInfo . " <" . $userEmail . ">\r\n";
+		} else {
+			$headers .= "From: DUIS System <noreply@energo.lv>\r\n";
+		}
+
+		// Send email to all contractor addresses
+		$sentEmails = array();
+		foreach ($contractorEmails as $email) {
+			$email = trim($email);
+			if (!empty($email) && !isset($sentEmails[$email])) {
+				$sentEmails[$email] = true;
+				mail($email, $subject, $body, $headers);
+			}
+		}
+
+		return true;
+	}
+
+	
 }
 ?>

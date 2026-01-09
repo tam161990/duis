@@ -6753,13 +6753,23 @@ class dbProc extends dbLayer
 	}
 
 	// funkcija uzstada darba u nperson�la apstiprin��anas datums
-    function setApproveDate($actId, $date) {
+    function setApproveDate($actId, $date, $actQuart = null) {
         $oSQL = new dbLayer;
         $r1 = false;
         $r2 = false;
-        $query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" 
-        WHERE `DRBI_RAKT_ID` = '.$actId .' AND `DRBI_WORK_APROVE_DATE` IS NULL';  		
+        
+        // If actQuart is provided, only update DARBI records for that specific quarter
+        if ($actQuart !== null) {
+            $query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" 
+            WHERE `DRBI_RAKT_ID` = '.$actId .' 
+            AND `DRBI_WORK_APROVE_DATE` IS NULL
+            AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart($actQuart).'"';
+        } else {
+            $query = 'UPDATE `DARBI` SET  `DRBI_WORK_APROVE_DATE`  = "' .$date .'" 
+            WHERE `DRBI_RAKT_ID` = '.$actId .' AND `DRBI_WORK_APROVE_DATE` IS NULL';
+        }
         $r1 = $oSQL -> makeQuery($query);	
+        
         $query = 'UPDATE `materiali` SET  `MATR_WORK_APROVE_DATE`  = "' .$date .'" 
         WHERE `MATR_RAKT_ID` = '.$actId .' AND `MATR_WORK_APROVE_DATE` IS NULL';  				
 		$r2 = $oSQL -> makeQuery($query);	
@@ -13162,6 +13172,213 @@ class dbProc extends dbLayer
 	}
 
 	/**
+	 * Count works by specific status for an act
+	 * @param int $actId Act ID (RAKT_ID)
+	 * @param string $status Work status code
+	 * @return int Count of works with the specified status
+	 */
+	function countWorksByStatus($actId, $status)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT COUNT(*) as cnt FROM `rbf_akta_darbi` 
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_STATUS` = "'.dbLayer::quote_smart($status).'"';
+		$result = $oDB->makeQuery($query);
+		
+		return (is_array($result) && isset($result[0]['cnt'])) ? (int)$result[0]['cnt'] : 0;
+	}
+	
+	/**
+	 * Count works that are NOT in COMPLETED status for an act
+	 * @param int $actId Act ID (RAKT_ID)
+	 * @return int Count of works not completed
+	 */
+	function countWorksNotCompleted($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT COUNT(*) as cnt FROM `rbf_akta_darbi` 
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_STATUS` != "COMPLETED"';
+		$result = $oDB->makeQuery($query);
+		
+		return (is_array($result) && isset($result[0]['cnt'])) ? (int)$result[0]['cnt'] : 0;
+	}
+
+	/**
+	 * Export checked works from automatic act to DARBI table
+	 * NOTE: This method performs only database operations
+	 * All validation should be done in the controller before calling this method
+	 * 
+	 * @param int $actId Act ID (RAKT_ID)
+	 * @param array $checkedWorkIds Array of RADR_ID values
+	 * @param int $userId User ID performing the action
+	 * @param bool $isFinalExport True for final export (sets RAKT_IR_OBJEKTS_PABEIGTS), false for middle export
+	 * @param int $actLifePeriod Act life period for DRBI_ACT_QUART
+	 * @return array Result with 'success' (bool), 'inserted_count' (int), 'message' (string)
+	 */
+	function exportAutoActWorksToDarbi($actId, $checkedWorkIds, $userId, $isFinalExport, $actLifePeriod)
+	{
+		$oDB = new dbLayer();
+		
+		// Get checked works
+		$workIds = implode(',', array_map('intval', $checkedWorkIds));
+		$query = 'SELECT * FROM `rbf_akta_darbi` 
+				  WHERE `RADR_ID` IN (' . $workIds . ') 
+				  AND `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		$works = $oDB->makeQuery($query);
+		
+		if (!is_array($works) || count($works) == 0)
+		{
+			return array('success' => false, 'inserted_count' => 0, 'message' => 'No works found');
+		}
+		
+		// Aggregate works by calc_code
+		$aggregated = array();
+		foreach ($works as $work)
+		{
+			$calcCode = $work['RADR_RBKL_SHIFRS'];
+			
+			if (!isset($aggregated[$calcCode]))
+			{
+				$aggregated[$calcCode] = array(
+					'calc_code' => $calcCode,
+					'plan_date' => $work['RADR_PLAN_DATE'],
+					'norma_sum' => 0
+				);
+			}
+			
+			$aggregated[$calcCode]['norma_sum'] += $work['RADR_NORMA'];
+			
+			// Use earliest plan date if multiple
+			if (!empty($work['RADR_PLAN_DATE']))
+			{
+				if (empty($aggregated[$calcCode]['plan_date']) || 
+					$work['RADR_PLAN_DATE'] < $aggregated[$calcCode]['plan_date'])
+				{
+					$aggregated[$calcCode]['plan_date'] = $work['RADR_PLAN_DATE'];
+				}
+			}
+		}
+		
+		// Insert into DARBI table
+		$insertedCount = 0;
+		foreach ($aggregated as $item)
+		{
+			// Get calculation info from kl_rbf_kalkulacija
+			$calcQuery = 'SELECT `RBKL_ID`, `RBKL_NOSAUKUMS`, `RBKL_CENA` 
+						  FROM `kl_rbf_kalkulacija` 
+						  WHERE `RBKL_SHIFRS` = "'.dbLayer::quote_smart($item['calc_code']).'"';
+			$calcInfo = $oDB->makeQuery($calcQuery);
+			
+			if (!is_array($calcInfo) || count($calcInfo) == 0)
+			{
+				files::wh_log("[ERROR] Calculation code not found: {$item['calc_code']}");
+				continue;
+			}
+			
+			$rbklId = $calcInfo[0]['RBKL_ID'];
+			$rbklNosaukums = $calcInfo[0]['RBKL_NOSAUKUMS'];
+            $rbkPrice = $calcInfo[0]['RBKL_CENA'];
+			
+			// Insert into DARBI
+			$insertQuery = 'INSERT INTO `DARBI` (
+				`DRBI_RAKT_ID`,
+				`DRBI_KKAL_ID`,
+				`DRBI_KKAL_SHIFRS`,
+				`DRBI_KKAL_NOSAUKUMS`,
+				`DRBI_CILVEKSTUNDAS`,
+                `DRBI_KKAL_NORMATIVS`,
+				`DRBI_PLAN_DATE`,
+				`DRBI_ACT_QUART`
+			) VALUES (
+				"'.dbLayer::quote_smart($actId).'",
+				"'.dbLayer::quote_smart($rbklId).'",
+				"'.dbLayer::quote_smart($item['calc_code']).'",
+				"'.dbLayer::quote_smart($rbklNosaukums).'",
+				"'.dbLayer::quote_smart($item['norma_sum']).'",
+                "'.dbLayer::quote_smart($rbkPrice).'",
+				'.($item['plan_date'] ? '"'.dbLayer::quote_smart($item['plan_date']).'"' : 'NULL').',
+				"'.dbLayer::quote_smart($actLifePeriod).'"
+			)';
+			
+			$result = $oDB->makeQuery($insertQuery);
+			if ($result !== false)
+			{
+				$insertedCount++;
+			}
+		}
+		
+		if ($insertedCount > 0)
+		{
+			// Mark checked works as processed in rbf_akta_darbi
+			$workIds = implode(',', array_map('intval', $checkedWorkIds));
+			$updateWorksQuery = 'UPDATE `rbf_akta_darbi` 
+								 SET `RADR_IS_PROCESSED` = 1 
+								 WHERE `RADR_ID` IN (' . $workIds . ')
+								 AND `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+			$oDB->makeQuery($updateWorksQuery);
+			
+			// Update act status to ACCEPT using existing function
+			self::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
+			
+			// For final export, also set RAKT_IR_OBJEKTS_PABEIGTS = 1
+			if ($isFinalExport)
+			{
+				self::closeObject($actId, 1);
+			}
+			
+			// Log user action using existing function
+			// ACT_EXPORT for final export, ACT_ESTIMATE for middle export
+			$actionType = $isFinalExport ? ACT_EXPORT : ACT_ESTIMATE;
+			self::setUserActionDate($userId, $actionType);
+			
+			return array(
+				'success' => true,
+				'inserted_count' => $insertedCount,
+				'message' => 'Export successful'
+			);
+		}
+		
+		return array('success' => false, 'inserted_count' => 0, 'message' => 'Failed to export works');
+	}
+
+    function closeObject($actId, $close) {
+        $oDB = new dbLayer();
+        $updateQuery = 'UPDATE `AKTI` SET 
+								`RAKT_IR_OBJEKTS_PABEIGTS` = "'.dbLayer::quote_smart($close).'"
+							   WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		$result = $oDB->makeQuery($updateQuery);
+		return $result !== false;
+    }
+
+	/**
+	 * Get DARBI records for act grouped by calculation code with period breakdown
+	 * @param int $raktId Act ID (RAKT_ID)
+	 * @return array|false Array of DARBI records grouped by KKAL_SHIFRS or false
+	 */
+	function getDarbiByActId($raktId)
+	{
+		$oDB = new dbLayer();
+		
+		$query = 'SELECT 
+					d.DRBI_KKAL_SHIFRS,
+					d.DRBI_KKAL_NOSAUKUMS,
+					w.KWRC_KODS,
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 1 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_1,
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 2 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_2,
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 3 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_3
+				  FROM DARBI d
+				  LEFT JOIN kl_writeoff_code_new w ON d.DRBI_KKAL_SHIFRS = w.KWRC_KKAL_SHIFRS
+				  WHERE d.DRBI_RAKT_ID = "'.dbLayer::quote_smart($raktId).'"
+				  GROUP BY d.DRBI_KKAL_SHIFRS, d.DRBI_KKAL_NOSAUKUMS, w.KWRC_KODS
+				  ORDER BY d.DRBI_KKAL_SHIFRS';
+		
+		$result = $oDB->makeQuery($query);
+		
+		return is_array($result) ? $result : false;
+	}
+
+	/**
 	 * Get works for automatic RBF act from rbf_akta_darbi table
 	 * @param int $raktId Act ID (RAKT_ID)
 	 * @return array|false Array of work records or false
@@ -13195,6 +13412,196 @@ class dbProc extends dbLayer
 		}
 		
 		return false;
+	}
+
+	/**
+	 * Get DARBI summary by act ID with calculations
+	 * @param int $actId - Act ID
+	 * @return array - DARBI records grouped by calculation code with costs and hours per period
+	 */
+	public static function getDarbiSummaryByActId($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT
+					codes.RADR_RBKL_SHIFRS AS DRBI_KKAL_SHIFRS,
+					k.RBKL_NOSAUKUMS AS DRBI_KKAL_NOSAUKUMS,
+					k.RBKL_CENA AS DRBI_KKAL_NORMATIVS,
+					w.KWRC_KODS,
+					COALESCE(darbi_agg.PERIOD_1_HOURS, 0) AS PERIOD_1_HOURS,
+					COALESCE(darbi_agg.PERIOD_2_HOURS, 0) AS PERIOD_2_HOURS,
+					COALESCE(darbi_agg.PERIOD_3_HOURS, 0) AS PERIOD_3_HOURS
+				  FROM (
+					SELECT DISTINCT RADR_RBKL_SHIFRS
+					FROM `rbf_akta_darbi`
+					WHERE RADR_FAKT_ID = "'.dbLayer::quote_smart($actId).'"
+				  ) codes
+				  LEFT JOIN `kl_rbf_kalkulacija` k ON codes.RADR_RBKL_SHIFRS = k.RBKL_SHIFRS
+				  LEFT JOIN `kl_writeoff_code_new` w ON codes.RADR_RBKL_SHIFRS = w.KWRC_KKAL_SHIFRS
+				  LEFT JOIN (
+					SELECT 
+						DRBI_KKAL_SHIFRS,
+						SUM(CASE WHEN DRBI_ACT_QUART = 1 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_1_HOURS,
+						SUM(CASE WHEN DRBI_ACT_QUART = 2 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_2_HOURS,
+						SUM(CASE WHEN DRBI_ACT_QUART = 3 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_3_HOURS
+					FROM `DARBI`
+					WHERE DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"
+					GROUP BY DRBI_KKAL_SHIFRS
+				  ) darbi_agg ON codes.RADR_RBKL_SHIFRS = darbi_agg.DRBI_KKAL_SHIFRS
+				  ORDER BY codes.RADR_RBKL_SHIFRS';
+		return $oDB->makeQuery($query);
+	}
+
+	/**
+	 * Reset RADR_IS_PROCESSED flag for works that haven't been approved yet
+	 * @param int $actId - Act ID
+	 * @return bool - True on success, false on failure
+	 */
+	public static function resetUnprocessedRbfWorks($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'UPDATE `rbf_akta_darbi`
+				  SET `RADR_IS_PROCESSED` = 0
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_APPROVE_DATE` IS NULL';
+		$result = $oDB->makeQuery($query);
+		return ($result !== false);
+	}
+
+	/**
+	 * Set approve date for processed RBF works
+	 * @param int $actId - Act ID
+	 * @param string $date - Approve date
+	 * @return bool - True on success, false on failure
+	 */
+	public static function setRbfWorksApproveDate($actId, $date)
+	{
+		$oDB = new dbLayer();
+		$query = 'UPDATE `rbf_akta_darbi`
+				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_APPROVE_DATE` IS NULL
+				  AND `RADR_IS_PROCESSED` = 1';
+		$result = $oDB->makeQuery($query);
+		return ($result !== false);
+	}
+
+	/**
+	 * Check if there are remaining unapproved works in COMPLETED or PROCESS status
+	 * @param int $actId - Act ID
+	 * @return bool - True if remaining works exist, false otherwise
+	 */
+	public static function hasRemainingUnapprovedWorks($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT COUNT(*) as count
+				  FROM `rbf_akta_darbi`
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_STATUS` IN ("COMPLETED", "PROCESS")
+				  AND `RADR_IS_PROCESSED` = 0
+				  AND `RADR_APPROVE_DATE` IS NULL';
+		$result = $oDB->makeQuery($query);
+		
+		if ($result && is_array($result) && count($result) > 0) {
+			return ($result[0]['count'] > 0);
+		}
+		return false;
+	}
+
+	/**
+	 * Get work list for RBF acts (aggregated by calculation code)
+	 * Returns data in format compatible with PDF generation
+	 * @param int $actId - Act ID
+	 * @param bool $isAuto - True for automatic acts (filter by period), false for manual acts (all periods)
+	 * @return array - Aggregated work list
+	 */
+	public static function getRbfActWorkList($actId, $isAuto = false)
+	{
+		$oDB = new dbLayer();
+		
+		// Build the WHERE clause
+		$whereClause = 'd.DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"';
+		
+		// For automatic acts, only include current period
+		if ($isAuto) {
+			$actLifePeriod = self::getActLifePeriod($actId);
+			$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart($actLifePeriod).'"';
+		}
+		
+		$query = 'SELECT
+					d.DRBI_KKAL_SHIFRS,
+					MAX(d.DRBI_WORK_APROVE_DATE) as DRBI_WORK_APROVE_DATE,
+					d.DRBI_KKAL_NOSAUKUMS,
+					k.RBKL_MERVIENIBA as DRBI_MERVIENIBA,
+					k.RBKL_CENA as DRBI_KKAL_NORMATIVS,
+					SUM(d.DRBI_CILVEKSTUNDAS) as DRBI_DAUDZUMS,
+					SUM(d.DRBI_CILVEKSTUNDAS) as DRBI_CILVEKSTUNDAS
+				  FROM `DARBI` d
+				  LEFT JOIN `kl_rbf_kalkulacija` k ON d.DRBI_KKAL_SHIFRS = k.RBKL_SHIFRS
+				  WHERE '.$whereClause.'
+				  GROUP BY d.DRBI_KKAL_SHIFRS, d.DRBI_KKAL_NOSAUKUMS, k.RBKL_MERVIENIBA, k.RBKL_CENA
+				  ORDER BY d.DRBI_KKAL_SHIFRS';
+		
+		return $oDB->makeQuery($query);
+	}
+
+	/**
+	 * Delete unapproved DARBI records for the current act life period
+	 * @param int $actId - Act ID
+	 * @return bool - True on success, false on failure
+	 */
+	public static function deleteUnapprovedDarbiForCurrentPeriod($actId)
+	{
+		$actLifePeriod = self::getActLifePeriod($actId);
+		$oDB = new dbLayer();
+		$query = 'DELETE FROM `DARBI`
+				  WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `DRBI_WORK_APROVE_DATE` IS NULL
+				  AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart($actLifePeriod).'"';
+		$result = $oDB->makeQuery($query);
+		return ($result !== false);
+	}
+
+    // -----------------------------------------------------------------------------
+	// Get contractor email addresses from RBDU_KONTAKTI field
+	// Private helper function
+	// -----------------------------------------------------------------------------
+	private function getContractorEmails($contractorCode)
+	{
+		if (empty($contractorCode)) {
+			return array();
+		}
+
+		$oDB = new dbLayer();
+		$query = 'SELECT `RBDU_KONTAKTI`
+				  FROM `kl_rbf_darbuznemeji`
+				  WHERE `RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
+				  AND `RBDU_IR_AKTIVS` = 1
+				  LIMIT 1';
+		
+		$result = $oDB->makeQuery($query);
+		
+		if ($result === false || !is_array($result) || count($result) == 0) {
+			return array();
+		}
+
+		$contacts = $result[0]['RBDU_KONTAKTI'];
+		if (empty($contacts)) {
+			return array();
+		}
+
+		// Parse email addresses - can be separated by semicolon, comma, or space
+		$emails = array();
+		$parts = preg_split('/[;,\s]+/', $contacts);
+		
+		foreach ($parts as $part) {
+			$part = trim($part);
+			// Check if it's a valid email format
+			if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
+				$emails[] = $part;
+			}
+		}
+
+		return $emails;
 	}
 
 }  
