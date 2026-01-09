@@ -577,3 +577,96 @@ INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALU
 INSERT INTO `kl_ref_kodi` (`KRFK_NOSAUKUMS`, `KRFK_VERTIBA`, `KRFK_NOZIME`) VALUES 
 ('WORK_STATUS', 'NOTHING_TO_DO', 'Nav darāmā'),
 ('WORK_STATUS', 'CANT_DO', 'Nevarēja izpildīt');
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_EMPTY','Nav importētu darbu');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_INFO','Automātiski importēti darbi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_AUTO_WORKS_INFO_DESC','Šie darbi tika automātiski importēti no Excel faila un ir tikai skatāmi. Lai veiktu izmaiņas, lūdzu, augšupielādējiet jaunu Excel failu ar atjauninātiem datiem.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_APPROVE_DATE','Apstiprināšanas datums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_TOTAL','Kopā');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_CALC_CODE','Kalkulāciju kategorijas šifrs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_CODE','MMS nosacījums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_TITLE','MMS Darbība/Nosacījums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NO','Nr.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NORMA','C.st.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_ORDER_NUMBER','Uzturēšanas darba numurs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PLAN_DATE','Izpildes datums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PROCESS_ERROR','Darbs statusā "Novēršana" nevar tikt iekļauts Starpaktā');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_RECORDS','ieraksti');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_STATUS','Darbības statuss');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_EXPORTED','Eksportētie darbi (DARBI)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_SOURCE','Darbi no rbf_akta_darbi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_CALC_CODE','Kalkulāciju šifrs');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_CALC_NAME','Kalkulāciju nosaukums');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_WRITEOFF_CODE','Norakstīšanas kods');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_PERIOD_1','1');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_PERIOD_2','2');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_DARBI_PERIOD_3','3');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_EXPORT_TO_ACT','Eksportēt uz aktu');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_CONFIRM_EXPORT_WORKS','Vai tiešām vēlaties eksportēt atzīmētos darbus uz aktu un mainīt akta statusu uz SASKAŅOŠANĀ?');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('NO_WORKS_SELECTED','Nav izvēlēti darbi');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORKS_EXPORTED_SUCCESS','Darbi veiksmīgi eksportēti');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_CALC_GROUPS','kalkulācijas grupas');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_MIDDLE_EXPORT_BTN','Nodot saskaņošanai');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_FINAL_EXPORT_BTN','Nodošana (objekta pabeigšana)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_CONFIRM_MIDDLE_EXPORT','Vai tiešām vēlaties nodot atzīmētos darbus saskaņošanai un mainīt akta statusu uz SASKAŅOŠANĀ?');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_CONFIRM_FINAL_EXPORT','Vai tiešām vēlaties nodot objektu? Visi darbi tiks eksportēti un akta statuss mainīts uz SASKAŅOŠANĀ. Objekts tiks atzīmēts kā pabeigts.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_MIDDLE_EXPORT_TOOLTIP','Nodot darbus saskaņošanai (Starpakts, periodi 1-2)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_FINAL_EXPORT_TOOLTIP','Nodot objektu - objekta pabeigšana (jebkurā periodā, ja visi darbi pabeigti)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ERROR_NEED_MIDDLE_EXPORT','Jums vispirms ir jānodod darbi saskaņošanai, noklikšķinot uz pogas "Nodot saskaņošanai"');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ERROR_NEED_FINAL_EXPORT','Jums ir jāpabeidz visi darbi, noklikšķinot uz pogas "Nodot objektu"');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ERROR_NOT_ALL_WORKS_APPROVED','Ne visi darbi ir nodoti saskaņošanai. Ir darbi statusā "Novēršana" vai "Pabeigts"');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ERROR_USE_FINAL_APPROVE','3. periodā izmantojiet pogu "Nodot objektu" (objekta pabeigšanai)');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_ERROR_NOT_ALL_WORKS_COMPLETED','Ne visi darbi ir pabeigti. Visi darbi jābūt statusā "Pabeigts" (COMPLETED)');
+
+-- ============================================================================
+-- Add DRBI_ACT_QUART column to DARBI table
+-- ============================================================================
+
+-- Add column for act quarter/period (1, 2, 3)
+ALTER TABLE `DARBI` 
+ADD COLUMN `DRBI_ACT_QUART` TINYINT(1) NOT NULL DEFAULT 0 
+COMMENT 'Act life period (1, 2, 3) - calculated from act creation date';
+
+-- ============================================================================
+-- Text constants for DARBI summary table
+-- ============================================================================
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
+('RBF_CALC_GROUP', 'Kalkulācijas grupa'),
+('RBF_PRICE', 'Cena'),
+('RBF_HOURS_TOTAL', 'C.st. kopā'),
+('RBF_TOTAL_COST', 'Kopējas izmaksas'),
+('RBF_COST_ACCOUNT', 'Izmaksu konts'),
+('RBF_TOTAL', 'Kopā:'),
+('RBF_VAT_21', 'PVN 21%'),
+('RBF_TOTAL_WITH_VAT', 'Kopā ar PVN'),
+('RBF_PERIOD_APPROVED_REMAINING', 'Periods apstiprināts. Akts atgriezts statusā "Izveide" - ir vēl neapstrādāti darbi statusā "Pabeigts" vai "Novēršana".'),
+('RBF_EMAIL_SUBJECT', 'RBF akta statusa izmaiņas -'),
+('RBF_EMAIL_GREETING', 'Labdien!'),
+('RBF_EMAIL_ACT_NUMBER', 'Akta numurs'),
+('RBF_EMAIL_ACT_TITLE', 'Darba nosaukums'),
+('RBF_EMAIL_ACT_AUTHOR', 'Autors'),
+('RBF_EMAIL_DATE', 'Datums'),
+('RBF_EMAIL_STATUS_CHANGE', 'Statusa izmaiņas'),
+('RBF_EMAIL_NEW_ACT_CREATED', 'Jauns akts izveidots ar statusu'),
+('RBF_EMAIL_NEW_ACT', 'Jauns akts'),
+('RBF_EMAIL_CHANGED_BY', 'Izmaiņas veica'),
+('RBF_EMAIL_FOOTER', 'Ar cieņu,\nDUIS sistēma\n\nLūdzu, neatbildiet uz šo e-pastu. Tas tika ģenerēts automātiski.');
+
+-- ============================================================================
+-- Email notification text constants
+-- ============================================================================
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
+('RBF_EMAIL_SUBJECT', 'RBF Akta statusa izmaiņas - Akts'),
+('RBF_EMAIL_GREETING', 'Labdien!'),
+('RBF_EMAIL_ACT_NUMBER', 'Akta numurs'),
+('RBF_EMAIL_ACT_TITLE', 'Darba nosaukums'),
+('RBF_EMAIL_ACT_AUTHOR', 'Akta autors'),
+('RBF_EMAIL_DATE', 'Datums'),
+('RBF_EMAIL_STATUS_CHANGE', 'Statusa izmaiņas'),
+('RBF_EMAIL_NEW_ACT', 'Jauns akts'),
+('RBF_EMAIL_NEW_ACT_CREATED', 'Izveidots jauns akts ar statusu'),
+('RBF_EMAIL_CHANGED_BY', 'Izmaiņas veica'),
+('RBF_EMAIL_FOOTER', 'Šis ir automātisks paziņojums no DUIS sistēmas. Lūdzu, neatbildiet uz šo e-pastu.');
+

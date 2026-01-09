@@ -34,13 +34,6 @@ require_once(dirname(__FILE__).'/../libs/dbLayer/dbLayer.class');
 require_once(dirname(__FILE__).'/../libs/dbProc/dbProc.class');
 require_once(dirname(__FILE__).'/../libs/files/files.class');
 
-// Initialize database connection
-$GLOBALS['sql_connect'] = mysqli_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB);
-if (!$GLOBALS['sql_connect']) {
-    $errorMsg = "[ERROR] Database connection failed: " . mysqli_connect_error();
-    files::wh_log($errorMsg);
-    die($errorMsg . "\n");
-}
 
 // Log start
 $startTime = date('Y-m-d H:i:s');
@@ -191,7 +184,17 @@ if (!$pendingActs || count($pendingActs) == 0) {
     
     files::wh_log("[SUCCESS] Created RAKT_ID: $createdActId (RAKT_IS_AUTO=1, RAKT_IS_RBF=1)");
     
-    // 9. Mark as processed
+    // 9. Save audit records (user action and status change)
+    $systemUserId = 197; // System user ID for automatic processes
+    dbProc::setUserActionDate($systemUserId, ACT_INSERT);
+    dbProc::updateRbfActStatus($createdActId, STAT_INSERT, $systemUserId);
+    files::wh_log("[INFO] Audit records saved for RAKT_ID: $createdActId (User: $systemUserId, Status: INSERT)");
+    
+    // Send email notification about new act creation
+    email::sendRbfActStatusChangeNotification($createdActId, null, STAT_INSERT, $systemUserId);
+    files::wh_log("[INFO] Email notification sent for new act RAKT_ID: $createdActId");
+    
+    // 10. Mark as processed
     $marked = dbProc::markRbfAktProcessed($faktId);
     if (!$marked) {
         files::wh_log("[WARNING] Failed to mark FAKT_ID $faktId as processed in rbf_akti table");

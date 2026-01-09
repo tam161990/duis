@@ -1100,7 +1100,8 @@ class toPdf {
 		);
 
 		// Get work list
-		$aWorkDb = dbProc::getActWorkList($actId, 0);
+		$aWorkDb = dbProc::getRbfActWorkList($actId, (isset($act['RAKT_IS_AUTO']) && $act['RAKT_IS_AUTO'] == 1));
+
 		$data = array();
 		$total = 0;
 		

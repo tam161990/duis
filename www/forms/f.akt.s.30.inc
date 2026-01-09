@@ -382,16 +382,11 @@ if(!$isReadonly || !$isReadonlyExceptAdmin)
         'width="70" height="20" onclick="setValue(\'action\',\''.OP_UPDATE.'\');"');
 }
 
-if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))
+if($actId != false && $isAuto == 0 && ($status == STAT_INSERT || $status == STAT_RETURN))
 {
     $oForm->addElement('submitImg', 'export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_120_nodosana.gif', 
         ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
-    if($isAuto == 1) {
-        $oForm->addElement('submitImg', 'middle_export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_nodot_saskanosanai.gif', 
-        ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_MIDLE_EXPORT.'\');} else {return false;}"');
-    }
-}
-
+}   
 if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
 {
     $oForm->addElement('submitImg', 'accept', text::get('RBF_APPROVE'), 'img/btn_apstiprinat.gif', 
@@ -519,15 +514,22 @@ if($oForm->getValue('action'))
     }
     else if($oForm->getValue('action') == OP_EXPORT)
     {
-        
-            // Update act status (INPUT → ACCEPT) - also saves audit record automatically
+            // Get old status before update
+            $oldStatus = STAT_INSERT;
+            
+            // Update act status (INSERT → ACCEPT) - also saves audit record automatically
             $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
             
             // Save user action
             dbProc::setUserActionDate($userId, ACT_EXPORT);
+            // finilize the object
+            dbProc::closeObject($actId, 1);
             
             if($r)
             {
+                // Send email notification about status change
+                email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
+                
                 $oLink=new urlQuery();
                 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
                 $oLink->addPrm('actId', $actId);
@@ -542,24 +544,57 @@ if($oForm->getValue('action'))
     }
     else if($oForm->getValue('action') == OP_ACCEPT)
     {
+        // Set approve date for works and materials
+        if($isAuto == 1) {
+            // For automatic acts, only approve works for the current period
+            $actLifePeriod = dbProc::getActLifePeriod($actId);
+            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()), $actLifePeriod);
+            
+            // Set approve date for processed RBF works
+            dbProc::setRbfWorksApproveDate($actId, dbLayer::parseDate(dtime::now()));
+        } else {
+            // For manual acts, approve all works
+            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
+        }
+
         // Generate PDF
         $idFile = toPdf::exportRbfActPdf($actId, $userId);
         
         if ($idFile !== false)
         {
-            // Approve (ACCEPT → CLOSE)
+            // Determine target status for automatic acts
+            $targetStatus = STAT_CLOSE;
+            $actionType = ACT_CLOSE;
+            
+            if($isAuto == 1) {
+                // Check if period < 3 and there are remaining unapproved works
+                $actLifePeriod = dbProc::getActLifePeriod($actId);
+                $hasRemainingWorks = dbProc::hasRemainingUnapprovedWorks($actId);
+                
+                if ($actLifePeriod < 3 && $hasRemainingWorks) {
+                    // Set status back to INSERT if there are more works to process
+                    $targetStatus = STAT_INSERT;
+                    $actionType = ACT_INSERT;
+                }
+            }
+            
             // Save capitalize checkbox value
             $capitalizeValue = $oForm->getValue('capitalize') ? 1 : 0;
-            $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);
+            $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);  
+
+            // Get old status before update
+            $oldStatus = STAT_ACCEPT;
             
-            // Set approve date for works and materials (optional - may fail if no materials)
-            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
-            
-            // Update act status to CLOSE - also saves audit record automatically
-            $r3 = dbProc::updateRbfActStatus($actId, STAT_CLOSE, $userId);
+            // Update act status - also saves audit record automatically
+            $r3 = dbProc::updateRbfActStatus($actId, $targetStatus, $userId);
             
             // Save user action
-            dbProc::setUserActionDate($userId, ACT_CLOSE);
+            dbProc::setUserActionDate($userId, $actionType);
+            
+            // Send email notification about status change
+            if($r3 !== false) {
+                email::sendRbfActStatusChangeNotification($actId, $oldStatus, $targetStatus, $userId);
+            }
             
             // Debug logging
             if($r === false) error_log("RBF Act Approve - Step 1 updateRbfActCapitalize failed: " . dbProc::getError());
@@ -571,7 +606,14 @@ if($oForm->getValue('action'))
                 $oLink=new urlQuery();
                 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
                 $oLink->addPrm('actId', $actId);
-                $oLink->addPrm('successMessage', text::get('ACT_APPROVED'));
+                
+                // Set appropriate success message
+                if($targetStatus == STAT_INSERT) {
+                    $oLink->addPrm('successMessage', text::get('RBF_PERIOD_APPROVED_REMAINING'));
+                } else {
+                    $oLink->addPrm('successMessage', text::get('ACT_APPROVED'));
+                }
+                
                 RequestHandler::makeRedirect($oLink->getQuery());
             }
             else
@@ -587,11 +629,30 @@ if($oForm->getValue('action'))
     }
     else if($oForm->getValue('action') == OP_RETURN)
     {
+        if($isAuto == 1) {
+            // Reset processed flag for unapproved works
+            dbProc::resetUnprocessedRbfWorks($actId);
+            
+            // Delete unapproved DARBI records for current period
+            dbProc::deleteUnapprovedDarbiForCurrentPeriod($actId);
+        }
+
+        // open the object
+        dbProc::closeObject($actId, 0);
+
+        // Get old status before update
+        $oldStatus = STAT_ACCEPT;
+
         // Return (ACCEPT → RETURN) - also saves audit record automatically
         $r = dbProc::updateRbfActStatus($actId, STAT_RETURN, $userId);
         
         // Save user action
         dbProc::setUserActionDate($userId, ACT_RETURN_ACCEPT);
+        
+        // Send email notification about status change
+        if($r !== false) {
+            email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_RETURN, $userId);
+        }
         
         if($r)
         {

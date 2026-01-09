@@ -89,7 +89,7 @@ if (userAuthorization::isAdmin())
 								// Column H: FAKT_SIGNATURE (Paraksts E/P/K) - OPTIONAL
 								// Column I: FAKT_PIEZIMES (Piezīmes) - OPTIONAL
 								
-								// Read data from Excel (getCalculatedValue returns UTF-8)
+								// Read data and ensure UTF-8 encoding for Latvian characters
 								$kwoi_kods = trim($sheet->getCell('A' . $row)->getCalculatedValue());
 								$vv_number = trim($sheet->getCell('B' . $row)->getCalculatedValue());
 								$rbtr_kods = trim($sheet->getCell('C' . $row)->getCalculatedValue());
@@ -150,9 +150,11 @@ if (userAuthorization::isAdmin())
 							}
 							
 							// Display results for Sheet 1
+							$sheet1SuccessMsg = "";
 							if ($successCount > 0)
 							{
 								$oForm->addSuccess("Akti (Sheet 1) veiksmīgi importēti: $successCount");
+								$sheet1SuccessMsg = "Akti (Sheet 1) veiksmīgi importēti: $successCount";
 							}
 							if ($skipCount > 0)
 							{
@@ -165,6 +167,7 @@ if (userAuthorization::isAdmin())
 								{
 									$oForm->addError($error);
 								}
+								exit;
 							}
 							
 							// STEP 3: Process Sheet 2 (Work data)
@@ -197,14 +200,15 @@ if (userAuthorization::isAdmin())
 										// Column F: FADR_NORMA (Normatīvais koeficients / C.st.) - REQUIRED
 										// Column G: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
 										
-								// Read data from Excel (getCalculatedValue returns UTF-8)
-								$numPostfix = trim($sheet2->getCell('A' . $row)->getCalculatedValue());
-								$rbklShifrs = trim($sheet2->getCell('B' . $row)->getCalculatedValue());
-								$mmsKods = trim($sheet2->getCell('C' . $row)->getCalculatedValue());
-								$mmsTitle = trim($sheet2->getCell('D' . $row)->getCalculatedValue());
-								$status = trim($sheet2->getCell('E' . $row)->getCalculatedValue());
-								$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
-								$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
+										// Read data and ensure UTF-8 encoding for Latvian characters
+										$numPostfix = trim($sheet2->getCell('A' . $row)->getCalculatedValue());
+										$rbklShifrs = trim($sheet2->getCell('B' . $row)->getCalculatedValue());
+										$mmsKods = trim($sheet2->getCell('C' . $row)->getCalculatedValue());
+										$mmsTitle = trim($sheet2->getCell('D' . $row)->getCalculatedValue());
+										$status = trim($sheet2->getCell('E' . $row)->getCalculatedValue());
+										$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
+										$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
+										
 										
 										// Skip empty rows
 										if (empty($numPostfix) && empty($rbklShifrs) && empty($mmsKods))
@@ -271,7 +275,7 @@ if (userAuthorization::isAdmin())
 									// Display results for Sheet 2
 									if ($sheet2SuccessCount > 0)
 									{
-										$oForm->addSuccess("Darbi (Sheet 2) veiksmīgi importēti: $sheet2SuccessCount");
+										$oForm->addSuccess($sheet1SuccessMsg."<br>Darbi (Sheet 2) veiksmīgi importēti: $sheet2SuccessCount");
 									}
 									if ($sheet2ErrorCount > 0)
 									{
