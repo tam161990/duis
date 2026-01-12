@@ -1085,7 +1085,7 @@ class toPdf {
 		$pdf->SetFont('Arial','BI',10);
 		$pdf->Cell(0,10,iconv('UTF-8', 'windows-1257','Darbi'), 0,1);
 
-		$width = array(12, 12, 65, 18, 18, 18, 20);
+		$width = array(12, 21, 65, 15, 15, 15, 20);
 		$alignHeader = array('C','C','C','C','C','C','C');
 		$align = array('C','C','L','C','R','R','R');
 

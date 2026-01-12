@@ -33,6 +33,8 @@ require_once(dirname(__FILE__).'/../libs/requestHandler/requestHandler.class');
 require_once(dirname(__FILE__).'/../libs/dbLayer/dbLayer.class');
 require_once(dirname(__FILE__).'/../libs/dbProc/dbProc.class');
 require_once(dirname(__FILE__).'/../libs/files/files.class');
+require_once(dirname(__FILE__).'/../libs/email/email.class');
+require_once(dirname(__FILE__).'/../libs/text/text.class');
 
 
 // Log start
@@ -389,8 +391,6 @@ files::wh_log("");
 files::wh_log("[END] Process completed at $endTime");
 files::wh_log("========================================");
 
-// Close database connection
-mysqli_close($GLOBALS['sql_connect']);
 
 // Exit with appropriate code
 exit($errorCount > 0 ? 1 : 0);
