@@ -13528,19 +13528,18 @@ class dbProc extends dbLayer
 			$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart($actLifePeriod).'"';
 		}
 		
-		$query = 'SELECT
+		$query = "SELECT
 					d.DRBI_KKAL_SHIFRS,
-					MAX(d.DRBI_WORK_APROVE_DATE) as DRBI_WORK_APROVE_DATE,
+					".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE').",
 					d.DRBI_KKAL_NOSAUKUMS,
 					k.RBKL_MERVIENIBA as DRBI_MERVIENIBA,
 					k.RBKL_CENA as DRBI_KKAL_NORMATIVS,
-					SUM(d.DRBI_CILVEKSTUNDAS) as DRBI_DAUDZUMS,
-					SUM(d.DRBI_CILVEKSTUNDAS) as DRBI_CILVEKSTUNDAS
+					d.DRBI_CILVEKSTUNDAS as DRBI_DAUDZUMS,
+					d.DRBI_CILVEKSTUNDAS as DRBI_CILVEKSTUNDAS
 				  FROM `DARBI` d
 				  LEFT JOIN `kl_rbf_kalkulacija` k ON d.DRBI_KKAL_SHIFRS = k.RBKL_SHIFRS
-				  WHERE '.$whereClause.'
-				  GROUP BY d.DRBI_KKAL_SHIFRS, d.DRBI_KKAL_NOSAUKUMS, k.RBKL_MERVIENIBA, k.RBKL_CENA
-				  ORDER BY d.DRBI_KKAL_SHIFRS';
+				  WHERE ".$whereClause."
+				  ORDER BY d.DRBI_KKAL_SHIFRS";
 		
 		return $oDB->makeQuery($query);
 	}
@@ -13566,7 +13565,7 @@ class dbProc extends dbLayer
 	// Get contractor email addresses from RBDU_KONTAKTI field
 	// Private helper function
 	// -----------------------------------------------------------------------------
-	private function getContractorEmails($contractorCode)
+	public function getContractorEmails($contractorCode)
 	{
 		if (empty($contractorCode)) {
 			return array();
@@ -13603,6 +13602,16 @@ class dbProc extends dbLayer
 		}
 
 		return $emails;
+	}
+
+    function getRbfActById($ID)
+	{
+		$query = "select *
+            from `AKTI` a
+			where `RAKT_ID` = '".dbLayer::quote_smart($ID)."'";
+
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
 	}
 
 }  

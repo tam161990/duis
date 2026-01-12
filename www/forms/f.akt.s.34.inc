@@ -86,16 +86,20 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     
                     if ($result['success'])
                     {
-                        // Build success message
+                        $oldStatus = STAT_INSERT;
+                        // Send email notification about status change
+                        email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
+                
+                        // Build and set flash message (will show once after redirect)
                         $insertedCount = $result['inserted_count'];
                         $successMessage = text::get('RBF_WORKS_EXPORTED_SUCCESS') . " ($insertedCount " . text::get('RBF_CALC_GROUPS') . ")";
+                        session::setFlash('successMessage', $successMessage);
                         
-                        // Redirect back to act form with success message
+                        // Redirect back to act form
                         $oLink = new urlQuery();
                         $oLink->addPrm(FORM_ID, 'f.akt.s.30');
                         $oLink->addPrm('actId', $actId);
                         $oLink->addPrm('tab', 'RBF_WORKS');
-                        $oLink->addPrm('successMessage', $successMessage);
                         RequestHandler::makeRedirect($oLink->getQuery() . '#tab');
                     }
                     else

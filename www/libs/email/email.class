@@ -90,80 +90,147 @@ class email
 	// -----------------------------------------------------------------------------
 	// Send email notification when RBF act status changes
 	// Public
-	// Author: AI Assistant
 	// -----------------------------------------------------------------------------
 	function sendRbfActStatusChangeNotification($actId, $oldStatus, $newStatus, $userId = null)
 	{
-		// Get act details
-		$act = dbProc::getRbfActById($actId);
+		// === LOG: Function entry ===
+		files::wh_log("========================================");
+		files::wh_log("[RBF EMAIL] Function called: sendRbfActStatusChangeNotification");
+		files::wh_log("[RBF EMAIL] Parameters: actId=$actId, oldStatus=$oldStatus, newStatus=$newStatus, userId=$userId");
+		files::wh_log("[RBF EMAIL] TEST_MODE: " . (defined('TEST_MODE') ? (TEST_MODE ? 'TRUE' : 'FALSE') : 'NOT DEFINED'));
+		
+		// Get act details from AKTI table
+		files::wh_log("[RBF EMAIL] Step 1: Retrieving act details from AKTI table for actId=$actId");
+		$act = dbProc::getRbfActInfo($actId);
 		if ($act === false) {
+			files::wh_log("[RBF EMAIL] ERROR: Failed to retrieve act details for actId=$actId from AKTI table");
+			files::wh_log("[RBF EMAIL] Function exiting with FALSE");
+			files::wh_log("========================================");
 			return false;
 		}
+		files::wh_log("[RBF EMAIL] SUCCESS: Act details retrieved - RAKT_NUM_PILNS: " . ($act['RAKT_FULL_NUMBER'] ?? 'N/A'));
+		files::wh_log("[RBF EMAIL] Act contractor code (RAKT_KWOI_KODS): " . ($act['RAKT_KWOI_KODS'] ?? 'N/A'));
 
 		// Get contractor emails from kl_rbf_darbuznemeji
+		files::wh_log("[RBF EMAIL] Step 2: Retrieving contractor emails for code: " . $act['RAKT_KWOI_KODS']);
 		$contractorEmails = dbProc::getContractorEmails($act['RAKT_KWOI_KODS']);
 		if (empty($contractorEmails)) {
+			files::wh_log("[RBF EMAIL] WARNING: No contractor emails found for code: " . $act['RAKT_KWOI_KODS']);
+			files::wh_log("[RBF EMAIL] Function exiting with FALSE (no recipients)");
+			files::wh_log("========================================");
 			return false; // No email addresses to send to
 		}
+		files::wh_log("[RBF EMAIL] SUCCESS: Found " . count($contractorEmails) . " contractor email(s): " . implode(', ', $contractorEmails));
 
 		// Get user info (who made the change)
+		files::wh_log("[RBF EMAIL] Step 3: Retrieving user info for userId=$userId");
 		$userInfo = '';
 		$userEmail = '';
 		if ($userId !== null) {
 			$user = dbProc::getUserInfo($userId);
 			if (isset($user[0]) && is_array($user[0])) {
-				$userEmail = $user[0]['RLTT_EPASTA_ADRESE'];
 				$userInfo = $user[0]['RLTT_VARDS'].' '.$user[0]['RLTT_UZVARDS'];
+				files::wh_log("[RBF EMAIL] User info: $userInfo ");
+			} else {
+				files::wh_log("[RBF EMAIL] WARNING: Could not retrieve user info for userId=$userId");
+			}
+		} else {
+			files::wh_log("[RBF EMAIL] No userId provided (system action)");
+		}
+
+	// Get status labels
+	files::wh_log("[RBF EMAIL] Step 4: Building email content");
+	
+	// getKrfkInfoByName returns array, extract KRFK_NOZIME field
+	if ($oldStatus) {
+		$oldStatusInfo = dbProc::getKrfkInfoByName($oldStatus);
+		$oldStatusLabel = ($oldStatusInfo && isset($oldStatusInfo['KRFK_NOZIME'])) ? $oldStatusInfo['KRFK_NOZIME'] : $oldStatus;
+	} else {
+		$oldStatusLabel = text::get('RBF_EMAIL_NEW_ACT');
+	}
+	
+	$newStatusInfo = dbProc::getKrfkInfoByName($newStatus);
+	$newStatusLabel = ($newStatusInfo && isset($newStatusInfo['KRFK_NOZIME'])) ? $newStatusInfo['KRFK_NOZIME'] : $newStatus;
+	
+	files::wh_log("[RBF EMAIL] Status change: '$oldStatusLabel' → '$newStatusLabel'");
+
+	// Build email subject
+	$actNumber = $act['RAKT_FULL_NUMBER'];
+	$subject = text::get('RBF_EMAIL_SUBJECT') . ' ' . $actNumber;
+	files::wh_log("[RBF EMAIL] Email subject: $subject");
+
+	// Build email body
+	$body = text::get('RBF_EMAIL_GREETING') . "\n\n";
+	$body .= text::get('RBF_EMAIL_ACT_NUMBER') . ': ' . $actNumber . "\n";
+	$body .= text::get('RBF_EMAIL_ACT_TITLE') . ': ' . $act['RAKT_WORK_TITLE'] . "\n";
+	
+	// Construct author name from AUTHOR_NAME and AUTHOR_SURNAME
+	$authorName = trim(($act['AUTHOR_NAME'] ?? '') . ' ' . ($act['AUTHOR_SURNAME'] ?? ''));
+	if (!empty($authorName)) {
+		$body .= text::get('RBF_EMAIL_ACT_AUTHOR') . ': ' . $authorName . "\n";
+	}
+	
+	$body .= text::get('RBF_EMAIL_DATE') . ': ' . strftime("%d.%m.%Y %H:%M", time()) . "\n\n";
+	
+	if ($oldStatus) {
+		$body .= text::get('RBF_EMAIL_STATUS_CHANGE') . ': ' . $oldStatusLabel . ' → ' . $newStatusLabel . "\n";
+	} else {
+		$body .= text::get('RBF_EMAIL_NEW_ACT_CREATED') . ': ' . $newStatusLabel . "\n";
+	}
+	
+	if ($userInfo) {
+		$body .= text::get('RBF_EMAIL_CHANGED_BY') . ': ' . $userInfo . "\n";
+	}
+	
+	$body .= "\n" . text::get('RBF_EMAIL_FOOTER');
+	files::wh_log("[RBF EMAIL] Email body length: " . strlen($body) . " characters");
+
+	// Prepare email headers
+	$headers  = "MIME-Version: 1.0\r\n";
+	$headers .= "Content-type: text/plain; charset=utf-8\r\n";
+	if ($userEmail) {
+		$headers .= "From: " . $userInfo . " <" . $userEmail . ">\r\n";
+	} else {
+		$headers .= "From: DUIS System <noreply@energo.lv>\r\n";
+	}
+	files::wh_log("[RBF EMAIL] Email headers prepared");
+
+	// Send email to all contractor addresses
+	files::wh_log("[RBF EMAIL] Step 5: Sending emails");
+	$sentEmails = array();
+	$successCount = 0;
+	$failureCount = 0;
+	
+	foreach ($contractorEmails as $email) {
+		$email = trim($email);
+		if (!empty($email) && !isset($sentEmails[$email])) {
+			$sentEmails[$email] = true;
+			files::wh_log("[RBF EMAIL] Attempting to send email to: $email");
+			
+			// Call mail() function and capture result
+			$mailResult = mail($email, $subject, $body, $headers);
+			
+			if ($mailResult) {
+				files::wh_log("[RBF EMAIL] SUCCESS: mail() returned TRUE for $email");
+				$successCount++;
+			} else {
+				files::wh_log("[RBF EMAIL] FAILURE: mail() returned FALSE for $email");
+				$failureCount++;
+			}
+		} else {
+			if (empty($email)) {
+				files::wh_log("[RBF EMAIL] SKIPPED: Empty email address");
+			} else {
+				files::wh_log("[RBF EMAIL] SKIPPED: Duplicate email address: $email");
 			}
 		}
+	}
 
-		// Get status labels
-		$oldStatusLabel = ($oldStatus) ? dbProc::getKrfkInfoByName($oldStatus) : text::get('RBF_EMAIL_NEW_ACT');
-		$newStatusLabel = dbProc::getKrfkInfoByName($newStatus);
-
-		// Build email subject
-		$actNumber = $act['RAKT_NUM_PILNS'];
-		$subject = text::get('RBF_EMAIL_SUBJECT') . ' ' . $actNumber;
-
-		// Build email body
-		$body = text::get('RBF_EMAIL_GREETING') . "\n\n";
-		$body .= text::get('RBF_EMAIL_ACT_NUMBER') . ': ' . $actNumber . "\n";
-		$body .= text::get('RBF_EMAIL_ACT_TITLE') . ': ' . $act['RAKT_WORK_TITLE'] . "\n";
-		$body .= text::get('RBF_EMAIL_ACT_AUTHOR') . ': ' . $act['RAKT_RLTT_TEXT'] . "\n";
-		$body .= text::get('RBF_EMAIL_DATE') . ': ' . strftime("%d.%m.%Y %H:%M", time()) . "\n\n";
-		
-		if ($oldStatus) {
-			$body .= text::get('RBF_EMAIL_STATUS_CHANGE') . ': ' . $oldStatusLabel . ' → ' . $newStatusLabel . "\n";
-		} else {
-			$body .= text::get('RBF_EMAIL_NEW_ACT_CREATED') . ': ' . $newStatusLabel . "\n";
-		}
-		
-		if ($userInfo) {
-			$body .= text::get('RBF_EMAIL_CHANGED_BY') . ': ' . $userInfo . "\n";
-		}
-		
-		$body .= "\n" . text::get('RBF_EMAIL_FOOTER');
-
-		// Prepare email headers
-		$headers  = "MIME-Version: 1.0\r\n";
-		$headers .= "Content-type: text/plain; charset=utf-8\r\n";
-		if ($userEmail) {
-			$headers .= "From: " . $userInfo . " <" . $userEmail . ">\r\n";
-		} else {
-			$headers .= "From: DUIS System <noreply@energo.lv>\r\n";
-		}
-
-		// Send email to all contractor addresses
-		$sentEmails = array();
-		foreach ($contractorEmails as $email) {
-			$email = trim($email);
-			if (!empty($email) && !isset($sentEmails[$email])) {
-				$sentEmails[$email] = true;
-				mail($email, $subject, $body, $headers);
-			}
-		}
-
-		return true;
+	files::wh_log("[RBF EMAIL] Summary: Successfully sent to $successCount recipient(s), failed for $failureCount");
+	files::wh_log("[RBF EMAIL] Function exiting with TRUE");
+	files::wh_log("========================================");
+	
+	return true;
 	}
 
 	

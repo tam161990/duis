@@ -36,8 +36,12 @@ if ($isAdmin || $isRbfUser || $isEconomist)
             $canEdit = ($status == STAT_INSERT || $status == STAT_RETURN);
         }
 
-        // Handle success message from redirect
-        if (reqVar::get('successMessage') !== false)
+        // Handle success message from redirect - check flash message first
+        if (session::hasFlash('successMessage'))
+        {
+            $oForm->addSuccess(session::getFlash('successMessage'));
+        }
+        else if (reqVar::get('successMessage') !== false)
         {
             $oForm->addSuccess(reqVar::get('successMessage'));
         }
@@ -59,12 +63,14 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     {
                         error_log("RBF file uploaded successfully. File ID: $fileId, Act ID: $actId, User ID: $userId");
                         
+                        // Set flash message (will show once after redirect)
+                        session::setFlash('successMessage', text::get('FILE_OPERATION_SUCCESS'));
+                        
                         // Redirect to keep the Pielikumi tab active
                         $oUrl = new urlQuery();
                         $oUrl->addPrm('formId', 'f.akt.s.30');
                         $oUrl->addPrm('actId', $actId);
                         $oUrl->addPrm('tab', 'RBF_ATTACHMENTS');
-                        $oUrl->addPrm('successMessage', text::get('FILE_OPERATION_SUCCESS'));
                         RequestHandler::makeRedirect($oUrl->getQuery());
                         exit();
                     }

@@ -123,8 +123,13 @@ $actId = reqVar::get('actId');
 $tab = reqVar::get('tab');
 if(!$tab) $tab = 'RBF_WORKS';
 
-// Success message handling
-if (reqVar::get('successMessage'))
+// Success message handling - check for flash message first, then URL param (for backwards compatibility)
+$successMessage = false;
+if (session::hasFlash('successMessage'))
+{
+    $successMessage = session::getFlash('successMessage');
+}
+else if (reqVar::get('successMessage'))
 {
     $successMessage = reqVar::get('successMessage');
 }
@@ -171,8 +176,8 @@ if($actId) $oLink->addPrm('actId', $actId);
 $oForm = new Form('frmMain', 'post', $oLink->getQuery());
 unset($oLink);
 
-// Display success message
-if (isset($successMessage))
+// Display success message (only if not empty)
+if (!empty($successMessage))
 {
     $oForm->addSuccess($successMessage);
 }
@@ -530,10 +535,12 @@ if($oForm->getValue('action'))
                 // Send email notification about status change
                 email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
                 
+                // Set flash message (will show once after redirect)
+                session::setFlash('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
+                
                 $oLink=new urlQuery();
                 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
                 $oLink->addPrm('actId', $actId);
-                $oLink->addPrm('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
                 RequestHandler::makeRedirect($oLink->getQuery());
             }
             else
@@ -603,17 +610,16 @@ if($oForm->getValue('action'))
             // Check critical operations only (setApproveDate is optional for RBF acts)
             if($r !== false && $r3 !== false)
             {
+                // Set flash message (will show once after redirect)
+                if($targetStatus == STAT_INSERT) {
+                    session::setFlash('successMessage', text::get('RBF_PERIOD_APPROVED_REMAINING'));
+                } else {
+                    session::setFlash('successMessage', text::get('ACT_APPROVED'));
+                }
+                
                 $oLink=new urlQuery();
                 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
                 $oLink->addPrm('actId', $actId);
-                
-                // Set appropriate success message
-                if($targetStatus == STAT_INSERT) {
-                    $oLink->addPrm('successMessage', text::get('RBF_PERIOD_APPROVED_REMAINING'));
-                } else {
-                    $oLink->addPrm('successMessage', text::get('ACT_APPROVED'));
-                }
-                
                 RequestHandler::makeRedirect($oLink->getQuery());
             }
             else
@@ -656,10 +662,12 @@ if($oForm->getValue('action'))
         
         if($r)
         {
+            // Set flash message (will show once after redirect)
+            session::setFlash('successMessage', text::get('ACT_RETURNED'));
+            
             $oLink=new urlQuery();
             $oLink->addPrm(FORM_ID, 'f.akt.s.30');
             $oLink->addPrm('actId', $actId);
-            $oLink->addPrm('successMessage', text::get('ACT_RETURNED'));
             RequestHandler::makeRedirect($oLink->getQuery());
         }
         else

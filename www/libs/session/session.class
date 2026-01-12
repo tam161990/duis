@@ -81,6 +81,43 @@ class session
 		return session::get(SESSION_PRFX.'is_new');
 	}
 
+	// -----------------------------------------------------------------------------
+	// Set a flash message (will be available only for the next request)
+	// public
+	// -----------------------------------------------------------------------------
+	function setFlash($name, $value)
+	{
+		if (!isset($_SESSION[SESSION_PRFX.'flash']))
+		{
+			$_SESSION[SESSION_PRFX.'flash'] = array();
+		}
+		$_SESSION[SESSION_PRFX.'flash'][$name] = $value;
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get and remove a flash message
+	// public
+	// -----------------------------------------------------------------------------
+	function getFlash($name)
+	{
+		if (isset($_SESSION[SESSION_PRFX.'flash'][$name]))
+		{
+			$value = $_SESSION[SESSION_PRFX.'flash'][$name];
+			unset($_SESSION[SESSION_PRFX.'flash'][$name]);
+			return $value;
+		}
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// Check if a flash message exists
+	// public
+	// -----------------------------------------------------------------------------
+	function hasFlash($name)
+	{
+		return isset($_SESSION[SESSION_PRFX.'flash'][$name]);
+	}
+
 
 }
 ?>

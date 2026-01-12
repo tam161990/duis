@@ -481,7 +481,7 @@ VALUES
         <tr><td>B</td><td>Kalkulāciju kategorijas šifrs</td><td>+</td><td>CHAR</td><td>5</td><td>Kalkulācijas šifrs no kalkulāciju kataloga</td></tr>
         <tr><td>C</td><td>MMS nosacījums ID</td><td>+</td><td>VARCHAR</td><td>10</td><td>MMS sistēmas nosacījuma identifikators</td></tr>
         <tr><td>D</td><td>MMS darbība/Nosacījums</td><td>+</td><td>VARCHAR</td><td>250</td><td>MMS darbības vai nosacījuma nosaukums</td></tr>
-        <tr><td>E</td><td>Darbības statusa kods</td><td>+</td><td>VARCHAR</td><td>20</td><td>Darba izpildes statuss (piemēram: "Iesākts" - PROCESS, "Novēršana" - COMPLETED)</td></tr>
+        <tr><td>E</td><td>Darbības statusa kods</td><td>+</td><td>VARCHAR</td><td>20</td><td>Darba izpildes statuss (Iesākts-PROCESS, Novēršana-COMPLETED, Nav darāmā-NOTHING_TO_DO, Nevarēja izpildīt-CANT_DO)</td></tr>
         <tr><td>F</td><td>Normatīvais koeficients (C.st.)</td><td>+</td><td>FLOAT</td><td>7,2</td><td>Normatīvais koeficients (c.st. vienībās)</td></tr>
         <tr style="background-color: #f0f0f0;"><td>G</td><td>Izpildes datums</td><td>-</td><td>DATE/DATETIME</td><td>-</td><td>Plānotais vai faktiskais izpildes datums (nav obligāts)</td></tr>
 		</table>
@@ -633,7 +633,6 @@ COMMENT 'Act life period (1, 2, 3) - calculated from act creation date';
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ('RBF_CALC_GROUP', 'Kalkulācijas grupa'),
-('RBF_PRICE', 'Cena'),
 ('RBF_HOURS_TOTAL', 'C.st. kopā'),
 ('RBF_TOTAL_COST', 'Kopējas izmaksas'),
 ('RBF_COST_ACCOUNT', 'Izmaksu konts'),
@@ -653,20 +652,5 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
 ('RBF_EMAIL_CHANGED_BY', 'Izmaiņas veica'),
 ('RBF_EMAIL_FOOTER', 'Ar cieņu,\nDUIS sistēma\n\nLūdzu, neatbildiet uz šo e-pastu. Tas tika ģenerēts automātiski.');
 
--- ============================================================================
--- Email notification text constants
--- ============================================================================
-
-INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES
-('RBF_EMAIL_SUBJECT', 'RBF Akta statusa izmaiņas - Akts'),
-('RBF_EMAIL_GREETING', 'Labdien!'),
-('RBF_EMAIL_ACT_NUMBER', 'Akta numurs'),
-('RBF_EMAIL_ACT_TITLE', 'Darba nosaukums'),
-('RBF_EMAIL_ACT_AUTHOR', 'Akta autors'),
-('RBF_EMAIL_DATE', 'Datums'),
-('RBF_EMAIL_STATUS_CHANGE', 'Statusa izmaiņas'),
-('RBF_EMAIL_NEW_ACT', 'Jauns akts'),
-('RBF_EMAIL_NEW_ACT_CREATED', 'Izveidots jauns akts ar statusu'),
-('RBF_EMAIL_CHANGED_BY', 'Izmaiņas veica'),
-('RBF_EMAIL_FOOTER', 'Šis ir automātisks paziņojums no DUIS sistēmas. Lūdzu, neatbildiet uz šo e-pastu.');
-
+ALTER TABLE `darbi` CHANGE `DRBI_MERVIENIBA` `DRBI_MERVIENIBA` VARCHAR( 15 ) CHARACTER SET utf8 COLLATE utf8_latvian_ci NULL;
+ALTER TABLE `darbi` CHANGE `DRBI_PLAN_DATE` `DRBI_PLAN_DATE` DATETIME NULL DEFAULT CURRENT_TIMESTAMP;
