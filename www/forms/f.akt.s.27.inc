@@ -40,10 +40,13 @@ if ($isAdmin || $isProjector || $isSystemUser)
                 }
             }
 
-             // get file lin0
+             // get file link
              $oLinkFile=new urlQuery();
              $oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
-             $oLinkFile->addPrm(GET_FILE_VARIABLE, $excelFileId);
+             $oLinkFile->addPrm(GET_EXEL_FILE_VARIABLE, $excelFileId);
+             // Add filename with .xlsx extension for proper download metadata
+             $filename = pathinfo($row['ESTM_NAME'], PATHINFO_FILENAME) . '_statistics.xlsx';
+             $oLinkFile->addPrm('filename', $filename);
              $estimateFilesInfo[$i]['getFileURL']=$oLinkFile ->getQuery();
              unset($oLinkFile);
             }

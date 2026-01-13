@@ -145,7 +145,7 @@ REFERENCES akti (`RAKT_ID`);
 
 ALTER TABLE estimate_files
 ADD CONSTRAINT FK_estimate_lietotaji
-FOREIGN KEY (`ESTM_RLTI_ID`)
+FOREIGN KEY (`ESTM_RLTT_ID`)
 REFERENCES lietotaji (`RLTT_ID`);
 
 CREATE TABLE estimate_files_detales (
@@ -156,7 +156,9 @@ CREATE TABLE estimate_files_detales (
 	`ESFD_STATUS` TINYINT(1) NOT NULL COMMENT '1=ok, 2=exist, 3=notexist',
     `ESFD_SAVED` TINYINT(1) NOT NULL DEFAULT 0,
 	UNIQUE INDEX `PK_estimate_detales` (`ESFD_ID`)
-);
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB;
 
 ALTER TABLE estimate_files_detales
 ADD CONSTRAINT FK_estimate_file
