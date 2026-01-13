@@ -7,3 +7,5 @@ temp/
 output/
 gps_files/
 info.php
+estimate_files/
+tests/

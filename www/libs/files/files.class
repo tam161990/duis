@@ -164,7 +164,7 @@ class files
 	// -----------------------------------------------------------------------------
 	function sendFile($idFile, $isExit=true, $type = 'PDF')
 	{
-				
+			
 		$info=files::getFileInfo($idFile, $type);
 		if ($info)
 		{
@@ -191,9 +191,16 @@ class files
 			
 			if ($c)
 			{
-				header('Content-type: '.$info['META_INFO']."\n");
-				//header('Content-type: text/plain'."\n");
-				header('Content-Disposition: attachment; filename="'.$info['NOSAUKUMS'].'"'."\n");
+				// Clean output buffers to prevent file corruption
+				while (ob_get_level()) {
+					ob_end_clean();
+				}
+				
+				header('Content-Type: '.$info['META_INFO']);
+				header('Content-Disposition: attachment; filename="'.$info['NOSAUKUMS'].'"');
+				header('Content-Length: '.strlen($c));
+				header('Cache-Control: max-age=0');
+				header('Pragma: public');
                 echo $c;
 				if ($isExit)
 				{
