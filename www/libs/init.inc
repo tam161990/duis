@@ -27,6 +27,7 @@
 	require_once(ZR_LIBS_DIR.'/export/toJson.class');
     require_once(ZR_LIBS_DIR.'/progress/PogProgressBar.php');
     require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
-	require_once(ZR_LIBS_DIR.'/process/Process.class');  
+	require_once(ZR_LIBS_DIR.'/process/Process.class');
+	require_once(ZR_LIBS_DIR.'/estimateExcelParser/ioExcelParser.class');
 	require_once(ZR_LIBS_DIR.'/errorhandling.php');
 ?>

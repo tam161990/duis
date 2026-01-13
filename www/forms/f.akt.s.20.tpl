@@ -33,7 +33,7 @@
             <td class="table_head" align="right">
                 <?= $oForm -> getElementLabel('statusTxt'); ?>:
                 <font color="red"><?=text::toUpper($oForm -> getElementHtml('statusTxt'));?></font></td>
-            <td width="20%" rowspan="<?=(($actId === false)?'4':'5');?>" valign="bottom">
+            <td width="20%" rowspan="<?=(($actId === false)?'5':'6');?>" valign="bottom">
                 <table cellpadding="5" cellspacing="0" border="0" align="center">
                  <? if(!$isReadonly1 && ($actId != false))  {?>                    
                     <tr><td><?=$oForm->getElementHtml('export');?></td></tr>
@@ -63,6 +63,7 @@
                  <? } ?>
                  <? if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)  {?>
                     <tr><td><?=$oForm->getElementHtml('make_excel2');?></td></tr>
+                    <tr><td><?=$oForm->getElementHtml('upload_tami');?></td></tr>
                  <? } ?>
                  <? if( $status == STAT_CLOSE && $actId != false)  {?>
                     <tr><td>

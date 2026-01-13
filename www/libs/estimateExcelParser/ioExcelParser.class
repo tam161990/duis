@@ -1,0 +1,269 @@
+<?
+/**
+ * IO Excel File Parser
+ * 
+ * Parses Excel and CSV files with IO numbers, specifically for material requisition files.
+ * Supports: XLS, XLSX, CSV formats
+ * Can process files directly from PHP's uploaded temporary location without saving to disk.
+ * Ignores rows with configurable text (stored in database)
+ * Ignores column C (3rd column)
+ * Tracks group headers (rows with only first column filled) and applies them to subsequent rows
+ * Converts table data to array of arrays with 6 elements
+ */
+
+class ioExcelParser
+{
+    private $excelFile;
+    private $originalFileName;
+    private $parsedData;
+    private $errors;
+
+    /**
+     * Constructor
+     * 
+     * @param string $filePath Path to the Excel file (can be temporary upload path)
+     * @param string $originalFileName Optional original filename to detect extension from
+     */
+    public function __construct($filePath, $originalFileName = null)
+    {
+        $this->excelFile = $filePath;
+        $this->originalFileName = $originalFileName;
+        $this->parsedData = array();
+        $this->errors = array();
+    }
+    
+    /**
+     * Parse Excel file from uploaded file array
+     * 
+     * @param array $uploadedFile The $_FILES array element
+     * @return array|false Array of parsed data or false on error
+     */
+    public static function parseFromUpload($uploadedFile)
+    {
+        if (!isset($uploadedFile['tmp_name']) || !is_uploaded_file($uploadedFile['tmp_name'])) {
+            return false;
+        }
+        
+        $originalName = isset($uploadedFile['name']) ? $uploadedFile['name'] : null;
+        $parser = new self($uploadedFile['tmp_name'], $originalName);
+        return $parser->parse();
+    }
+
+    /**
+     * Parse the Excel file
+     * 
+     * @return array Array of parsed data (array of arrays with 6 elements)
+     */
+    public function parse()
+    {
+        try {
+            if (!file_exists($this->excelFile)) {
+                $this->errors[] = "File not found: " . $this->excelFile;
+                return false;
+            }
+
+            // Determine reader type based on file extension
+            // Use original filename if provided, otherwise use file path
+            $fileToCheck = $this->originalFileName ? $this->originalFileName : $this->excelFile;
+            $fileExtension = strtolower(pathinfo($fileToCheck, PATHINFO_EXTENSION));
+            
+            if ($fileExtension == 'xlsx') {
+                $objReader = PHPExcel_IOFactory::createReader('Excel2007');
+            } elseif ($fileExtension == 'xls') {
+                $objReader = PHPExcel_IOFactory::createReader('Excel5');
+            } elseif ($fileExtension == 'csv') {
+                $objReader = PHPExcel_IOFactory::createReader('CSV');
+                
+                // Auto-detect CSV delimiter (comma or semicolon)
+                $delimiter = $this->detectCSVDelimiter($this->excelFile);
+                $objReader->setDelimiter($delimiter);
+                $objReader->setEncoding('UTF-8');
+            } else {
+                $this->errors[] = "Unsupported file format: " . $fileExtension;
+                return false;
+            }
+
+            $objReader->setReadDataOnly(true);
+            $objPHPExcel = $objReader->load($this->excelFile);
+            $objWorksheet = $objPHPExcel->getActiveSheet();
+
+            // Get the highest row and column
+            $highestRow = $objWorksheet->getHighestRow();
+            $highestColumn = $objWorksheet->getHighestColumn();
+            $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn);
+
+            // Text to ignore (from database)
+            $ignoreTexts = array(
+                text::get('IGNORE_TEXT_WORK_COSTS'), 
+                text::get('IGNORE_TEXT_MATERIAL_COSTS')
+            );
+
+            // Track current group header (value from first column when only first column has data)
+            $currentGroupHeader = null;
+
+            // Parse each row
+            for ($row = 1; $row <= $highestRow; $row++) {
+                $rowData = array();
+                $hasData = false;
+                $firstColumnValue = null;
+                $nonEmptyCells = 0;
+                
+                // Read first 6 columns (A through F)
+                for ($col = 0; $col < 6; $col++) {
+                    $cellAddress = PHPExcel_Cell::stringFromColumnIndex($col) . $row;
+                    $cellValue = $objWorksheet->getCell($cellAddress)->getValue();
+                    
+                    if (!is_null($cellValue) && trim($cellValue) !== '') {
+                        $cellValue = trim($cellValue);
+                        $rowData[$col] = $cellValue;
+                        $hasData = true;
+                        $nonEmptyCells++;
+                        
+                        // Store first column value
+                        if ($col == 0) {
+                            $firstColumnValue = $cellValue;
+                        }
+                    } else {
+                        $rowData[$col] = null;
+                    }
+                }
+
+                // Skip empty rows
+                if (!$hasData || empty($firstColumnValue)) {
+                    continue;
+                }
+
+                // Check if row should be ignored
+                $shouldIgnore = false;
+                foreach ($ignoreTexts as $ignoreText) {
+                    if (stripos($firstColumnValue, $ignoreText) !== false) {
+                        $shouldIgnore = true;
+                        break;
+                    }
+                }
+
+                if ($shouldIgnore) {
+                    continue;
+                }
+
+                // Check if this is a group header row (only first column has data)
+                $isGroupHeader = ($nonEmptyCells == 1);
+                
+                if ($isGroupHeader) {
+                    // Update the current group header
+                    $currentGroupHeader = $firstColumnValue;
+                    // Skip this row - we don't want group header rows in the results
+                    continue;
+                }
+
+                // Build result array with 6 elements
+                // Skip rows that don't have a group header yet
+                if (is_null($currentGroupHeader)) {
+                    continue;
+                }
+                
+                $resultRow = array();
+                
+                // Column 1: current group header (from rows with only column A filled)
+                $resultRow[] = $currentGroupHeader;
+                
+                // Column 2: data from column A of current row (index 0)
+                $resultRow[] = isset($rowData[0]) ? $rowData[0] : null;
+                
+                // Column 3: data from column B (index 1)
+                $resultRow[] = isset($rowData[1]) ? $rowData[1] : null;
+                
+                // Skip column C (index 2) - no values there
+                
+                // Column 4: data from column D (index 3)
+                $resultRow[] = isset($rowData[3]) ? $rowData[3] : null;
+                
+                // Column 5: data from column E (index 4)
+                $resultRow[] = isset($rowData[4]) ? $rowData[4] : null;
+                
+                // Column 6: data from column F (index 5)
+                $resultRow[] = isset($rowData[5]) ? $rowData[5] : null;
+
+                $this->parsedData[] = $resultRow;
+            }
+
+            return $this->parsedData;
+
+        } catch (Exception $e) {
+            $this->errors[] = "Error parsing Excel file: " . $e->getMessage();
+            return false;
+        }
+    }
+
+    /**
+     * Get parsed data
+     * 
+     * @return array Parsed data
+     */
+    public function getParsedData()
+    {
+        return $this->parsedData;
+    }
+
+    /**
+     * Get errors
+     * 
+     * @return array Array of error messages
+     */
+    public function getErrors()
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Check if parsing was successful
+     * 
+     * @return bool True if no errors
+     */
+    public function isValid()
+    {
+        return empty($this->errors);
+    }
+    
+    /**
+     * Auto-detect CSV delimiter
+     * 
+     * @param string $filePath Path to CSV file
+     * @return string Detected delimiter (comma or semicolon)
+     */
+    private function detectCSVDelimiter($filePath)
+    {
+        $handle = @fopen($filePath, 'r');
+        if ($handle === false) {
+            return ','; // Default to comma
+        }
+        
+        // Read first 5 lines to detect delimiter
+        $lines = array();
+        for ($i = 0; $i < 5 && !feof($handle); $i++) {
+            $line = fgets($handle);
+            if ($line !== false) {
+                $lines[] = $line;
+            }
+        }
+        fclose($handle);
+        
+        if (empty($lines)) {
+            return ',';
+        }
+        
+        // Count occurrences of comma and semicolon
+        $commaCount = 0;
+        $semicolonCount = 0;
+        
+        foreach ($lines as $line) {
+            $commaCount += substr_count($line, ',');
+            $semicolonCount += substr_count($line, ';');
+        }
+        
+        // Return delimiter with higher count
+        return ($semicolonCount > $commaCount) ? ';' : ',';
+    }
+}
+?>
+

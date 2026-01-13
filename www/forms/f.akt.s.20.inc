@@ -362,6 +362,14 @@ if ( $isAdmin || $isProjector || $projectApprover )
   if(($status == STAT_INSERT || $status == STAT_RETURN ) && !$isReadonly1 && $actId != false)
   {
     $oForm -> addElement('submitImg', 'make_excel2', text::get('EXPORT'), 'img/export_to_excel.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\') ) {setValue(\'action\',\''.OP_ESTIMATE.'\');} else {return false;}"');
+    
+    //Popup saites sagatave
+    $oPopLink=new urlQuery;
+    $oPopLink->addPrm(FORM_ID, 'f.akt.s.26');
+    $oPopLink->addPrm('actId', $actId);
+    
+    $oForm -> addElement('buttonImg', 'upload_tami', text::get('UPLOAD_ESTIMATE'), 'img/btn_120_augsupladet_tami.gif', 'width="120" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'actId\')) {'.RequestHandler::popupHref($oPopLink -> getQuery(), false, 800, 600).'; } return false;"');
+    unset($oPopLink);
   }
 
   if ($oForm -> isFormSubmitted())
@@ -852,6 +860,10 @@ if ( $isAdmin || $isProjector || $projectApprover )
 
     $tabs->start(text::get(TAB_AUDIT));
     include('f.akt.s.7.inc');
+    $tabs->end();
+    
+    $tabs->start(text::get(TAB_UPLOAD_STAT));
+    include('f.akt.s.27.inc');
     $tabs->end();
     
     $tabs->active = text::get($tab);
