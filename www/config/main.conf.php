@@ -266,6 +266,7 @@ define ('KL_WRITEOFF_CODES','KL_IZMAKSU_KONTI');
 # sistemas procesi kodes
 # =============================================================================
 define('PROC_KVIKSTEP_DUIS_STATUS', 'KVIKSTEP_DUIS_STATUS');
+define('PROC_UPLOAD_RBF_DATA', 'UPLOAD_RBF_DATA');
 
 # =============================================================================
 # KRFK constants
