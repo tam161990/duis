@@ -8539,6 +8539,7 @@ class dbProc extends dbLayer
 					from `EXCEL_FAILI` f, `LIETOTAJI` lt
 					where f.EFLS_RLTT_ID=lt.RLTT_ID
 					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
+					and f.EFLS_NOSAUKUMS NOT LIKE "Tames_statistika_%"
 				order by DATUMS_SORT desc';
 
 		return $oSQL -> makeQuery($sql);
@@ -13728,7 +13729,7 @@ class dbProc extends dbLayer
     function getEstimateFileDetails($estimateId, $type = false)
     {
         $oSQL = new dbLayer();
-        $query = 'SELECT d.*, 
+        $query = 'SELECT DISTINCT d.ESFD_ID, d.ESFD_ESTM_ID, d.ESFD_TYPE, d.ESFD_CODE, d.ESFD_STATUS, d.ESFD_SAVED, 
                          CASE 
                             WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NOT NULL THEN w.DRBI_KKAL_NOSAUKUMS
                             WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NULL AND kw.KKAL_ID IS NOT NULL THEN kw.KKAL_NOSAUKUMS
