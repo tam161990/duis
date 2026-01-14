@@ -119,6 +119,10 @@ define ('MATERIAL_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/cre
 // documentation https://test.lews.energo.lv/ebs/v1/api-docs/#/Duis/GetRequisitionStatus
 define ('PRNUMBER_REQUEST_URL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-requisition-status');
 
+// API for Limitkarte rekords
+define ('API_LIMITCARD_PROJRCT_MATERIAL', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-project-material-report');
+// API for nepabeigtu projektu reports
+define ('API_UNCOMPLETED_PROJECT_REPORT', 'https://test.lews.energo.lv/ebs/v1/api/duis/get-uncompleted-pr-report');
 # =============================================================================
 # FMK configuration
 # =============================================================================
