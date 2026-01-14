@@ -6368,11 +6368,11 @@ class dbProc extends dbLayer
             }
             
             $query .= ") y ";
-            $query .= " WHERE (y.RAKT_IS_AUTO = 1            
+            $query .= " WHERE ((y.RAKT_IS_AUTO = 1 OR (y.RAKT_IS_RBF = 1 AND y.RAKT_CAPITALIZED != 1))            
             AND y.DRBI_APPROVE_DATE BETWEEN '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."'            
         )
-        or ( y.RAKT_IS_AUTO = 0
+        or ( y.RAKT_IS_AUTO = 0 and y.RAKT_IS_RBF = 0
                 and y.AAUD_STATUS = 'CLOSE'
                 AND y.AAUD_DATUMS BETWEEN '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' )";
