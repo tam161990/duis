@@ -446,6 +446,12 @@ table.list td a:hover{
 	padding: 0px 10px 10px 10px;
 }
 
+/* Specific styling for Upload Statistics tab */
+#tab_akts_Augšupielādes\ statistika.tab_active,
+#tab_akts_Augšupielādes\ statistika.tab_inactive {
+	width: 150px;
+}
+
 
 /* Buttons */
 .btn70, .btn90, .btn110, .btn130, .btn170
@@ -564,7 +570,7 @@ filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
 .navbar {
 	overflow: hidden;
 	position: fixed; /* Set the navbar to fixed position */
-	top: 320; /* Position the navbar at the top of the page */
+	top: 360; /* Position the navbar at the top of the page */
 	width: 20%; /* Full width */
 	right: 0px;
   }
