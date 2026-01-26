@@ -9,6 +9,13 @@
 		<td colspan="2" class="table_separator">&nbsp;</td>
 	</tr>	
 	<tr>
+		<td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('upload_type'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('upload_type'); ?></td>
+	</tr>
+	<tr>
+		<td colspan="2" class="table_separator">&nbsp;</td>
+	</tr>	
+	<tr>
 		<td class="table_cell_c" width="20%"><?= $oForm -> getElementLabel('rbf_akts_file'); ?>:<font color="red">*</font></td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('rbf_akts_file'); ?></td>
 	</tr>

@@ -7,6 +7,15 @@ if (userAuthorization::isAdmin())
 	$oForm = new Form('frmMain', 'post', $oLink->getQuery());
 	unset($oLink);
 
+	// Add dropdown to select upload type
+	$uploadTypeOptions = array(
+		'both' => text::get('RBF_UPLOAD_BOTH'),       // "Akti un darbi (2 lapas)"
+		'acts' => text::get('RBF_UPLOAD_ACTS_ONLY'),  // "Tikai akti (1 lapa)"
+		'works' => text::get('RBF_UPLOAD_WORKS_ONLY') // "Tikai darbi (1 lapa)"
+	);
+	$oForm->addElement('select', 'upload_type', text::get('RBF_UPLOAD_TYPE'), 'both', '', '', '', $uploadTypeOptions);
+	$oForm->addRule('upload_type', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
 	// Add file upload field
 	$oForm->addElement('uploadfile', 'rbf_akts_file', text::get('RBF_AKTS_FILE'), '', 'accept=".xls,.xlsx"');
 	$oForm->addRule('rbf_akts_file', text::get('ERROR_REQUIRED_FIELD'), 'required');
@@ -17,6 +26,9 @@ if (userAuthorization::isAdmin())
 	// Process form submission
 	if ($oForm->isFormSubmitted())
 	{
+		// Get upload type selection
+		$uploadType = $oForm->getValue('upload_type'); // 'both', 'acts', or 'works'
+		
 		if (isset($_FILES['rbf_akts_file']) && $_FILES['rbf_akts_file']['error'] == 0)
 		{
 			$file = $_FILES['rbf_akts_file'];
@@ -65,15 +77,22 @@ if (userAuthorization::isAdmin())
 							// Load Excel file
 							$objPHPExcel = PHPExcel_IOFactory::load($destinationPath);
 							
-							// IMPORTANT: Explicitly get Sheet 1 (index 0) for acts data
-							// Don't use getActiveSheet() as it might return Sheet 2 if that was active when file was saved
-							$sheet = $objPHPExcel->getSheet(0);
-							$highestRow = $sheet->getHighestRow();
+							$sheet1SuccessMsg = "";
 							
-							$successCount = 0;
-							$skipCount = 0;
-							$errorCount = 0;
-							$errors = array();
+							// =========================================================
+							// PROCESS ACTS (Sheet 1) - if upload type is 'both' or 'acts'
+							// =========================================================
+							if ($uploadType == 'both' || $uploadType == 'acts')
+							{
+								// IMPORTANT: Explicitly get Sheet 1 (index 0) for acts data
+								// Don't use getActiveSheet() as it might return Sheet 2 if that was active when file was saved
+								$sheet = $objPHPExcel->getSheet(0);
+								$highestRow = $sheet->getHighestRow();
+								
+								$successCount = 0;
+								$skipCount = 0;
+								$errorCount = 0;
+								$errors = array();
 							
 							// Process each row (skip header row)
 							for ($row = 2; $row <= $highestRow; $row++)
@@ -149,32 +168,40 @@ if (userAuthorization::isAdmin())
 								}
 							}
 							
-							// Display results for Sheet 1
-							$sheet1SuccessMsg = "";
-							if ($successCount > 0)
-							{
-								$oForm->addSuccess("Akti (Sheet 1) veiksmīgi importēti: $successCount");
-								$sheet1SuccessMsg = "Akti (Sheet 1) veiksmīgi importēti: $successCount";
-							}
-							if ($skipCount > 0)
-							{
-								$oForm->addSuccess(text::get('RBF_IMPORT_SKIPPED') . " $skipCount");
-							}
-							if ($errorCount > 0)
-							{
-								$oForm->addError(text::get('RBF_IMPORT_ERRORS') . " $errorCount");
-								foreach ($errors as $error)
+								// Display results for Sheet 1
+								if ($successCount > 0)
 								{
-									$oForm->addError($error);
+									$oForm->addSuccess("Akti (Sheet 1) veiksmīgi importēti: $successCount");
+									$sheet1SuccessMsg = "Akti (Sheet 1) veiksmīgi importēti: $successCount";
 								}
-								exit;
-							}
+								if ($skipCount > 0)
+								{
+									$oForm->addSuccess(text::get('RBF_IMPORT_SKIPPED') . " $skipCount");
+								}
+								if ($errorCount > 0)
+								{
+									$oForm->addError(text::get('RBF_IMPORT_ERRORS') . " $errorCount");
+									foreach ($errors as $error)
+									{
+										$oForm->addError($error);
+									}
+									// Don't exit here if we also need to process works
+									if ($uploadType == 'acts') {
+										exit;
+									}
+								}
+							} // End of Acts processing
 							
-							// STEP 3: Process Sheet 2 (Work data)
-							if ($objPHPExcel->getSheetCount() >= 2)
+							// =========================================================
+							// PROCESS WORKS (Sheet 2) - if upload type is 'both' or 'works'
+							// =========================================================
+							if (($uploadType == 'both' || $uploadType == 'works') && 
+								(($uploadType == 'works') || ($objPHPExcel->getSheetCount() >= 2)))
 							{
-								// Switch to Sheet 2
-								$sheet2 = $objPHPExcel->getSheet(1);
+								// Get correct sheet index based on upload type
+								// If 'works' only, it's in Sheet 1 (index 0), otherwise Sheet 2 (index 1)
+								$sheetIndex = ($uploadType == 'works') ? 0 : 1;
+								$sheet2 = $objPHPExcel->getSheet($sheetIndex);
 								$highestRow2 = $sheet2->getHighestRow();
 								
 								// Empty the rbf_akta_darbi_tmp table before inserting new data
@@ -272,14 +299,17 @@ if (userAuthorization::isAdmin())
 										}
 									}
 									
-									// Display results for Sheet 2
+									// Display results for Works
 									if ($sheet2SuccessCount > 0)
 									{
-										$oForm->addSuccess($sheet1SuccessMsg."<br>Darbi (Sheet 2) veiksmīgi importēti: $sheet2SuccessCount");
+										$sheetLabel = ($uploadType == 'works') ? 'Darbi' : 'Darbi (Sheet 2)';
+										$combinedMsg = !empty($sheet1SuccessMsg) ? $sheet1SuccessMsg . "<br>" : "";
+										$oForm->addSuccess($combinedMsg . "$sheetLabel veiksmīgi importēti: $sheet2SuccessCount");
 									}
 									if ($sheet2ErrorCount > 0)
 									{
-										$oForm->addError("Darbi (Sheet 2) kļūdas: $sheet2ErrorCount");
+										$sheetLabel = ($uploadType == 'works') ? 'Darbi' : 'Darbi (Sheet 2)';
+										$oForm->addError("$sheetLabel kļūdas: $sheet2ErrorCount");
 										foreach ($sheet2Errors as $error)
 										{
 											$oForm->addError($error);
