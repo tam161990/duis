@@ -668,3 +668,43 @@ INSERT INTO `duistst`.`sistemas_procesi` (
 VALUES (
 'PROC_UPLOAD_RBF_DATA', NULL , 'RBF aktus un darbus procesēšana', 'php -f /u01/duis-test/autoProc/createRBFacts.php', NULL , NULL , '0', '86400'
 );
+
+-- ============================================================================
+-- RBF Upload Type Selection - Text Translations
+-- ============================================================================
+-- Add these text constants to FMK_MESSAGES table for the upload type selection
+
+-- Label for upload type field
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_UPLOAD_TYPE', 'Datu tips')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
+
+-- Option: Both acts and works (2 sheets)
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_UPLOAD_BOTH', 'Akti un darbi (2 lapas)')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
+
+-- Option: Acts only (1 sheet)
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_UPLOAD_ACTS_ONLY', 'Tikai akti (1 lapa)')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
+
+-- Option: Works only (1 sheet)
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_UPLOAD_WORKS_ONLY', 'Tikai darbi (1 lapa)')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
+
+-- Update requirements text to reflect new upload options
+UPDATE `FMK_MESSAGES` 
+SET `TEXT` = '<h3 align="left">RBF aktu importam lūdzam izmantot Excel 97-2003 vai Excel 2007+ formātā (.xls vai .xlsx)</h3>
+<ul style="text-align:left;">
+    <li><strong>Akti un darbi:</strong> Fails ar 2 lapām - 1. lapa: Akti, 2. lapa: Darbi</li>
+    <li><strong>Tikai akti:</strong> Fails ar 1 lapu - Aktu dati</li>
+    <li><strong>Tikai darbi:</strong> Fails ar 1 lapu - Darbu dati</li>
+</ul>'
+WHERE `CODE` = 'REQUIREMENTS_RBF_AKTS';
+
