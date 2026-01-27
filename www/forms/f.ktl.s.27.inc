@@ -53,12 +53,22 @@ if (userAuthorization::isAdmin() || $isEdUser )
 			$res=dbProc::getRbfVVTerritories(reqVar::get('vvNumber'));
 			if (is_array($res) && count($res)>0)
 			{
-				
-				$i = 1;
+				// For C type, group by DID code to show only one option per code
+				$sectionsTemp = array();
 				foreach ($res as $row)
 				{
+					// Use RBTR_KODS for U type, RBTR_DID_KODS for C type
+					$territoryCode = ($row['RBDU_VV_VEIDS'] == 'U') ? $row['RBTR_KODS'] : $row['RBTR_DID_KODS'];
+					if (!isset($sectionsTemp[$territoryCode])) {
+						$sectionsTemp[$territoryCode] = $row['RBTR_NOSAUKUMS'];
+					}
+				}
+				
+				$i = 1;
+				foreach ($sectionsTemp as $code => $name)
+				{
 					?>
-					document.all["section"].options[<?=$i;?>] = new Option( '<?=$row['RBTR_NOSAUKUMS'];?>', '<?=$row['RBTR_KODS'];?>');
+					document.all["section"].options[<?=$i;?>] = new Option( '<?=$name;?>', '<?=$code;?>');
 					<?
 					$i++;
 				}
@@ -132,7 +142,12 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					{
 						foreach ($res as $row)
 						{
-							$sections[$row['RBTR_KODS']]=$row['RBTR_NOSAUKUMS'];
+							// Use RBTR_KODS for U type, RBTR_DID_KODS for C type
+							$territoryCode = ($row['RBDU_VV_VEIDS'] == 'U') ? $row['RBTR_KODS'] : $row['RBTR_DID_KODS'];
+							// For C type, only add if not already present (group by DID code)
+							if (!isset($sections[$territoryCode])) {
+								$sections[$territoryCode]=$row['RBTR_NOSAUKUMS'];
+							}
 						}
 					}
 					unset($res);
