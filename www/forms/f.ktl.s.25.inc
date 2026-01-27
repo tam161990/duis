@@ -48,6 +48,9 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $oForm -> addElement('text', 'nosaukums',  text::get('NAME'), isset($territory['RBTR_NOSAUKUMS'])?$territory['RBTR_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('nosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
+        $oForm -> addElement('text', 'didKods',  text::get('RBF_PART_CODE'), isset($territory['RBTR_DID_KODS'])?$territory['RBTR_DID_KODS']:'', 'maxlength="10"'.(($isEdUser)?' disabled' : ''));
+		$oForm -> addRule('didKods', text::get('ERROR_REQUIRED_FIELD'), 'required');
+
         $oForm -> addElement('text', 'didNosaukums',  text::get('RBF_DID_NAME'), isset($territory['RBTR_DID_NOSAUKUMS'])?$territory['RBTR_DID_NOSAUKUMS']:'', 'maxlength="250"'.(($isEdUser)?' disabled' : ''));
 		$oForm -> addRule('didNosaukums', text::get('ERROR_REQUIRED_FIELD'), 'required');
 
@@ -98,15 +101,17 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				}
 				$kods = isset($territory['RBTR_KODS']) ? $territory['RBTR_KODS'] : '';
 				$nosaukums = $oForm->getValue('nosaukums') ? $oForm->getValue('nosaukums') : (isset($territory['RBTR_NOSAUKUMS']) ? $territory['RBTR_NOSAUKUMS'] : '');
+				$didKods = $oForm->getValue('didKods') ? $oForm->getValue('didKods') : (isset($territory['RBTR_DID_KODS']) ? $territory['RBTR_DID_KODS'] : '');
 				$didNosaukums = $oForm->getValue('didNosaukums') ? $oForm->getValue('didNosaukums') : (isset($territory['RBTR_DID_NOSAUKUMS']) ? $territory['RBTR_DID_NOSAUKUMS'] : '');
 			} else {
 				// Inserting - use form values
 				$kods = $oForm->getValue('kods');
 				$nosaukums = $oForm->getValue('nosaukums');
+				$didKods = $oForm->getValue('didKods');
 				$didNosaukums = $oForm->getValue('didNosaukums');
 			}
 			
-			if ($kods && $nosaukums && $didNosaukums)
+			if ($kods && $nosaukums && $didKods && $didNosaukums)
 			{
 				$checkRequiredFields = true;
 			}
@@ -134,6 +139,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 							$territoryId,
 							$kods,
 							$nosaukums,
+							$didKods,
 							$didNosaukums,
 							$isActive
 						);
@@ -232,6 +238,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
         $columns=array(
             array('kolonna'=>'RBTR_KODS', 'nosaukums'=>text::get('CODE'), 'def'=>1),
             array('kolonna'=>'RBTR_NOSAUKUMS', 'nosaukums'=>text::get('NAME'), 'def'=>0),
+            array('kolonna'=>'RBTR_DID_KODS', 'nosaukums'=>text::get('RBF_PART_CODE'), 'def'=>0),
             array('kolonna'=>'RBTR_DID_NOSAUKUMS', 'nosaukums'=>text::get('RBF_DID_NAME'), 'def'=>0),
             array('kolonna'=>'RBTR_IR_AKTIVS', 'nosaukums'=>text::get('IS_ACTIVE'), 'def'=>0)
         );

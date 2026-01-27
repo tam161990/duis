@@ -128,7 +128,7 @@ VALUES
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES
-('RBF_SECTION', 'Nodaļa');
+('RBF_SECTION', 'Daļa/Nodaļa');
 
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES
@@ -154,7 +154,8 @@ VALUES
         <tr><td>Apraksts</td><td>+</td><td>Kalkulācijas apraksts. Maksimāli 2000 simboli.</td></tr>
         <tr><td>Darbuzņēmējs</td><td>+</td><td>Darbuzņēmēja identifikators. Cipars.</td></tr>
         <tr><td>Līguma Nr.</td><td>+</td><td>Vispārīgās vienošanās nr. Maksimāli 20 simboli.</td></tr>
-        <tr><td>Nodaļ</td><td>+</td><td>Teritorijas kods. Cipars formātā [xxxxx].</td></tr>        
+        <tr><td>Nodaļ</td><td>-</td><td>Teritorijas kods (RBTR_KODS) - izmanto tikai VV veidam U (Uzturēšana). Cipars formātā [xxxxx].</td></tr>
+        <tr><td>Daļa</td><td>-</td><td>Teritorijas DID kods (RBTR_DID_KODS) - izmanto tikai VV veidam C (Ceļa segumi). Cipars formātā [xxxxx].</td></tr>        
        </table>');
 
 -- Add RBF Kalkulācija to import catalog options
@@ -238,9 +239,12 @@ CREATE TABLE `kl_rbf_teritorijas` (
 	`RBTR_ID` INT(11) NOT NULL AUTO_INCREMENT,
     `RBTR_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- Kods
 	`RBTR_NOSAUKUMS` VARCHAR(250) NOT NULL COLLATE 'utf8_latvian_ci', -- Nosaukums
+	`RBTR_DID_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- Daļas kods
 	`RBTR_DID_NOSAUKUMS` VARCHAR(250) NOT NULL COLLATE 'utf8_latvian_ci', -- DID nosaukums
 	`RBTR_IR_AKTIVS` TINYINT(1) NOT NULL DEFAULT 1, -- Aktīvs (1/0)
-	PRIMARY KEY (`RBTR_ID`)
+	PRIMARY KEY (`RBTR_ID`),
+	UNIQUE INDEX `U_RBTR_KODS` (`RBTR_KODS`),
+	UNIQUE INDEX `U_RBTR_DID_KODS` (`RBTR_DID_KODS`)
 )
 COLLATE='utf8_latvian_ci'
 ENGINE=MyISAM;
@@ -262,7 +266,7 @@ CREATE TABLE `kl_rbf_du_vv` (
 	`RBDV_ID` INT(11) NOT NULL AUTO_INCREMENT,
 	`RBDV_RBDU_ID` INT(11) NOT NULL, -- Darbuzņēmēja ID
 	`RBDV_VV_NUMURS` VARCHAR(15) NOT NULL COLLATE 'utf8_latvian_ci', -- Vispārīgās vienošanās nr.
-	`RBDV_RBTR_ID` INT(11) NOT NULL, -- Teritorijas ID
+	`RBDV_RBTR_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci', -- Teritorijas kods (RBTR_KODS vai RBTR_DID_KODS atkarībā no VV veida)
 	PRIMARY KEY (`RBDV_ID`)
 )
 COLLATE='utf8_latvian_ci'
@@ -708,3 +712,49 @@ SET `TEXT` = '<h3 align="left">RBF aktu importam lūdzam izmantot Excel 97-2003 
 </ul>'
 WHERE `CODE` = 'REQUIREMENTS_RBF_AKTS';
 
+-- Add RBTR_DID_KODS column to existing kl_rbf_teritorijas table
+ALTER TABLE `kl_rbf_teritorijas` 
+ADD COLUMN `RBTR_DID_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci' COMMENT 'Daļas kods' AFTER `RBTR_NOSAUKUMS`;
+
+-- Add translation for "Daļas kods"
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('RBF_PART_CODE', 'Daļas kods')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
+
+-- Change RBDV_RBTR_ID to RBDV_RBTR_KODS in kl_rbf_du_vv table
+-- First, add the new column
+ALTER TABLE `kl_rbf_du_vv` 
+ADD COLUMN `RBDV_RBTR_KODS` VARCHAR(10) NOT NULL COLLATE 'utf8_latvian_ci' COMMENT 'Teritorijas kods' AFTER `RBDV_VV_NUMURS`;
+
+-- Populate the new column with codes based on VV type
+UPDATE `kl_rbf_du_vv` vv
+INNER JOIN `kl_rbf_darbuznemeji` d ON vv.RBDV_RBDU_ID = d.RBDU_ID
+INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
+SET vv.RBDV_RBTR_KODS = CASE 
+    WHEN d.RBDU_VV_VEIDS = 'U' THEN t.RBTR_KODS
+    WHEN d.RBDU_VV_VEIDS = 'C' THEN t.RBTR_DID_KODS
+    ELSE t.RBTR_KODS
+END;
+
+-- Drop the old RBDV_RBTR_ID column
+ALTER TABLE `kl_rbf_du_vv` 
+DROP COLUMN `RBDV_RBTR_ID`;
+
+UPDATE `FMK_MESSAGES` SET `TEXT` = 'Daļa/Nodaļa'
+WHERE `CODE` = 'RBF_SECTION';
+
+UPDATE `FMK_MESSAGES` SET `TEXT` = '<h3>Kalkulācijas importal lūdzam izmantot daus Excel 97-2003 formātā</h3>
+        <table cellpadding="3" cellspacing="0" border="1" width="100%">
+        <tr><th>Kolonas dati</th><th>Obligāts</th><th>Kolonas datu apraksts</th></tr> 
+        <tr><td>Kalkulācijas šifrs</td><td>+</td><td>Kalkulācijas šifrs. Unikāls. Var saturēt tikai sekojošus simbolus `0`-`9`. Maksimāli 5 simboli.</td></tr>
+        <tr><td>Kalkulācijas nosaukums</td><td>+</td><td>Kalkulācijas nosaukums. Maksimāli 150 simboli.</td></tr>
+		<tr><td>Cena</td><td>+</td><td>Cipars formātā [xxxxx.xx].</td></tr>
+        <tr><td>Mērvienība</td><td>+</td><td>Kalkulācijas mērvienība. Maksimāli 15 simboli.</td></tr>
+        <tr><td>Apraksts</td><td>+</td><td>Kalkulācijas apraksts. Maksimāli 2000 simboli.</td></tr>
+        <tr><td>Darbuzņēmējs</td><td>+</td><td>Darbuzņēmēja identifikators. Cipars.</td></tr>
+        <tr><td>Līguma Nr.</td><td>+</td><td>Vispārīgās vienošanās nr. Maksimāli 20 simboli.</td></tr>
+        <tr><td>Nodaļ</td><td>-</td><td>Teritorijas kods (RBTR_KODS) - izmanto tikai VV veidam U (Uzturēšana). Cipars formātā [xxxxx].</td></tr>
+        <tr><td>Daļa</td><td>-</td><td>Teritorijas DID kods (RBTR_DID_KODS) - izmanto tikai VV veidam C (Ceļa segumi). Cipars formātā [xxxxxx].</td></tr>        
+       </table>'
+WHERE `CODE` = 'REQUIREMENTS_RBF_KALKULATION';

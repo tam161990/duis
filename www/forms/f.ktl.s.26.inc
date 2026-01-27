@@ -45,13 +45,20 @@ if (userAuthorization::isAdmin() || $isEdUser )
         }
 
 		// Get territories for dropdown (both types)
+		// For U type: use RBTR_KODS as key, RBTR_NOSAUKUMS as value
+		// For C type: use RBTR_DID_KODS as key, RBTR_DID_NOSAUKUMS as value
 		$territoriesNosaukums = array();
 		$territoriesDID = array();
 		$terList = dbProc::getRbfTerritoryActiveList();
 		if (is_array($terList)) {
 			foreach ($terList as $ter) {
-				$territoriesNosaukums[$ter['RBTR_ID']] = $ter['RBTR_NOSAUKUMS'];
-				$territoriesDID[$ter['RBTR_ID']] = $ter['RBTR_DID_NOSAUKUMS'];
+				// For Uzturēšana (U) - use regular code and name
+				$territoriesNosaukums[$ter['RBTR_KODS']] = $ter['RBTR_NOSAUKUMS'];
+				// For Ceļa segumi (C) - use DID code and DID name
+				// Group by RBTR_DID_KODS to show only one record per code
+				if (!isset($territoriesDID[$ter['RBTR_DID_KODS']])) {
+					$territoriesDID[$ter['RBTR_DID_KODS']] = $ter['RBTR_DID_NOSAUKUMS'];
+				}
 			}
 		}
 

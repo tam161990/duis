@@ -164,7 +164,7 @@ if (existingVVEntries && existingVVEntries.length > 0) {
 	for (var i = 0; i < existingVVEntries.length; i++) {
 		addVVRow(
 			existingVVEntries[i].RBDV_VV_NUMURS,
-			existingVVEntries[i].RBDV_RBTR_ID
+			existingVVEntries[i].RBDV_RBTR_KODS
 		);
 	}
 } else {

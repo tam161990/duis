@@ -211,34 +211,35 @@ if (userAuthorization::isAdmin() || $isEdUser )
                               }
                             }                            
                             break;
-                            // RBF Kalkulācija
-                            case 'RBF_KALKULATION':                           
-                            $j = 0;
-                            foreach ($objWorksheet->getRowIterator() as $row)
-                            {
-                                $cellIterator = $row->getCellIterator();
-                                $cellIterator->setIterateOnlyExistingCells(true);
+                          // RBF Kalkulācija
+                          case 'RBF_KALKULATION':                           
+                          $j = 0;
+                          foreach ($objWorksheet->getRowIterator() as $row)
+                          {
+                              // Read only columns A through I (9 columns total)
+                              $cellIterator = $row->getCellIterator('A', 'I');
+                              // Set to FALSE to read ALL cells including empty ones
+                              // This ensures correct column indices for Nodaļ (H/7) and Daļa (I/8)
+                              $cellIterator->setIterateOnlyExistingCells(false);
 
-                                $i = 0;    
-                                foreach ($cellIterator as $cell)
-                                {
-                                  if(!is_null($cell))
-                                  {                                      
-                                      $j++;
-                                      if($j == 1)
-                                          break 1;
-                                      $data[$i] =  $cell->getValue();
-                                      $i++;                                      
-                                    }
-                                }
-                                // save RBF kalkulācijas record
-                                if($j > 1)
-                                {
-                                  $r2 = dbProc::saveRbfCalculationFromExcel($data, $userId);
-                                  
-                                }
-                              }                            
-                              break;
+                              $i = 0;
+                              $data = array(); // Reset data array for each row
+                              foreach ($cellIterator as $cell)
+                              {
+                                  $j++;
+                                  if($j == 1)
+                                      break 1;
+                                  $data[$i] =  $cell->getValue();
+                                  $i++;
+                              }
+                              // save RBF kalkulācijas record (only if we have data)
+                              if($j > 1 && isset($data[0]) && $data[0] != '')
+                              {
+                                $r2 = dbProc::saveRbfCalculationFromExcel($data, $userId);
+                                
+                              }
+                            }                            
+                            break;
                             // DU lietotāji
                             case 'DUUSERS':                           
                             $j = 0;

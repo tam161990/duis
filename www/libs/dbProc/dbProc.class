@@ -11472,12 +11472,18 @@ class dbProc extends dbLayer
 					ELSE "Ceļa segumi"
 				END as RBDU_VV_VEIDS_TEXT,
 				GROUP_CONCAT(
-					CONCAT(
+					DISTINCT CONCAT(
 						vv.RBDV_VV_NUMURS,
 						" / ",
 						CASE 
-							WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
-							ELSE t.RBTR_DID_NOSAUKUMS
+							WHEN d.RBDU_VV_VEIDS = "U" THEN (
+								SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas 
+								WHERE RBTR_KODS = vv.RBDV_RBTR_KODS LIMIT 1
+							)
+							ELSE (
+								SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas 
+								WHERE RBTR_DID_KODS = vv.RBDV_RBTR_KODS LIMIT 1
+							)
 						END
 					)
 					ORDER BY vv.RBDV_VV_NUMURS
@@ -11485,7 +11491,6 @@ class dbProc extends dbLayer
 				) as VV_TERRITORIES
 				from `kl_rbf_darbuznemeji` d
 				LEFT JOIN `kl_rbf_du_vv` vv ON d.RBDU_ID = vv.RBDV_RBDU_ID
-				LEFT JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
 				where d.`RBDU_ID` = "'.dbLayer::quote_smart($ID).'"
 				GROUP BY d.RBDU_ID';
 		}
@@ -11510,12 +11515,18 @@ class dbProc extends dbLayer
 					ELSE "Ceļa segumi"
 				END as RBDU_VV_VEIDS_TEXT,
 				GROUP_CONCAT(
-					CONCAT(
+					DISTINCT CONCAT(
 						vv.RBDV_VV_NUMURS,
 						" / ",
 						CASE 
-							WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
-							ELSE t.RBTR_DID_NOSAUKUMS
+							WHEN d.RBDU_VV_VEIDS = "U" THEN (
+								SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas 
+								WHERE RBTR_KODS = vv.RBDV_RBTR_KODS LIMIT 1
+							)
+							ELSE (
+								SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas 
+								WHERE RBTR_DID_KODS = vv.RBDV_RBTR_KODS LIMIT 1
+							)
 						END
 					)
 					ORDER BY vv.RBDV_VV_NUMURS
@@ -11523,7 +11534,6 @@ class dbProc extends dbLayer
 				) as VV_TERRITORIES
 				from `kl_rbf_darbuznemeji` d
 				LEFT JOIN `kl_rbf_du_vv` vv ON d.RBDU_ID = vv.RBDV_RBDU_ID
-				LEFT JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
 				where '.$searchString.'
 				GROUP BY d.RBDU_ID
 				order by `'.dbLayer::quote_smart($orderColumn).'` '.dbLayer::quote_smart($order).'';
@@ -11595,19 +11605,22 @@ class dbProc extends dbLayer
 			}
 		}
 
-		// Save VV entries (VV Number + Territory)
+		// Save VV entries (VV Number + Territory Code)
 		if ($ID && $result !== false) {
 			// Delete existing VV entries
 			$deleteQuery = 'delete from `kl_rbf_du_vv` where `RBDV_RBDU_ID` = "'.dbLayer::quote_smart($ID).'"';
 			$oDB -> makeQuery($deleteQuery);
 			
 			// Insert new VV entries
+			// The territory field contains the appropriate code:
+			// - For U type: RBTR_KODS
+			// - For C type: RBTR_DID_KODS
 			if (is_array($vvEntries) && count($vvEntries) > 0) {
 				foreach ($vvEntries as $entry) {
 					if (isset($entry['vvNumber']) && isset($entry['territory']) && 
 					    $entry['vvNumber'] && $entry['territory']) {
 						$insertQuery = 'insert into `kl_rbf_du_vv` 
-							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_ID`) 
+							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_KODS`) 
 							values (
 								"'.dbLayer::quote_smart($ID).'", 
 								"'.dbLayer::quote_smart($entry['vvNumber']).'", 
@@ -11671,6 +11684,7 @@ class dbProc extends dbLayer
 		$query = 'SELECT `RBTR_ID`, 
 					`RBTR_KODS`, 
 					`RBTR_NOSAUKUMS`, 
+					`RBTR_DID_KODS`,
 					`RBTR_DID_NOSAUKUMS`,
 					`RBTR_IR_AKTIVS`
 			FROM `kl_rbf_teritorijas` ';
@@ -11724,7 +11738,7 @@ class dbProc extends dbLayer
 	// -----------------------------------------------------------------------------
 	// Save RBF Territory
 	// -----------------------------------------------------------------------------
-	function saveRbfTerritory($ID, $kods, $nosaukums, $didNosaukums, $isActive)
+	function saveRbfTerritory($ID, $kods, $nosaukums, $didKods, $didNosaukums, $isActive)
 	{
 		$oSQL = new dbLayer;
 		
@@ -11733,11 +11747,13 @@ class dbProc extends dbLayer
 			$query = 'INSERT INTO `kl_rbf_teritorijas` (
 						`RBTR_KODS`, 
 						`RBTR_NOSAUKUMS`, 
+						`RBTR_DID_KODS`,
 						`RBTR_DID_NOSAUKUMS`,
 						`RBTR_IR_AKTIVS`
 					) VALUES (
 						"'.dbLayer::quote_smart($kods).'",
 						"'.dbLayer::quote_smart($nosaukums).'",
+						"'.dbLayer::quote_smart($didKods).'",
 						"'.dbLayer::quote_smart($didNosaukums).'",
 						"'.dbLayer::quote_smart($isActive).'"
 					)';
@@ -11745,6 +11761,7 @@ class dbProc extends dbLayer
 			// Update existing territory
 			$query = 'UPDATE `kl_rbf_teritorijas` SET
 						`RBTR_NOSAUKUMS` = "'.dbLayer::quote_smart($nosaukums).'",
+						`RBTR_DID_KODS` = "'.dbLayer::quote_smart($didKods).'",
 						`RBTR_DID_NOSAUKUMS` = "'.dbLayer::quote_smart($didNosaukums).'",
 						`RBTR_IR_AKTIVS` = "'.dbLayer::quote_smart($isActive).'"
 					WHERE `RBTR_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -11826,7 +11843,7 @@ class dbProc extends dbLayer
 
 	function getRbfVVTerritories($vvNumber)
 	{
-		$query = 'select DISTINCT t.RBTR_ID, t.RBTR_KODS, 
+		$query = 'select DISTINCT t.RBTR_ID, t.RBTR_KODS, t.RBTR_DID_KODS,
 			CASE 
 				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
 				ELSE t.RBTR_DID_NOSAUKUMS
@@ -11835,8 +11852,11 @@ class dbProc extends dbLayer
 			t.RBTR_DID_NOSAUKUMS as RBTR_DID_NOSAUKUMS_ORIG,
 			d.RBDU_VV_VEIDS
 			from `kl_rbf_du_vv` vv
-			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
 			INNER JOIN `kl_rbf_darbuznemeji` d ON vv.RBDV_RBDU_ID = d.RBDU_ID
+			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_KODS = CASE 
+				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_KODS
+				ELSE t.RBTR_DID_KODS
+			END
 			where vv.RBDV_VV_NUMURS = "'.dbLayer::quote_smart($vvNumber).'"
 			order by 
 				CASE 
@@ -11858,10 +11878,18 @@ class dbProc extends dbLayer
 		{
 			$query = 'select k.*, 
 				CONCAT(k.RBKL_RBDU_KODS, " - ", d.RBDU_NOSAUKUMS) as EMPLOYEE_INFO,
-				t.RBTR_NOSAUKUMS as RBKL_SECTION
+				CASE 
+					WHEN d.RBDU_VV_VEIDS = "U" THEN (
+						SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_KODS = k.RBKL_RBTR_CODE LIMIT 1
+					)
+					ELSE (
+						SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_DID_KODS = k.RBKL_RBTR_CODE LIMIT 1
+					)
+				END as RBKL_SECTION
 				from `kl_rbf_kalkulacija` k
 				LEFT JOIN `kl_rbf_darbuznemeji` d ON k.RBKL_RBDU_KODS = d.RBDU_KODS
-				LEFT JOIN `kl_rbf_teritorijas` t ON k.RBKL_RBTR_CODE = t.RBTR_KODS
 				where k.`RBKL_ID` = "'.dbLayer::quote_smart($ID).'"';
 		}
 		else
@@ -11878,7 +11906,7 @@ class dbProc extends dbLayer
             if ($column == 'EMPLOYEE_INFO') {
                 $searchColumn = 'k.RBKL_RBDU_KODS';
             } elseif ($column == 'RBKL_SECTION') {
-                $searchColumn = 't.RBTR_NOSAUKUMS';
+                $searchColumn = 'CASE WHEN d.RBDU_VV_VEIDS = "U" THEN (SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_KODS = k.RBKL_RBTR_CODE LIMIT 1) ELSE (SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_DID_KODS = k.RBKL_RBTR_CODE LIMIT 1) END';
             } else {
                 $searchColumn = 'k.'.dbLayer::quote_smart($column);
             }
@@ -11891,16 +11919,24 @@ class dbProc extends dbLayer
             if ($orderColumn == 'EMPLOYEE_INFO') {
                 $orderCol = 'd.RBDU_NOSAUKUMS';
             } elseif ($orderColumn == 'RBKL_SECTION') {
-                $orderCol = 't.RBTR_NOSAUKUMS';
+                $orderCol = 'CASE WHEN d.RBDU_VV_VEIDS = "U" THEN (SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_KODS = k.RBKL_RBTR_CODE LIMIT 1) ELSE (SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_DID_KODS = k.RBKL_RBTR_CODE LIMIT 1) END';
             } else {
                 $orderCol = 'k.'.dbLayer::quote_smart($orderColumn);
             }
 			$query = 'select k.*, 
 				CONCAT(k.RBKL_RBDU_KODS, " - ", d.RBDU_NOSAUKUMS) as EMPLOYEE_INFO,
-				t.RBTR_NOSAUKUMS as RBKL_SECTION
+				CASE 
+					WHEN d.RBDU_VV_VEIDS = "U" THEN (
+						SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_KODS = k.RBKL_RBTR_CODE LIMIT 1
+					)
+					ELSE (
+						SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_DID_KODS = k.RBKL_RBTR_CODE LIMIT 1
+					)
+				END as RBKL_SECTION
 				from `kl_rbf_kalkulacija` k
 				LEFT JOIN `kl_rbf_darbuznemeji` d ON k.RBKL_RBDU_KODS = d.RBDU_KODS
-				LEFT JOIN `kl_rbf_teritorijas` t ON k.RBKL_RBTR_CODE = t.RBTR_KODS
 				where '.$searchString.'
 				order by '.$orderCol.' '.dbLayer::quote_smart($order).'';
 
@@ -11924,7 +11960,7 @@ class dbProc extends dbLayer
 		if ($column == 'EMPLOYEE_INFO') {
 			$searchColumn = 'k.RBKL_RBDU_KODS';
 		} elseif ($column == 'RBKL_SECTION') {
-			$searchColumn = 't.RBTR_NOSAUKUMS';
+			$searchColumn = 'CASE WHEN d.RBDU_VV_VEIDS = "U" THEN (SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_KODS = k.RBKL_RBTR_CODE LIMIT 1) ELSE (SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas WHERE RBTR_DID_KODS = k.RBKL_RBTR_CODE LIMIT 1) END';
 		} else {
 			$searchColumn = 'k.'.dbLayer::quote_smart($column);
 		}
@@ -11936,7 +11972,6 @@ class dbProc extends dbLayer
 		$query = 'select count(*) as CNT 
 			from `kl_rbf_kalkulacija` k
 			LEFT JOIN `kl_rbf_darbuznemeji` d ON k.RBKL_RBDU_KODS = d.RBDU_KODS
-			LEFT JOIN `kl_rbf_teritorijas` t ON k.RBKL_RBTR_CODE = t.RBTR_KODS
 			where '.$searchString;
 
 		$oSQL = new dbLayer;
@@ -12037,9 +12072,33 @@ class dbProc extends dbLayer
 	// [4] E - RBKL_APRAKSTS - Apraksts (optional, text)
 	// [5] F - RBKL_RBDU_KODS - Darbuzņēmēja kods (required)
 	// [6] G - RBKL_VV_NUMBER - VV numurs (required, max 20 chars)
-	// [7] H - RBKL_RBTR_CODE - Teritorijas kods (optional)
+	// [7] H - Nodaļ - Teritorijas kods (RBTR_KODS for U type, optional)
+	// [8] I - Daļa - Teritorijas DID kods (RBTR_DID_KODS for C type, optional)
 	function saveRbfCalculationFromExcel($data, $userId)
 	{
+		// Determine which territory code to use based on VV type
+		// First, get the employee's VV type
+		$employeeCode = isset($data[5]) ? $data[5] : '';
+		$vvType = '';
+		if ($employeeCode) {
+			$empQuery = 'SELECT RBDU_VV_VEIDS FROM kl_rbf_darbuznemeji WHERE RBDU_KODS = "'.dbLayer::quote_smart($employeeCode).'"';
+			$oDB = new dbLayer;
+			$empResult = $oDB->makeQuery($empQuery);
+			if (is_array($empResult) && count($empResult) > 0) {
+				$vvType = $empResult[0]['RBDU_VV_VEIDS'];
+			}
+		}
+		
+		// Determine territory code based on VV type
+		// For U type: use data[7] (Nodaļ column - RBTR_KODS)
+		// For C type: use data[8] (Daļa column - RBTR_DID_KODS)
+		$territoryCode = '';
+		if ($vvType == 'U') {
+			$territoryCode = isset($data[7]) ? $data[7] : '';
+		} elseif ($vvType == 'C') {
+			$territoryCode = isset($data[8]) ? $data[8] : '';
+		}
+		
 		$query = 'INSERT INTO `kl_rbf_kalkulacija` 
 					(                       
 						`RBKL_SHIFRS`,
@@ -12060,9 +12119,9 @@ class dbProc extends dbLayer
 						"'.dbLayer::quote_smart($data[2]).'",
 						"'.dbLayer::quote_smart($data[3]).'",
 						"'.dbLayer::quote_smart($data[4]).'",
-						"'.dbLayer::quote_smart($data[5]).'",
+						"'.dbLayer::quote_smart($employeeCode).'",
 						"'.dbLayer::quote_smart($data[6]).'",
-						"'.dbLayer::quote_smart($data[7]).'",
+						"'.dbLayer::quote_smart($territoryCode).'",
 						1,
 						"'.dbLayer::quote_smart($userId).'"
 					)
@@ -12071,10 +12130,11 @@ class dbProc extends dbLayer
 						`RBKL_CENA` = "'.dbLayer::quote_smart($data[2]).'",
 						`RBKL_MERVIENIBA` = "'.dbLayer::quote_smart($data[3]).'",
 						`RBKL_APRAKSTS` = "'.dbLayer::quote_smart($data[4]).'",
-						`RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($data[5]).'",
+						`RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($employeeCode).'",
+						`RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($territoryCode).'",
 						`RBKL_EDITOR` = "'.dbLayer::quote_smart($userId).'",
 						`RBKL_EDITED` = NOW()
-				';
+			';
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 		return $result;

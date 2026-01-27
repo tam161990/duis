@@ -19,8 +19,10 @@
 		<td class="table_cell_2" width="6%"><?= $oForm -> getElementHtml('isActive'); ?></td>
 	</tr>
 	<tr>
+     	<td class="table_cell_c"><?= $oForm -> getElementLabel('didKods'); ?>:<font color="red">*</font></td>
+		<td class="table_cell_2"><?= $oForm -> getElementHtml('didKods'); ?></td>
      	<td class="table_cell_c"><?= $oForm -> getElementLabel('didNosaukums'); ?>:<font color="red">*</font></td>
-		<td class="table_cell_2" colspan="5"><?= $oForm -> getElementHtml('didNosaukums'); ?></td>
+		<td class="table_cell_2" colspan="3"><?= $oForm -> getElementHtml('didNosaukums'); ?></td>
 	</tr>
 </table>
 
