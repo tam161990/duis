@@ -97,27 +97,32 @@ if (userAuthorization::isAdmin())
 							// Process each row (skip header row)
 							for ($row = 2; $row <= $highestRow; $row++)
 							{
-								// Read data from Excel columns
+								// Read data from Excel columns (NEW STRUCTURE with Daļa column)
 								// Column A: FAKT_KWOI_KODS (Darbuzņēmēja kods) - REQUIRED
 								// Column B: FAKT_VV_NUMBER (VV numurs) - REQUIRED
-								// Column C: FAKT_RBTR_KODS (RBF nodaļa) - REQUIRED
-								// Column D: FAKT_RLTT_TEXT (Autors) - REQUIRED
-								// Column E: FAKT_KAKV_KODS (Akta veids) - REQUIRED
-								// Column F: FAKT_NUM_POSTFIX (Pasūtījuma ID) - REQUIRED
-								// Column G: FAKT_WORK_TITLE (Darba nosaukums) - REQUIRED
-								// Column H: FAKT_SIGNATURE (Paraksts E/P/K) - OPTIONAL
-								// Column I: FAKT_PIEZIMES (Piezīmes) - OPTIONAL
+								// Column C: Nodaļ (RBTR_KODS - for VV Type U) - ONE OF C or D REQUIRED
+								// Column D: Daļa (RBTR_DID_KODS - for VV Type C) - ONE OF C or D REQUIRED
+								// Column E: FAKT_RLTT_TEXT (Autors) - REQUIRED
+								// Column F: FAKT_KAKV_KODS (Akta veids) - REQUIRED
+								// Column G: FAKT_NUM_POSTFIX (Pasūtījuma ID) - REQUIRED
+								// Column H: FAKT_WORK_TITLE (Darba nosaukums) - REQUIRED
+								// Column I: FAKT_SIGNATURE (Paraksts E/P/K) - OPTIONAL
+								// Column J: FAKT_PIEZIMES (Piezīmes) - OPTIONAL
 								
 								// Read data and ensure UTF-8 encoding for Latvian characters
 								$kwoi_kods = trim($sheet->getCell('A' . $row)->getCalculatedValue());
 								$vv_number = trim($sheet->getCell('B' . $row)->getCalculatedValue());
-								$rbtr_kods = trim($sheet->getCell('C' . $row)->getCalculatedValue());
-								$rltt_text = trim($sheet->getCell('D' . $row)->getCalculatedValue());
-								$kakv_kods = trim($sheet->getCell('E' . $row)->getCalculatedValue());
-								$num_postfix = trim($sheet->getCell('F' . $row)->getCalculatedValue());
-								$work_title = trim($sheet->getCell('G' . $row)->getCalculatedValue());
-								$signature = trim($sheet->getCell('H' . $row)->getCalculatedValue());
-								$piezimes = trim($sheet->getCell('I' . $row)->getCalculatedValue());
+								$nodala_kods = trim($sheet->getCell('C' . $row)->getCalculatedValue()); // RBTR_KODS for U type
+								$dala_kods = trim($sheet->getCell('D' . $row)->getCalculatedValue());   // RBTR_DID_KODS for C type
+								$rltt_text = trim($sheet->getCell('E' . $row)->getCalculatedValue());
+								$kakv_kods = trim($sheet->getCell('F' . $row)->getCalculatedValue());
+								$num_postfix = trim($sheet->getCell('G' . $row)->getCalculatedValue());
+								$work_title = trim($sheet->getCell('H' . $row)->getCalculatedValue());
+								$signature = trim($sheet->getCell('I' . $row)->getCalculatedValue());
+								$piezimes = trim($sheet->getCell('J' . $row)->getCalculatedValue());
+								
+								// Determine which territory code to use (only one should be filled)
+								$rbtr_kods = !empty($nodala_kods) ? $nodala_kods : $dala_kods;
 								
 								// Skip empty rows
 								if (empty($kwoi_kods) && empty($vv_number) && empty($num_postfix))
@@ -125,7 +130,7 @@ if (userAuthorization::isAdmin())
 									continue;
 								}
 								
-								// Validate required fields
+								// Validate required fields (at least one of nodala_kods or dala_kods must be filled)
 								if (empty($kwoi_kods) || empty($vv_number) || empty($rbtr_kods) || 
 									empty($rltt_text) || empty($kakv_kods) || empty($num_postfix) || empty($work_title))
 								{

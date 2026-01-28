@@ -468,14 +468,16 @@ VALUES
         <tr><th>Kolonas nr.</th><th>Kolonas nosaukums Excel</th><th>Obligāts</th><th>Datu tips</th><th>Maksimālais garums</th><th>Apraksts</th></tr>
         <tr><td>A</td><td>Darbuzņēmēja kods</td><td>+</td><td>VARCHAR</td><td>11</td><td>Darbuzņēmēja identifikācijas kods</td></tr>
         <tr><td>B</td><td>VV numurs</td><td>+</td><td>VARCHAR</td><td>20</td><td>Vispārīgās vienošanās numurs</td></tr>
-        <tr><td>C</td><td>RBF nodaļa</td><td>+</td><td>VARCHAR</td><td>10</td><td>RBF teritorijas/nodaļas kods</td></tr>
-        <tr><td>D</td><td>Autors</td><td>+</td><td>VARCHAR</td><td>200</td><td>Akta autora vārds un uzvārds</td></tr>
-        <tr><td>E</td><td>Akta veids</td><td>+</td><td>CHAR</td><td>3</td><td>Akta veida kods no akta veidi kataloga (piemēram, "10", "20", "30")</td></tr>
-        <tr><td>F</td><td>Pasūtījuma ID</td><td>+</td><td>VARCHAR</td><td>20</td><td>Unikāls pasūtījuma identifikators. Sistēma neimportēs ierakstus ar jau eksistējošu Pasūtījuma ID.</td></tr>
-        <tr><td>G</td><td>Darba nosaukums</td><td>+</td><td>VARCHAR</td><td>500</td><td>Darba nosaukums izdrukām</td></tr>
-        <tr><td>H</td><td>Parakstīšanas veids</td><td>-</td><td>CHAR</td><td>1</td><td>E - ar eparakstu, P - ar fizisko parakstu, K - KVIKSTEPS (nav obligāts)</td></tr>
-        <tr style="background-color: #f0f0f0;"><td>I</td><td>Piezīmes</td><td>-</td><td>VARCHAR</td><td>150</td><td>Papildus piezīmes par aktu (nav obligāts)</td></tr>
+        <tr><td>C</td><td>Nodaļ</td><td>C vai D</td><td>VARCHAR</td><td>10</td><td>RBF teritorijas kods (RBTR_KODS) - izmanto VV veidam U (Uzturēšana). Vismaz viena no C vai D kolonnām jābūt aizpildītai.</td></tr>
+        <tr><td>D</td><td>Daļa</td><td>C vai D</td><td>VARCHAR</td><td>10</td><td>RBF DID kods (RBTR_DID_KODS) - izmanto VV veidam C (Ceļa segumi). Vismaz viena no C vai D kolonnām jābūt aizpildītai.</td></tr>
+        <tr><td>E</td><td>Autors</td><td>+</td><td>VARCHAR</td><td>200</td><td>Akta autora vārds un uzvārds</td></tr>
+        <tr><td>F</td><td>Akta veids</td><td>+</td><td>CHAR</td><td>3</td><td>Akta veida kods no akta veidi kataloga (piemēram, "10", "20", "30")</td></tr>
+        <tr><td>G</td><td>Pasūtījuma ID</td><td>+</td><td>VARCHAR</td><td>20</td><td>Unikāls pasūtījuma identifikators. Sistēma neimportēs ierakstus ar jau eksistējošu Pasūtījuma ID.</td></tr>
+        <tr><td>H</td><td>Darba nosaukums</td><td>+</td><td>VARCHAR</td><td>500</td><td>Darba nosaukums izdrukām</td></tr>
+        <tr><td>I</td><td>Parakstīšanas veids</td><td>-</td><td>CHAR</td><td>1</td><td>E - ar eparakstu, P - ar fizisko parakstu, K - KVIKSTEPS (nav obligāts)</td></tr>
+        <tr style="background-color: #f0f0f0;"><td>J</td><td>Piezīmes</td><td>-</td><td>VARCHAR</td><td>150</td><td>Papildus piezīmes par aktu (nav obligāts)</td></tr>
         </table>
+        <p align="left" style="color: #ff6600;"><strong>SVARĪGI:</strong> Vienā rindā jāaizpilda tikai viena no kolonnām C (Nodaļ) vai D (Daļa), atkarībā no VV veida.</p>
         
         <h4 align="left">2. LAPA (SHEET2): DARBU DATI</h4>
         <p align="left"><strong>Kolonnu secība un nosaukumi:</strong></p>
@@ -758,3 +760,12 @@ UPDATE `FMK_MESSAGES` SET `TEXT` = '<h3>Kalkulācijas importal lūdzam izmantot 
         <tr><td>Daļa</td><td>-</td><td>Teritorijas DID kods (RBTR_DID_KODS) - izmanto tikai VV veidam C (Ceļa segumi). Cipars formātā [xxxxxx].</td></tr>        
        </table>'
 WHERE `CODE` = 'REQUIREMENTS_RBF_KALKULATION';
+
+UPDATE `FMK_MESSAGES` 
+SET `TEXT` = 'RBF Nodaļa/Daļa'
+WHERE `CODE` = 'RBF_DEPARTMENT';
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES ('SUPORT_ACT_HEADER5_RBF', 'Par ceļa segumu atjaunošanas darbu pieņemšanu');
+
+
