@@ -1039,7 +1039,7 @@ class toPdf {
 				array('', 'L', '', 8)
 			),
 			array(
-				array(iconv('UTF-8', 'windows-1257',text::get('SUPORT_ACT_HEADER5')), 'L', '', 8),
+				array(iconv('UTF-8', 'windows-1257',text::get('SUPORT_ACT_HEADER5_RBF')), 'L', '', 8),
 				array('', 'L', '', 8)
 			),
 			array(
@@ -1057,10 +1057,6 @@ class toPdf {
 			array(
 				array('', 'L', '', 8),
 				array(iconv('UTF-8', 'windows-1257',text::get('WORK_DONE_AGREEMENT_NO').': '.$act['RAKT_VV_NUMBER']), 'L', '', 8)
-			),
-			array(
-				array(iconv('UTF-8', 'windows-1257',text::get('WORKS_AND_TERITORY').':'), 'L', 'B', 8),
-				array('', 'L', '', 8)
 			),
 			array(
 				array(iconv('UTF-8', 'windows-1257',$act['DEPARTMENT_NAME']), 'L', 'B', 8),

@@ -70,14 +70,25 @@ if (reqVar::get('xmlHttp') == 1)
         $res = dbProc::getRbfVVTerritories(reqVar::get('vvNumber'));
         if (is_array($res) && count($res)>0)
         {
+            // For C type, group by DID code to show only one option per code
+            $deptOptionsTemp = array();
+            foreach ($res as $row)
+            {
+                // Use RBTR_KODS for U type, RBTR_DID_KODS for C type
+                $territoryCode = ($row['RBDU_VV_VEIDS'] == 'U') ? $row['RBTR_KODS'] : $row['RBTR_DID_KODS'];
+                if (!isset($deptOptionsTemp[$territoryCode])) {
+                    $deptOptionsTemp[$territoryCode] = $row['RBTR_NOSAUKUMS'];
+                }
+            }
+            
             ?>
             document.all["department"].options[0] = new Option('<?=addslashes(text::get('EMPTY_SELECT_OPTION'));?>', '');
             <?
             $i = 1;
-            foreach ($res as $row)
+            foreach ($deptOptionsTemp as $code => $name)
             {
                 ?>
-                document.all["department"].options[<?=$i;?>] = new Option('<?=addslashes($row['RBTR_NOSAUKUMS']);?>', '<?=$row['RBTR_ID'];?>');
+                document.all["department"].options[<?=$i;?>] = new Option('<?=addslashes($name);?>', '<?=addslashes($code);?>');
                 <?
                 $i++;
             }
@@ -331,7 +342,12 @@ if($selectedVVNumber)
     {
         foreach($deptList as $dept)
         {
-            $deptOptions[$dept['RBTR_ID']] = $dept['RBTR_NOSAUKUMS'];
+            // Use territory code as key (RBTR_KODS for U, RBTR_DID_KODS for C)
+            $territoryCode = ($dept['RBDU_VV_VEIDS'] == 'U') ? $dept['RBTR_KODS'] : $dept['RBTR_DID_KODS'];
+            // For C type, only add if not already present (group by DID code)
+            if (!isset($deptOptions[$territoryCode])) {
+                $deptOptions[$territoryCode] = $dept['RBTR_NOSAUKUMS'];
+            }
         }
     }
 }

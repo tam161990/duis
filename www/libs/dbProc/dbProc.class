@@ -5201,7 +5201,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID AND a.RAKT_IS_RBF != 1)
-            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON (a.RAKT_KEDI_ID = rbf_ter.RBTR_ID AND a.RAKT_IS_RBF = 1)
+            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.RAKT_KEDI_ID = rbf_ter.RBTR_KODS OR a.RAKT_KEDI_ID = rbf_ter.RBTR_DID_KODS) AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS AND a.RAKT_IS_RBF != 1)
             LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.RAKT_KWOI_KODS = rbf_du.RBDU_KODS AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_MMS_DARBI` m ON (a.RAKT_NUM_POSTFIX = m.KMSD_KODS)
@@ -5231,7 +5231,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID AND a.RAKT_IS_RBF != 1)
-            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON (a.RAKT_KEDI_ID = rbf_ter.RBTR_ID AND a.RAKT_IS_RBF = 1)
+            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.RAKT_KEDI_ID = rbf_ter.RBTR_KODS OR a.RAKT_KEDI_ID = rbf_ter.RBTR_DID_KODS) AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS AND a.RAKT_IS_RBF != 1)
             LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.RAKT_KWOI_KODS = rbf_du.RBDU_KODS AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID AND a.RAKT_RLTT_ID != 0)
@@ -5319,7 +5319,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID AND a.RAKT_IS_RBF != 1)
-            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON (a.RAKT_KEDI_ID = rbf_ter.RBTR_ID AND a.RAKT_IS_RBF = 1)
+            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.RAKT_KEDI_ID = rbf_ter.RBTR_KODS OR a.RAKT_KEDI_ID = rbf_ter.RBTR_DID_KODS) AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS AND a.RAKT_IS_RBF != 1)
             LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.RAKT_KWOI_KODS = rbf_du.RBDU_KODS AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID AND a.RAKT_RLTT_ID != 0)
@@ -5551,7 +5551,7 @@ class dbProc extends dbLayer
             LEFT JOIN `KL_REF_KODI` k ON (a.RAKT_STATUS = k.KRFK_VERTIBA )
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID AND a.RAKT_IS_RBF != 1)
-            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON (a.RAKT_KEDI_ID = rbf_ter.RBTR_ID AND a.RAKT_IS_RBF = 1)
+            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.RAKT_KEDI_ID = rbf_ter.RBTR_KODS OR a.RAKT_KEDI_ID = rbf_ter.RBTR_DID_KODS) AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS AND a.RAKT_IS_RBF != 1)
             LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.RAKT_KWOI_KODS = rbf_du.RBDU_KODS AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `LIETOTAJI` l ON (a.RAKT_RLTT_ID = l.RLTT_ID AND a.RAKT_RLTT_ID != 0)
@@ -5717,7 +5717,7 @@ class dbProc extends dbLayer
             from `DARBI` d
             LEFT JOIN `AKTI` a ON (d.DRBI_RAKT_ID = a.RAKT_ID )
             LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID AND a.RAKT_IS_RBF != 1)
-            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON (a.RAKT_KEDI_ID = rbf_ter.RBTR_ID AND a.RAKT_IS_RBF = 1)
+            LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.RAKT_KEDI_ID = rbf_ter.RBTR_KODS OR a.RAKT_KEDI_ID = rbf_ter.RBTR_DID_KODS) AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS AND a.RAKT_IS_RBF != 1)
             LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.RAKT_KWOI_KODS = rbf_du.RBDU_KODS AND a.RAKT_IS_RBF = 1)
             LEFT JOIN `KL_WRITEOFF_CODE` ww  ON (a.RAKT_KWRC_ID = ww.KWRC_ID)
@@ -12171,13 +12171,21 @@ class dbProc extends dbLayer
 				e.RBDU_NOSAUKUMS AS EMPLOYEE_NAME,
 				u.RLTT_VARDS AS AUTHOR_NAME,
 				u.RLTT_UZVARDS AS AUTHOR_SURNAME,
-				t.RBTR_NOSAUKUMS AS DEPARTMENT_NAME,
+				CASE
+					WHEN e.RBDU_VV_VEIDS = "U" THEN (
+						SELECT RBTR_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_KODS = a.RAKT_KEDI_ID LIMIT 1
+					)
+					ELSE (
+						SELECT RBTR_DID_NOSAUKUMS FROM kl_rbf_teritorijas 
+						WHERE RBTR_DID_KODS = a.RAKT_KEDI_ID LIMIT 1
+					)
+				END AS DEPARTMENT_NAME,
 				at.KAKV_NOSAUKUMS AS ACT_TYPE_NAME,
 				s.KRFK_NOZIME AS STATUS_TEXT
 			FROM `AKTI` a
 			LEFT JOIN `kl_rbf_darbuznemeji` e ON a.RAKT_KWOI_KODS = e.RBDU_KODS
 			LEFT JOIN `lietotaji` u ON a.RAKT_RLTT_ID = u.RLTT_ID
-			LEFT JOIN `kl_rbf_teritorijas` t ON a.RAKT_KEDI_ID = t.RBTR_ID
 			LEFT JOIN `kl_akta_veids` at ON a.RAKT_KAKV_ID = at.KAKV_ID
 			LEFT JOIN `KL_REF_KODI` s ON (a.RAKT_STATUS = s.KRFK_VERTIBA AND s.KRFK_NOSAUKUMS = "STATUS")
 			WHERE a.RAKT_ID = "'.dbLayer::quote_smart($actId).'"
@@ -12238,6 +12246,9 @@ class dbProc extends dbLayer
 		$departmentId, $orderId, $signature, $workTitle, $notes, $capitalize, $status)
 	{
 		$oDB = new dbLayer;
+		
+		// NOTE: $departmentId now actually contains territory code (RBTR_KODS or RBTR_DID_KODS)
+		// not the ID. Kept parameter name for backward compatibility.
 
 		if ($actId)
 		{
@@ -12256,7 +12267,7 @@ class dbProc extends dbLayer
 					`RAKT_MENESIS` = EXTRACT(MONTH FROM `RAKT_IZPILDES_DATUMS`),
 					`RAKT_GADS` = EXTRACT(YEAR FROM `RAKT_IZPILDES_DATUMS`),
 					`RAKT_FULL_NUMBER` = CONCAT(
-						(SELECT `RBTR_KODS` FROM `kl_rbf_teritorijas` WHERE `RBTR_ID` = "'.dbLayer::quote_smart($departmentId).'" ),
+						"'.dbLayer::quote_smart($departmentId).'",
 						LPAD(`RAKT_NUMURS`, 3, "0"), "/", "'.dbLayer::quote_smart($orderId).'")
 					'.($capitalize !== NULL ? ', `RAKT_CAPITALIZED` = '.($capitalize ? '1' : 'NULL') : '').'
 				WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
@@ -12307,7 +12318,7 @@ class dbProc extends dbLayer
 					EXTRACT(MONTH FROM NOW()),
 					EXTRACT(YEAR FROM NOW()),
 					CONCAT(
-						(SELECT `RBTR_KODS` FROM `kl_rbf_teritorijas` WHERE `RBTR_ID` = "'.dbLayer::quote_smart($departmentId).'" ),
+						"'.dbLayer::quote_smart($departmentId).'",
 						LPAD(RAKT_NUMURS, 3, "0"), "/", "'.dbLayer::quote_smart($orderId).'")
 					'.($capitalize !== NULL ? ', '.($capitalize ? '1' : 'NULL') : '').'
 				)';
@@ -12867,9 +12878,15 @@ class dbProc extends dbLayer
 	 */
 	function validateTerritoryForVV($rbtrKods, $vvNumber)
 	{
+		// NOTE: RBDV_RBTR_KODS stores either RBTR_KODS (for U type) or RBTR_DID_KODS (for C type)
+		// We need to check if the provided code matches any territory code for this VV
 		$query = 'SELECT COUNT(*) as cnt FROM `kl_rbf_du_vv` vv
-			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_ID = t.RBTR_ID
-			WHERE t.RBTR_KODS = "'.dbLayer::quote_smart($rbtrKods).'"
+			INNER JOIN `kl_rbf_darbuznemeji` d ON vv.RBDV_RBDU_ID = d.RBDU_ID
+			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_KODS = CASE
+				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_KODS
+				ELSE t.RBTR_DID_KODS
+			END
+			WHERE vv.RBDV_RBTR_KODS = "'.dbLayer::quote_smart($rbtrKods).'"
 			AND vv.RBDV_VV_NUMURS = "'.dbLayer::quote_smart($vvNumber).'"';
 		
 		$oSQL = new dbLayer;
@@ -12884,7 +12901,7 @@ class dbProc extends dbLayer
 	 * @param int $authorId RAKT_RLTT_ID
 	 * @param string $vvNumber RAKT_VV_NUMBER
 	 * @param int $actTypeId RAKT_KAKV_ID
-	 * @param int $departmentId RAKT_KEDI_ID
+	 * @param string $departmentCode RAKT_KEDI_ID (territory code: RBTR_KODS or RBTR_DID_KODS)
 	 * @param string $orderId RAKT_NUM_POSTFIX
 	 * @param string $workTitle RAKT_WORK_TITLE
 	 * @param string $notes RAKT_PIEZIMES
@@ -12892,9 +12909,12 @@ class dbProc extends dbLayer
 	 * @return int|false Created act ID or false
 	 */
 	function createAutomaticRbfAct($employeeCode, $authorId, $vvNumber, $actTypeId, 
-		$departmentId, $orderId, $workTitle, $notes, $signature = '', $status = STAT_INSERT)
+		$departmentCode, $orderId, $workTitle, $notes, $signature = '', $status = STAT_INSERT)
 	{
 		$oDB = new dbLayer;
+		
+		// NOTE: $departmentCode now contains territory code (RBTR_KODS or RBTR_DID_KODS), not ID
+		// This aligns with the manual form f.akt.s.30 and Excel import f.adm.s.8
 
 		// Insert new automatic act
 		$query = 'INSERT INTO `AKTI` (
@@ -12918,12 +12938,12 @@ class dbProc extends dbLayer
 				`RAKT_FULL_NUMBER`
 			)
 			VALUES (
-				'.dbProc::getNextRbfActNumber($departmentId).',
+				'.dbProc::getNextRbfActNumber($departmentCode).',
 				"'.dbLayer::quote_smart($employeeCode).'",
 				"'.dbLayer::quote_smart($authorId).'",
 				"'.dbLayer::quote_smart($vvNumber).'",
 				"'.dbLayer::quote_smart($actTypeId).'",
-				"'.dbLayer::quote_smart($departmentId).'",
+				"'.dbLayer::quote_smart($departmentCode).'",
 				"'.dbLayer::quote_smart($orderId).'",
 				"'.dbLayer::quote_smart($signature).'",
 				"'.dbLayer::quote_smart($workTitle).'",
@@ -12936,7 +12956,7 @@ class dbProc extends dbLayer
 				EXTRACT(MONTH FROM NOW()),
 				EXTRACT(YEAR FROM NOW()),
 				CONCAT(
-					(SELECT `RBTR_KODS` FROM `kl_rbf_teritorijas` WHERE `RBTR_ID` = "'.dbLayer::quote_smart($departmentId).'" ),
+					"'.dbLayer::quote_smart($departmentCode).'",
 					LPAD(RAKT_NUMURS, 3, "0"), "/", "'.dbLayer::quote_smart($orderId).'")
 			)';
 
