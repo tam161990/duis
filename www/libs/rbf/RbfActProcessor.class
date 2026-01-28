@@ -182,17 +182,10 @@ class RbfActProcessor
 		// 6. Find act type ID by code
 		$data['actTypeId'] = $this->findActType($faktAct, $warnings);
 		
-		// 7. Find territory ID by code
-		$departmentId = dbProc::findRbfTerritoryIdByCode($faktAct['FAKT_RBTR_KODS']);
-		if ($departmentId === false) {
-			$error = "[ERROR] FAKT_ID $faktId: Territory code '{$faktAct['FAKT_RBTR_KODS']}' not found in kl_rbf_teritorijas";
-			files::wh_log($error);
-			$errors[] = $error;
-			$hasErrors = true;
-		} else {
-			files::wh_log("[INFO] Found department ID: $departmentId for code '{$faktAct['FAKT_RBTR_KODS']}'");
-			$data['departmentId'] = $departmentId;
-		}
+		// 7. Use territory code directly (no longer need to look up ID)
+		// NOTE: RAKT_KEDI_ID now stores territory codes (RBTR_KODS or RBTR_DID_KODS), not IDs
+		$data['departmentCode'] = $faktAct['FAKT_RBTR_KODS'];
+		files::wh_log("[INFO] Using department code: '{$data['departmentCode']}'");
 		
 		return array(
 			'valid' => !$hasErrors,
@@ -268,7 +261,7 @@ class RbfActProcessor
 			$validatedData['authorId'],       // authorId (0 if not found)
 			$faktAct['FAKT_VV_NUMBER'],       // vvNumber
 			$validatedData['actTypeId'],      // actTypeId (0 if not found)
-			$validatedData['departmentId'],   // departmentId
+			$validatedData['departmentCode'], // departmentCode (RBTR_KODS or RBTR_DID_KODS)
 			$faktAct['FAKT_NUM_POSTFIX'],     // orderId
 			$faktAct['FAKT_WORK_TITLE'],      // workTitle
 			$faktAct['FAKT_PIEZIMES'],        // notes

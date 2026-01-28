@@ -11,6 +11,7 @@ require_once(dirname(__FILE__).'/../libs/export/toPdf.class');
 require_once(dirname(__FILE__).'/../libs/export/toExcel.class');
 require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
 //require_once(dirname(__FILE__).'/../libs/errorhandling.php');
+require_once(dirname(__FILE__).'/../libs/email/email.class');
 require_once(dirname(__FILE__).'/../libs/rbf/RbfActProcessor.class');
 
 $processId;
@@ -21,10 +22,16 @@ while(true) {
         // Create processor instance and run
         $processor = new RbfActProcessor();
         $processor->process();
-        // Exit with appropriate code (1 if errors, 0 if success)
-        exit($processor->hasErrors() ? 1 : 0);  // Exit successfully
+        
+        // Log if errors occurred (but don't exit - allow scheduled loop to continue)
+        if ($processor->hasErrors()) {
+            files::wh_log('[ERROR] RbfActProcessor completed with errors: ' . date("d.m.Y H:i:s"));
+        } else {
+            files::wh_log('[SUCCESS] RbfActProcessor completed successfully: ' . date("d.m.Y H:i:s"));
+        }
+        
 	} catch (Exception $e) {        
-		files::wh_log('RbfActProcessor: ' .date("d.m.Y H:i:s").PHP_EOL.$e->getMessage());						
+		files::wh_log('[EXCEPTION] RbfActProcessor: ' .date("d.m.Y H:i:s").PHP_EOL.$e->getMessage());						
 	}   
     
     
