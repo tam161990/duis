@@ -11344,10 +11344,11 @@ class dbProc extends dbLayer
 		return $res;
     }
 
-        function writeOffCodesCodeExists($code, $writeOffCodeId = false)
+        function writeOffCodesCodeExists($code, $calk_code, $writeOffCodeId = false)
         {
             $query = 'select `KWRC_ID` from `KL_WRITEOFF_CODE_NEW`
-                where `KWRC_KODS` = "'.dbLayer::quote_smart($code).'"';
+                where `KWRC_KODS` = "'.dbLayer::quote_smart($code).'"
+                and `KWRC_KKAL_SHIFRS` = "'.dbLayer::quote_smart($calk_code).'"';
             if ($writeOffCodeId)
             {
                 $query .= ' and `KWRC_ID` != "'.dbLayer::quote_smart($writeOffCodeId).'"';
