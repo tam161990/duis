@@ -121,6 +121,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 					// chech that ED area with same code not set
 					if (dbProc::writeOffCodesCodeExists(
                                                             $oForm->getValue('kods'),
+															$oForm->getValue('kods'),
                                                             ($oForm->getValue('action')==OP_UPDATE)?$oForm->getValue('writeOffCodeId'):false)
                                                             )
 					{
