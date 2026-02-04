@@ -1118,13 +1118,7 @@ class toPdf {
 				$total += $work['DRBI_CILVEKSTUNDAS'];
 			}
 			$pdf->FancyTableTrase($headers, $data, $width, $align, $alignHeader);
-		}
-
-		// Subtotal
-		$pdf->SetFont('Arial','',8);
-		$pdf->Cell(143,6,iconv('UTF-8', 'windows-1257',text::get('STARPTOTAL').':'),0,0,'R');
-		$pdf->SetFont('Arial','B',8);
-		$pdf->Cell(20,6,number_format($total, 2), 0,1,'R');
+		}	
 
 		// Total
 		$pdf->SetFont('Arial','',8);

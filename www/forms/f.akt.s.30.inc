@@ -400,21 +400,21 @@ $oForm->addElement('checkbox', 'capitalize', text::get('RBF_CAPITALIZE'), $capit
 if(!$isReadonly || !$isReadonlyExceptAdmin)
 {
     $oForm->addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 
-        'width="70" height="20" onclick="setValue(\'action\',\''.OP_UPDATE.'\');"');
+        'width="70" height="20" onclick="document.forms[\'frmMain\'][\'action\'].value=\''.OP_UPDATE.'\';"');
 }
 
 if($actId != false && $isAuto == 0 && ($status == STAT_INSERT || $status == STAT_RETURN))
 {
     $oForm->addElement('submitImg', 'export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_120_nodosana.gif', 
-        ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){setValue(\'action\',\''.OP_EXPORT.'\');} else {return false;}"');
+        ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_EXPORT.'\';} else {return false;}"');
 }   
 if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
 {
     $oForm->addElement('submitImg', 'accept', text::get('RBF_APPROVE'), 'img/btn_apstiprinat.gif', 
-        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_ACCEPT').'\')){setValue(\'action\',\''.OP_ACCEPT.'\');} else {return false;}"');
+        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_ACCEPT').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_ACCEPT.'\';} else {return false;}"');
     
     $oForm->addElement('submitImg', 'return', text::get('RBF_RETURN'), 'img/btn_atgriezt.gif', 
-        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_RETURN').'\')){setValue(\'action\',\''.OP_RETURN.'\');} else {return false;}"');
+        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_RETURN').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_RETURN.'\';} else {return false;}"');
 }
 
 // Back button - show for existing acts or when coming from search
@@ -575,6 +575,18 @@ if($oForm->getValue('action'))
             
             // Set approve date for processed RBF works
             dbProc::setRbfWorksApproveDate($actId, dbLayer::parseDate(dtime::now()));
+            
+            // Set approve date for manual works (DRBI_IS_WORKER = 1)
+            // If final export or actLifePeriod = 3, approve all remaining manual works
+            // Otherwise, only approve manual works for the current period
+            $isFinalExport = !empty($act['RAKT_IR_OBJEKTS_PABEIGTS']);
+            $approveAllManual = ($isFinalExport || $actLifePeriod == 3);
+            dbProc::setManualWorksApproveDate(
+                $actId,
+                dbLayer::parseDate(dtime::now()),
+                $actLifePeriod,
+                $approveAllManual
+            );
         } else {
             // For manual acts, approve all works
             dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
