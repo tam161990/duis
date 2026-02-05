@@ -74,6 +74,12 @@
         $x++;
         }
         ?>
+        <!-- Total row -->
+        <tr class="table_head_2" style="font-weight: bold; background-color: #e0e0e0;">
+            <td colspan="6" align="right"><?= text::get('RBF_TOTAL'); ?>:</td>
+            <td align="left"><?= number_format($worksTotal, 2, '.', ' '); ?></td>
+            <td colspan="<? echo ($isAdmin) ? '6' : '4'; ?>">&nbsp;</td>
+        </tr>
         </table>
         <?
         }

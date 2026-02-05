@@ -768,4 +768,13 @@ WHERE `CODE` = 'RBF_DEPARTMENT';
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES ('SUPORT_ACT_HEADER5_RBF', 'Par ceļa segumu atjaunošanas darbu pieņemšanu');
 
+-- Add text message for manual works section in automatic acts
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES ('RBF_MANUAL_WORKS', 'Manuāli pievienotie darbi')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Manuāli pievienotie darbi';
+
+-- Add text message for other works total row in automatic acts summary
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES ('RBF_OTHER_WORKS_TOTAL', 'Citi darbi kopā')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Citi darbi kopā';
 

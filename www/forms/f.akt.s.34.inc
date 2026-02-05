@@ -9,6 +9,51 @@ $isEconomist = dbProc::isUserInRole($userId, ROLE_ECONOMIST);
 
 // act ID
 $actId = reqVar::get('actId');
+// search form
+$isSearch = reqVar::get('isSearch');
+// search act by number
+$searchNum = reqVar::get('searchNum');
+
+// Main form with XMLHTTP method load this code:
+if (reqVar::get('xmlHttp') == 1)
+{
+    // if operation is DELETE, delete record from DB
+    if (reqVar::get('deleteId') != '')
+    {
+       dbProc::deleteActWorkRecord(reqVar::get('deleteId'), 0); // tame=0 for RBF acts
+    ?>
+        rowNode = this.parentNode.parentNode;
+        rowNode.parentNode.removeChild(rowNode);
+    <?
+    }
+    exit();
+}
+
+// Helper: calculate period number based on custom month boundaries (27th to 26th)
+if (!function_exists('rbfCalculatePeriodNumber')) {
+    function rbfCalculatePeriodNumber($dateString)
+    {
+        $date = new DateTime($dateString);
+        $year = (int)$date->format('Y');
+        $month = (int)$date->format('m');
+        $day = (int)$date->format('d');
+
+        if ($day >= 27) {
+            $periodYear = $year;
+            $periodMonth = $month;
+        } else {
+            if ($month == 1) {
+                $periodYear = $year - 1;
+                $periodMonth = 12;
+            } else {
+                $periodYear = $year;
+                $periodMonth = $month - 1;
+            }
+        }
+
+        return ($periodYear * 12) + $periodMonth;
+    }
+}
 
 // Initialize variables
 $works = false;
@@ -24,6 +69,328 @@ if ($isAdmin || $isRbfUser || $isEconomist)
     
     if($actId !== false)
     {
+        // Get act info for permission checks
+        $act = array();
+        $status = false;
+        $actInfo = dbProc::getActInfo($actId);
+        if(count($actInfo) > 0)
+        {
+            $act = $actInfo[0];
+            $status = $act['RAKT_STATUS'];
+        }
+
+        $isReadonly = true;
+        // Edit access: if act is in "Ievads" (INSERT) or "Atgriezts" (RETURN) status and user is the author or admin
+        if((($act['RAKT_RLTT_ID'] == $userId && $isRbfUser) || $isAdmin) && 
+          ($status == STAT_INSERT || $status == STAT_RETURN))
+        {
+          $isReadonly = false;
+        }
+        
+        // Create form for manual works section
+        $oLink = new urlQuery();
+        $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+        $oLink->addPrm('actId', $actId);
+        $oLink->addPrm('tab', 'RBF_WORKS');
+        $oLink->addPrm('isSearch', $isSearch);
+        $oLink->addPrm('searchNum', $searchNum);
+        $oFormManualWorks = new Form('frmRbfManualWorkTab', 'post', $oLink->getQuery() . '#tab');
+        unset($oLink);
+
+        // if operation is success, show success message
+        if (reqVar::get('successMessageTab'))
+        {
+            $oFormManualWorks->addSuccess(reqVar::get('successMessageTab'));
+        }
+
+        $aManualWorks = array();
+        $aManualWorkExist = false;
+        
+        // Handle manual works save
+        if ($oFormManualWorks->isFormSubmitted() && $oFormManualWorks->getValue('action') == 'save_manual_works')
+        {
+            $isRowValid = true;
+            $aChiphers = $oFormManualWorks->getValue('chipher');
+            
+            if(is_array($aChiphers))
+            {
+              $aWorkFr = array();
+              foreach ($aChiphers as $i => $val)
+              {
+                   $aWorkFr[$i]['DRBI_ID'] = $oFormManualWorks->getValue('id['.$i.']');
+                   $aWorkFr[$i]['DRBI_KKAL_ID'] = $oFormManualWorks->getValue('kid['.$i.']');
+                   $aWorkFr[$i]['DRBI_KKAL_SHIFRS'] = $oFormManualWorks->getValue('chipher['.$i.']');
+                   $aWorkFr[$i]['DRBI_KKAL_NOSAUKUMS'] = $oFormManualWorks->getValue('title['.$i.']');
+                   $aWorkFr[$i]['DRBI_KKAL_NORMATIVS'] = $oFormManualWorks->getValue('standart['.$i.']');
+                   $aWorkFr[$i]['DRBI_MERVIENIBA'] = $oFormManualWorks->getValue('measure['.$i.']');
+                   $aWorkFr[$i]['DRBI_PLAN_DATE'] = $oFormManualWorks->getValue('plan_date['.$i.']');
+                   $aWorkFr[$i]['KKAL_APRAKSTS'] = $oFormManualWorks->getValue('description['.$i.']');
+                   $aWorkFr[$i]['DRBI_DAUDZUMS'] = $oFormManualWorks->getValue('amount['.$i.']');
+                   // Calculate total as price * amount
+                   $aWorkFr[$i]['DRBI_CILVEKSTUNDAS'] = $aWorkFr[$i]['DRBI_KKAL_NORMATIVS'] * $aWorkFr[$i]['DRBI_DAUDZUMS'];
+
+                   // Validate amount
+                   if (empty($aWorkFr[$i]['DRBI_DAUDZUMS']) || $aWorkFr[$i]['DRBI_DAUDZUMS'] <= 0)
+                   {
+                       $oFormManualWorks->addErrorPerElem('amount['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
+                       $isRowValid = false;
+                   }
+
+                   // Validate plan date
+                   if (empty($aWorkFr[$i]['DRBI_PLAN_DATE']))
+                   {
+                       $oFormManualWorks->addErrorPerElem('plan_date['.$i.']', text::get('ERROR_REQUIRED_FIELD'));
+                       $isRowValid = false;
+                   }
+              }
+
+              // Save if valid
+              if ($isRowValid)
+              {
+                  // Delete all existing manual work records (DRBI_IS_WORKER = 1)
+                  $r = dbProc::deleteManualActWorks($actId, 0); // tame=0 for RBF acts
+                  
+                  if ($r === false)
+                  {
+                      $oFormManualWorks->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                  }
+                  else
+                  {
+                      // Pre-calculate act period values for DRBI_ACT_QUART
+                      $actLifePeriod = dbProc::getActLifePeriod($actId);
+                      if ($actLifePeriod === false) {
+                          $actLifePeriod = 1;
+                      }
+                      $actDate = isset($act['RAKT_DATUMS']) ? $act['RAKT_DATUMS'] : false;
+                      $actPeriod = $actDate ? rbfCalculatePeriodNumber($actDate) : false;
+
+                      // Re-insert all manual work records
+                      foreach($aWorkFr as $i => $work)
+                      {
+                          $actQuart = $actLifePeriod;
+                          if ($actPeriod !== false && !empty($work['DRBI_PLAN_DATE'])) {
+                              $planDate = dbLayer::parseDate($work['DRBI_PLAN_DATE']);
+                              $planPeriod = rbfCalculatePeriodNumber($planDate . ' 00:00:00');
+                              $calculatedQuart = ($planPeriod - $actPeriod) + 1;
+                              if ($calculatedQuart >= 1 && $calculatedQuart <= $actLifePeriod) {
+                                  $actQuart = $calculatedQuart;
+                              }
+                          }
+                          
+                          $r = dbProc::writeActWork(
+                              $actId,
+                              $work['DRBI_KKAL_ID'],
+                              $work['DRBI_KKAL_SHIFRS'],
+                              $work['DRBI_KKAL_NOSAUKUMS'],
+                              $work['DRBI_KKAL_NORMATIVS'],
+                              $work['DRBI_DAUDZUMS'],
+                              $work['DRBI_CILVEKSTUNDAS'], // total
+                              $work['DRBI_MERVIENIBA'],
+                              false, // amount_kor (not used for RBF)
+                              false, // edited
+                              $work['DRBI_PLAN_DATE'],
+                              false, // day_total (not used for RBF)
+                              false, // notes
+                              1,     // st (is_worker) = 1 for manual works
+                              false, // work_type
+                              false, // work_type_text
+                              false, // export_type
+                              false, // work_approve_date
+                              false, // import_no
+                              $actQuart
+                          );
+                          
+                          if($r === false)
+                          {
+                              $oFormManualWorks->addError(text::get('ERROR_IN_DB_QUERY').dbProc::getError());
+                              break;
+                          }
+                      }
+                      
+                      if($r !== false)
+                      {
+                          $oLink = new urlQuery();
+                          $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+                          $oLink->addPrm('actId', $actId);
+                          $oLink->addPrm('tab', 'RBF_WORKS');
+                          $oLink->addPrm('successMessage', text::get('RECORD_WAS_SAVED'));
+                          RequestHandler::makeRedirect($oLink->getQuery() . '#tab');
+                      }
+                  }
+              }
+            }
+        }
+
+        // Get manual work list from DB (DRBI_IS_WORKER = 1)
+        // Parameters: $ID, $tame, $onlyNotApproved, $group_id, $project, $work_type_text, $sortOrder, $orderColumn, $manualOnly
+        $aManualWorkDb = dbProc::getActWorkList($actId, 0, false, false, false, false, false, false, true);
+
+        if (is_array($aManualWorkDb) && count($aManualWorkDb) > 0)
+        {
+            $aManualWorkExist = true;
+            $k = 0;
+            
+            foreach ($aManualWorkDb as $i => $row)
+            {
+                $aManualWorks[$i] = $row;
+
+                // ID
+                $oFormManualWorks->addElement('hidden', 'id['.$k.']', '', $row['DRBI_ID']);
+                $oFormManualWorks->addElement('hidden', 'kid['.$k.']', '', $row['DRBI_KKAL_ID']);
+                $oFormManualWorks->addElement('hidden', 'description['.$k.']', '', $row['KKAL_APRAKSTS']);
+
+                // Chipher (Šifrs) - always readonly
+                $oFormManualWorks->addElement('label', 'chipher['.$k.']', '', $row['DRBI_KKAL_SHIFRS']);
+
+                // Plan date (Izpildes datums) - editable when not readonly
+                if(!$isReadonly)
+                {
+                    $oFormManualWorks->addElement('date', 'plan_date['.$k.']', '', $row['DRBI_PLAN_DATE'], (($isReadonly)?' disabled ':''));
+                    $oFormManualWorks->addRule('plan_date['.$k.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                    $oFormManualWorks->addRule('plan_date['.$k.']', text::get('ERROR_INCORRECT_DATE'),'validatedate');
+                }
+                else
+                {
+                    $oFormManualWorks->addElement('label', 'plan_date['.$k.']', '', $row['DRBI_PLAN_DATE']);
+                }
+
+                // Title (Nosaukums) - always readonly
+                $oFormManualWorks->addElement('label', 'title['.$k.']', '', $row['DRBI_KKAL_NOSAUKUMS']);
+
+                // Price (Cena) - always readonly
+                $oFormManualWorks->addElement('hidden', 'standart['.$k.']', '', $row['DRBI_KKAL_NORMATIVS']);
+                $oFormManualWorks->addElement('label', 'standart_display['.$k.']', '', number_format($row['DRBI_KKAL_NORMATIVS'], 2, '.', ' '));
+
+                // Unit of measure (Mērvienība) - always readonly
+                $oFormManualWorks->addElement('label', 'measure['.$k.']', '', $row['DRBI_MERVIENIBA']);
+
+                // Total (Summa) - calculate BEFORE formatting amount
+                $total = $row['DRBI_KKAL_NORMATIVS'] * $row['DRBI_DAUDZUMS'];
+                
+                // Amount (Daudzums) - editable when not readonly
+                $amountFormatted = number_format($row['DRBI_DAUDZUMS'], 3, '.', '');
+                $oFormManualWorks->addElement('text', 'amount['.$k.']', '', $amountFormatted, (($isReadonly)?' disabled ':'').'maxlength="9"');
+                $oFormManualWorks->addRule('amount['.$k.']', text::get('ERROR_REQUIRED_FIELD'), 'required');
+                $oFormManualWorks->addRule('amount['.$k.']', text::get('ERROR_DOUBLE_VALUE'), 'double', 3);
+
+                // Total (Summa) - always readonly, display calculated value
+                $oFormManualWorks->addElement('label', 'total['.$k.']', '', number_format($total, 2, '.', ' '));
+
+                // Work norm (c.st. norma) - for admins only, always readonly
+                if($isAdmin)
+                {
+                    $workNorm = isset($row['KKNO_NORM']) ? $row['KKNO_NORM'] : '';
+                    $oFormManualWorks->addElement('label', 'work_norm['.$k.']', '', $workNorm);
+
+                    // Work norm sum (c.st. summa)
+                    $workNormSum = isset($row['WORK_NORM_SUM']) ? $row['WORK_NORM_SUM'] : 0;
+                    $oFormManualWorks->addElement('label', 'work_norm_sum['.$k.']', '', number_format($workNormSum, 2, '.', ''));
+                }
+
+                // Write off account (Izmaksu konts) - always readonly
+                $oFormManualWorks->addElement('label', 'write_off_code['.$k.']', '', $row['KWRC_KODS']);
+
+                // Element (Stihija) - always readonly label showing YES/NO
+                $elementText = (!empty($row['DRBI_ELEMENT']) && $row['DRBI_ELEMENT'] != 0) ? text::get('YES') : text::get('NO');
+                $oFormManualWorks->addElement('label', 'act_element['.$k.']', '', $elementText);
+
+                // Pers - always readonly label showing YES/NO
+                $persText = (!empty($row['DRBI_PERS']) && $row['DRBI_PERS'] != 0) ? text::get('YES') : text::get('NO');
+                $oFormManualWorks->addElement('label', 'act_pers['.$k.']', '', $persText);
+
+                // Delete button
+                if(!$isReadonly)
+                {
+                    $delLink = new urlQuery();
+                    $delLink->addPrm(FORM_ID, 'f.akt.s.34');
+                    $delLink->addPrm(DONT_USE_GLB_TPL, '1');
+                    $delLink->addPrm('actId', $actId);
+                    $delLink->addPrm('xmlHttp', '1');
+                    $delLink->addPrm('isSearch', $isSearch);
+                    $delLink->addPrm('searchNum', $searchNum);
+
+                    $delButtonJs = "if(isDelete()) { 
+                        var rowId = document.forms['frmRbfManualWorkTab']['id[" .$k. "]'];
+                        eval(xmlHttpGetValue('" .$delLink->getQuery() ."&deleteId='+rowId.value));
+                      }";
+                
+                    $oFormManualWorks->addElement('button', 'work_del['.$k.']', '', '', 'onclick="' . $delButtonJs . ';return false;" style="background: url(img/ico_del.gif); cursor:hand; border:0px; width: 20px; height: 20px;" title="' . text::get('DELETE') . '"');
+                    unset($delLink);
+                }
+
+                $k++;
+            }
+        }
+
+        // Add hidden action field
+        $oFormManualWorks->addElement('hidden', 'action', '');
+
+        // Save button - for manual works
+        if(!$isReadonly && $aManualWorkExist)
+        {
+            $oFormManualWorks->addElement('submitImg', 'save_manual', text::get('SAVE'), 'img/btn_save_work.gif', 'width="120" height="20" onclick="document.forms[\'frmRbfManualWorkTab\'][\'action\'].value=\'save_manual_works\';return true;"');
+        }
+
+        // Add ALL_WORK link for manual works section and calculate totals
+        $manualWorksTotal = 0; // Total of all manual works (for manual works table)
+        $manualWorksApprovedTotal = 0; // Total of only approved manual works (for summary table - all quarters)
+        $manualWorksApprovedByQuarter = array(1 => 0, 2 => 0, 3 => 0); // Approved manual works by quarter
+        $actLifePeriod = dbProc::getActLifePeriod($actId);
+        if ($actLifePeriod === false) {
+            $actLifePeriod = 0;
+        }
+        $isFinalExportAct = !empty($act['RAKT_IR_OBJEKTS_PABEIGTS']);
+        $forceManualWorksToPeriod = ($isFinalExportAct || $actLifePeriod == 3) ? $actLifePeriod : false;
+        
+        if($aManualWorkExist)
+        {
+            $oPopLinkManual = new urlQuery;
+            $oPopLinkManual->addPrm(FORM_ID, 'f.akt.s.33');
+            $oPopLinkManual->addPrm('actId', $actId);
+            
+            $allWorkLinkManual = array();
+            $allWorkLinkManual['TITLE'] = text::get('ALL_WORK');
+            $allWorkLinkManual['URL'] = RequestHandler::popupHref($oPopLinkManual->getQuery().'&all=1', false, 700, 450, true, false, true);
+            
+            unset($oPopLinkManual);
+            
+            // Calculate manual works totals
+            foreach ($aManualWorks as $work) {
+                $workTotal = $work['DRBI_KKAL_NORMATIVS'] * $work['DRBI_DAUDZUMS'];
+                $manualWorksTotal += $workTotal;
+                
+                // Only add to approved total if work has approve date
+                if (!empty($work['DRBI_WORK_APROVE_DATE'])) {
+                    $manualWorksApprovedTotal += $workTotal;
+                    
+                    // Add to appropriate quarter total
+                    if ($forceManualWorksToPeriod !== false) {
+                        if ($forceManualWorksToPeriod >= 1 && $forceManualWorksToPeriod <= 3) {
+                            $manualWorksApprovedByQuarter[$forceManualWorksToPeriod] += $workTotal;
+                        }
+                    } else {
+                        $quarter = isset($work['DRBI_ACT_QUART']) ? intval($work['DRBI_ACT_QUART']) : 1;
+                        if ($quarter >= 1 && $quarter <= 3) {
+                            $manualWorksApprovedByQuarter[$quarter] += $workTotal;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Fallback for period 3: if works should be approved but totals are empty, show total in period 3
+        if ($forceManualWorksToPeriod !== false
+            && $manualWorksApprovedTotal == 0
+            && $manualWorksTotal > 0
+            && $actLifePeriod == 3
+            && $status != STAT_INSERT
+            && $status != STAT_RETURN) {
+            $manualWorksApprovedByQuarter[$forceManualWorksToPeriod] = $manualWorksTotal;
+        }
+        
+        // Render the manual works form
+        $oFormManualWorks->makeHtml();
+        
         // Handle export button submissions
         $exportAction = reqVar::get('export_action'); // 'final' or 'middle'
         
@@ -110,6 +477,18 @@ if ($isAdmin || $isRbfUser || $isEconomist)
             }
         }
         
+        // Popup link preparation for ALL_WORK
+        $oPopLink = new urlQuery;
+        $oPopLink->addPrm(FORM_ID, 'f.akt.s.33');
+        $oPopLink->addPrm('actId', $actId);
+        
+        // Single link - ALL_WORK
+        $allWorkLink = array();
+        $allWorkLink['TITLE'] = text::get('ALL_WORK');
+        $allWorkLink['URL'] = RequestHandler::popupHref($oPopLink->getQuery().'&all=1', false, 700, 450, true, false, true);
+        
+        unset($oPopLink);
+        
         // Get DARBI records for this act (exported works)
         $darbiRecords = dbProc::getDarbiByActId($actId);
         $darbiFormatted = array();
@@ -135,8 +514,10 @@ if ($isAdmin || $isRbfUser || $isEconomist)
         // Get act status from parent scope (set in f.akt.s.30.inc)
         $actStatus = isset($status) ? $status : '';
         
-        // Calculate act life period
-        $actLifePeriod = dbProc::getActLifePeriod($actId);
+        // Calculate act life period (already set for manual works totals if available)
+        if (!isset($actLifePeriod) || $actLifePeriod === null) {
+            $actLifePeriod = dbProc::getActLifePeriod($actId);
+        }
         
         // Show export buttons based on act status
         // Middle Export: periods 1-2 only
@@ -277,15 +658,23 @@ if ($darbiSummary && is_array($darbiSummary)) {
     }
 }
 
-// Calculate VAT (21%)
-$vat1 = $totals['cost_1'] * 0.21;
-$vat2 = $totals['cost_2'] * 0.21;
-$vat3 = $totals['cost_3'] * 0.21;
+// Calculate VAT (21%) on auto works + manual works (approved)
+$manualCost1 = isset($manualWorksApprovedByQuarter[1]) ? $manualWorksApprovedByQuarter[1] : 0;
+$manualCost2 = isset($manualWorksApprovedByQuarter[2]) ? $manualWorksApprovedByQuarter[2] : 0;
+$manualCost3 = isset($manualWorksApprovedByQuarter[3]) ? $manualWorksApprovedByQuarter[3] : 0;
 
-// Calculate total with VAT
-$totalWithVat1 = $totals['cost_1'] + $vat1;
-$totalWithVat2 = $totals['cost_2'] + $vat2;
-$totalWithVat3 = $totals['cost_3'] + $vat3;
+$vatBase1 = $totals['cost_1'] + $manualCost1;
+$vatBase2 = $totals['cost_2'] + $manualCost2;
+$vatBase3 = $totals['cost_3'] + $manualCost3;
+
+$vat1 = $vatBase1 * 0.21;
+$vat2 = $vatBase2 * 0.21;
+$vat3 = $vatBase3 * 0.21;
+
+// Calculate total with VAT (auto + manual)
+$totalWithVat1 = $vatBase1 + $vat1;
+$totalWithVat2 = $vatBase2 + $vat2;
+$totalWithVat3 = $vatBase3 + $vat3;
 
 // Format totals for display
 $totalsFormatted = array(

@@ -186,6 +186,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
       {
           $aWorkExist = true;
           $k = 0;
+          $worksTotal = 0; // Initialize total for all works
           
           foreach ($aWorkDb as $i => $row)
           {
@@ -229,6 +230,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
 
               // Total (Summa) - always readonly
               $total = $row['DRBI_KKAL_NORMATIVS'] * $row['DRBI_DAUDZUMS'];
+              $worksTotal += $total; // Accumulate total
               $oFormWorkTab->addElement('label', 'total['.$k.']', '', number_format($total, 2, '.', ' '));
 
               // Work norm (c.st. norma) - for admins only, always readonly

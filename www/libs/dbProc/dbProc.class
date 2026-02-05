@@ -6706,7 +6706,7 @@ class dbProc extends dbLayer
     // -----------------------------------------------------------------------------
         function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false, 
                                 $project = false, $work_type_text = false,
-                                $sortOrder = false, $orderColumn = false)
+                                $sortOrder = false, $orderColumn = false, $manualOnly = false)
 	{
             $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
             $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
@@ -6730,6 +6730,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
                 " . (($work_type_text !== false) ? (empty($work_type_text) ? " AND `DRBI_WORK_TYPE_TEXT` IS NULL " : " AND `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'" ) : "" ) ."
+                " . (($manualOnly) ? " AND `DRBI_IS_WORKER` = 1 " : "" ) ."
                 AND ".$column_name." IS NOT NULL
                 union
                 select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
@@ -6745,6 +6746,7 @@ class dbProc extends dbLayer
                 " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
                 " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
                 " . (($work_type_text !== false) ? (empty($work_type_text) ? " AND `DRBI_WORK_TYPE_TEXT` IS NULL " : " AND `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'" ) : "" ) ."
+                " . (($manualOnly) ? " AND `DRBI_IS_WORKER` = 1 " : "" ) ."
                 AND ".$column_name." IS NULL 
                 ORDER BY " . $order;
 
@@ -6937,6 +6939,26 @@ class dbProc extends dbLayer
 
 	    $query = "delete from ".$table_name." WHERE  `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID);
 
+
+        $oDB = new dbLayer;
+		$result = $oDB -> makeQuery($query);
+
+		return ($result !== false);
+	}
+
+	/**
+	 * Delete only manual act works (DRBI_IS_WORKER = 1)
+	 * @param int $ID Act ID
+	 * @param bool $tame Whether to delete from TAME_DARBI or DARBI
+	 * @return bool Success
+	 */
+	function deleteManualActWorks($ID, $tame = false)
+    {
+        $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
+
+	    $query = "DELETE FROM ".$table_name." 
+	              WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
+	              AND `DRBI_IS_WORKER` = 1";
 
         $oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
@@ -7463,7 +7485,7 @@ class dbProc extends dbLayer
                             $plan_date = false, $day_total = false, $notes = false,
                             $st = 0, $work_type = false, 
                             $work_type_text = false, $export_type = false, $work_approve_date = false,
-                            $import_no = false)
+                            $import_no = false, $act_quart = false)
 	{
         $amount = (empty($amount)) ? false : $amount;
 	    if($amount_kor !== false) {
@@ -7473,7 +7495,7 @@ class dbProc extends dbLayer
                 `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                 `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
                 `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
-                `DRBI_IMPORT_NO` )
+                `DRBI_IMPORT_NO`'.(($act_quart !== false)? ', `DRBI_ACT_QUART` ' : '' ).' )
                 values ( '.dbLayer::quote_smart($actId).',
 				"'.dbLayer::quote_smart($kid).'",
                 "'.dbLayer::quote_smart($chipher).'",
@@ -7493,6 +7515,7 @@ class dbProc extends dbLayer
                 '.(($work_type !== false) ? '"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').',
                 '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
                 '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
+                '.(($act_quart !== false) ? ','.dbLayer::quote_smart($act_quart) : '' ).'
                 )';
         } else {
             $query = 'insert into `DARBI`
@@ -7501,7 +7524,7 @@ class dbProc extends dbLayer
                             `DRBI_APPROVE_DATE`, `DRBI_WORK_APROVE_DATE`,
                             `DRBI_PLAN_DATE`, `DRBI_DAY_TOTAL`, `DRBI_PIEZIMES`, `DRBI_IS_WORKER`, 
                             `DRBI_WORK_TYPE_ID`, `DRBI_WORK_TYPE_TEXT`, `DRBI_PROJECT_EXPORT`,
-                            `DRBI_IMPORT_NO`)
+                            `DRBI_IMPORT_NO`'.(($act_quart !== false)? ', `DRBI_ACT_QUART` ' : '' ).')
                             values ( '.dbLayer::quote_smart($actId).',
             				"'.dbLayer::quote_smart($kid).'",
                             "'.dbLayer::quote_smart($chipher).'",
@@ -7520,11 +7543,35 @@ class dbProc extends dbLayer
                             '.(($work_type !== false) ? '"'.dbLayer::quote_smart($work_type_text).'"' : '"NULL"').',
                             '.(($export_type !== false) ? '"'.dbLayer::quote_smart($export_type).'"' : '"NULL"').',
                             '.(($import_no !== false) ? dbLayer::quote_smart($import_no) : '"NULL"').'
+                            '.(($act_quart !== false) ? ','.dbLayer::quote_smart($act_quart) : '' ).'
                             )';
         }
         //echo ($query);
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
+        return ($result !== false);
+    }
+    
+    /**
+     * Update existing work record in DARBI table
+     * @param int $workId DRBI_ID
+     * @param float $amount DRBI_DAUDZUMS
+     * @param float $total DRBI_CILVEKSTUNDAS
+     * @param string $planDate DRBI_PLAN_DATE
+     * @return bool Success
+     */
+    function updateActWork($workId, $amount, $total, $planDate)
+    {
+        $planDate = dbLayer::parseDate($planDate);
+        
+        $query = 'UPDATE `DARBI` SET
+                  `DRBI_DAUDZUMS` = "'.dbLayer::quote_smart($amount).'",
+                  `DRBI_CILVEKSTUNDAS` = "'.dbLayer::quote_smart($total).'",
+                  `DRBI_PLAN_DATE` = "'.dbLayer::quote_smart($planDate).'"
+                  WHERE `DRBI_ID` = "'.dbLayer::quote_smart($workId).'"';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
         return ($result !== false);
     }
     
@@ -12135,7 +12182,7 @@ class dbProc extends dbLayer
 						`RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($territoryCode).'",
 						`RBKL_EDITOR` = "'.dbLayer::quote_smart($userId).'",
 						`RBKL_EDITED` = NOW()
-			';
+				';
 		$oDB = new dbLayer;
 		$result = $oDB -> makeQuery($query);
 		return $result;
@@ -12658,10 +12705,45 @@ class dbProc extends dbLayer
 			$planDate = dbLayer::parseDate($planDate);
 		}
 		
+		// Calculate DRBI_ACT_QUART based on plan date and act life period
+		$actLifePeriod = self::getActLifePeriod($actId);
+		if ($actLifePeriod === false)
+		{
+			$actLifePeriod = 1; // Default to period 1 if can't determine
+		}
+		
+		// Get act creation date to calculate which quarter the plan_date falls into
+		$oSQL = new dbLayer;
+		$actQuery = 'SELECT `RAKT_DATUMS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		$actResult = $oSQL->makeQuery($actQuery);
+		
+		$actQuart = $actLifePeriod; // Default to current period
+		
+		if (is_array($actResult) && count($actResult) > 0 && !empty($actResult[0]['RAKT_DATUMS']))
+		{
+			$actDate = $actResult[0]['RAKT_DATUMS'];
+			
+			// Calculate period number for act creation date
+			$actPeriod = self::calculatePeriodNumber($actDate);
+			
+			// Calculate period number for plan date
+			$planPeriod = self::calculatePeriodNumber($planDate . ' 00:00:00');
+			
+			// Calculate which quarter the plan date falls into (relative to act creation)
+			$calculatedQuart = ($planPeriod - $actPeriod) + 1;
+			
+			// Use calculated quarter if it's within valid range (1 to actLifePeriod)
+			if ($calculatedQuart >= 1 && $calculatedQuart <= $actLifePeriod)
+			{
+				$actQuart = $calculatedQuart;
+			}
+			// Otherwise, use current act life period (already set as default)
+		}
+		
 		$query = 'INSERT INTO `DARBI` 
 				  (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
 				   `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, 
-				   `DRBI_MERVIENIBA`, `DRBI_DAUDZUMS`, `DRBI_PLAN_DATE`)
+				   `DRBI_MERVIENIBA`, `DRBI_DAUDZUMS`, `DRBI_PLAN_DATE`, `DRBI_IS_WORKER`, `DRBI_ACT_QUART`)
 				  SELECT 
 				   "'.dbLayer::quote_smart($actId).'",
 				   `RBKL_ID`,
@@ -12670,11 +12752,12 @@ class dbProc extends dbLayer
 				   `RBKL_CENA`,
 				   `RBKL_MERVIENIBA`,
 				   1,
-				   "'.dbLayer::quote_smart($planDate).'"
+				   "'.dbLayer::quote_smart($planDate).'",
+				   1,
+				   "'.dbLayer::quote_smart($actQuart).'"
 				  FROM `kl_rbf_kalkulacija`
 				  WHERE `RBKL_ID` = "'.dbLayer::quote_smart($calcId).'"';
 		
-		$oSQL = new dbLayer;
 		$result = $oSQL->makeQuery($query);
 		
 		if($result === false)
@@ -13569,6 +13652,58 @@ class dbProc extends dbLayer
 	}
 
 	/**
+	 * Approve manual works (DRBI_IS_WORKER = 1) for RBF automatic acts
+	 * @param int $actId - Act ID
+	 * @param string $date - Approve date
+	 * @param int $actLifePeriod - Current act life period (1, 2, or 3)
+	 * @return bool - True if successful, false otherwise
+	 */
+	public static function setManualWorksApproveDate($actId, $date, $actLifePeriod = null, $approveAll = false)
+	{
+		$oDB = new dbLayer();
+		
+		// Approve all remaining manual works if requested or in final period
+		$approveAll = $approveAll || $actLifePeriod === null || $actLifePeriod == 3;
+		if ($approveAll) {
+			// Ensure missing quarter values are assigned to current period
+			if ($actLifePeriod !== null) {
+				$fixQuartQuery = 'UPDATE `DARBI`
+								  SET `DRBI_ACT_QUART` = '.intval($actLifePeriod).'
+								  WHERE `DRBI_RAKT_ID` = '.intval($actId).'
+								  AND `DRBI_IS_WORKER` = 1
+								  AND `DRBI_WORK_APROVE_DATE` IS NULL
+								  AND (`DRBI_ACT_QUART` IS NULL OR `DRBI_ACT_QUART` = 0)';
+				$oDB->makeQuery($fixQuartQuery);
+			}
+			$query = 'UPDATE `DARBI`
+					  SET `DRBI_WORK_APROVE_DATE` = "'.dbLayer::quote_smart($date).'"
+					  WHERE `DRBI_RAKT_ID` = '.intval($actId).'
+					  AND `DRBI_IS_WORKER` = 1
+					  AND `DRBI_WORK_APROVE_DATE` IS NULL';
+		} else {
+			// Ensure missing quarter values are assigned to current period
+			$fixQuartQuery = 'UPDATE `DARBI`
+							  SET `DRBI_ACT_QUART` = '.intval($actLifePeriod).'
+							  WHERE `DRBI_RAKT_ID` = '.intval($actId).'
+							  AND `DRBI_IS_WORKER` = 1
+							  AND `DRBI_WORK_APROVE_DATE` IS NULL
+							  AND (`DRBI_ACT_QUART` IS NULL OR `DRBI_ACT_QUART` = 0)';
+			$oDB->makeQuery($fixQuartQuery);
+
+			// Otherwise, only approve manual works for the current period
+			$query = 'UPDATE `DARBI`
+					  SET `DRBI_WORK_APROVE_DATE` = "'.dbLayer::quote_smart($date).'"
+					  WHERE `DRBI_RAKT_ID` = '.intval($actId).'
+					  AND `DRBI_IS_WORKER` = 1
+					  AND `DRBI_WORK_APROVE_DATE` IS NULL
+					  AND `DRBI_ACT_QUART` = '.intval($actLifePeriod);
+		}
+		
+		$result = $oDB->makeQuery($query);
+		return ($result !== false);
+	}
+
+	/**
 	 * Check if there are remaining unapproved works in COMPLETED or PROCESS status
 	 * @param int $actId - Act ID
 	 * @return bool - True if remaining works exist, false otherwise
@@ -13605,21 +13740,38 @@ class dbProc extends dbLayer
 		$whereClause = 'd.DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"';
 		
 		// For automatic acts, only include current period
-		if ($isAuto) {
-			$actLifePeriod = self::getActLifePeriod($actId);
-			$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart($actLifePeriod).'"';
-		}
+		//if ($isAuto) {
+		//	$actLifePeriod = self::getActLifePeriod($actId);
+		//	$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart($actLifePeriod).'"';
+		//}
 		
 		$query = "SELECT
 					d.DRBI_KKAL_SHIFRS,
 					".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE').",
 					d.DRBI_KKAL_NOSAUKUMS,
-					k.RBKL_MERVIENIBA as DRBI_MERVIENIBA,
-					k.RBKL_CENA as DRBI_KKAL_NORMATIVS,
-					d.DRBI_CILVEKSTUNDAS as DRBI_DAUDZUMS,
-					d.DRBI_CILVEKSTUNDAS as DRBI_CILVEKSTUNDAS
+					COALESCE(
+						d.DRBI_MERVIENIBA,
+						(SELECT RBKL_MERVIENIBA FROM `kl_rbf_kalkulacija`
+						 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+						 LIMIT 1)
+					) as DRBI_MERVIENIBA,
+					COALESCE(
+						d.DRBI_KKAL_NORMATIVS,
+						(SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+						 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+						 LIMIT 1)
+					) as DRBI_KKAL_NORMATIVS,
+					COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS) as DRBI_DAUDZUMS,
+					(COALESCE(
+						d.DRBI_KKAL_NORMATIVS,
+						(SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+						 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+						 LIMIT 1)
+					) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)) as DRBI_CILVEKSTUNDAS
 				  FROM `DARBI` d
-				  LEFT JOIN `kl_rbf_kalkulacija` k ON d.DRBI_KKAL_SHIFRS = k.RBKL_SHIFRS
 				  WHERE ".$whereClause."
 				  ORDER BY d.DRBI_KKAL_SHIFRS";
 		
