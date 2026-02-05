@@ -54,7 +54,7 @@ else
         <tr>
             <td align="center" colspan="2"><?= $oFormManualWorks->getMessage(); ?></td>
         </tr>
-        <? if($aManualWorkExist) { ?>
+        <? if(true) { ?>
        
         <tr>
             <td valign="top">
@@ -124,7 +124,7 @@ else
             </td>
             <td valign="top" align="left">
                 <table cellpadding="5" cellspacing="0" border="0" align="center">
-                <? if(!$isReadonly && $aManualWorkExist) { ?>
+                <? if(!$isReadonly) { ?>
                 <tr>
                     <td bgcolor="white">
                         <a href="#" onclick="<?= $allWorkLinkManual['URL'] ?>; return false;" style="text-decoration: underline; color: #0066cc;">
@@ -132,12 +132,12 @@ else
                         </a>
                     </td>
                 </tr>
-                <tr><td>&nbsp;</td></tr>
+                
                 <? } ?>
-                <tr>
                 <? if(!$isReadonly && $aManualWorkExist) { ?>
+                <tr>                
                     <td><?= $oFormManualWorks->getElementHtml('save_manual'); ?></td>
-                <? } ?>
+                
                 </tr>
                                                 <? if ($showMiddleExportButton) { ?>
                                 <tr>
@@ -161,6 +161,7 @@ else
                                                style="cursor: pointer;" />
                                     </td>
                                 </tr>
+                                <? } ?>
                                 <? } ?>
                 </table>
             </td>
