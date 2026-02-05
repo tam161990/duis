@@ -342,8 +342,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
         $isFinalExportAct = !empty($act['RAKT_IR_OBJEKTS_PABEIGTS']);
         $forceManualWorksToPeriod = ($isFinalExportAct || $actLifePeriod == 3) ? $actLifePeriod : false;
         
-        if($aManualWorkExist)
-        {
+       
             $oPopLinkManual = new urlQuery;
             $oPopLinkManual->addPrm(FORM_ID, 'f.akt.s.33');
             $oPopLinkManual->addPrm('actId', $actId);
@@ -353,7 +352,8 @@ if ($isAdmin || $isRbfUser || $isEconomist)
             $allWorkLinkManual['URL'] = RequestHandler::popupHref($oPopLinkManual->getQuery().'&all=1', false, 700, 450, true, false, true);
             
             unset($oPopLinkManual);
-            
+            if($aManualWorkExist)
+            {    
             // Calculate manual works totals
             foreach ($aManualWorks as $work) {
                 $workTotal = $work['DRBI_KKAL_NORMATIVS'] * $work['DRBI_DAUDZUMS'];
