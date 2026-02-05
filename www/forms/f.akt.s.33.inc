@@ -141,7 +141,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                       $oRedirectLink = new urlQuery();
                       $oRedirectLink->addPrm(FORM_ID, 'f.akt.s.30');
                       $oRedirectLink->addPrm('actId', $actId);
-                      $oRedirectLink->addPrm('tab', 'works');
+                      $oRedirectLink->addPrm('tab', 'RBF_WORKS');
                       $oRedirectLink->addPrm('isSearch', $isSearch);
                       $oRedirectLink->addPrm('searchNum', $searchNum);
                       $oRedirectLink->addPrm('isNew', RequestHandler::getMicroTime());
