@@ -13789,6 +13789,7 @@ class dbProc extends dbLayer
 		$query = 'DELETE FROM `DARBI`
 				  WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
 				  AND `DRBI_WORK_APROVE_DATE` IS NULL
+                  AND `DRBI_IS_WORKER` = 0
 				  AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart($actLifePeriod).'"';
 		$result = $oDB->makeQuery($query);
 		return ($result !== false);
