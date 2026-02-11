@@ -15,16 +15,24 @@ if (reqVar::get('xmlHttp') == 1)
 			document.all["contract"].options[i] = null;
 		}
 		<?
-		$res=dbProc::getDuContractNo(reqVar::get('worker'), reqVar::get('trase'), true);
+		$res = dbProc::getRbfEmployeeVVContractList(reqVar::get('worker'));
 		if (is_array($res) && count($res)>0)
 		{
-
-            $i = 0;
+			$contractOptionsTemp = array();
 			foreach ($res as $row)
 			{
-				// feel options array
+				$territoryCode = ($row['RBDU_VV_VEIDS'] == 'U') ? $row['RBTR_KODS'] : $row['RBTR_DID_KODS'];
+				$optionKey = $row['RBDV_VV_NUMURS'].'|'.$territoryCode;
+				if (!isset($contractOptionsTemp[$optionKey])) {
+					$contractOptionsTemp[$optionKey] = $row['RBTR_NOSAUKUMS'] . ': ' . $row['RBDV_VV_NUMURS'];
+				}
+			}
+
+            $i = 0;
+			foreach ($contractOptionsTemp as $key => $label)
+			{
 				?>
-				document.all["contract"].options[<?=$i;?>] = new Option( '<?=$row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];?>', '<?=$row['KCNT_VV_NUMBER'].'|'.$row['KONT_KEDI_KODS'];?>');
+				document.all["contract"].options[<?=$i;?>] = new Option('<?=addslashes($label);?>', '<?=addslashes($key);?>');
                 <?
                 $i++;
 			}
@@ -122,29 +130,33 @@ if (reqVar::get('xmlHttp') == 1)
     // get worker list
     $worker=array();
     $j = 0;
-    $res=dbProc::getWorkOwnerWithActivContractList($trase, true);
-            if (is_array($res))
-            {
-                foreach ($res as $row)
-                {
-                    $worker[$row['KWOI_KODS']]=$row['KWOI_NOSAUKUMS'];
-                    if($j == 0)
-                    {
-                        $initWorker =  $row['KWOI_KODS'];
-                    }
-                    $j++;
-                }
-            }
-    unset($res);
-
-    // get contract list
-    $contract = array();
-    $res=dbProc::getDuContractNo((($searcCriteria['worker'] == '-1')? $initWorker : $searcCriteria['worker']), $trase, true);
+    $res=dbProc::getRbfEmployeeActiveList();
     if (is_array($res))
     {
         foreach ($res as $row)
         {
-            $contract[$row['KCNT_VV_NUMBER'].'|'.$row['KONT_KEDI_KODS']] = $row['KEDI_NOSAUKUMS'] . ': '. $row['KCNT_VV_NUMBER'];
+            $worker[$row['RBDU_KODS']] = $row['RBDU_KODS'] . ' - ' . $row['RBDU_NOSAUKUMS'];
+            if($j == 0)
+            {
+                $initWorker =  $row['RBDU_KODS'];
+            }
+            $j++;
+        }
+    }
+    unset($res);
+
+    // get contract list
+    $contract = array();
+    $res = dbProc::getRbfEmployeeVVContractList((($searcCriteria['worker'] == '-1')? $initWorker : $searcCriteria['worker']));
+    if (is_array($res))
+    {
+        foreach ($res as $row)
+        {
+            $territoryCode = ($row['RBDU_VV_VEIDS'] == 'U') ? $row['RBTR_KODS'] : $row['RBTR_DID_KODS'];
+            $contractKey = $row['RBDV_VV_NUMURS'].'|'.$territoryCode;
+            if (!isset($contract[$contractKey])) {
+                $contract[$contractKey] = $row['RBTR_NOSAUKUMS'] . ': ' . $row['RBDV_VV_NUMURS'];
+            }
         }
     }
     unset($res);

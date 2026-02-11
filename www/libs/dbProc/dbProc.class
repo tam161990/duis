@@ -6309,11 +6309,11 @@ class dbProc extends dbLayer
           //(SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER <> 1)  AS `MATER_TOTAL` ,  
           //(SELECT ".dbLayer::sqlParseDate('AAUD_DATUMS')." FROM `AKTA_STATUSA_MAINA`  WHERE a.RAKT_ID = AAUD_RAKT_ID AND AAUD_STATUS = 'CLOSE' ORDER BY AAUD_DATUMS DESC LIMIT 1) AS `AAUD_DATUMS`
           $query = " SELECT * FROM ( select *,
-            e.KEDI_SECTION `ED`,
+            case when w.RBDU_VV_VEIDS = 'U' THEN e.RBTR_NOSAUKUMS ELSE E.RBTR_DID_NOSAUKUMS END `ED`,
             v.KAKV_NOSAUKUMS `ACTA_VEIDS`,
-            w.KWOI_NOSAUKUMS `WORKER`,
+            w.RBDU_NOSAUKUMS `WORKER`,
             a.RAKT_FULL_NUMBER `NUMURS`,
-            e.KEDI_REGIONS AS `REGION` ,
+            e.RBTR_NOSAUKUMS AS `REGION` ,
              NVL((SELECT SUM(m.MATR_DAUDZUMS * m.MATR_CENA) from `MATERIALI` m WHERE m.MATR_RAKT_ID = a.RAKT_ID AND m.MATR_IS_WORKER = 1
 		AND ((a.RAKT_IS_AUTO = 1 and ( MATR_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
@@ -6331,9 +6331,9 @@ class dbProc extends dbLayer
 		) or ( a.RAKT_IS_AUTO = 0 ) )
             ) as `DRBI_APPROVE_DATE`
             from `AKTI` a
-            LEFT JOIN `KL_ED_IECIRKNI` e ON (a.RAKT_KEDI_ID = e.KEDI_ID)
+            LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = e.RBTR_ID)
             LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
-            LEFT JOIN `KL_WORK_OWNERS` w ON (a.RAKT_KWOI_KODS = w.KWOI_KODS)            
+            LEFT JOIN `kl_rbf_darbuznemeji` w ON (a.RAKT_KWOI_KODS = w.RBDU_KODS)            
             LEFT JOIN 
                 (SELECT MAX(AAUD_STATUS) AAUD_STATUS, MAX(AAUD_DATUMS) AAUD_DATUMS, AAUD_RAKT_ID 
                     FROM `AKTA_STATUSA_MAINA` 
@@ -6351,7 +6351,11 @@ class dbProc extends dbLayer
 
             $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
             if($searcCriteria['one_contract'] == 0) {
-                $query .= " and e.KEDI_KODS = '".$searcCriteria['edarea']."' ";
+                if (w.RBDU_VV_VEIDS == 'U') {
+                    $query .= " and e.RBTR_KODS = '".$searcCriteria['edarea']."' ";
+                } else {
+                    $query .= " and e.RBTR_DID_KODS = '".$searcCriteria['edarea']."' ";
+                }
             }
 
             //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
@@ -11883,6 +11887,32 @@ class dbProc extends dbLayer
 			INNER JOIN `kl_rbf_du_vv` vv ON d.RBDU_ID = vv.RBDV_RBDU_ID
 			where d.RBDU_KODS = "'.dbLayer::quote_smart($employeeCode).'"
 			order by vv.RBDV_VV_NUMURS';
+
+	   	$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
+	function getRbfEmployeeVVContractList($employeeCode)
+	{
+		$query = 'select DISTINCT vv.RBDV_VV_NUMURS, t.RBTR_KODS, t.RBTR_DID_KODS,
+			CASE 
+				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+				ELSE t.RBTR_DID_NOSAUKUMS
+			END as RBTR_NOSAUKUMS,
+			d.RBDU_VV_VEIDS
+			from `kl_rbf_darbuznemeji` d
+			INNER JOIN `kl_rbf_du_vv` vv ON d.RBDU_ID = vv.RBDV_RBDU_ID
+			INNER JOIN `kl_rbf_teritorijas` t ON vv.RBDV_RBTR_KODS = CASE 
+				WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_KODS
+				ELSE t.RBTR_DID_KODS
+			END
+			where d.RBDU_KODS = "'.dbLayer::quote_smart($employeeCode).'"
+			order by 
+				vv.RBDV_VV_NUMURS,
+				CASE 
+					WHEN d.RBDU_VV_VEIDS = "U" THEN t.RBTR_NOSAUKUMS
+					ELSE t.RBTR_DID_NOSAUKUMS
+				END';
 
 	   	$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
