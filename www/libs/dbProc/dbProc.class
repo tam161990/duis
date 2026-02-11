@@ -6330,9 +6330,13 @@ class dbProc extends dbLayer
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) )
             ) as `DRBI_APPROVE_DATE`
-            from `AKTI` a
-            LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = e.RBTR_ID)
-            LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
+            from `AKTI` a ";
+            if (w.RBDU_VV_VEIDS == 'U') {
+                $query .= " LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = e.RBTR_KODS)";
+            } else {
+                $query .= " LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = e.RBTR_DID_KODS)";
+            }
+            $query .= " LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
             LEFT JOIN `kl_rbf_darbuznemeji` w ON (a.RAKT_KWOI_KODS = w.RBDU_KODS)            
             LEFT JOIN 
                 (SELECT MAX(AAUD_STATUS) AAUD_STATUS, MAX(AAUD_DATUMS) AAUD_DATUMS, AAUD_RAKT_ID 
