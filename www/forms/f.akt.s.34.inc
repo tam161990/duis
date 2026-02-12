@@ -590,6 +590,11 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     $workFormatted['approve_date'] = date('d.m.Y', strtotime($work['RADR_APPROVE_DATE']));
                 }
                 
+                // Format new columns (Mērvienība, Apjoms, C.st. norma)
+                $workFormatted['mervieniba'] = !empty($work['RADR_MERVIENIBA']) ? htmlspecialchars($work['RADR_MERVIENIBA']) : '';
+                $workFormatted['apjoms'] = !empty($work['RADR_APJOMS']) ? number_format($work['RADR_APJOMS'], 2, '.', '') : '';
+                $workFormatted['cst_norma'] = !empty($work['RADR_CST_NORMA']) ? number_format($work['RADR_CST_NORMA'], 2, '.', '') : '';
+                
                 // Format norma
                 $workFormatted['norma'] = number_format($work['RADR_NORMA'], 2, '.', '');
                 
@@ -601,6 +606,9 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                 $workFormatted['mms_title'] = htmlspecialchars($work['RADR_MMS_TITLE']);
                 $workFormatted['plan_date_raw'] = $work['RADR_PLAN_DATE'];
                 $workFormatted['norma_raw'] = $work['RADR_NORMA'];
+                $workFormatted['mervieniba_raw'] = $work['RADR_MERVIENIBA'];
+                $workFormatted['apjoms_raw'] = $work['RADR_APJOMS'];
+                $workFormatted['cst_norma_raw'] = $work['RADR_CST_NORMA'];
                 
                 $worksFormatted[] = $workFormatted;
             }

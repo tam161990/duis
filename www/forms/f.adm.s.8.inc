@@ -229,8 +229,11 @@ if (userAuthorization::isAdmin())
 										// Column C: FADR_MMS_KODS (MMS nosacījums ID) - REQUIRED
 										// Column D: FADR_MMS_TITLE (MMS darbība/Nosacījums) - REQUIRED
 										// Column E: FADR_STATUS (Darbības status) - REQUIRED
-										// Column F: FADR_NORMA (Normatīvais koeficients / C.st.) - REQUIRED
-										// Column G: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
+										// Column F: FADR_MERVIENIBA (Mērvienība) - OPTIONAL
+										// Column G: FADR_APJOMS (Apjoms) - OPTIONAL
+										// Column H: FADR_CST_NORMA (C.st. norma) - OPTIONAL
+										// Column I: FADR_NORMA (Normatīvais koeficients / C.st.) - REQUIRED
+										// Column J: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
 										
 										// Read data and ensure UTF-8 encoding for Latvian characters
 										$numPostfix = trim($sheet2->getCell('A' . $row)->getCalculatedValue());
@@ -238,8 +241,11 @@ if (userAuthorization::isAdmin())
 										$mmsKods = trim($sheet2->getCell('C' . $row)->getCalculatedValue());
 										$mmsTitle = trim($sheet2->getCell('D' . $row)->getCalculatedValue());
 										$status = trim($sheet2->getCell('E' . $row)->getCalculatedValue());
-										$norma = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
-										$planDateRaw = $sheet2->getCell('G' . $row)->getValue();
+										$mervieniba = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
+										$apjoms = trim($sheet2->getCell('G' . $row)->getCalculatedValue());
+										$cstNorma = trim($sheet2->getCell('H' . $row)->getCalculatedValue());
+										$norma = trim($sheet2->getCell('I' . $row)->getCalculatedValue());
+										$planDateRaw = $sheet2->getCell('J' . $row)->getValue();
 										
 										
 										// Skip empty rows
@@ -290,7 +296,10 @@ if (userAuthorization::isAdmin())
 											$mmsTitle,
 											$status,
 											$planDate,
-											$norma
+											$norma,
+											!empty($mervieniba) ? $mervieniba : null,
+											!empty($apjoms) ? $apjoms : null,
+											!empty($cstNorma) ? $cstNorma : null
 										);
 										
 										if ($result)
