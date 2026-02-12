@@ -397,29 +397,32 @@ class RbfActProcessor
 	private function processWork($raktId, $raktFullNumber, $work)
 	{
 		$rbklShifrs = $work['FADR_RBKL_SHIFRS'];
-		$mmsKods = $work['FADR_MMS_KODS'];
-		$mmsTitle = $work['FADR_MMS_TITLE'];
-		$status = $work['FADR_STATUS'];
-		$planDate = $work['FADR_PLAN_DATE'];
-		$norma = $work['FADR_NORMA'];
-		
-		// Validate calculation code exists
-		if (!dbProc::validateRbfCalculationCode($rbklShifrs)) {
-			$error = "[ERROR] Act $raktFullNumber: Calculation code '$rbklShifrs' not found in kl_rbf_kalkulacija. Skipping work.";
-			files::wh_log($error);
-			$this->stats['works']['errors'][] = $error;
-			$this->stats['works']['error']++;
-			return;
-		}
-		
-		// Check if work already exists
-		$existingWork = dbProc::getExistingWork($raktId, $rbklShifrs, $mmsKods);
-		
-		if ($existingWork) {
-			$this->handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate);
-		} else {
-			$this->handleNewWork($raktId, $raktFullNumber, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma);
-		}
+	$mmsKods = $work['FADR_MMS_KODS'];
+	$mmsTitle = $work['FADR_MMS_TITLE'];
+	$status = $work['FADR_STATUS'];
+	$planDate = $work['FADR_PLAN_DATE'];
+	$norma = $work['FADR_NORMA'];
+	$mervieniba = isset($work['FADR_MERVIENIBA']) ? $work['FADR_MERVIENIBA'] : null;
+	$apjoms = isset($work['FADR_APJOMS']) ? $work['FADR_APJOMS'] : null;
+	$cstNorma = isset($work['FADR_CST_NORMA']) ? $work['FADR_CST_NORMA'] : null;
+	
+	// Validate calculation code exists
+	if (!dbProc::validateRbfCalculationCode($rbklShifrs)) {
+		$error = "[ERROR] Act $raktFullNumber: Calculation code '$rbklShifrs' not found in kl_rbf_kalkulacija. Skipping work.";
+		files::wh_log($error);
+		$this->stats['works']['errors'][] = $error;
+		$this->stats['works']['error']++;
+		return;
+	}
+	
+	// Check if work already exists
+	$existingWork = dbProc::getExistingWork($raktId, $rbklShifrs, $mmsKods);
+	
+	if ($existingWork) {
+		$this->handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate);
+	} else {
+		$this->handleNewWork($raktId, $raktFullNumber, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba, $apjoms, $cstNorma);
+	}
 	}
 	
 	// -----------------------------------------------------------------------------
@@ -451,9 +454,9 @@ class RbfActProcessor
 	// Handle new work record
 	// Private
 	// -----------------------------------------------------------------------------
-	private function handleNewWork($raktId, $raktFullNumber, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma)
+	private function handleNewWork($raktId, $raktFullNumber, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba = null, $apjoms = null, $cstNorma = null)
 	{
-		$insertedId = dbProc::insertRbfWork($raktId, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma);
+		$insertedId = dbProc::insertRbfWork($raktId, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba, $apjoms, $cstNorma);
 		if ($insertedId) {
 			files::wh_log("[INSERT] Act $raktFullNumber: New work added (RADR_ID: $insertedId, Calc: $rbklShifrs, MMS: $mmsKods, Norma: $norma)");
 			$this->stats['works']['inserted']++;

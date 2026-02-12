@@ -279,14 +279,17 @@ else
                             <table cellpadding="5" cellspacing="1" border="0" width="100%">
                                 <tr class="table_head_2">
                                     <th width="3%" align="center">&nbsp;</th>
-                                    <th width="12%"><?= text::get('RBF_WORK_ORDER_NUMBER') ?></th>
-                                    <th width="8%"><?= text::get('RBF_WORK_CALC_CODE') ?></th>
-                                    <th width="8%"><?= text::get('RBF_WORK_MMS_CODE') ?></th>
-                                    <th width="25%"><?= text::get('RBF_WORK_MMS_TITLE') ?></th>
-                                    <th width="12%"><?= text::get('RBF_WORK_STATUS') ?></th>
-                                    <th width="10%"><?= text::get('RBF_WORK_PLAN_DATE') ?></th>
-                                    <th width="8%"><?= text::get('RBF_WORK_NORMA') ?></th>
-                                    <th width="10%"><?= text::get('RBF_WORK_APPROVE_DATE') ?></th>
+                                    <th width="10%"><?= text::get('RBF_WORK_ORDER_NUMBER') ?></th>
+                                    <th width="6%"><?= text::get('RBF_WORK_CALC_CODE') ?></th>
+                                    <th width="6%"><?= text::get('RBF_WORK_MMS_CODE') ?></th>
+                                    <th width="20%"><?= text::get('RBF_WORK_MMS_TITLE') ?></th>
+                                    <th width="10%"><?= text::get('RBF_WORK_STATUS') ?></th>
+                                    <th width="8%"><?= text::get('RBF_WORK_PLAN_DATE') ?></th>
+                                    <th width="7%"><?= text::get('RBF_WORK_MERVIENIBA') ?></th>
+                                    <th width="6%"><?= text::get('RBF_WORK_APJOMS') ?></th>
+                                    <th width="6%"><?= text::get('RBF_WORK_CST_NORMA') ?></th>
+                                    <th width="6%"><?= text::get('RBF_WORK_NORMA') ?></th>
+                                    <th width="8%"><?= text::get('RBF_WORK_APPROVE_DATE') ?></th>
                                 </tr>
                                 <?
                                 foreach ($worksFormatted as $work)
@@ -308,6 +311,9 @@ else
                                         <td align="left"><?= $work['mms_title'] ?></td>
                                         <td><?= $work['status_name'] ?></td>
                                         <td align="center"><?= $work['plan_date'] ?></td>
+                                        <td align="center"><?= $work['mervieniba'] ?></td>
+                                        <td align="right"><?= $work['apjoms'] ?></td>
+                                        <td align="right"><?= $work['cst_norma'] ?></td>
                                         <td align="right"><?= $work['norma'] ?></td>
                                         <td align="center"><?= $work['approve_date'] ?></td>
                                     </tr>
