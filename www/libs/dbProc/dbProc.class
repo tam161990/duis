@@ -13476,6 +13476,7 @@ class dbProc extends dbLayer
 			$rbklId = $calcInfo[0]['RBKL_ID'];
 			$rbklNosaukums = $calcInfo[0]['RBKL_NOSAUKUMS'];
             $rbkPrice = $calcInfo[0]['RBKL_CENA'];
+            $rbkTotal = $calcInfo[0]['RBKL_CENA'] * $item['norma_sum'];
 			
 			// Insert into DARBI
 			$insertQuery = 'INSERT INTO `DARBI` (
@@ -13484,6 +13485,7 @@ class dbProc extends dbLayer
 				`DRBI_KKAL_SHIFRS`,
 				`DRBI_KKAL_NOSAUKUMS`,
 				`DRBI_CILVEKSTUNDAS`,
+                `DRBI_DAUDZUMS`,
                 `DRBI_KKAL_NORMATIVS`,
 				`DRBI_PLAN_DATE`,
 				`DRBI_ACT_QUART`
@@ -13492,6 +13494,7 @@ class dbProc extends dbLayer
 				"'.dbLayer::quote_smart($rbklId).'",
 				"'.dbLayer::quote_smart($item['calc_code']).'",
 				"'.dbLayer::quote_smart($rbklNosaukums).'",
+                "'.dbLayer::quote_smart($rbkTotal).'",
 				"'.dbLayer::quote_smart($item['norma_sum']).'",
                 "'.dbLayer::quote_smart($rbkPrice).'",
 				'.($item['plan_date'] ? '"'.dbLayer::quote_smart($item['plan_date']).'"' : 'NULL').',
@@ -13561,9 +13564,9 @@ class dbProc extends dbLayer
 					d.DRBI_KKAL_SHIFRS,
 					d.DRBI_KKAL_NOSAUKUMS,
 					w.KWRC_KODS,
-					SUM(CASE WHEN d.DRBI_ACT_QUART = 1 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_1,
-					SUM(CASE WHEN d.DRBI_ACT_QUART = 2 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_2,
-					SUM(CASE WHEN d.DRBI_ACT_QUART = 3 THEN d.DRBI_CILVEKSTUNDAS ELSE 0 END) as PERIOD_3
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 1 THEN d.DRBI_DAUDZUMS ELSE 0 END) as PERIOD_1,
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 2 THEN d.DRBI_DAUDZUMS ELSE 0 END) as PERIOD_2,
+					SUM(CASE WHEN d.DRBI_ACT_QUART = 3 THEN d.DRBI_DAUDZUMS ELSE 0 END) as PERIOD_3
 				  FROM DARBI d
 				  LEFT JOIN kl_writeoff_code_new w ON d.DRBI_KKAL_SHIFRS = w.KWRC_KKAL_SHIFRS
 				  WHERE d.DRBI_RAKT_ID = "'.dbLayer::quote_smart($raktId).'"
@@ -13637,9 +13640,9 @@ class dbProc extends dbLayer
 				  LEFT JOIN (
 					SELECT 
 						DRBI_KKAL_SHIFRS,
-						SUM(CASE WHEN DRBI_ACT_QUART = 1 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_1_HOURS,
-						SUM(CASE WHEN DRBI_ACT_QUART = 2 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_2_HOURS,
-						SUM(CASE WHEN DRBI_ACT_QUART = 3 THEN DRBI_CILVEKSTUNDAS ELSE 0 END) AS PERIOD_3_HOURS
+						SUM(CASE WHEN DRBI_ACT_QUART = 1 THEN DRBI_DAUDZUMS ELSE 0 END) AS PERIOD_1_HOURS,
+						SUM(CASE WHEN DRBI_ACT_QUART = 2 THEN DRBI_DAUDZUMS ELSE 0 END) AS PERIOD_2_HOURS,
+						SUM(CASE WHEN DRBI_ACT_QUART = 3 THEN DRBI_DAUDZUMS ELSE 0 END) AS PERIOD_3_HOURS
 					FROM `DARBI`
 					WHERE DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"
 					GROUP BY DRBI_KKAL_SHIFRS
