@@ -6388,7 +6388,7 @@ class dbProc extends dbLayer
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
-
+    
     function getWriteOffSumm($searchString, $actIds) {
         $sCriteria = explode("^", $searchString);
 
