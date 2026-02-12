@@ -6330,10 +6330,13 @@ class dbProc extends dbLayer
                 AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) )
             ) as `DRBI_APPROVE_DATE`
-            from `AKTI` a
-            LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = e.RBTR_ID)
-            LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)
-            LEFT JOIN `kl_rbf_darbuznemeji` w ON (a.RAKT_KWOI_KODS = w.RBDU_KODS)            
+            from `AKTI` a 
+            LEFT JOIN `kl_rbf_darbuznemeji` w ON (a.RAKT_KWOI_KODS = w.RBDU_KODS)
+            LEFT JOIN `kl_rbf_teritorijas` e ON (a.RAKT_KEDI_ID = CASE 
+                WHEN w.RBDU_VV_VEIDS = 'U' THEN e.RBTR_KODS
+                ELSE e.RBTR_DID_KODS
+            END)
+            LEFT JOIN `KL_AKTA_VEIDS` v ON (a.RAKT_KAKV_ID = v.KAKV_ID)            
             LEFT JOIN 
                 (SELECT MAX(AAUD_STATUS) AAUD_STATUS, MAX(AAUD_DATUMS) AAUD_DATUMS, AAUD_RAKT_ID 
                     FROM `AKTA_STATUSA_MAINA` 
@@ -6351,11 +6354,10 @@ class dbProc extends dbLayer
 
             $query .= " and a.RAKT_VV_NUMBER = '".$searcCriteria['contract']."' ";
             if($searcCriteria['one_contract'] == 0) {
-                if (w.RBDU_VV_VEIDS == 'U') {
-                    $query .= " and e.RBTR_KODS = '".$searcCriteria['edarea']."' ";
-                } else {
-                    $query .= " and e.RBTR_DID_KODS = '".$searcCriteria['edarea']."' ";
-                }
+                $query .= " and (
+                    (w.RBDU_VV_VEIDS = 'U' and e.RBTR_KODS = '".$searcCriteria['edarea']."')
+                    or (w.RBDU_VV_VEIDS <> 'U' and e.RBTR_DID_KODS = '".$searcCriteria['edarea']."')
+                ) ";
             }
 
             //$query .= " and a.RAKT_STATUS IN ('ACCEPT', 'CLOSE', 'CLOSEWRITEOFF') ";
@@ -6386,7 +6388,7 @@ class dbProc extends dbLayer
 		$oSQL = new dbLayer;
 		return $oSQL -> makeQuery($query);
 	}
-
+    
     function getWriteOffSumm($searchString, $actIds) {
         $sCriteria = explode("^", $searchString);
 
