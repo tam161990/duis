@@ -13617,6 +13617,9 @@ class dbProc extends dbLayer
 					d.`RADR_NORMA`,
 					d.`RADR_APPROVE_DATE`,
 					d.`RADR_IS_PROCESSED`,
+                    d.`RADR_MERVIENIBA`,
+                    d.`RADR_APJOMS`,
+                    d.`RADR_CST_NORMA`,
 					a.`RAKT_NUM_POSTFIX`
 				  FROM `rbf_akta_darbi` d
 				  LEFT JOIN `AKTI` a ON d.`RADR_FAKT_ID` = a.`RAKT_ID`
