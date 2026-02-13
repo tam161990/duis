@@ -488,8 +488,11 @@ VALUES
         <tr><td>C</td><td>MMS nosacījums ID</td><td>+</td><td>VARCHAR</td><td>10</td><td>MMS sistēmas nosacījuma identifikators</td></tr>
         <tr><td>D</td><td>MMS darbība/Nosacījums</td><td>+</td><td>VARCHAR</td><td>250</td><td>MMS darbības vai nosacījuma nosaukums</td></tr>
         <tr><td>E</td><td>Darbības statusa kods</td><td>+</td><td>VARCHAR</td><td>20</td><td>Darba izpildes statuss (Iesākts-PROCESS, Novēršana-COMPLETED, Nav darāmā-NOTHING_TO_DO, Nevarēja izpildīt-CANT_DO)</td></tr>
-        <tr><td>F</td><td>Normatīvais koeficients (C.st.)</td><td>+</td><td>FLOAT</td><td>7,2</td><td>Normatīvais koeficients (c.st. vienībās)</td></tr>
-        <tr style="background-color: #f0f0f0;"><td>G</td><td>Izpildes datums</td><td>-</td><td>DATE/DATETIME</td><td>-</td><td>Plānotais vai faktiskais izpildes datums (nav obligāts)</td></tr>
+        <tr><td>F</td><td>Mērvienība</td><td>-</td><td>VARCHAR</td><td>20</td><td>Darba mērvienība (nav obligāts)</td></tr>
+        <tr><td>G</td><td>Apjoms</td><td>-</td><td>FLOAT</td><td>7,2</td><td>Darba apjoms (nav obligāts)</td></tr>
+        <tr><td>H</td><td>C.st. norma</td><td>-</td><td>FLOAT</td><td>7,2</td><td>C.st. norma (nav obligāts)</td></tr>
+        <tr><td>I</td><td>Normatīvais koeficients (C.st.)</td><td>+</td><td>FLOAT</td><td>7,2</td><td>Normatīvais koeficients (c.st. vienībās)</td></tr>
+        <tr style="background-color: #f0f0f0;"><td>J</td><td>Izpildes datums</td><td>-</td><td>DATE/DATETIME</td><td>-</td><td>Plānotais vai faktiskais izpildes datums (nav obligāts)</td></tr>
 		</table>
         
         <p align="left"><strong>Piezīmes:</strong></p>
@@ -594,6 +597,9 @@ INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_CODE','MMS nos
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MMS_TITLE','MMS Darbība/Nosacījums');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NO','Nr.');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_NORMA','C.st.');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_MERVIENIBA','Mērvienība');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_APJOMS','Apjoms');
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_CST_NORMA','C.st. norma');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_ORDER_NUMBER','Uzturēšanas darba numurs');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PLAN_DATE','Izpildes datums');
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) VALUES ('RBF_WORK_PROCESS_ERROR','Darbs statusā "Novēršana" nevar tikt iekļauts Starpaktā');
@@ -777,4 +783,22 @@ ON DUPLICATE KEY UPDATE `TEXT` = 'Manuāli pievienotie darbi';
 INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
 VALUES ('RBF_OTHER_WORKS_TOTAL', 'Citi darbi kopā')
 ON DUPLICATE KEY UPDATE `TEXT` = 'Citi darbi kopā';
+
+-- ============================================================================
+-- Add new columns to rbf_akta_darbi_tmp table for measurement unit, volume, and C.st. norma
+-- ============================================================================
+
+ALTER TABLE `rbf_akta_darbi_tmp` 
+ADD COLUMN `FADR_MERVIENIBA` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci' COMMENT 'Mērvienība' AFTER `FADR_NORMA`,
+ADD COLUMN `FADR_APJOMS` FLOAT(7,2) NULL DEFAULT NULL COMMENT 'Apjoms' AFTER `FADR_MERVIENIBA`,
+ADD COLUMN `FADR_CST_NORMA` FLOAT(7,2) NULL DEFAULT NULL COMMENT 'C.st. norma' AFTER `FADR_APJOMS`;
+
+-- ============================================================================
+-- Add new columns to rbf_akta_darbi table for measurement unit, volume, and C.st. norma
+-- ============================================================================
+
+ALTER TABLE `rbf_akta_darbi` 
+ADD COLUMN `RADR_MERVIENIBA` VARCHAR(20) NULL DEFAULT NULL COLLATE 'utf8_latvian_ci' COMMENT 'Mērvienība' AFTER `RADR_NORMA`,
+ADD COLUMN `RADR_APJOMS` FLOAT(7,2) NULL DEFAULT NULL COMMENT 'Apjoms' AFTER `RADR_MERVIENIBA`,
+ADD COLUMN `RADR_CST_NORMA` FLOAT(7,2) NULL DEFAULT NULL COMMENT 'C.st. norma' AFTER `RADR_APJOMS`;
 

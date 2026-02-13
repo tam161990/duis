@@ -13104,9 +13104,12 @@ class dbProc extends dbLayer
 	 * @param string $status - Action status (FADR_STATUS)
 	 * @param string $planDate - Execution date (FADR_PLAN_DATE)
 	 * @param float $norma - C.st. (FADR_NORMA)
+	 * @param string $mervieniba - Unit of measure (FADR_MERVIENIBA)
+	 * @param float $apjoms - Volume (FADR_APJOMS)
+	 * @param float $cstNorma - C.st. norma (FADR_CST_NORMA)
 	 * @return bool|int - Insert ID on success, false on failure
 	 */
-	function saveRbfAktaDarbs($numPostfix, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma)
+	function saveRbfAktaDarbs($numPostfix, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba = null, $apjoms = null, $cstNorma = null)
 	{
 		$oDB = new dbLayer();
 		
@@ -13117,7 +13120,10 @@ class dbProc extends dbLayer
 					`FADR_MMS_TITLE`,
 					`FADR_STATUS`,
 					`FADR_PLAN_DATE`,
-					`FADR_NORMA`
+					`FADR_NORMA`,
+					`FADR_MERVIENIBA`,
+					`FADR_APJOMS`,
+					`FADR_CST_NORMA`
 				) VALUES (
 					"'.dbLayer::quote_smart($numPostfix).'",
 					"'.dbLayer::quote_smart($rbklShifrs).'",
@@ -13125,7 +13131,10 @@ class dbProc extends dbLayer
 					"'.dbLayer::quote_smart($mmsTitle).'",
 					"'.dbLayer::quote_smart($status).'",
 					'.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').',
-					"'.dbLayer::quote_smart($norma).'"
+					"'.dbLayer::quote_smart($norma).'",
+					'.($mervieniba ? '"'.dbLayer::quote_smart($mervieniba).'"' : 'NULL').',
+					'.($apjoms ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
+					'.($cstNorma ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').'
 				)';
 		
 		$result = $oDB->makeQuery($query);
@@ -13234,9 +13243,12 @@ class dbProc extends dbLayer
 	 * @param string $status Status
 	 * @param string $planDate Plan date (nullable)
 	 * @param float $norma Norma
+	 * @param string $mervieniba Unit of measure (nullable)
+	 * @param float $apjoms Volume (nullable)
+	 * @param float $cstNorma C.st. norma (nullable)
 	 * @return int|false Insert ID or false
 	 */
-	function insertRbfWork($faktId, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma)
+	function insertRbfWork($faktId, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba = null, $apjoms = null, $cstNorma = null)
 	{
 		$oDB = new dbLayer();
 		
@@ -13248,6 +13260,9 @@ class dbProc extends dbLayer
 					`RADR_STATUS`,
 					`RADR_PLAN_DATE`,
 					`RADR_NORMA`,
+					`RADR_MERVIENIBA`,
+					`RADR_APJOMS`,
+					`RADR_CST_NORMA`,
 					`RADR_IS_PROCESSED`
 				) VALUES (
 					"'.dbLayer::quote_smart($faktId).'",
@@ -13257,6 +13272,9 @@ class dbProc extends dbLayer
 					"'.dbLayer::quote_smart($status).'",
 					'.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').',
 					"'.dbLayer::quote_smart($norma).'",
+					'.($mervieniba ? '"'.dbLayer::quote_smart($mervieniba).'"' : 'NULL').',
+					'.($apjoms ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
+					'.($cstNorma ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').',
 					0
 				)';
 		
@@ -13598,6 +13616,9 @@ class dbProc extends dbLayer
 					d.`RADR_NORMA`,
 					d.`RADR_APPROVE_DATE`,
 					d.`RADR_IS_PROCESSED`,
+                    d.`RADR_MERVIENIBA`,
+                    d.`RADR_APJOMS`,
+                    d.`RADR_CST_NORMA`,
 					a.`RAKT_NUM_POSTFIX`
 				  FROM `rbf_akta_darbi` d
 				  LEFT JOIN `AKTI` a ON d.`RADR_FAKT_ID` = a.`RAKT_ID`
