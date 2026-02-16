@@ -11,9 +11,46 @@ if (!file_exists($configFile)) {
 }
 require_once($configFile);
 
-// Verify constants
-if (!defined('EMAIL_FROM') || !defined('SMTP_HOST')) {
-    die("ERROR: Required constants not defined in config/main.conf.php\n");
+// Check which constants are missing
+$missingConstants = array();
+$requiredConstants = array(
+    'EMAIL_FROM',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_ENCRYPTION',
+    'SMTP_AUTH',
+    'SMTP_USERNAME',
+    'SMTP_PASSWORD',
+    'SMTP_FROM_NAME'
+);
+
+foreach ($requiredConstants as $const) {
+    if (!defined($const)) {
+        $missingConstants[] = $const;
+    }
+}
+
+if (!empty($missingConstants)) {
+    echo "ERROR: Missing SMTP configuration constants in config/main.conf.php\n\n";
+    echo "Missing constants:\n";
+    foreach ($missingConstants as $const) {
+        echo "  - $const\n";
+    }
+    echo "\nPlease add the following to your config/main.conf.php file:\n";
+    echo "---------------------------------------------------------------\n";
+    echo "# SMTP Email configuration\n";
+    echo "define('EMAIL_FROM', 'softex@softex.lv');\n";
+    echo "define('SMTP_HOST', 'mail.energo.lv');\n";
+    echo "define('SMTP_PORT', 25);\n";
+    echo "define('SMTP_ENCRYPTION', '');\n";
+    echo "define('SMTP_AUTH', false);\n";
+    echo "define('SMTP_USERNAME', '');\n";
+    echo "define('SMTP_PASSWORD', '');\n";
+    echo "define('SMTP_FROM_NAME', 'DUIS System');\n";
+    echo "---------------------------------------------------------------\n\n";
+    echo "Or copy the entire SMTP section from:\n";
+    echo "  sql/SMTP_CONFIG_UPDATE.sql\n";
+    die("\n");
 }
 
 require_once(dirname(__FILE__).'/libs/email/SmtpMailer.class');
