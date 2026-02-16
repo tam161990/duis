@@ -105,30 +105,47 @@ define('SMTP_PASSWORD', 'your-password');
 
 ## Testēšana (Testing)
 
-### 1. Pārbaudiet pašreizējo konfigurāciju (Test current configuration):
+Sistēmā ir iekļauti 2 testa skripti:
 
-```php
-// Test script: test_email.php
-require_once('config/main.conf.php');
-require_once('libs/email/SmtpMailer.class');
+### 1. Pilnais tests ar DUIS inicializāciju (Recommended):
 
-$mailer = new SmtpMailer();
-$mailer->setDebug(true);
+```bash
+# Ar noklusēto e-pastu
+php test_smtp.php
 
-$result = $mailer->send(
-    'test@example.com',
-    'Test Email',
-    'This is a test message',
-    EMAIL_FROM,
-    SMTP_FROM_NAME
-);
-
-echo $result ? "SUCCESS" : "FAILED: " . $mailer->getLastError();
+# Ar pielāgotu saņēmēju
+php test_smtp.php your.email@example.com
 ```
 
-### 2. Pārbaudiet logus (Check logs):
+Šis skripts:
+- Ielādē visu DUIS sistēmu
+- Izmanto `files::wh_log()` logošanai
+- Parāda detalizētu izvadi
+- Logi tiek saglabāti `logs/wh.log`
+
+### 2. Standalone tests (bez pilnas DUIS inicializācijas):
+
 ```bash
+# Ar noklusēto e-pastu
+php test_smtp_standalone.php
+
+# Ar pielāgotu saņēmēju
+php test_smtp_standalone.php your.email@example.com
+```
+
+Šis skripts:
+- Neprasa pilnu DUIS inicializāciju
+- Ātrāks un vienkāršāks
+- Izmanto `error_log()` logošanai
+- Izvada visu uz konsoli
+
+### 3. Pārbaudiet logus (Check logs):
+```bash
+# Pilnais log fails
 tail -f logs/wh.log
+
+# Filtrēt tikai SMTP ziņojumus
+tail -f logs/wh.log | grep SMTP
 ```
 
 ---
