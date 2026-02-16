@@ -1,4 +1,7 @@
 <?
+// Include SMTP mailer class
+require_once(dirname(__FILE__).'/SmtpMailer.class');
+
 class email
 {
 
@@ -42,11 +45,6 @@ class email
 		$body .= text::get('NOTIFICATION_ABOUT').': '.strftime("%d.%m.%Y %H:%M", time()).', '.$msgTypeLabel.', '.$userInfo."\n\r";;
 		$body .= text::get('MESSAGE_DESCRIPTION').': '.$msgDescr."\n\r";
 		$body .= (($eventDescr)? text::get('EVENT_DESCRIPTION').': '.$eventDescr:'');
-
-		$headers  = "MIME-Version: 1.0\r\n";
-		$headers .= "Content-type: text/plain;  charset=utf-8\r\n";
-		$headers .= "From: ".$userInfo." <".$userEmail.">\r\n";
-
 												
 		$subscribers = dbProc::getSubscribersList($projectId, $actionId, $changedEventId);
 
@@ -74,14 +72,16 @@ class email
 		if($subscribers !== false)
 		{
 			$isSend=array();
+			$mailer = new SmtpMailer();
+			
 			foreach($subscribers as $user)
 			{
 				// ja e-pasts ir tuks, vai jau atsutijam vestuli uz so e-pastu, vai lietotajsa taisa si notikumu (tad vinam nevajag sutit vestuli)
 				if(!empty($user['RLTT_EPASTA_ADRESE']) && !isset($isSend[$user['RLTT_EPASTA_ADRESE']]) && ($user['RLTT_ID']!=userAuthorization::getUserId()) )
 				{ 
 					$isSend[$user['RLTT_EPASTA_ADRESE']]=true;
-					//echo $user['RLTT_EPASTA_ADRESE'];
-					mail($user['RLTT_EPASTA_ADRESE'], $subject, $body, $headers);
+					// Use SMTP mailer instead of mail()
+					$mailer->send($user['RLTT_EPASTA_ADRESE'], $subject, $body, $userEmail, $userInfo);
 				}
 			}
 		}
@@ -185,21 +185,15 @@ class email
 	$body .= "\n" . text::get('RBF_EMAIL_FOOTER');
 	files::wh_log("[RBF EMAIL] Email body length: " . strlen($body) . " characters");
 
-	// Prepare email headers
-	$headers  = "MIME-Version: 1.0\r\n";
-	$headers .= "Content-type: text/plain; charset=utf-8\r\n";
-	if ($userEmail) {
-		$headers .= "From: " . $userInfo . " <" . $userEmail . ">\r\n";
-	} else {
-		$headers .= "From: DUIS System <noreply@energo.lv>\r\n";
-	}
-	files::wh_log("[RBF EMAIL] Email headers prepared");
-
-	// Send email to all contractor addresses
-	files::wh_log("[RBF EMAIL] Step 5: Sending emails");
+	// Send email to all contractor addresses using SMTP
+	files::wh_log("[RBF EMAIL] Step 5: Sending emails via SMTP");
 	$sentEmails = array();
 	$successCount = 0;
 	$failureCount = 0;
+	
+	// Create SMTP mailer instance
+	$mailer = new SmtpMailer();
+	$mailer->setDebug(true); // Enable debug logging
 	
 	foreach ($contractorEmails as $email) {
 		$email = trim($email);
@@ -207,14 +201,17 @@ class email
 			$sentEmails[$email] = true;
 			files::wh_log("[RBF EMAIL] Attempting to send email to: $email");
 			
-			// Call mail() function and capture result
-			$mailResult = mail($email, $subject, $body, $headers);
+			// Use SMTP mailer instead of mail()
+			$from = $userEmail ? $userEmail : EMAIL_FROM;
+			$fromName = $userInfo ? $userInfo : SMTP_FROM_NAME;
+			$mailResult = $mailer->send($email, $subject, $body, $from, $fromName);
 			
 			if ($mailResult) {
-				files::wh_log("[RBF EMAIL] SUCCESS: mail() returned TRUE for $email");
+				files::wh_log("[RBF EMAIL] SUCCESS: SMTP send returned TRUE for $email");
 				$successCount++;
 			} else {
-				files::wh_log("[RBF EMAIL] FAILURE: mail() returned FALSE for $email");
+				files::wh_log("[RBF EMAIL] FAILURE: SMTP send returned FALSE for $email");
+				files::wh_log("[RBF EMAIL] Error: " . $mailer->getLastError());
 				$failureCount++;
 			}
 		} else {
