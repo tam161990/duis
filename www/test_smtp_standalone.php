@@ -6,7 +6,19 @@
  */
 
 // Load configuration
-require_once(dirname(__FILE__).'/config/main.conf.php');
+$configFile = dirname(__FILE__).'/config/main.conf.php';
+if (!file_exists($configFile)) {
+    die("ERROR: Config file not found at: $configFile\n");
+}
+require_once($configFile);
+
+// Verify constants are loaded
+if (!defined('EMAIL_FROM')) {
+    die("ERROR: EMAIL_FROM constant not defined. Check config/main.conf.php\n");
+}
+if (!defined('SMTP_HOST')) {
+    die("ERROR: SMTP_HOST constant not defined. Check config/main.conf.php\n");
+}
 
 // Load SmtpMailer class
 require_once(dirname(__FILE__).'/libs/email/SmtpMailer.class');
@@ -23,8 +35,24 @@ echo "  SMTP Auth: " . (SMTP_AUTH ? 'Enabled' : 'Disabled') . "\n";
 echo "  From Email: " . EMAIL_FROM . "\n";
 echo "  From Name: " . SMTP_FROM_NAME . "\n\n";
 
+// Test SMTP connectivity first
+echo "Testing SMTP connectivity...\n";
+$testSocket = @fsockopen(SMTP_HOST, SMTP_PORT, $errno, $errstr, 5);
+if (!$testSocket) {
+    echo "✗ ERROR: Cannot connect to " . SMTP_HOST . ":" . SMTP_PORT . "\n";
+    echo "  Error: $errstr ($errno)\n";
+    echo "  This means:\n";
+    echo "  - SMTP server may be down\n";
+    echo "  - Firewall is blocking the connection\n";
+    echo "  - Wrong hostname/port\n\n";
+    die("Please fix connectivity issues before proceeding.\n");
+}
+echo "✓ SMTP server is reachable\n";
+fclose($testSocket);
+echo "\n";
+
 // Get recipient email from command line or use default
-$recipientEmail = isset($argv[1]) ? $argv[1] : 'tatjana.fedorkova@latvenergo.lv';
+$recipientEmail = isset($argv[1]) ? $argv[1] : 'tatjana.fedorkova@gmail.com';
 
 echo "Sending test email to: $recipientEmail\n\n";
 
