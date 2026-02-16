@@ -26,6 +26,25 @@ class SmtpMailer
     private $lastError = '';
     
     /**
+     * Log message to file or output
+     * @param string $message
+     */
+    private function log($message)
+    {
+        // Try to use files class if available
+        if (class_exists('files')) {
+            files::wh_log($message);
+        } else {
+            // Fallback to error_log
+            error_log($message);
+            // Also echo if in CLI mode
+            if (php_sapi_name() === 'cli') {
+                echo $message . "\n";
+            }
+        }
+    }
+    
+    /**
      * Enable debug mode
      * @param bool $enable
      */
@@ -68,8 +87,8 @@ class SmtpMailer
         
         // Log attempt
         if ($this->debug) {
-            files::wh_log("[SMTP] Attempting to send email to: " . implode(', ', $recipients));
-            files::wh_log("[SMTP] Subject: $subject");
+            $this->log("[SMTP] Attempting to send email to: " . implode(', ', $recipients));
+            $this->log("[SMTP] Subject: $subject");
         }
         
         try {
@@ -117,7 +136,7 @@ class SmtpMailer
             $this->disconnect();
             
             if ($this->debug) {
-                files::wh_log("[SMTP] Email sent successfully");
+                $this->log("[SMTP] Email sent successfully");
             }
             
             return true;
@@ -125,13 +144,13 @@ class SmtpMailer
         } catch (Exception $e) {
             $this->lastError = $e->getMessage();
             if ($this->debug) {
-                files::wh_log("[SMTP] ERROR: " . $this->lastError);
+                $this->log("[SMTP] ERROR: " . $this->lastError);
             }
             $this->disconnect();
             
             // Fallback to PHP mail() function
             if ($this->debug) {
-                files::wh_log("[SMTP] Falling back to PHP mail() function");
+                $this->log("[SMTP] Falling back to PHP mail() function");
             }
             return $this->fallbackToPhpMail($recipients, $subject, $message, $from, $fromName);
         }
