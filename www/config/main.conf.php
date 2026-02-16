@@ -45,6 +45,35 @@ define ('RCDIS_ADMIN_LIST', 'admin,ttest,tam,auditor,rbf');
 // Default sender email 
 define('EMAIL_FROM', 'softex@softex.lv');
 
+# =============================================================================
+# SMTP Email configuration
+# =============================================================================
+
+// SMTP server hostname
+define('SMTP_HOST', 'mail.energo.lv');
+
+// SMTP server port (25 for no encryption, 587 for TLS, 465 for SSL)
+define('SMTP_PORT', 25);
+
+// SMTP encryption type: '', 'tls', or 'ssl'
+// Current: no encryption (empty string)
+// Future (MS Outlook): will need 'tls' or 'ssl'
+define('SMTP_ENCRYPTION', '');
+
+// SMTP authentication enabled (false = no auth, true = use username/password)
+// Current: false (no authentication required)
+// Future (MS Outlook): set to true
+define('SMTP_AUTH', false);
+
+// SMTP username (leave empty if SMTP_AUTH is false)
+define('SMTP_USERNAME', '');
+
+// SMTP password (leave empty if SMTP_AUTH is false)
+define('SMTP_PASSWORD', '');
+
+// SMTP sender name
+define('SMTP_FROM_NAME', 'DUIS System');
+
 // ZR server url (with http:// or https://)
 if(isset($_SERVER['SERVER_NAME'])) {
 	define ('ZR_BASEURL','http'.((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on') ? 's' : '').'://'.$_SERVER['SERVER_NAME']);

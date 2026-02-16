@@ -1,0 +1,362 @@
+<?
+/**
+ * SMTP Mailer Class
+ * Supports SMTP email sending with optional authentication and encryption
+ * 
+ * Features:
+ * - SMTP authentication (optional)
+ * - TLS/SSL encryption support (optional)
+ * - Fallback to PHP mail() function
+ * - UTF-8 support for Latvian characters
+ * 
+ * Configuration through constants in config/main.conf.php:
+ * - SMTP_HOST: SMTP server hostname
+ * - SMTP_PORT: SMTP server port (25, 587, 465)
+ * - SMTP_ENCRYPTION: '', 'tls', or 'ssl'
+ * - SMTP_AUTH: true/false
+ * - SMTP_USERNAME: username (if auth enabled)
+ * - SMTP_PASSWORD: password (if auth enabled)
+ * - SMTP_FROM_NAME: sender name
+ * - EMAIL_FROM: sender email address
+ */
+class SmtpMailer
+{
+    private $socket = null;
+    private $debug = false;
+    private $lastError = '';
+    
+    /**
+     * Enable debug mode
+     * @param bool $enable
+     */
+    public function setDebug($enable = true)
+    {
+        $this->debug = $enable;
+    }
+    
+    /**
+     * Get last error message
+     * @return string
+     */
+    public function getLastError()
+    {
+        return $this->lastError;
+    }
+    
+    /**
+     * Send email using SMTP
+     * 
+     * @param string|array $to Recipient email address(es)
+     * @param string $subject Email subject
+     * @param string $message Email body
+     * @param string $from Sender email (optional, uses EMAIL_FROM if not specified)
+     * @param string $fromName Sender name (optional, uses SMTP_FROM_NAME if not specified)
+     * @return bool Success status
+     */
+    public function send($to, $subject, $message, $from = null, $fromName = null)
+    {
+        // Use configuration defaults if not specified
+        if ($from === null) {
+            $from = EMAIL_FROM;
+        }
+        if ($fromName === null) {
+            $fromName = SMTP_FROM_NAME;
+        }
+        
+        // Normalize recipients to array
+        $recipients = is_array($to) ? $to : array($to);
+        
+        // Log attempt
+        if ($this->debug) {
+            files::wh_log("[SMTP] Attempting to send email to: " . implode(', ', $recipients));
+            files::wh_log("[SMTP] Subject: $subject");
+        }
+        
+        try {
+            // Connect to SMTP server
+            if (!$this->connect()) {
+                throw new Exception("Failed to connect to SMTP server");
+            }
+            
+            // Authenticate if required
+            if (SMTP_AUTH) {
+                if (!$this->authenticate()) {
+                    throw new Exception("SMTP authentication failed");
+                }
+            }
+            
+            // Send MAIL FROM command
+            if (!$this->sendCommand("MAIL FROM: <$from>", 250)) {
+                throw new Exception("MAIL FROM command failed");
+            }
+            
+            // Send RCPT TO command for each recipient
+            foreach ($recipients as $recipient) {
+                $recipient = trim($recipient);
+                if (!empty($recipient)) {
+                    if (!$this->sendCommand("RCPT TO: <$recipient>", 250)) {
+                        throw new Exception("RCPT TO command failed for $recipient");
+                    }
+                }
+            }
+            
+            // Send DATA command
+            if (!$this->sendCommand("DATA", 354)) {
+                throw new Exception("DATA command failed");
+            }
+            
+            // Build email headers and body
+            $email = $this->buildEmail($from, $fromName, $recipients, $subject, $message);
+            
+            // Send email content
+            if (!$this->sendCommand($email . "\r\n.", 250)) {
+                throw new Exception("Failed to send email data");
+            }
+            
+            // Close connection
+            $this->disconnect();
+            
+            if ($this->debug) {
+                files::wh_log("[SMTP] Email sent successfully");
+            }
+            
+            return true;
+            
+        } catch (Exception $e) {
+            $this->lastError = $e->getMessage();
+            if ($this->debug) {
+                files::wh_log("[SMTP] ERROR: " . $this->lastError);
+            }
+            $this->disconnect();
+            
+            // Fallback to PHP mail() function
+            if ($this->debug) {
+                files::wh_log("[SMTP] Falling back to PHP mail() function");
+            }
+            return $this->fallbackToPhpMail($recipients, $subject, $message, $from, $fromName);
+        }
+    }
+    
+    /**
+     * Connect to SMTP server
+     * @return bool
+     */
+    private function connect()
+    {
+        $host = SMTP_HOST;
+        $port = SMTP_PORT;
+        $encryption = SMTP_ENCRYPTION;
+        
+        // Add SSL/TLS prefix if needed
+        if ($encryption === 'ssl') {
+            $host = 'ssl://' . $host;
+        }
+        
+        // Open socket connection
+        $errno = 0;
+        $errstr = '';
+        $this->socket = @fsockopen($host, $port, $errno, $errstr, 30);
+        
+        if (!$this->socket) {
+            $this->lastError = "Socket connection failed: $errstr ($errno)";
+            return false;
+        }
+        
+        // Read welcome message
+        $response = $this->readResponse();
+        if (!$this->checkResponse($response, 220)) {
+            $this->lastError = "Invalid welcome message: $response";
+            return false;
+        }
+        
+        // Send EHLO/HELO command
+        $domain = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost';
+        if (!$this->sendCommand("EHLO $domain", 250)) {
+            // Try HELO if EHLO fails
+            if (!$this->sendCommand("HELO $domain", 250)) {
+                return false;
+            }
+        }
+        
+        // Start TLS if required
+        if ($encryption === 'tls') {
+            if (!$this->sendCommand("STARTTLS", 220)) {
+                $this->lastError = "STARTTLS command failed";
+                return false;
+            }
+            
+            if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                $this->lastError = "Failed to enable TLS encryption";
+                return false;
+            }
+            
+            // Send EHLO again after TLS
+            if (!$this->sendCommand("EHLO $domain", 250)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Authenticate with SMTP server
+     * @return bool
+     */
+    private function authenticate()
+    {
+        $username = SMTP_USERNAME;
+        $password = SMTP_PASSWORD;
+        
+        // Send AUTH LOGIN command
+        if (!$this->sendCommand("AUTH LOGIN", 334)) {
+            return false;
+        }
+        
+        // Send username (base64 encoded)
+        if (!$this->sendCommand(base64_encode($username), 334)) {
+            return false;
+        }
+        
+        // Send password (base64 encoded)
+        if (!$this->sendCommand(base64_encode($password), 235)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Send SMTP command and check response
+     * @param string $command
+     * @param int $expectedCode
+     * @return bool
+     */
+    private function sendCommand($command, $expectedCode)
+    {
+        if (!$this->socket) {
+            return false;
+        }
+        
+        // Send command
+        fwrite($this->socket, $command . "\r\n");
+        
+        // Read response
+        $response = $this->readResponse();
+        
+        return $this->checkResponse($response, $expectedCode);
+    }
+    
+    /**
+     * Read response from SMTP server
+     * @return string
+     */
+    private function readResponse()
+    {
+        if (!$this->socket) {
+            return '';
+        }
+        
+        $response = '';
+        while ($line = fgets($this->socket, 515)) {
+            $response .= $line;
+            if (substr($line, 3, 1) == ' ') {
+                break;
+            }
+        }
+        
+        return trim($response);
+    }
+    
+    /**
+     * Check if response code matches expected code
+     * @param string $response
+     * @param int $expectedCode
+     * @return bool
+     */
+    private function checkResponse($response, $expectedCode)
+    {
+        $code = intval(substr($response, 0, 3));
+        return $code == $expectedCode;
+    }
+    
+    /**
+     * Build email with headers
+     * @param string $from
+     * @param string $fromName
+     * @param array $recipients
+     * @param string $subject
+     * @param string $message
+     * @return string
+     */
+    private function buildEmail($from, $fromName, $recipients, $subject, $message)
+    {
+        $email = '';
+        
+        // From header
+        $email .= "From: $fromName <$from>\r\n";
+        
+        // To header
+        $email .= "To: " . implode(', ', $recipients) . "\r\n";
+        
+        // Subject (encode for UTF-8)
+        $email .= "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\n";
+        
+        // Other headers
+        $email .= "MIME-Version: 1.0\r\n";
+        $email .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $email .= "Content-Transfer-Encoding: 8bit\r\n";
+        $email .= "Date: " . date('r') . "\r\n";
+        $email .= "X-Mailer: DUIS-SMTP-Mailer\r\n";
+        
+        // Empty line before body
+        $email .= "\r\n";
+        
+        // Body
+        $email .= $message;
+        
+        return $email;
+    }
+    
+    /**
+     * Disconnect from SMTP server
+     */
+    private function disconnect()
+    {
+        if ($this->socket) {
+            $this->sendCommand("QUIT", 221);
+            fclose($this->socket);
+            $this->socket = null;
+        }
+    }
+    
+    /**
+     * Fallback to PHP mail() function
+     * @param array $recipients
+     * @param string $subject
+     * @param string $message
+     * @param string $from
+     * @param string $fromName
+     * @return bool
+     */
+    private function fallbackToPhpMail($recipients, $subject, $message, $from, $fromName)
+    {
+        $headers  = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/plain; charset=utf-8\r\n";
+        $headers .= "From: $fromName <$from>\r\n";
+        
+        $success = true;
+        foreach ($recipients as $recipient) {
+            $recipient = trim($recipient);
+            if (!empty($recipient)) {
+                if (!mail($recipient, $subject, $message, $headers)) {
+                    $success = false;
+                }
+            }
+        }
+        
+        return $success;
+    }
+}
+?>
+
