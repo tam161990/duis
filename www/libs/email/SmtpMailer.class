@@ -127,9 +127,20 @@ class SmtpMailer
             // Build email headers and body
             $email = $this->buildEmail($from, $fromName, $recipients, $subject, $message);
             
-            // Send email content
-            if (!$this->sendCommand($email . "\r\n.", 250)) {
-                throw new Exception("Failed to send email data");
+            if ($this->debug) {
+                $this->log("[SMTP DATA] Sending email body (" . strlen($email) . " bytes)");
+            }
+            
+            // Send email content (don't use sendCommand to avoid logging entire email)
+            fwrite($this->socket, $email . "\r\n.\r\n");
+            $response = $this->readResponse();
+            
+            if ($this->debug) {
+                $this->log("[SMTP DATA RSP] << " . $response);
+            }
+            
+            if (!$this->checkResponse($response, 250)) {
+                throw new Exception("Failed to send email data: $response");
             }
             
             // Close connection
@@ -171,10 +182,16 @@ class SmtpMailer
             $host = 'ssl://' . $host;
         }
         
-        // Open socket connection
+        // Open socket connection with shorter timeout
         $errno = 0;
         $errstr = '';
-        $this->socket = @fsockopen($host, $port, $errno, $errstr, 30);
+        $timeout = 10; // 10 second timeout instead of 30
+        
+        if ($this->debug) {
+            $this->log("[SMTP] Connecting to $host:$port (timeout: {$timeout}s)");
+        }
+        
+        $this->socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
         
         if (!$this->socket) {
             $this->lastError = "Socket connection failed: $errstr ($errno)";
@@ -183,6 +200,9 @@ class SmtpMailer
         
         // Read welcome message
         $response = $this->readResponse();
+        if ($this->debug) {
+            $this->log("[SMTP CONNECT] << " . $response);
+        }
         if (!$this->checkResponse($response, 220)) {
             $this->lastError = "Invalid welcome message: $response";
             return false;
@@ -257,13 +277,31 @@ class SmtpMailer
             return false;
         }
         
+        // Don't log passwords
+        $logCommand = $command;
+        if (strpos($command, 'AUTH') === false && strlen($command) < 100) {
+            if ($this->debug) {
+                $this->log("[SMTP CMD] >> " . $logCommand);
+            }
+        }
+        
         // Send command
         fwrite($this->socket, $command . "\r\n");
         
         // Read response
         $response = $this->readResponse();
         
-        return $this->checkResponse($response, $expectedCode);
+        if ($this->debug) {
+            $this->log("[SMTP RSP] << " . $response);
+        }
+        
+        $isValid = $this->checkResponse($response, $expectedCode);
+        
+        if (!$isValid) {
+            $this->lastError = "Expected code $expectedCode but got: $response";
+        }
+        
+        return $isValid;
     }
     
     /**
