@@ -212,7 +212,7 @@ class files
 			
 			if ($c)
 			{
-				// Clean output buffers to prevent file corruption
+			    // Clean output buffers to prevent file corruption
 				while (ob_get_level()) {
 					ob_end_clean();
 				}
