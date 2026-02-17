@@ -37,6 +37,7 @@ if ( $isAdmin || $isSystemUser || $isProjector)
 				} else {
 					$oLinkFile->addPrm(IS_GET_EXCEL_FILE_VARIABLE, 1);
 				}
+				$oLinkFile->addPrm(GET_EXEL_FILE_VARIABLE, $row['RFLS_ID']);				
 				$fileInfo[$i]['ico'] = 'ico_excel.gif'; 
 			}
 
