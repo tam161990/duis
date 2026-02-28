@@ -1179,7 +1179,8 @@ class dbProc extends dbLayer
                          "'.dbLayer::quote_smart($user).'" FROM DUAL
                          WHERE NOT EXISTS(SELECT 1 FROM `KL_SASKANOTAJI` 
                          WHERE `SLTT_VARDS` = "'.dbLayer::quote_smart($data[1]).'"
-                         AND `SLTT_UZVARDS` = "'.dbLayer::quote_smart($data[2]).'") 
+                         AND `SLTT_UZVARDS` = "'.dbLayer::quote_smart($data[2]).'"
+                         AND `SLTT_KEDI_ID` = '.dbLayer::quote_smart($ed_id).') 
                 LIMIT 1';
 
 		$res=$oSQL->makeQuery($sql);
