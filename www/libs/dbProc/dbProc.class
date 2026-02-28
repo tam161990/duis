@@ -658,27 +658,6 @@ class dbProc extends dbLayer
 		return false;
     }
 
-    // -----------------------------------------------------------------------------
-	// Parbauda - vai lieotajas ir atzimēts ka administrātors
-	// Ja eksiste - atgriezh true, cita gadijuma - false
-	// Author: Tatjana Fedorkova
-	// -----------------------------------------------------------------------------
-	function isUserADmin($userId)
-	{
-		$oSQL=new dbLayer();
-		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
-					where '.
-					' `RLTT_ID` = "'.dbLayer::quote_smart($userId).'"'.
-					' and `RLTT_IR_ADMINS` = 1 '
-				);
-
-		if (is_array($res) && count($res)==1)
-		{
-			return true;
-		}
-
-		return false;
-    }
     
     // -----------------------------------------------------------------------------
 	// Parbauda - vai lieotajam ir piesaistita loma sistemā un lietotājs ir atzimēts ka "projektētajs"
@@ -11730,6 +11709,29 @@ class dbProc extends dbLayer
         $result = $oDB->makeQuery($query);
         
         return isset($result[0]['KLDV_ID']) ? $result[0]['KLDV_ID'] : false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Insert new work type into kl_darba_veidi
+    // Returns: inserted ID on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertWorkType($name, $userId)
+    {
+        $query = 'INSERT INTO `kl_darba_veidi` 
+                    (`KLDV_NOSAUKUMS`, `KLDV_VEIDS`, `KLDV_IR_AKTIVS`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($name).'",
+                     "n/a",
+                     1)';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        if ($result !== false) {
+            return dbLayer::getInsertId();
+        }
+        
+        return false;
     }
 
     // -----------------------------------------------------------------------------
