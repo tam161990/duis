@@ -638,7 +638,7 @@ class dbProc extends dbLayer
 
 		return false;
     }
-    
+
     // -----------------------------------------------------------------------------
 	// Parbauda - vai lieotajas ir atzimēts ka administrātors
 	// Ja eksiste - atgriezh true, cita gadijuma - false
@@ -660,6 +660,7 @@ class dbProc extends dbLayer
 
 		return false;
     }
+
     
     // -----------------------------------------------------------------------------
 	// Parbauda - vai lieotajam ir piesaistita loma sistemā un lietotājs ir atzimēts ka "projektētajs"
@@ -8593,7 +8594,6 @@ class dbProc extends dbLayer
 					from `EXCEL_FAILI` f, `LIETOTAJI` lt
 					where f.EFLS_RLTT_ID=lt.RLTT_ID
 					and f.EFLS_RAKT_ID='.dbLayer::quote_smart($actId).'
-					and f.EFLS_NOSAUKUMS NOT LIKE "Tames_statistika_%"
 				order by DATUMS_SORT desc';
 
 		return $oSQL -> makeQuery($sql);
@@ -14020,7 +14020,7 @@ class dbProc extends dbLayer
     function getEstimateFileDetails($estimateId, $type = false)
     {
         $oSQL = new dbLayer();
-        $query = 'SELECT DISTINCT d.ESFD_ID, d.ESFD_ESTM_ID, d.ESFD_TYPE, d.ESFD_CODE, d.ESFD_STATUS, d.ESFD_SAVED, 
+        $query = 'SELECT d.*, 
                          CASE 
                             WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NOT NULL THEN w.DRBI_KKAL_NOSAUKUMS
                             WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NULL AND kw.KKAL_ID IS NOT NULL THEN kw.KKAL_NOSAUKUMS
@@ -14188,6 +14188,29 @@ class dbProc extends dbLayer
         $result = $oDB->makeQuery($query);
         
         return isset($result[0]['KLDV_ID']) ? $result[0]['KLDV_ID'] : false;
+    }
+
+    // -----------------------------------------------------------------------------
+    // Insert new work type into kl_darba_veidi
+    // Returns: inserted ID on success, false on failure
+    // -----------------------------------------------------------------------------
+    function insertWorkType($name, $userId)
+    {
+        $query = 'INSERT INTO `kl_darba_veidi` 
+                    (`KLDV_NOSAUKUMS`, `KLDV_VEIDS`, `KLDV_IR_AKTIVS`)
+                  VALUES
+                    ("'.dbLayer::quote_smart($name).'",
+                     "n/a",
+                     1)';
+        
+        $oDB = new dbLayer;
+        $result = $oDB->makeQuery($query);
+        
+        if ($result !== false) {
+            return dbLayer::getInsertId();
+        }
+        
+        return false;
     }
 
     // -----------------------------------------------------------------------------

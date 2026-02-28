@@ -141,6 +141,13 @@ if ( $isAdmin || $isProjector)
                                       // row[0] = Group Type, row[1] = Column A (code), row[2-5] = other columns
                                       $code = isset($row[1]) ? trim($row[1]) : '';
                                       $codeLength = strlen($code);
+                                      $amount = isset($row[4]) ? trim($row[4]) : null;
+                                      
+                                      // Requirement #2: Skip rows without amount (unless code is empty - worker rows)
+                                      if (!empty($code) && (empty($amount) || $amount === '0' || $amount === 0)) {
+                                          $processResults['skipped']++;
+                                          continue;
+                                      }
                                       
                                       // Classify: 5 digits = WORK (type 1), 8 symbols = MATERIAL (type 2)
                                       if ($codeLength == 5 || empty($code))
@@ -154,6 +161,11 @@ if ( $isAdmin || $isProjector)
                                           if (!empty($row[0]))
                                           {
                                               $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
+                                              
+                                              // Requirement #1: If work type doesn't exist, create it
+                                              if ($workTypeId === false) {
+                                                  $workTypeId = dbProc::insertWorkType($row[0], $userId);
+                                              }
                                           }
                                           
                                           // Get work info from kl_kalkulacija (if code is not empty)
@@ -232,6 +244,11 @@ if ( $isAdmin || $isProjector)
                                           if (!empty($row[0]))
                                           {
                                               $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
+                                              
+                                              // Requirement #1: If work type doesn't exist, create it
+                                              if ($workTypeId === false) {
+                                                  $workTypeId = dbProc::insertWorkType($row[0], $userId);
+                                              }
                                           }
                                           
                                           // Get material info from kl_materiali

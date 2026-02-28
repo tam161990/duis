@@ -157,7 +157,7 @@ if (reqVar::get('xmlHttp') == 1)
 
         $oForm -> addElement('kls2', 'worker',  text::get('SINGL_WORK_OWNER'),  array('classifName'=>KL_WORK_OWNERS,'value'=>$searcCriteria['worker'],'readonly'=>false), (($isEditor)?' disabled ':'').'maxlength="2000" onChange="eval(xmlHttpGetValue(\''.$oLink->getQuery().'&xmlHttp=1&worker=\'+this.value))"');
         unset($oLink);
-		    $oForm -> addElement('kls2', 'edCode',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>$searcCriteria['edCode'],'readonly'=>false), 'tabindex=13 maxlength="2000" ');
+		    $oForm -> addElement('kls2', 'edCode',  text::get('SINGL_ED_AREA'), array('classifName'=>KL_ED_AREA_CODE,'value'=>$searcCriteria['edCode'],'readonly'=>false), 'tabindex=13 maxlength="2000" '.(($isEdUser)?' disabled' : ''));
         
         $oForm -> addElement('select', 'ouner',  text::get('ACT_OUNER'), $searcCriteria['ouner'], '', '', '', $usersList);
 

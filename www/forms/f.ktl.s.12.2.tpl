@@ -50,7 +50,9 @@
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('changePass'); ?></td>
         <td class="table_cell_c"><?= $oForm -> getElementLabel('projector'); ?>:</td>
 		<td class="table_cell_2"><?= $oForm -> getElementHtml('projector'); ?></td>
-	</tr>	
+	</tr>
+	
+
 </table>
 
 <table cellpadding="5" cellspacing="0" border="0" align="center">

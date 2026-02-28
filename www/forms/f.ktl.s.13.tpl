@@ -103,6 +103,7 @@ add2onload('setImportColumnVisibility()');
               </td>
        </tr>
 </table>
+
 <?= $oForm -> getFormBottom(); ?>
 </body>
        
