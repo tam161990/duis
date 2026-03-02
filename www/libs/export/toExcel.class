@@ -884,6 +884,17 @@ function exportTameMaterial($actId, $userId, $type){
                 $status = isset($detail['ESFD_STATUS']) ? $detail['ESFD_STATUS'] : 0;
                 $type = isset($detail['ESFD_TYPE']) ? $detail['ESFD_TYPE'] : 0;
                 
+                // Skip rows without work type (Bez darba veida)
+                if ($workType === text::get('NO_WORK_TYPE')) {
+                    continue;
+                }
+                
+                // Hide code for worker rows (they have synthetic codes)
+                $isWorkerRow = (strpos($code, 'WORKER_') === 0);
+                if ($isWorkerRow) {
+                    $code = ''; // Don't show worker synthetic codes
+                }
+                
                 // Show work type header when it changes
                 if ($workType !== $currentWorkType)
                 {

@@ -6,9 +6,10 @@
  * Supports: XLS, XLSX, CSV formats
  * Can process files directly from PHP's uploaded temporary location without saving to disk.
  * Ignores rows with configurable text (stored in database)
+ * Tracks section type (Work costs / Material costs) and applies to subsequent rows
  * Ignores column C (3rd column)
  * Tracks group headers (rows with only first column filled) and applies them to subsequent rows
- * Converts table data to array of arrays with 6 elements
+ * Converts table data to array of arrays with 7 elements
  */
 
 class ioExcelParser
@@ -93,13 +94,16 @@ class ioExcelParser
             $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn);
 
             // Text to ignore (from database)
-            $ignoreTexts = array(
-                text::get('IGNORE_TEXT_WORK_COSTS'), 
-                text::get('IGNORE_TEXT_MATERIAL_COSTS')
-            );
+            $workCostsText = text::get('IGNORE_TEXT_WORK_COSTS');
+            $materialCostsText = text::get('IGNORE_TEXT_MATERIAL_COSTS');
+            
+            $ignoreTexts = array($workCostsText, $materialCostsText);
 
             // Track current group header (value from first column when only first column has data)
             $currentGroupHeader = null;
+            
+            // Track current section: 1 = WORK, 2 = MATERIAL, null = unknown
+            $currentSection = null;
 
             // Parse each row
             for ($row = 1; $row <= $highestRow; $row++) {
@@ -128,17 +132,29 @@ class ioExcelParser
                     }
                 }
 
-                // Skip empty rows
-                if (!$hasData || empty($firstColumnValue)) {
+                // Skip completely empty rows (no data in any column)
+                if (!$hasData) {
                     continue;
                 }
+                
+                // For rows with data, check if it's a section header or group header
+                // Only skip if first column is empty AND this is not a data row
+                // Data rows can have empty first column (worker rows)
+                if (empty($firstColumnValue)) {
+                    // This is a potential worker row (no code in column A but data in other columns)
+                    // We'll process it as a data row
+                }
 
-                // Check if row should be ignored
+                // Check if this is a section header (work or material costs)
+                // Only check if first column has a value
                 $shouldIgnore = false;
-                foreach ($ignoreTexts as $ignoreText) {
-                    if (stripos($firstColumnValue, $ignoreText) !== false) {
+                if (!empty($firstColumnValue)) {
+                    if (stripos($firstColumnValue, $workCostsText) !== false) {
+                        $currentSection = 1; // WORK section
                         $shouldIgnore = true;
-                        break;
+                    } elseif (stripos($firstColumnValue, $materialCostsText) !== false) {
+                        $currentSection = 2; // MATERIAL section
+                        $shouldIgnore = true;
                     }
                 }
 
@@ -146,8 +162,10 @@ class ioExcelParser
                     continue;
                 }
 
-                // Check if this is a group header row (only first column has data)
-                $isGroupHeader = ($nonEmptyCells == 1);
+                // Check if this is a group header row
+                // Group header: has first column filled but NO code in column B (index 1)
+                // Worker rows: first column empty, but has data in other columns (B, D, E)
+                $isGroupHeader = (!empty($firstColumnValue) && empty($rowData[1]));
                 
                 if ($isGroupHeader) {
                     // Update the current group header
@@ -156,18 +174,22 @@ class ioExcelParser
                     continue;
                 }
 
-                // Build result array with 6 elements
-                // Skip rows that don't have a group header yet
-                if (is_null($currentGroupHeader)) {
+                // Build result array with 7 elements (added section type)
+                // Skip rows that don't have a group header OR section type
+                // Worker rows have empty first column but should still be processed
+                if (is_null($currentGroupHeader) || is_null($currentSection)) {
                     continue;
                 }
                 
                 $resultRow = array();
                 
+                // Column 0: current section type (1=WORK, 2=MATERIAL, null=unknown)
+                $resultRow[] = $currentSection;
+                
                 // Column 1: current group header (from rows with only column A filled)
                 $resultRow[] = $currentGroupHeader;
                 
-                // Column 2: data from column A of current row (index 0)
+                // Column 2: data from column A of current row (index 0) - MAY BE EMPTY for worker rows
                 $resultRow[] = isset($rowData[0]) ? $rowData[0] : null;
                 
                 // Column 3: data from column B (index 1)

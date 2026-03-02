@@ -138,39 +138,71 @@ if ( $isAdmin || $isProjector)
                                   // Process parsed data - classify and save to estimate_files_detales
                                   $processResults['totalRows'] = count($parsedData);
                                   
-                                  foreach ($parsedData as $row)
+                                  // Create log prefix with act info for easier debugging
+                                  $actNumber = isset($act['RAKT_NUM_POSTFIX']) ? $act['RAKT_NUM_POSTFIX'] : 'N/A';
+                                  $logPrefix = "[Act: $actNumber | ActID: $actId | EstimateID: $estimateId]";
+                                  
+                                  files::wh_log("$logPrefix ===== ESTIMATE IMPORT STARTED =====");
+                                  files::wh_log("$logPrefix File: {$uploadedFile['name']}, Rows: {$processResults['totalRows']}");
+                                  
+                                  // Track status for each row (for popup display)
+                                  $rowStatuses = array();
+                                  
+                                  foreach ($parsedData as $rowIndex => $row)
                                   {
-                                      // row[0] = Group Type, row[1] = Column A (code), row[2-5] = other columns
-                                      $code = isset($row[1]) ? trim($row[1]) : '';
+                                      // row[0] = Section Type (1=WORK, 2=MATERIAL), row[1] = Group Type, row[2] = Column A (code), row[3-6] = other columns
+                                      $sectionType = isset($row[0]) ? $row[0] : null;
+                                      $groupName = isset($row[1]) ? trim($row[1]) : '';
+                                      $code = isset($row[2]) ? trim($row[2]) : '';
                                       $codeLength = strlen($code);
-                                      $amount = isset($row[4]) ? trim($row[4]) : null;
+                                      $amount = isset($row[5]) ? trim($row[5]) : null;
                                       
-                                      // Check if amount is not set (unless code is empty - worker rows)
-                                      $amountNotSet = (!empty($code) && (empty($amount) || $amount === '0' || $amount === 0));
                                       
-                                      // Classify: 5 digits = WORK (type 1), 8 symbols = MATERIAL (type 2)
-                                      if ($codeLength == 5 || empty($code))
+                                      
+                                      // Skip rows without a valid group name (empty or "Bez darba veida")
+                                      if (empty($groupName) || stripos($groupName, 'Bez darba veida') !== false) {
+                                          if (empty($code)) {
+                                              files::wh_log("$logPrefix SKIPPED - Invalid group: Row $rowIndex - GroupName: '$groupName'");
+                                          }
+                                          continue;
+                                      }
+                                      
+                                      // Check if amount is not set (for all rows including worker rows without code)
+                                      $amountNotSet = (empty($amount) || $amount === '0' || $amount === 0);
+                                      
+                                      // LOG: Amount check for worker rows
+                                      if (empty($code) && $amountNotSet) {
+                                          files::wh_log("$logPrefix SKIPPED - No amount: Row $rowIndex - Amount: '$amount'");
+                                      }
+                                      
+                                      // Classify based on section type (if available) or code length
+                                      // Use section type from parser if available, otherwise fall back to code length
+                                      if ($sectionType == 1 || ($sectionType === null && ($codeLength == 5 || empty($code))))
                                       {
-                                          // WORK (5 digits or null/empty)
+                                          // WORK (section type 1, or 5 digits, or null/empty when section unknown)
                                           $processResults['workRows']++;
                                           $type = 1; // WORK
                                           
                                           // If amount not set, record it and skip processing
                                           if ($amountNotSet) {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0);
+                                              if (!empty($code)) {
+                                                  $title = isset($row[3]) ? $row[3] : '';
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0, $title, $groupName);
+                                              }
                                               $processResults['workAmountNotSet']++;
+                                              $rowStatuses[$rowIndex] = 4; // Amount not set
                                               continue;
                                           }
                                           
                                           // Get work type ID from kl_darba_veidi
                                           $workTypeId = false;
-                                          if (!empty($row[0]))
+                                          if (!empty($row[1]))
                                           {
-                                              $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
+                                              $workTypeId = dbProc::getWorkTypeIdByName($row[1]);
                                               
                                               // Requirement #1: If work type doesn't exist, create it
                                               if ($workTypeId === false) {
-                                                  $workTypeId = dbProc::insertWorkType($row[0], $userId);
+                                                  $workTypeId = dbProc::insertWorkType($row[1], $userId);
                                               }
                                           }
                                           
@@ -197,20 +229,35 @@ if ( $isAdmin || $isProjector)
                                               // If already exists, mark as exists and skip
                                               if (!empty($code) && $existsInDarbi)
                                               {
-                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
+                                                  $title = isset($row[3]) ? $row[3] : '';
+                                                  if (empty($title) && $workInfo !== false) {
+                                                      $title = $workInfo['KKAL_NOSAUKUMS'];
+                                                  }
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0, $title, $groupName);
                                                   $processResults['workExists']++;
+                                                  $rowStatuses[$rowIndex] = 2; // Already exists
                                               }
                                               // If doesn't exist, insert it
                                               else
                                               {
                                                   // Prepare values for insert
-                                                  $title = isset($row[2]) ? $row[2] : '';
+                                                  $title = isset($row[3]) ? $row[3] : '';
                                                   $normativ = ($workInfo !== false) ? $workInfo['KKAL_PLANA'] : null;
-                                                  $amount = isset($row[4]) ? $row[4] : null;
-                                                  $measure = isset($row[3]) ? $row[3] : '';
+                                                  $amount = isset($row[5]) ? $row[5] : null;
+                                                  $measure = isset($row[4]) ? $row[4] : '';
                                                   $kkalId = ($workInfo !== false) ? $workInfo['KKAL_ID'] : null;
                                                   $isWorker = empty($code) ? 1 : 0;
-                                                  $notes = isset($row[5]) ? $row[5] : '';
+                                                  $notes = isset($row[6]) ? $row[6] : '';
+                                                  
+                                                  // For worker rows, ensure we have at least a title
+                                                  if (empty($code) && empty($title)) {
+                                                      $title = 'Strādnieks'; // Default worker title
+                                                  }
+                                                  
+                                                  // LOG: Worker row debug
+                                                  if (empty($code)) {
+                                                      files::wh_log("$logPrefix WORK: Row $rowIndex - Title: $title, Amount: $amount, WorkTypeId: $workTypeId, isWorker: $isWorker");
+                                                  }
                                                   
                                                   // Insert into DARBI
                                                   $darbiId = dbProc::insertWorkToDarbiFromEstimate(
@@ -218,46 +265,69 @@ if ( $isAdmin || $isProjector)
                                                       $measure, $kkalId, $isWorker, $workTypeId, $notes
                                                   );
                                                   
+                                                  
+                                                  
                                                   if ($darbiId !== false)
                                                   {
-                                                      // Successfully inserted - always save to statistics (including worker rows)
+                                                      // Successfully inserted - save to statistics
+                                                      // For worker rows without code, use work type ID as identifier
+                                                      $statCode = !empty($code) ? $code : ('WORKER_' . $workTypeId . '_' . $darbiId);                                                      
+                                                     
+                                                      
+                                                      dbProc::insertEstimateFileDetail($estimateId, $type, $statCode, 1, 1, $title, $groupName);
+                                                      $processResults['workSaved']++;
+                                                      $rowStatuses[$rowIndex] = 1; // Saved successfully
+                                                  }
+                                                  else
+                                                  {
+                                                      // Insert failed - mark as error
                                                       if (!empty($code))
                                                       {
-                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
+                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0, $title, $groupName);
                                                       }
-                                                      $processResults['workSaved']++;
+                                                      else
+                                                      {
+                                                          files::wh_log("$logPrefix WORK INSERT FAILED: Row $rowIndex - Cannot save to statistics (no code, insert failed)");
+                                                      }
+                                                      $rowStatuses[$rowIndex] = 3; // Error during insert
                                                   }
                                               }
                                           }
                                           // Code doesn't exist in kl_kalkulacija
                                           elseif (!empty($code))
                                           {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0);
+                                              $title = isset($row[3]) ? $row[3] : '';
+                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0, $title, $groupName);
                                               $processResults['workNotFound']++;
+                                              $rowStatuses[$rowIndex] = 3; // Not found in catalog
                                           }
                                       }
-                                      elseif ($codeLength == 8)
+                                      elseif ($sectionType == 2 || ($sectionType === null && $codeLength == 8))
                                       {
-                                          // MATERIAL (8 symbols)
+                                          // MATERIAL (section type 2, or 8 symbols when section unknown)
                                           $processResults['materialRows']++;
                                           $type = 2; // MATERIAL
                                           
                                           // If amount not set, record it and skip processing
                                           if ($amountNotSet) {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0);
+                                              if (!empty($code)) {
+                                                  $title = isset($row[3]) ? $row[3] : '';
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0, $title, $groupName);
+                                              }
                                               $processResults['materialAmountNotSet']++;
+                                              $rowStatuses[$rowIndex] = 4; // Amount not set
                                               continue;
                                           }
                                           
                                           // Get work type ID from kl_darba_veidi
                                           $workTypeId = false;
-                                          if (!empty($row[0]))
+                                          if (!empty($row[1]))
                                           {
-                                              $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
+                                              $workTypeId = dbProc::getWorkTypeIdByName($row[1]);
                                               
                                               // Requirement #1: If work type doesn't exist, create it
                                               if ($workTypeId === false) {
-                                                  $workTypeId = dbProc::insertWorkType($row[0], $userId);
+                                                  $workTypeId = dbProc::insertWorkType($row[1], $userId);
                                               }
                                           }
                                           
@@ -269,6 +339,7 @@ if ( $isAdmin || $isProjector)
                                           $materialInfo = ($materialInfoList !== false) ? $materialInfoList[0] : false;
                                           
                                           // Check if material already exists in materiali for this act AND work type (BEFORE this import)
+                                          // Check using category code from Excel
                                           $existsInMateriali = dbProc::materialExistsInMateriali($actId, $code, $workTypeId);
                                           
                                           // If code exists in catalog (or is empty for worker rows)
@@ -277,48 +348,77 @@ if ( $isAdmin || $isProjector)
                                               // If already exists, mark as exists and skip
                                               if (!empty($code) && $existsInMateriali)
                                               {
-                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
+                                                  $title = isset($row[3]) ? $row[3] : '';
+                                                  if (empty($title) && $materialInfo !== false) {
+                                                      $title = $materialInfo['KMAT_NOSAUKUMS'];
+                                                  }
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0, $title, $groupName);
                                                   $processResults['materialExists']++;
+                                                  $rowStatuses[$rowIndex] = 2; // Already exists
                                               }
                                               // If doesn't exist, insert it
                                               else
                                               {
                                                   // Prepare values for insert - use title from Excel
-                                                  $title = isset($row[2]) ? $row[2] : '';
-                                                  $amount = isset($row[4]) ? $row[4] : null;
-                                                  $measure = isset($row[3]) ? $row[3] : '';
+                                                  $title = isset($row[3]) ? $row[3] : '';
+                                                  $amount = isset($row[5]) ? $row[5] : null;
+                                                  $measure = isset($row[4]) ? $row[4] : '';
                                                   if ($materialInfo !== false && !empty($materialInfo['KMAT_MERVIENIBA']))
                                                   {
                                                       $measure = $materialInfo['KMAT_MERVIENIBA'];
                                                   }
                                                   $isWorker = empty($code) ? 1 : 0;
-                                                  $notes = isset($row[5]) ? $row[5] : '';
+                                                  $notes = isset($row[6]) ? $row[6] : '';
                                                   
-                                                  // Insert into MATERIALI using actual material code from catalog
-                                                  $materialCode = ($materialInfo !== false && !empty($materialInfo['KMAT_KODS'])) ? $materialInfo['KMAT_KODS'] : $code;
+                                                  // For worker rows, ensure we have at least a title
+                                                  if (empty($code) && empty($title)) {
+                                                      $title = 'Strādnieks'; // Default worker title
+                                                  }
                                                   
-                                                  // Insert into MATERIALI
+                                                  // LOG: Worker row debug
+                                                  if (empty($code)) {
+                                                      files::wh_log("$logPrefix MATERIAL: Row $rowIndex - Title: $title, Amount: $amount, WorkTypeId: $workTypeId, isWorker: $isWorker");
+                                                  }
+                                                  
+                                                  // Insert into MATERIALI using category code from Excel
                                                   $materialiId = dbProc::insertMaterialToMaterialiFromEstimate(
-                                                      $actId, $materialCode, $title, $amount, 
+                                                      $actId, $code, $title, $amount, 
                                                       $measure, $isWorker, $workTypeId, $notes
                                                   );
                                                   
+                                                 
                                                   if ($materialiId !== false)
                                                   {
-                                                      // Successfully inserted - always save to statistics (including worker rows)
+                                                      // Successfully inserted - save to statistics
+                                                      // For worker rows without code, use work type ID as identifier
+                                                      $statCode = !empty($code) ? $code : ('WORKER_' . $workTypeId . '_' . $materialiId);
+                                                     
+                                                      dbProc::insertEstimateFileDetail($estimateId, $type, $statCode, 1, 1, $title, $groupName);
+                                                      $processResults['materialSaved']++;
+                                                      $rowStatuses[$rowIndex] = 1; // Saved successfully
+                                                  }
+                                                  else
+                                                  {
+                                                      // Insert failed - mark as error
                                                       if (!empty($code))
                                                       {
-                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
+                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0, $title, $groupName);
                                                       }
-                                                      $processResults['materialSaved']++;
+                                                      else
+                                                      {
+                                                          files::wh_log("$logPrefix MATERIAL INSERT FAILED: Row $rowIndex - Cannot save to statistics (no code, insert failed)");
+                                                      }
+                                                      $rowStatuses[$rowIndex] = 3; // Error during insert
                                                   }
                                               }
                                           }
                                           // Code doesn't exist in kl_materiali
                                           elseif (!empty($code))
                                           {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0);
+                                              $title = isset($row[3]) ? $row[3] : '';
+                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0, $title, $groupName);
                                               $processResults['materialNotFound']++;
+                                              $rowStatuses[$rowIndex] = 3; // Not found in catalog
                                           }
                                       }
                                       else
@@ -368,6 +468,11 @@ if ( $isAdmin || $isProjector)
                                   }
                                   
                                   $oFormPop->addSuccess($message);
+                                  
+                                  // LOG: Import summary
+                                  files::wh_log("$logPrefix ===== IMPORT COMPLETED =====");
+                                  files::wh_log("$logPrefix Work: Saved={$processResults['workSaved']}, Exists={$processResults['workExists']}, NotFound={$processResults['workNotFound']}, NoAmount={$processResults['workAmountNotSet']}");
+                                  files::wh_log("$logPrefix Material: Saved={$processResults['materialSaved']}, Exists={$processResults['materialExists']}, NotFound={$processResults['materialNotFound']}, NoAmount={$processResults['materialAmountNotSet']}");
                                   
                                   // Generate Excel file with statistics
                                   $excelFileId = toExcel::exportEstimateStatistics($estimateId, $userId, $actId);

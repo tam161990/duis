@@ -153,7 +153,9 @@ CREATE TABLE estimate_files_detales (
     `ESFD_ESTM_ID` INT(11) NOT NULL,
     `ESFD_TYPE` TINYINT(1) NOT NULL COMMENT '1=work, 2=material',
     `ESFD_CODE` CHAR(8),
-	`ESFD_STATUS` TINYINT(1) NOT NULL COMMENT '1=ok, 2=exist, 3=notexist',
+    `ESFD_TITLE` VARCHAR(255) DEFAULT NULL,
+    `ESFD_WORK_TYPE_NAME` VARCHAR(255) DEFAULT NULL,
+	`ESFD_STATUS` TINYINT(1) NOT NULL COMMENT '1=ok, 2=exist, 3=notexist, 4=amountnotset',
     `ESFD_SAVED` TINYINT(1) NOT NULL DEFAULT 0,
 	UNIQUE INDEX `PK_estimate_detales` (`ESFD_ID`)
 )
@@ -169,3 +171,31 @@ ON DELETE CASCADE;
 -- Add Excel file ID column to estimate_files table
 ALTER TABLE estimate_files 
 ADD COLUMN `ESTM_EXCEL_FILE_ID` INT(11) NULL COMMENT 'Reference to EXCEL_FAILI.ID';
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) 
+VALUES ('STATUS_WORK_NOT_FOUND', 'Darbs nav atrasts katalogā Kalkulācija')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Darbs nav atrasts katalogā Kalkulācija';
+
+-- Material not found in catalog  
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) 
+VALUES ('STATUS_MATERIAL_NOT_FOUND', 'Materiāls nav atrasts DUIS katalogā Materiāli')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Materiāls nav atrasts katalogā Materiāli';
+
+-- Work already exists in project
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) 
+VALUES ('STATUS_WORK_EXISTS', 'Darbs jau pievienots projektam')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Darbs jau pievienots projektam';
+
+-- Material already exists in project
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) 
+VALUES ('STATUS_MATERIAL_EXISTS', 'Materiāls jau pievienots projektam')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Materiāls jau pievienots projektam';
+
+-- Amount not set
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`) 
+VALUES ('STATUS_AMOUNT_NOT_SET', 'Darba vai materiāla apjoms nav norādīts')
+ON DUPLICATE KEY UPDATE `TEXT` = 'Darba vai materiāla apjoms nav norādīts';
+
+
+ALTER TABLE estimate_files_detales ADD COLUMN ESFD_TITLE VARCHAR(255) DEFAULT NULL;
+ALTER TABLE estimate_files_detales ADD COLUMN ESFD_WORK_TYPE_NAME VARCHAR(255) DEFAULT NULL;
