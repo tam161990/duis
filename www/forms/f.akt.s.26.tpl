@@ -18,11 +18,12 @@
     $currentWorkType = '';
     $rowNum = 0;
     
-    foreach ($parsedData as $row) {
+    foreach ($parsedData as $rowIndex => $row) {
         $rowNum++;
         
         // Check if work type changed - show as group header
-        $workType = isset($row[0]) ? trim($row[0]) : '';
+        // row[0] = Section Type, row[1] = Group Type
+        $workType = isset($row[1]) ? trim($row[1]) : '';
         if ($workType !== $currentWorkType) {
             $currentWorkType = $workType;
             // Show work type header row
@@ -33,75 +34,67 @@
             <?
         }
         
-        // Determine type and status
-        $code = isset($row[1]) ? trim($row[1]) : '';
-        $title = isset($row[2]) ? trim($row[2]) : '';
+        // Get status from tracked statuses array
+        // row[0] = Section Type (1=WORK, 2=MATERIAL), row[2] = Code, row[3] = Title, row[5] = Amount
+        $sectionType = isset($row[0]) ? $row[0] : null;
+        $code = isset($row[2]) ? trim($row[2]) : '';
+        $title = isset($row[3]) ? trim($row[3]) : '';
         $codeLength = strlen($code);
         $statusLabel = '';
         $statusColor = '';
         $rowClass = ($rowNum % 2 == 0) ? 'table_cell_3' : 'table_cell_2';
         
-        if ($codeLength == 5 || empty($code)) {
+        // Get status from processing (defaults to saved for worker rows)
+        $status = isset($rowStatuses[$rowIndex]) ? $rowStatuses[$rowIndex] : 1;
+        $amount = isset($row[5]) ? trim($row[5]) : null;
+        $amountNotSet = (empty($amount) || $amount === '0' || $amount === 0);
+        
+        // Determine status display based on section type
+        if ($sectionType == 1 || ($sectionType === null && ($codeLength == 5 || empty($code)))) {
             // WORK
-            // Get work type ID for duplicate check
-            $workTypeId = false;
-            if (!empty($row[0])) {
-                $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
-            }
-            
-            // Check status
-            if (!empty($code)) {
-                $workInfo = dbProc::getWorkInfoByCode($code);
-                $existsInDarbi = dbProc::workExistsInDarbi($actId, $code, $workTypeId);
-                
-                if ($workInfo !== false && !$existsInDarbi) {
-                    // Status 1: OK - inserted into darbi
+            switch ($status) {
+                case 1: // Saved successfully
                     $statusLabel = '<span style="color: green;">✓ ' . text::get('STATUS_SAVED') . '</span>';
                     $statusColor = 'background-color: #e8f5e9;';
-                } elseif ($existsInDarbi) {
-                    // Status 2: Already exists in darbi
-                    $statusLabel = '<span style="color: orange;">⚠ ' . text::get('STATUS_EXISTS') . '</span>';
+                    break;
+                case 2: // Already exists
+                    $statusLabel = '<span style="color: orange;">⚠ ' . text::get('STATUS_WORK_EXISTS') . '</span>';
                     $statusColor = 'background-color: #fff3e0;';
-                } else {
-                    // Status 3: Not found in kl_kalkulacija
-                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_NOT_FOUND') . '</span>';
+                    break;
+                case 3: // Not found in catalog
+                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_WORK_NOT_FOUND') . '</span>';
                     $statusColor = 'background-color: #ffebee;';
-                }
-            } else {
-                // Empty code - worker row
-                $statusLabel = '<span style="color: green;">✓ ' . text::get('STATUS_SAVED') . '</span>';
-                $statusColor = 'background-color: #e8f5e9;';
+                    break;
+                case 4: // Amount not set
+                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_AMOUNT_NOT_SET') . '</span>';
+                    $statusColor = 'background-color: #ffebee;';
+                    break;
+                default:
+                    $statusLabel = '<span style="color: gray;">?</span>';
+                    $statusColor = '';
             }
-        } elseif ($codeLength == 8) {
+        } elseif ($sectionType == 2 || ($sectionType === null && $codeLength == 8)) {
             // MATERIAL
-            // Get work type ID for duplicate check
-            $workTypeId = false;
-            if (!empty($row[0])) {
-                $workTypeId = dbProc::getWorkTypeIdByName($row[0]);
-            }
-            
-            // Check status for materials
-            if (!empty($code)) {
-                $materialInfo = dbProc::getMaterialInfoByCode($code);
-                $existsInMateriali = dbProc::materialExistsInMateriali($actId, $code, $workTypeId);
-                
-                if ($materialInfo !== false && !$existsInMateriali) {
-                    // Status 1: OK - inserted into materiali
+            switch ($status) {
+                case 1: // Saved successfully
                     $statusLabel = '<span style="color: green;">✓ ' . text::get('STATUS_SAVED') . '</span>';
                     $statusColor = 'background-color: #e8f5e9;';
-                } elseif ($existsInMateriali) {
-                    // Status 2: Already exists in materiali
-                    $statusLabel = '<span style="color: orange;">⚠ ' . text::get('STATUS_EXISTS') . '</span>';
+                    break;
+                case 2: // Already exists
+                    $statusLabel = '<span style="color: orange;">⚠ ' . text::get('STATUS_MATERIAL_EXISTS') . '</span>';
                     $statusColor = 'background-color: #fff3e0;';
-                } else {
-                    // Status 3: Not found in kl_materiali
-                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_NOT_FOUND') . '</span>';
+                    break;
+                case 3: // Not found in catalog
+                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_MATERIAL_NOT_FOUND') . '</span>';
                     $statusColor = 'background-color: #ffebee;';
-                }
-            } else {
-                // Empty code - worker row
-                $statusLabel = '<span style="color: green;">✓ ' . text::get('STATUS_SAVED') . '</span>';
-                $statusColor = 'background-color: #e8f5e9;';
+                    break;
+                case 4: // Amount not set
+                    $statusLabel = '<span style="color: red;">✗ ' . text::get('STATUS_AMOUNT_NOT_SET') . '</span>';
+                    $statusColor = 'background-color: #ffebee;';
+                    break;
+                default:
+                    $statusLabel = '<span style="color: gray;">?</span>';
+                    $statusColor = '';
             }
         } else {
             $statusLabel = '<span style="color: gray;">?</span>';
@@ -109,9 +102,9 @@
         }
     ?>
         <tr class="<?=$rowClass;?>" style="<?=$statusColor;?>">
-            <td width="15%" align="center"><?=$statusLabel;?></td>
-            <td width="15%" align="center"><?= htmlspecialchars($code); ?></td>
-            <td width="70%" align="left"><?= htmlspecialchars($title); ?></td>
+            <td width="30%" align="center"><?=$statusLabel;?></td>
+            <td width="10%" align="center"><?= htmlspecialchars($code); ?></td>
+            <td width="60%" align="left"><?= htmlspecialchars($title); ?></td>
         </tr>
     <?
     }

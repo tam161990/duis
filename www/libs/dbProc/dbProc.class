@@ -13996,14 +13996,16 @@ class dbProc extends dbLayer
     // Insert estimate file detail record
     // Returns: true on success, false on failure
     // -----------------------------------------------------------------------------
-    function insertEstimateFileDetail($estimateId, $type, $code, $status, $saved = 0)
+    function insertEstimateFileDetail($estimateId, $type, $code, $status, $saved = 0, $title = null, $workTypeName = null)
     {
         $query = 'INSERT INTO `estimate_files_detales` 
-                    (`ESFD_ESTM_ID`, `ESFD_TYPE`, `ESFD_CODE`, `ESFD_STATUS`, `ESFD_SAVED`)
+                    (`ESFD_ESTM_ID`, `ESFD_TYPE`, `ESFD_CODE`, `ESFD_TITLE`, `ESFD_WORK_TYPE_NAME`, `ESFD_STATUS`, `ESFD_SAVED`)
                   VALUES
                     ("'.dbLayer::quote_smart($estimateId).'",
                      "'.dbLayer::quote_smart($type).'",
                      '.((!empty($code)) ? '"'.dbLayer::quote_smart($code).'"' : 'NULL').',
+                     '.((!empty($title)) ? '"'.dbLayer::quote_smart($title).'"' : 'NULL').',
+                     '.((!empty($workTypeName)) ? '"'.dbLayer::quote_smart($workTypeName).'"' : 'NULL').',
                      "'.dbLayer::quote_smart($status).'",
                      "'.dbLayer::quote_smart($saved).'")';
         
@@ -14020,26 +14022,36 @@ class dbProc extends dbLayer
     function getEstimateFileDetails($estimateId, $type = false)
     {
         $oSQL = new dbLayer();
-        $query = 'SELECT d.*, 
-                         CASE 
-                            WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NOT NULL THEN w.DRBI_KKAL_NOSAUKUMS
-                            WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NULL AND kw.KKAL_ID IS NOT NULL THEN kw.KKAL_NOSAUKUMS
-                            WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NOT NULL THEN m.MATR_NOSAUKUMS
-                            WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NULL AND km.KMAT_ID IS NOT NULL THEN km.KMAT_NOSAUKUMS
-                            ELSE NULL
-                         END AS `TITLE`,
-                         CASE 
-                            WHEN d.ESFD_TYPE = 1 AND wt.KLDV_ID IS NOT NULL THEN wt.KLDV_NOSAUKUMS
-                            WHEN d.ESFD_TYPE = 2 AND mt.KLDV_ID IS NOT NULL THEN mt.KLDV_NOSAUKUMS
-                            ELSE NULL
-                         END AS `WORK_TYPE_NAME`
+        $query = 'SELECT DISTINCT d.ESFD_ID, d.ESFD_ESTM_ID, d.ESFD_TYPE, d.ESFD_CODE, d.ESFD_STATUS, d.ESFD_SAVED,
+                         COALESCE(
+                            d.ESFD_TITLE,
+                            CASE 
+                                WHEN d.ESFD_TYPE = 1 AND d.ESFD_CODE LIKE "WORKER_%" THEN (SELECT DRBI_KKAL_NOSAUKUMS FROM DARBI WHERE DRBI_ID = SUBSTRING_INDEX(d.ESFD_CODE, "_", -1) LIMIT 1)
+                                WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NOT NULL THEN w.DRBI_KKAL_NOSAUKUMS
+                                WHEN d.ESFD_TYPE = 1 AND w.DRBI_ID IS NULL AND kw.KKAL_ID IS NOT NULL THEN kw.KKAL_NOSAUKUMS
+                                WHEN d.ESFD_TYPE = 2 AND d.ESFD_CODE LIKE "WORKER_%" THEN (SELECT MATR_NOSAUKUMS FROM MATERIALI WHERE MATR_ID = SUBSTRING_INDEX(d.ESFD_CODE, "_", -1) LIMIT 1)
+                                WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NOT NULL THEN m.MATR_NOSAUKUMS
+                                WHEN d.ESFD_TYPE = 2 AND m.MATR_ID IS NULL AND km.KMAT_ID IS NOT NULL THEN km.KMAT_NOSAUKUMS
+                                ELSE NULL
+                            END
+                         ) AS `TITLE`,
+                         COALESCE(
+                            d.ESFD_WORK_TYPE_NAME,
+                            CASE 
+                                WHEN d.ESFD_TYPE = 1 AND d.ESFD_CODE LIKE "WORKER_%" THEN (SELECT kldv.KLDV_NOSAUKUMS FROM DARBI drb LEFT JOIN kl_darba_veidi kldv ON drb.DRBI_WORK_TYPE_ID = kldv.KLDV_ID WHERE drb.DRBI_ID = SUBSTRING_INDEX(d.ESFD_CODE, "_", -1) LIMIT 1)
+                                WHEN d.ESFD_TYPE = 1 AND w.DRBI_WORK_TYPE_ID IS NOT NULL THEN wt.KLDV_NOSAUKUMS
+                                WHEN d.ESFD_TYPE = 2 AND d.ESFD_CODE LIKE "WORKER_%" THEN (SELECT kldv.KLDV_NOSAUKUMS FROM MATERIALI mat LEFT JOIN kl_darba_veidi kldv ON mat.MATR_WORK_TYPE_ID = kldv.KLDV_ID WHERE mat.MATR_ID = SUBSTRING_INDEX(d.ESFD_CODE, "_", -1) LIMIT 1)
+                                WHEN d.ESFD_TYPE = 2 AND m.MATR_WORK_TYPE_ID IS NOT NULL THEN mt.KLDV_NOSAUKUMS
+                                ELSE NULL
+                            END
+                         ) AS `WORK_TYPE_NAME`
                   FROM `estimate_files_detales` d
-                  LEFT JOIN `DARBI` w ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE COLLATE utf8_general_ci = w.DRBI_KKAL_SHIFRS COLLATE utf8_general_ci AND w.DRBI_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
+                  LEFT JOIN `DARBI` w ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE NOT LIKE "WORKER_%" AND d.ESFD_CODE COLLATE utf8_general_ci = w.DRBI_KKAL_SHIFRS COLLATE utf8_general_ci AND w.DRBI_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
                   LEFT JOIN `kl_darba_veidi` wt ON (w.DRBI_WORK_TYPE_ID = wt.KLDV_ID)
-                  LEFT JOIN `KL_KALKULACIJA` kw ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE COLLATE utf8_general_ci = kw.KKAL_SHIFRS COLLATE utf8_general_ci)
-                  LEFT JOIN `MATERIALI` m ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = m.MATR_KODS COLLATE utf8_general_ci AND m.MATR_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
+                  LEFT JOIN `KL_KALKULACIJA` kw ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE NOT LIKE "WORKER_%" AND d.ESFD_CODE COLLATE utf8_general_ci = kw.KKAL_SHIFRS COLLATE utf8_general_ci)
+                  LEFT JOIN `MATERIALI` m ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE NOT LIKE "WORKER_%" AND d.ESFD_CODE COLLATE utf8_general_ci = m.MATR_KODS COLLATE utf8_general_ci AND m.MATR_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
                   LEFT JOIN `kl_darba_veidi` mt ON (m.MATR_WORK_TYPE_ID = mt.KLDV_ID)
-                  LEFT JOIN `KL_MATERIALI` km ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = km.KMAT_KATEGORIJAS_KODS COLLATE utf8_general_ci)
+                  LEFT JOIN `KL_MATERIALI` km ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE NOT LIKE "WORKER_%" AND d.ESFD_CODE COLLATE utf8_general_ci = km.KMAT_KATEGORIJAS_KODS COLLATE utf8_general_ci)
                   WHERE d.ESFD_ESTM_ID = "'.dbLayer::quote_smart($estimateId).'"';
         
         if ($type !== false)
@@ -14047,7 +14059,7 @@ class dbProc extends dbLayer
             $query .= ' AND d.ESFD_TYPE = "'.dbLayer::quote_smart($type).'"';
         }
         
-        $query .= ' ORDER BY d.ESFD_ID ASC';
+        $query .= ' ORDER BY WORK_TYPE_NAME ASC, d.ESFD_TYPE ASC, d.ESFD_ID ASC';
         
         return $oSQL->makeQuery($query);
     }
@@ -14235,6 +14247,8 @@ class dbProc extends dbLayer
                      '.(($workTypeId !== false) ? '"'.dbLayer::quote_smart($workTypeId).'"' : 'NULL').',
                      '.((!empty($notes)) ? '"'.dbLayer::quote_smart($notes).'"' : 'NULL').')';
         
+
+        
         $oDB = new dbLayer;
         $result = $oDB->makeQuery($query);
         
@@ -14296,7 +14310,7 @@ class dbProc extends dbLayer
         $query = 'INSERT INTO `MATERIALI` 
                     (`MATR_RAKT_ID`, `MATR_KODS`, `MATR_NOSAUKUMS`, 
                      `MATR_DAUDZUMS`, `MATR_MERVIENIBA`, 
-                     `MATR_IS_WORKER`, `MATR_WORK_TYPE_ID`, `MATR_PIEZIMES`)
+                     `MATR_IS_WORKER`, `MATR_WORK_TYPE_ID`, `MATR_WORK_TYPE_TEXT`, `MATR_PIEZIMES`)
                   VALUES
                     ("'.dbLayer::quote_smart($actId).'",
                      '.((!empty($code)) ? '"'.dbLayer::quote_smart($code).'"' : 'NULL').',
@@ -14305,7 +14319,10 @@ class dbProc extends dbLayer
                      '.((!empty($measure)) ? '"'.dbLayer::quote_smart($measure).'"' : 'NULL').',
                      "'.dbLayer::quote_smart($isWorker).'",
                      '.(($workTypeId !== false) ? '"'.dbLayer::quote_smart($workTypeId).'"' : 'NULL').',
+                     "X",
                      '.((!empty($notes)) ? '"'.dbLayer::quote_smart($notes).'"' : 'NULL').')';
+        
+       
         
         $oDB = new dbLayer;
         $result = $oDB->makeQuery($query);
