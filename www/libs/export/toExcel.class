@@ -912,18 +912,36 @@ function exportTameMaterial($actId, $userId, $type){
                     $currentRow++;
                 }
                 
-                // Determine status text based on ESFD_STATUS
+                // Determine status text based on ESFD_STATUS and ESFD_TYPE
                 $statusText = '';
+                $isWork = ($type == 1);
+                $isMaterial = ($type == 2);
+                
                 switch ($status)
                 {
                     case 1: // OK - saved
                         $statusText = '✓ ' . text::get('STATUS_SAVED');
                         break;
                     case 2: // Already exists
-                        $statusText = '⚠ ' . text::get('STATUS_EXISTS');
+                        if ($isWork) {
+                            $statusText = '⚠ ' . text::get('STATUS_WORK_EXISTS');
+                        } else if ($isMaterial) {
+                            $statusText = '⚠ ' . text::get('STATUS_MATERIAL_EXISTS');
+                        } else {
+                            $statusText = '⚠ ' . text::get('STATUS_EXISTS');
+                        }
                         break;
                     case 3: // Not found in catalog
-                        $statusText = '✗ ' . text::get('STATUS_NOT_FOUND');
+                        if ($isWork) {
+                            $statusText = '✗ ' . text::get('STATUS_WORK_NOT_FOUND');
+                        } else if ($isMaterial) {
+                            $statusText = '✗ ' . text::get('STATUS_MATERIAL_NOT_FOUND');
+                        } else {
+                            $statusText = '✗ ' . text::get('STATUS_NOT_FOUND');
+                        }
+                        break;
+                    case 4: // Amount not set
+                        $statusText = '✗ ' . text::get('STATUS_AMOUNT_NOT_SET');
                         break;
                     default:
                         $statusText = '? ' . text::get('STATUS_UNKNOWN');
