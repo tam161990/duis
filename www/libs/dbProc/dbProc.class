@@ -11560,7 +11560,7 @@ class dbProc extends dbLayer
                   LEFT JOIN `KL_KALKULACIJA` kw ON (d.ESFD_TYPE = 1 AND d.ESFD_CODE COLLATE utf8_general_ci = kw.KKAL_SHIFRS COLLATE utf8_general_ci)
                   LEFT JOIN `MATERIALI` m ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = m.MATR_KODS COLLATE utf8_general_ci AND m.MATR_RAKT_ID = (SELECT ESTM_RAKT_ID FROM estimate_files WHERE ESTM_ID = d.ESFD_ESTM_ID))
                   LEFT JOIN `kl_darba_veidi` mt ON (m.MATR_WORK_TYPE_ID = mt.KLDV_ID)
-                  LEFT JOIN `KL_MATERIALI` km ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = km.KMAT_KODS COLLATE utf8_general_ci)
+                  LEFT JOIN `KL_MATERIALI` km ON (d.ESFD_TYPE = 2 AND d.ESFD_CODE COLLATE utf8_general_ci = km.KMAT_KATEGORIJAS_KODS COLLATE utf8_general_ci)
                   WHERE d.ESFD_ESTM_ID = "'.dbLayer::quote_smart($estimateId).'"';
         
         if ($type !== false)

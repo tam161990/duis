@@ -184,59 +184,56 @@ if ( $isAdmin || $isProjector)
                                               $codeExistsInKalkulacija = ($workInfo !== false);
                                           }
                                           
-                                          // Check if work already exists in darbi for this act AND work type
+                                          // Check if work already exists in darbi for this act AND work type (BEFORE this import)
                                           $existsInDarbi = false;
                                           if (!empty($code))
                                           {
                                               $existsInDarbi = dbProc::workExistsInDarbi($actId, $code, $workTypeId);
                                           }
                                           
-                                          // Scenario 1: Code exists in kl_kalkulacija (or is null) AND doesn't exist in darbi
-                                          if (($codeExistsInKalkulacija || empty($code)) && !$existsInDarbi)
+                                          // If code exists in catalog (or is empty for worker rows)
+                                          if ($codeExistsInKalkulacija || empty($code))
                                           {
-                                              
-                                              // Prepare values for insert
-                                              $title = isset($row[2]) ? $row[2] : '';
-                                              $normativ = ($workInfo !== false) ? $workInfo['KKAL_PLANA'] : null;
-                                              $amount = isset($row[4]) ? $row[4] : null;
-                                              $measure = isset($row[3]) ? $row[3] : '';
-                                              $kkalId = ($workInfo !== false) ? $workInfo['KKAL_ID'] : null;
-                                              $isWorker = empty($code) ? 1 : 0;
-                                              $notes = isset($row[5]) ? $row[5] : '';
-                                              
-                                              // Insert into DARBI
-                                              $darbiId = dbProc::insertWorkToDarbiFromEstimate(
-                                                  $actId, $code, $title, $normativ, $amount, 
-                                                  $measure, $kkalId, $isWorker, $workTypeId, $notes
-                                              );
-                                              
-                                              if ($darbiId !== false)
+                                              // If already exists, mark as exists and skip
+                                              if (!empty($code) && $existsInDarbi)
                                               {
-                                                  // Successfully inserted into darbi
-                                                  // Now insert into estimate_files_detales if code is not null
-                                                  if (!empty($code))
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
+                                                  $processResults['workExists']++;
+                                              }
+                                              // If doesn't exist, insert it
+                                              else
+                                              {
+                                                  // Prepare values for insert
+                                                  $title = isset($row[2]) ? $row[2] : '';
+                                                  $normativ = ($workInfo !== false) ? $workInfo['KKAL_PLANA'] : null;
+                                                  $amount = isset($row[4]) ? $row[4] : null;
+                                                  $measure = isset($row[3]) ? $row[3] : '';
+                                                  $kkalId = ($workInfo !== false) ? $workInfo['KKAL_ID'] : null;
+                                                  $isWorker = empty($code) ? 1 : 0;
+                                                  $notes = isset($row[5]) ? $row[5] : '';
+                                                  
+                                                  // Insert into DARBI
+                                                  $darbiId = dbProc::insertWorkToDarbiFromEstimate(
+                                                      $actId, $code, $title, $normativ, $amount, 
+                                                      $measure, $kkalId, $isWorker, $workTypeId, $notes
+                                                  );
+                                                  
+                                                  if ($darbiId !== false)
                                                   {
-                                                      dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
-                                                      $processResults['workSaved']++;
-                                                  }
-                                                  else
-                                                  {
-                                                      // Code is null - work row inserted successfully
+                                                      // Successfully inserted - always save to statistics (including worker rows)
+                                                      if (!empty($code))
+                                                      {
+                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
+                                                      }
                                                       $processResults['workSaved']++;
                                                   }
                                               }
                                           }
-                                          // Scenario 2: Code doesn't exist in kl_kalkulacija
-                                          elseif (!empty($code) && !$codeExistsInKalkulacija)
+                                          // Code doesn't exist in kl_kalkulacija
+                                          elseif (!empty($code))
                                           {
                                               dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0);
                                               $processResults['workNotFound']++;
-                                          }
-                                          // Scenario 3: Code already exists in darbi for this act
-                                          elseif (!empty($code) && $existsInDarbi)
-                                          {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
-                                              $processResults['workExists']++;
                                           }
                                       }
                                       elseif ($codeLength == 8)
@@ -271,60 +268,57 @@ if ( $isAdmin || $isProjector)
                                           // Use first material from the list (if multiple exist with same category code)
                                           $materialInfo = ($materialInfoList !== false) ? $materialInfoList[0] : false;
                                           
-                                          // Check if material already exists in materiali for this act AND work type
+                                          // Check if material already exists in materiali for this act AND work type (BEFORE this import)
                                           $existsInMateriali = dbProc::materialExistsInMateriali($actId, $code, $workTypeId);
                                           
-                                          // Scenario 1: Code exists in kl_materiali (or is null) AND doesn't exist in materiali
-                                          if (($codeExistsInKlMateriali || empty($code)) && !$existsInMateriali)
+                                          // If code exists in catalog (or is empty for worker rows)
+                                          if ($codeExistsInKlMateriali || empty($code))
                                           {
-                                              
-                                              // Prepare values for insert - use title from Excel
-                                              $title = isset($row[2]) ? $row[2] : '';
-                                              $amount = isset($row[4]) ? $row[4] : null;
-                                              $measure = isset($row[3]) ? $row[3] : '';
-                                              if ($materialInfo !== false && !empty($materialInfo['KMAT_MERVIENIBA']))
+                                              // If already exists, mark as exists and skip
+                                              if (!empty($code) && $existsInMateriali)
                                               {
-                                                  $measure = $materialInfo['KMAT_MERVIENIBA'];
+                                                  dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
+                                                  $processResults['materialExists']++;
                                               }
-                                              $isWorker = empty($code) ? 1 : 0;
-                                              $notes = isset($row[5]) ? $row[5] : '';
-                                              
-                                              // Insert into MATERIALI using actual material code from catalog
-                                              $materialCode = ($materialInfo !== false && !empty($materialInfo['KMAT_KODS'])) ? $materialInfo['KMAT_KODS'] : $code;
-                                              
-                                              // Insert into MATERIALI
-                                              $materialiId = dbProc::insertMaterialToMaterialiFromEstimate(
-                                                  $actId, $materialCode, $title, $amount, 
-                                                  $measure, $isWorker, $workTypeId, $notes
-                                              );
-                                              
-                                              if ($materialiId !== false)
+                                              // If doesn't exist, insert it
+                                              else
                                               {
-                                                  // Successfully inserted into materiali
-                                                  // Now insert into estimate_files_detales if code is not null
-                                                  if (!empty($code))
+                                                  // Prepare values for insert - use title from Excel
+                                                  $title = isset($row[2]) ? $row[2] : '';
+                                                  $amount = isset($row[4]) ? $row[4] : null;
+                                                  $measure = isset($row[3]) ? $row[3] : '';
+                                                  if ($materialInfo !== false && !empty($materialInfo['KMAT_MERVIENIBA']))
                                                   {
-                                                      dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
-                                                      $processResults['materialSaved']++;
+                                                      $measure = $materialInfo['KMAT_MERVIENIBA'];
                                                   }
-                                                  else
+                                                  $isWorker = empty($code) ? 1 : 0;
+                                                  $notes = isset($row[5]) ? $row[5] : '';
+                                                  
+                                                  // Insert into MATERIALI using actual material code from catalog
+                                                  $materialCode = ($materialInfo !== false && !empty($materialInfo['KMAT_KODS'])) ? $materialInfo['KMAT_KODS'] : $code;
+                                                  
+                                                  // Insert into MATERIALI
+                                                  $materialiId = dbProc::insertMaterialToMaterialiFromEstimate(
+                                                      $actId, $materialCode, $title, $amount, 
+                                                      $measure, $isWorker, $workTypeId, $notes
+                                                  );
+                                                  
+                                                  if ($materialiId !== false)
                                                   {
-                                                      // Code is null - material row inserted successfully
+                                                      // Successfully inserted - always save to statistics (including worker rows)
+                                                      if (!empty($code))
+                                                      {
+                                                          dbProc::insertEstimateFileDetail($estimateId, $type, $code, 1, 1);
+                                                      }
                                                       $processResults['materialSaved']++;
                                                   }
                                               }
                                           }
-                                          // Scenario 2: Code doesn't exist in kl_materiali
-                                          elseif (!empty($code) && !$codeExistsInKlMateriali)
+                                          // Code doesn't exist in kl_materiali
+                                          elseif (!empty($code))
                                           {
                                               dbProc::insertEstimateFileDetail($estimateId, $type, $code, 3, 0);
                                               $processResults['materialNotFound']++;
-                                          }
-                                          // Scenario 3: Code already exists in materiali for this act
-                                          elseif (!empty($code) && $existsInMateriali)
-                                          {
-                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 2, 0);
-                                              $processResults['materialExists']++;
                                           }
                                       }
                                       else
