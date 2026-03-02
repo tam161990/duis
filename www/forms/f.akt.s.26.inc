@@ -20,9 +20,11 @@ $processResults = array(
     'workSaved' => 0,
     'workExists' => 0,
     'workNotFound' => 0,
+    'workAmountNotSet' => 0,
     'materialSaved' => 0,
     'materialExists' => 0,
     'materialNotFound' => 0,
+    'materialAmountNotSet' => 0,
     'skipped' => 0
 );
 
@@ -143,11 +145,8 @@ if ( $isAdmin || $isProjector)
                                       $codeLength = strlen($code);
                                       $amount = isset($row[4]) ? trim($row[4]) : null;
                                       
-                                      // Requirement #2: Skip rows without amount (unless code is empty - worker rows)
-                                      if (!empty($code) && (empty($amount) || $amount === '0' || $amount === 0)) {
-                                          $processResults['skipped']++;
-                                          continue;
-                                      }
+                                      // Check if amount is not set (unless code is empty - worker rows)
+                                      $amountNotSet = (!empty($code) && (empty($amount) || $amount === '0' || $amount === 0));
                                       
                                       // Classify: 5 digits = WORK (type 1), 8 symbols = MATERIAL (type 2)
                                       if ($codeLength == 5 || empty($code))
@@ -155,6 +154,13 @@ if ( $isAdmin || $isProjector)
                                           // WORK (5 digits or null/empty)
                                           $processResults['workRows']++;
                                           $type = 1; // WORK
+                                          
+                                          // If amount not set, record it and skip processing
+                                          if ($amountNotSet) {
+                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0);
+                                              $processResults['workAmountNotSet']++;
+                                              continue;
+                                          }
                                           
                                           // Get work type ID from kl_darba_veidi
                                           $workTypeId = false;
@@ -239,6 +245,13 @@ if ( $isAdmin || $isProjector)
                                           $processResults['materialRows']++;
                                           $type = 2; // MATERIAL
                                           
+                                          // If amount not set, record it and skip processing
+                                          if ($amountNotSet) {
+                                              dbProc::insertEstimateFileDetail($estimateId, $type, $code, 4, 0);
+                                              $processResults['materialAmountNotSet']++;
+                                              continue;
+                                          }
+                                          
                                           // Get work type ID from kl_darba_veidi
                                           $workTypeId = false;
                                           if (!empty($row[0]))
@@ -251,9 +264,12 @@ if ( $isAdmin || $isProjector)
                                               }
                                           }
                                           
-                                          // Get material info from kl_materiali
-                                          $materialInfo = dbProc::getMaterialInfoByCode($code);
-                                          $codeExistsInKlMateriali = ($materialInfo !== false);
+                                          // Get material info from kl_materiali by category code
+                                          $materialInfoList = dbProc::getMaterialInfoByCode($code);
+                                          $codeExistsInKlMateriali = ($materialInfoList !== false);
+                                          
+                                          // Use first material from the list (if multiple exist with same category code)
+                                          $materialInfo = ($materialInfoList !== false) ? $materialInfoList[0] : false;
                                           
                                           // Check if material already exists in materiali for this act AND work type
                                           $existsInMateriali = dbProc::materialExistsInMateriali($actId, $code, $workTypeId);
@@ -262,12 +278,8 @@ if ( $isAdmin || $isProjector)
                                           if (($codeExistsInKlMateriali || empty($code)) && !$existsInMateriali)
                                           {
                                               
-                                              // Prepare values for insert
+                                              // Prepare values for insert - use title from Excel
                                               $title = isset($row[2]) ? $row[2] : '';
-                                              if ($materialInfo !== false && !empty($materialInfo['KMAT_NOSAUKUMS']))
-                                              {
-                                                  $title = $materialInfo['KMAT_NOSAUKUMS'];
-                                              }
                                               $amount = isset($row[4]) ? $row[4] : null;
                                               $measure = isset($row[3]) ? $row[3] : '';
                                               if ($materialInfo !== false && !empty($materialInfo['KMAT_MERVIENIBA']))
@@ -277,9 +289,12 @@ if ( $isAdmin || $isProjector)
                                               $isWorker = empty($code) ? 1 : 0;
                                               $notes = isset($row[5]) ? $row[5] : '';
                                               
+                                              // Insert into MATERIALI using actual material code from catalog
+                                              $materialCode = ($materialInfo !== false && !empty($materialInfo['KMAT_KODS'])) ? $materialInfo['KMAT_KODS'] : $code;
+                                              
                                               // Insert into MATERIALI
                                               $materialiId = dbProc::insertMaterialToMaterialiFromEstimate(
-                                                  $actId, $code, $title, $amount, 
+                                                  $actId, $materialCode, $title, $amount, 
                                                   $measure, $isWorker, $workTypeId, $notes
                                               );
                                               
@@ -327,22 +342,30 @@ if ( $isAdmin || $isProjector)
                                   $message .= '&nbsp;&nbsp;- ' . text::get('SAVED_TO_WORKS') . ' <span style="color:green;">' . $processResults['workSaved'] . '</span><br>';
                                   if ($processResults['workExists'] > 0)
                                   {
-                                      $message .= '&nbsp;&nbsp;- ' . text::get('ALREADY_EXISTS_LABEL') . ' <span style="color:orange;">' . $processResults['workExists'] . '</span><br>';
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_WORK_EXISTS') . ' <span style="color:orange;">' . $processResults['workExists'] . '</span><br>';
                                   }
                                   if ($processResults['workNotFound'] > 0)
                                   {
-                                      $message .= '&nbsp;&nbsp;- ' . text::get('NOT_FOUND_IN_CATALOG_LABEL') . ' <span style="color:red;">' . $processResults['workNotFound'] . '</span><br>';
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_WORK_NOT_FOUND') . ' <span style="color:red;">' . $processResults['workNotFound'] . '</span><br>';
+                                  }
+                                  if ($processResults['workAmountNotSet'] > 0)
+                                  {
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_AMOUNT_NOT_SET') . ' <span style="color:red;">' . $processResults['workAmountNotSet'] . '</span><br>';
                                   }
                                   
                                   $message .= '<br><b>' . text::get('MATERIAL_ROWS_LABEL') . ' ' . $processResults['materialRows'] . '</b><br>';
                                   $message .= '&nbsp;&nbsp;- ' . text::get('SAVED_TO_MATERIALS') . ' <span style="color:green;">' . $processResults['materialSaved'] . '</span><br>';
                                   if ($processResults['materialExists'] > 0)
                                   {
-                                      $message .= '&nbsp;&nbsp;- ' . text::get('ALREADY_EXISTS_LABEL') . ' <span style="color:orange;">' . $processResults['materialExists'] . '</span><br>';
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_MATERIAL_EXISTS') . ' <span style="color:orange;">' . $processResults['materialExists'] . '</span><br>';
                                   }
                                   if ($processResults['materialNotFound'] > 0)
                                   {
-                                      $message .= '&nbsp;&nbsp;- ' . text::get('NOT_FOUND_IN_CATALOG_LABEL') . ' <span style="color:red;">' . $processResults['materialNotFound'] . '</span><br>';
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_MATERIAL_NOT_FOUND') . ' <span style="color:red;">' . $processResults['materialNotFound'] . '</span><br>';
+                                  }
+                                  if ($processResults['materialAmountNotSet'] > 0)
+                                  {
+                                      $message .= '&nbsp;&nbsp;- ' . text::get('STATUS_AMOUNT_NOT_SET') . ' <span style="color:red;">' . $processResults['materialAmountNotSet'] . '</span><br>';
                                   }
                                   
                                   if ($processResults['skipped'] > 0)

@@ -14255,15 +14255,15 @@ class dbProc extends dbLayer
     // -----------------------------------------------------------------------------
     function getMaterialInfoByCode($code)
     {
-        $query = 'SELECT `KMAT_ID`, `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`
+        $query = 'SELECT `KMAT_ID`, `KMAT_NOSAUKUMS`, `KMAT_MERVIENIBA`, `KMAT_KODS`
                   FROM `KL_MATERIALI`
-                  WHERE `KMAT_KODS` = "'.dbLayer::quote_smart($code).'"
-                  LIMIT 1';
+                  WHERE `KMAT_KATEGORIJAS_KODS` = "'.dbLayer::quote_smart($code).'"';
         
         $oDB = new dbLayer;
         $result = $oDB->makeQuery($query);
         
-        return isset($result[0]) ? $result[0] : false;
+        // Return all matching materials (can be multiple with same category code)
+        return (is_array($result) && count($result) > 0) ? $result : false;
     }
 
     // -----------------------------------------------------------------------------
