@@ -251,9 +251,12 @@ if ( $isAdmin || $isProjector)
                                               }
                                           }
                                           
-                                          // Get material info from kl_materiali
-                                          $materialInfo = dbProc::getMaterialInfoByCode($code);
-                                          $codeExistsInKlMateriali = ($materialInfo !== false);
+                                          // Get material info from kl_materiali by category code
+                                          $materialInfoList = dbProc::getMaterialInfoByCode($code);
+                                          $codeExistsInKlMateriali = ($materialInfoList !== false);
+                                          
+                                          // Use first material from the list (if multiple exist with same category code)
+                                          $materialInfo = ($materialInfoList !== false) ? $materialInfoList[0] : false;
                                           
                                           // Check if material already exists in materiali for this act AND work type
                                           $existsInMateriali = dbProc::materialExistsInMateriali($actId, $code, $workTypeId);
@@ -262,12 +265,8 @@ if ( $isAdmin || $isProjector)
                                           if (($codeExistsInKlMateriali || empty($code)) && !$existsInMateriali)
                                           {
                                               
-                                              // Prepare values for insert
+                                              // Prepare values for insert - use title from Excel
                                               $title = isset($row[2]) ? $row[2] : '';
-                                              if ($materialInfo !== false && !empty($materialInfo['KMAT_NOSAUKUMS']))
-                                              {
-                                                  $title = $materialInfo['KMAT_NOSAUKUMS'];
-                                              }
                                               $amount = isset($row[4]) ? $row[4] : null;
                                               $measure = isset($row[3]) ? $row[3] : '';
                                               if ($materialInfo !== false && !empty($materialInfo['KMAT_MERVIENIBA']))
@@ -277,9 +276,12 @@ if ( $isAdmin || $isProjector)
                                               $isWorker = empty($code) ? 1 : 0;
                                               $notes = isset($row[5]) ? $row[5] : '';
                                               
+                                              // Insert into MATERIALI using actual material code from catalog
+                                              $materialCode = ($materialInfo !== false && !empty($materialInfo['KMAT_KODS'])) ? $materialInfo['KMAT_KODS'] : $code;
+                                              
                                               // Insert into MATERIALI
                                               $materialiId = dbProc::insertMaterialToMaterialiFromEstimate(
-                                                  $actId, $code, $title, $amount, 
+                                                  $actId, $materialCode, $title, $amount, 
                                                   $measure, $isWorker, $workTypeId, $notes
                                               );
                                               
