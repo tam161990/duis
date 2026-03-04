@@ -42,7 +42,8 @@
 										'issue_status: '. ((isset($data->issue_status) && !empty($data->issue_status)) ? $data->issue_status : '').PHP_EOL.
 										'issue_assignee: '.((isset($data->issue_assignee) && !empty($data->issue_assignee)) ? $data->issue_assignee : '').PHP_EOL.
 										'issue_end_date:' .((isset($data->issue_end_date) && !empty($data->issue_end_date))? $data->issue_end_date :'').PHP_EOL.
-										'issue_accept_date:' .((isset($data->issue_accept_date) && !empty($data->issue_accept_date)) ? $data->issue_accept_date :'').PHP_EOL
+										'issue_accept_date:' .((isset($data->issue_accept_date) && !empty($data->issue_accept_date)) ? $data->issue_accept_date :'').PHP_EOL.
+										'issue_district:' .((isset($data->issue_district) && !empty($data->issue_district)) ? $data->issue_district :'').PHP_EOL
 								);						
 		
 			
@@ -51,7 +52,10 @@
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
 										isset($data->issue_end_date) && !empty($data->issue_end_date) ? substr($data->issue_end_date, 0, 10) : false,
-										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false
+										isset($data->issue_accept_date) && !empty($data->issue_accept_date) ? substr($data->issue_accept_date, 0, 10) : false,
+										false,
+										false,
+										isset($data->issue_district) && !empty($data->issue_district) ? $data->issue_district : false 
 										);	
 			
 			$response = ob_get_clean();	
