@@ -9541,13 +9541,14 @@ class dbProc extends dbLayer
                                         $end_date = false,
                                         $accept_date = false,
                                         $project_code = false,
-                                        $need_by_date = false
+                                        $need_by_date = false,
+                                        $issue_district = false
                                         )
         { 
             if (substr( $code, 0, 3 ) === 'REM') {
                 return;
             }
-            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.$need_by_date;
+            $descr = $code .'/'.$status.'/'.$user_name.'/'.$end_date.'/'.$accept_date.'/'.$project_code .'/'.$need_by_date .'/'. $issue_district;
            
             $oDB = new dbLayer;
             $query = 'insert into `AUTO_ACT_STATUS`
@@ -9559,7 +9560,8 @@ class dbProc extends dbLayer
                             `END_DATE`,
                             `ACCEPT_DATE`,
                             `AAST_PROJECT_NO`,
-                            `AAST_CONSTRACTION_DATE`
+                            `AAST_CONSTRACTION_DATE`,
+                            `ISSUE_DISTRICT`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
@@ -9568,7 +9570,8 @@ class dbProc extends dbLayer
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
                           '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
                           '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .',
-                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .'
+                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .',
+                          '.(($issue_district !== false) ? '"' .$issue_district .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -9583,7 +9586,8 @@ class dbProc extends dbLayer
                             `END_DATE`,
                             `ACCEPT_DATE`,
                             `AAST_PROJECT_NO`,
-                            `AAST_CONSTRACTION_DATE`
+                            `AAST_CONSTRACTION_DATE`,
+                            `ISSUE_DISTRICT`
                         )
                         values ( "'.$code.'",
                         "'.$descr.'",
@@ -9592,7 +9596,8 @@ class dbProc extends dbLayer
                           '.(($end_date !== false) ? '"' .$end_date .'"' : '"NULL"') .',
                           '.(($accept_date !== false) ? '"' .$accept_date .'"' : '"NULL"') .',
                           '.(($project_code !== false) ? '"' .$project_code .'"' : '"NULL"') .',
-                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .'
+                          '.(($need_by_date !== false) ? '"' .$need_by_date .'"' : '"NULL"') .',
+                          '.(($issue_district !== false) ? '"' .$issue_district .'"' : '"NULL"') .'
                         ) ';
                             
 				//echo $query;
@@ -9607,7 +9612,7 @@ class dbProc extends dbLayer
             
             $query = 'SELECT `AAST_KODS`, `AAST_STATUS`, `RAKT_ID`, `USER_NAME`, `END_DATE`, `RAKT_STATUS`,
                                  `AAST_ID`, `RAKT_TRASE`, `ACCEPT_DATE`, `RAKT_PROJECT`, `RAKT_RLTT_ID`, `AAST_PROJECT_NO`,
-                                 `AAST_CONSTRACTION_DATE`
+                                 `AAST_CONSTRACTION_DATE`, `ISSUE_DISTRICT`
                                 FROM `AUTO_ACT_STATUS` 
                                 INNER JOIN  `AKTI` ON `RAKT_NUM_POSTFIX` = `AAST_KODS`
                                 WHERE  `AAST_KODS` IS NOT NULL 
@@ -9639,6 +9644,7 @@ class dbProc extends dbLayer
                 $cur_user_id = $act['RAKT_RLTT_ID'];
                 $project_code = false;
                 $constraction_date = false;
+                $issue_district = $act['ISSUE_DISTRICT'];
 
                 if(isset($act['USER_NAME'])){
                     $userInfo = dbProc::getUserInfo('', $act['USER_NAME']);
@@ -9700,7 +9706,8 @@ class dbProc extends dbLayer
                                     'RAKT_IZPILDES_DATUMS:' .$end_date.PHP_EOL.
                                     'RAKT_PROJECT_NO:' .$project_code.PHP_EOL.
                                     'AAST_ID:' .$act['AAST_ID'].PHP_EOL.
-                                    'AAST_CONSTRACTION_DATE:' .$act['AAST_CONSTRACTION_DATE'].PHP_EOL
+                                    'AAST_CONSTRACTION_DATE:' .$act['AAST_CONSTRACTION_DATE'].PHP_EOL.
+                                    'RAKT_ISSUE_DISTRICT:'  .$act['ISSUE_DISTRICT'].PHP_EOL
 							);						
 
                 				
@@ -9710,6 +9717,7 @@ class dbProc extends dbLayer
                         '.(($end_date !== false ) ? ',`RAKT_IZPILDES_DATUMS`  = "' .$end_date .'"' : '' ) .'
                         '.(($constraction_date !== false ) ? ',`RAKT_CONSTRACTION_DATE`  = "' .$constraction_date .'"' : '' ) .'
                         '.(($project_code !== false ) ? ',`RAKT_PROJECT_NO`  = "' .$project_code .'"' : '' ) .'
+                        '.(($issue_district !== false ) ? ',`RAKT_ISSUE_DISTRICT`  = "' .$issue_district .'"' : '' ) .'
                         WHERE `RAKT_ID` = '.$actId;  
 				
                
@@ -9783,8 +9791,7 @@ class dbProc extends dbLayer
                 }               
               }
             }
-			return true;
-            
+			return true;            
         }
         
         function processAutoActs($user) {
