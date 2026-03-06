@@ -6,16 +6,11 @@ logs/
 temp/
 output/
 gps_files/
-<<<<<<< HEAD
+
+
+info.php
 rbf_act_files/
+estimate_files/
+docs/
 tests/
-info.php
-estimate_files/
-rbf_files/
-docs/
-=======
-info.php
-rbf_act_files/
-estimate_files/
-docs/
->>>>>>> DUIS-522
+

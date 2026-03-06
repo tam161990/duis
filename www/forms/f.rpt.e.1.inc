@@ -106,7 +106,7 @@
                $totalPrice =  $row['MATER_TOTAL'] + $row['WORK_TOTAL'];
                $area[$row['ACTA_VEIDS']]['act'][$row['RAKT_ID']]  = array (
                 'number' => $row['NUMURS'],
-                'designation' => $row['RAKT_OPERATIVAS_APZIM'],
+                'designation' => $row['RAKT_WORK_TITLE'],
                 'date' => $approveDate,
                 'work' => $row['WORK_TOTAL'],
                 'material' => $row['MATER_TOTAL'],
@@ -185,7 +185,7 @@
 
                 $headers = array(
                     'ACT_NUMBER' => iconv('UTF-8', 'windows-1257',text::get('ACT_NUMBER')),
-                    'RAKT_OPERATIVAS_APZIM' => iconv('UTF-8', 'windows-1257',text::get('MAIN_DESIGNATION')),
+                    'WORK_TITLE' => iconv('UTF-8', 'windows-1257',text::get('RBF_WORK_TITLE')),
                     'ACT_ACCEPT_TIME' => iconv('UTF-8', 'windows-1257',text::get('ACT_ACCEPT_TIME')),
                     'RAKT_IR_OBJEKTS_PABEIGTS' => iconv('UTF-8', 'windows-1257',text::get('OBJECT_BUILDED')),
                     'ACT_TOTAL_WORK_PRICE' => iconv('UTF-8', 'windows-1257',text::get('ACT_TOTAL_WORK_PRICE').', EUR'),
@@ -207,7 +207,7 @@
                            {
                                $data[$i] = array(
                                 'ACT_NUMBER' => $r['number'],
-                                'RAKT_OPERATIVAS_APZIM' => iconv('UTF-8', 'windows-1257',$r['designation']),
+                                'WORK_TITLE' => iconv('UTF-8', 'windows-1257',$r['designation']),
                                 'ACT_ACCEPT_TIME' => $r['date'],
                                 'RAKT_IR_OBJEKTS_PABEIGTS' =>  iconv('UTF-8', 'windows-1257',$r['finished']),
                                 'ACT_TOTAL_WORK_PRICE' => $r['work'],
@@ -234,8 +234,7 @@
                         $pdf->SetFont('Arial','B',8);
                         $pdf->Cell(230,4,iconv('UTF-8', 'windows-1257',text::get('TOTAL_WITH_PCT')).":",0,0,'R');
                         $pdf->Cell(40,4,number_format($row['Total'], 2),0,1,'C');
-                    }
- 
+                    } 
                 }
 				$pdf->Cell(0,4,"","B",1);
 				
