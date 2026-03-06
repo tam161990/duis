@@ -23,13 +23,12 @@
             </tr>
             <tr class="table_head_2">
     			<td width="10%"><?= text::get('ACT_NUMBER'); ?></td>
-                <td width="30%"><?=text::get('MAIN_DESIGNATION');?></td>
+                <td width="30%"><?=text::get('RBF_WORK_TITLE');?></td>
                 <td width="13%"><?= text::get('ACT_ACCEPT_TIME'); ?></td>
                 <td width="8%"><?=text::get('OBJECT_BUILDED');?></td>
                 <td width="13%"><?= text::get('ACT_TOTAL_WORK_PRICE').', EUR'; ?></td>
                 <td width="13%"><?=text::get('ACT_TOTAL_MATER_PRICE').', EUR';?></td>
-                <td width="13%"><?=text::get('ACT_TOTAL_PRICE').', EUR';?></td>
-                
+                <td width="13%"><?=text::get('ACT_TOTAL_PRICE').', EUR';?></td>                
             </tr>
              <?
                 if (is_array($row['act']) && count($row['act']) > 0)

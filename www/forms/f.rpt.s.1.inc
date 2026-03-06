@@ -126,7 +126,7 @@ if(true/*$isEdUser || $isAdmin*/)
                $totalPrice =  $row['MATER_TOTAL'] + $row['WORK_TOTAL'];
                $area[$row['ACTA_VEIDS']]['act'][$row['RAKT_ID']]  = array (
                 'number' => $row['NUMURS'],
-                'designation' => $row['RAKT_OPERATIVAS_APZIM'],
+                'designation' => $row['RAKT_WORK_TITLE'],
                 'date' => $approveDate,
                 'work' => $row['WORK_TOTAL'],
                 'material' => $row['MATER_TOTAL'],
