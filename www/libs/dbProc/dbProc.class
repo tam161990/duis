@@ -13320,7 +13320,7 @@ class dbProc extends dbLayer
 	}
 
 	/**
-	 * Calculate act life period based on custom month boundaries (27th to 26th)
+	 * Calculate act life period based on custom month boundaries (29th to 28th)
 	 * @param int $actId Act ID (RAKT_ID)
 	 * @return int|false Period number (1, 2, 3, etc.) or false on error
 	 */
@@ -13357,8 +13357,8 @@ class dbProc extends dbLayer
 	}
 	
 	/**
-	 * Calculate period number for a date based on custom month boundaries (27th to 26th)
-	 * Month starts at 27th 00:00 and ends at 26th 23:59 of next calendar month
+	 * Calculate period number for a date based on custom month boundaries (29th to 28th)
+	 * Month starts at 29th 00:00 and ends at 28th 23:59 of next calendar month
 	 * @param string $dateString Date in format Y-m-d H:i:s
 	 * @return int Period number (calculated as year*12 + month of period start)
 	 */
@@ -13370,9 +13370,9 @@ class dbProc extends dbLayer
 		$day = (int)$date->format('d');
 		
 		// Determine which period this date belongs to
-		// If day >= 27, the period starts on the 27th of this month
-		// If day < 27, the period started on the 27th of the previous month
-		if ($day >= 27)
+		// If day >= 29, the period starts on the 29th of this month
+		// If day < 29, the period started on the 29th of the previous month
+		if ($day >= 29)
 		{
 			// Period starts this month
 			$periodYear = $year;
