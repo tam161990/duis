@@ -86,9 +86,9 @@ class toPdf {
 			array('', 'L', '', 8)
 				) ,
 		array(
-			array(iconv('UTF-8', 'windows-1257',text::get('CONTRACT_DISTRICT').':'.$act['RAKT_ISSUE_DISTRICT'] ), 'L', 'B', 8),
+			array(iconv('UTF-8', 'windows-1257',text::get('CONTRACT_DISTRICT').': '.$act['RAKT_ISSUE_DISTRICT'] ), 'L', '', 8),
 			array('', 'L', '', 8)
-				) ,
+				) 
 		) ;
 		$pdf->HeaderStyledTable($actHeader);
 
