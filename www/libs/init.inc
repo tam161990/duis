@@ -29,4 +29,3 @@
     require_once(ZR_LIBS_DIR.'/ldap/adLDAP.class');
 	require_once(ZR_LIBS_DIR.'/process/Process.class');  
 	require_once(ZR_LIBS_DIR.'/errorhandling.php');
-?>
