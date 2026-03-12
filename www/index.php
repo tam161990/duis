@@ -37,5 +37,3 @@ if (DEBUG_MODE)
 	echo RequestHandler::getMicroTime()-$startMicroTime."\n";
 	echo "\n\n\n".'-->';
 }
-
-?>

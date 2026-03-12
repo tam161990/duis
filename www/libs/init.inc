@@ -30,4 +30,3 @@
 	require_once(ZR_LIBS_DIR.'/process/Process.class');
 	require_once(ZR_LIBS_DIR.'/estimateExcelParser/ioExcelParser.class');
 	require_once(ZR_LIBS_DIR.'/errorhandling.php');
-?>

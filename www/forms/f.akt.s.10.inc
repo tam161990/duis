@@ -1,4 +1,4 @@
-﻿<?
+<?
 // Created by Tatjana Fedorkova
 $userId = userAuthorization::getUserId();
 $isAdmin=userAuthorization::isAdmin();
@@ -86,5 +86,3 @@ else
 {
     RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
 }
-
-?>
