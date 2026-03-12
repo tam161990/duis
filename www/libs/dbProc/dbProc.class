@@ -6413,7 +6413,7 @@ class dbProc extends dbLayer
         AND a.RAKT_KAKV_ID NOT IN (".ACT_TYPE_STIHIJA_ID.", ".ACT_TYPE_PERS_ID.")
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
-                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) )    
 		UNION ALL
          SELECT  '71882' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_ELEMENT')."' as KWRC_NOSAUKUMS, 
@@ -6424,7 +6424,7 @@ class dbProc extends dbLayer
         AND a.RAKT_KAKV_ID IN (".ACT_TYPE_STIHIJA_ID.")
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
-                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) 
 		UNION ALL
           SELECT  '71889' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_PERS')."' as KWRC_NOSAUKUMS, 
@@ -6435,7 +6435,7 @@ class dbProc extends dbLayer
         AND a.RAKT_KAKV_ID IN (".ACT_TYPE_PERS_ID.")
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFrom($searcCriteria['month'], $searcCriteria['year'])."'
-                AND '".dbProc::getActDateTo($searcCriteria['month'], $searcCriteria['year'])."' ) 
+                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) 
        ) x
          GROUP BY KWRC_KODS, KWRC_NOSAUKUMS";
