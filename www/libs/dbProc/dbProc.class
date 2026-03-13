@@ -5170,7 +5170,7 @@ class dbProc extends dbLayer
 	function getActInfo($ID)
 	{
 
-			$query = "select *, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_KODS `TYPE_CODE`, v.KAKV_IR_PLANS `PLAN`, v.KAKV_NOSAUKUMS `TYPE`, 
+			$query = "select *, a.RAKT_ISSUE_DISTRICT, k.KRFK_NOZIME `STATUS_NAME`, v.KAKV_KODS `TYPE_CODE`, v.KAKV_IR_PLANS `PLAN`, v.KAKV_NOSAUKUMS `TYPE`, 
              v.KAKV_TEXT_TMPL `TEXT_TMPL`, e.KEDI_KODS `ED_KODS`,
             a.RAKT_FULL_NUMBER `NUMURS`,
             CONCAT(e.KEDI_SECTION,'/', e.KEDI_NOSAUKUMS) `STRUKTURVIENIBA`,
