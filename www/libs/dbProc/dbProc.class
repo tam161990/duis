@@ -13669,6 +13669,23 @@ class dbProc extends dbLayer
 	public static function getDarbiSummaryByActId($actId)
 	{
 		$oDB = new dbLayer();
+
+        // Get act creation date
+		$query = 'SELECT `RAKT_KWOI_KODS`, `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		$result = $oDB->makeQuery($query);
+		
+		if (!is_array($result) || count($result) == 0)
+		{
+			return false;
+		}
+		
+		$worker = $result[0]['RAKT_KWOI_KODS'];
+        $vv_number = $result[0]['RAKT_VV_NUMBER'];
+		if (empty($worker) || empty($vv_number)) {
+            return false;
+        }
+
+        $oDB = new dbLayer();
 		$query = 'SELECT
 					codes.RADR_RBKL_SHIFRS AS DRBI_KKAL_SHIFRS,
 					k.RBKL_NOSAUKUMS AS DRBI_KKAL_NOSAUKUMS,
@@ -13683,6 +13700,7 @@ class dbProc extends dbLayer
 					WHERE RADR_FAKT_ID = "'.dbLayer::quote_smart($actId).'"
 				  ) codes
 				  LEFT JOIN `kl_rbf_kalkulacija` k ON codes.RADR_RBKL_SHIFRS = k.RBKL_SHIFRS
+                  AND k.RBKL_RBDU_KODS = "'.$worker.'" AND k.RBKL_VV_NUMBER = "'.$vv_number.'"
 				  LEFT JOIN `kl_writeoff_code_new` w ON codes.RADR_RBKL_SHIFRS = w.KWRC_KKAL_SHIFRS
 				  LEFT JOIN (
 					SELECT 
