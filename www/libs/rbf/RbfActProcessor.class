@@ -419,7 +419,7 @@ class RbfActProcessor
 	$existingWork = dbProc::getExistingWork($raktId, $rbklShifrs, $mmsKods);
 	
 	if ($existingWork) {
-		$this->handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate);
+		$this->handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate, $norma, $apjoms, $cstNorma);
 	} else {
 		$this->handleNewWork($raktId, $raktFullNumber, $rbklShifrs, $mmsKods, $mmsTitle, $status, $planDate, $norma, $mervieniba, $apjoms, $cstNorma);
 	}
@@ -429,17 +429,17 @@ class RbfActProcessor
 	// Handle existing work record
 	// Private
 	// -----------------------------------------------------------------------------
-	private function handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate)
+	private function handleExistingWork($existingWork, $raktFullNumber, $rbklShifrs, $mmsKods, $status, $planDate, $norma, $apjoms = null, $cstNorma = null)
 	{
 		if ($existingWork['RADR_IS_PROCESSED'] == 1) {
 			// Already processed - skip
 			files::wh_log("[SKIP] Act $raktFullNumber: Work (Calc: $rbklShifrs, MMS: $mmsKods) already processed (RADR_IS_PROCESSED=1)");
 			$this->stats['works']['skipped']++;
 		} else {
-			// Not processed - update status and plan_date only
-			$updated = dbProc::updateRbfWorkStatus($existingWork['RADR_ID'], $status, $planDate);
+			// Not processed - update status, plan_date and RBF values
+			$updated = dbProc::updateRbfWorkStatus($existingWork['RADR_ID'], $status, $planDate, $norma, $apjoms, $cstNorma);
 			if ($updated) {
-				files::wh_log("[UPDATE] Act $raktFullNumber: Work (Calc: $rbklShifrs, MMS: $mmsKods) - Updated status to '$status'");
+				files::wh_log("[UPDATE] Act $raktFullNumber: Work (Calc: $rbklShifrs, MMS: $mmsKods) - Updated status to '$status' and values (Norma: $norma)");
 				$this->stats['works']['updated']++;
 			} else {
 				$error = "[ERROR] Act $raktFullNumber: Failed to update work (RADR_ID: {$existingWork['RADR_ID']})";
