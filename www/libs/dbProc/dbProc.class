@@ -13160,8 +13160,8 @@ class dbProc extends dbLayer
 					'.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').',
 					"'.dbLayer::quote_smart($norma).'",
 					'.($mervieniba ? '"'.dbLayer::quote_smart($mervieniba).'"' : 'NULL').',
-					'.($apjoms ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
-					'.($cstNorma ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').'
+					'.(($apjoms !== null && $apjoms !== '') ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
+					'.(($cstNorma !== null && $cstNorma !== '') ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').'
 				)';
 		
 		$result = $oDB->makeQuery($query);
@@ -13300,8 +13300,8 @@ class dbProc extends dbLayer
 					'.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').',
 					"'.dbLayer::quote_smart($norma).'",
 					'.($mervieniba ? '"'.dbLayer::quote_smart($mervieniba).'"' : 'NULL').',
-					'.($apjoms ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
-					'.($cstNorma ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').',
+					'.(($apjoms !== null && $apjoms !== '') ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
+					'.(($cstNorma !== null && $cstNorma !== '') ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').',
 					0
 				)';
 		
@@ -13314,19 +13314,25 @@ class dbProc extends dbLayer
 	}
 
 	/**
-	 * Update work status and plan date in rbf_akta_darbi
+	 * Update work status, plan date and values in rbf_akta_darbi
 	 * @param int $radrId Work ID
 	 * @param string $status New status
 	 * @param string $planDate New plan date (nullable)
+	 * @param float $norma New norma
+	 * @param float $apjoms New volume (nullable)
+	 * @param float $cstNorma New C.st. norma (nullable)
 	 * @return bool
 	 */
-	function updateRbfWorkStatus($radrId, $status, $planDate)
+	function updateRbfWorkStatus($radrId, $status, $planDate, $norma, $apjoms = null, $cstNorma = null)
 	{
 		$oDB = new dbLayer();
 		
 		$query = 'UPDATE `rbf_akta_darbi` SET
 					`RADR_STATUS` = "'.dbLayer::quote_smart($status).'",
-					`RADR_PLAN_DATE` = '.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').'
+					`RADR_PLAN_DATE` = '.($planDate ? '"'.dbLayer::quote_smart($planDate).'"' : 'NULL').',
+					`RADR_NORMA` = "'.dbLayer::quote_smart($norma).'",
+					`RADR_APJOMS` = '.(($apjoms !== null && $apjoms !== '') ? '"'.dbLayer::quote_smart($apjoms).'"' : 'NULL').',
+					`RADR_CST_NORMA` = '.(($cstNorma !== null && $cstNorma !== '') ? '"'.dbLayer::quote_smart($cstNorma).'"' : 'NULL').'
 				  WHERE `RADR_ID` = "'.dbLayer::quote_smart($radrId).'"';
 		
 		$result = $oDB->makeQuery($query);
