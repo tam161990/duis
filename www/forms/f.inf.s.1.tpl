@@ -179,6 +179,7 @@ if($isAdmin || $isSystemUser || $isRbfUser)
             {
             ?>
 			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH');?></a></td>
+			<td class="menu_cell" nowrap><a  target="frame_1" href="<?=$actSearchRbfLink;?>" onclick="reloadFrame(2,'<?=$actListLink;?>');reloadFrame(3,'');enableFrameControl();window.top.normal();hideMenu();"><?=text::get('ADVANCED_SEARCH_RBF');?></a></td>
             
             <?
             }

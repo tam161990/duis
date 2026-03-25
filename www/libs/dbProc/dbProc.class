@@ -5261,6 +5261,189 @@ class dbProc extends dbLayer
 		return isset($result[0]['ACT_COUNT']) ? $result[0]['ACT_COUNT'] : false;
 	}
 
+	// -----------------------------------------------------------------------------
+	// Get distinct VV list for RBF act search
+	// -----------------------------------------------------------------------------
+	function getRbfActSearchVvList($employeeCode = false)
+	{
+		$query = 'SELECT DISTINCT vv.`RBDV_VV_NUMURS`
+			FROM `kl_rbf_du_vv` vv
+			INNER JOIN `kl_rbf_darbuznemeji` d ON d.`RBDU_ID` = vv.`RBDV_RBDU_ID`
+			WHERE d.`RBDU_IR_AKTIVS` = 1 ';
+		if ($employeeCode !== false && $employeeCode != '' && $employeeCode != '-1')
+		{
+			$query .= ' AND d.`RBDU_KODS` = "'.dbLayer::quote_smart($employeeCode).'"';
+		}
+		$query .= ' ORDER BY vv.`RBDV_VV_NUMURS`';
+
+		$oSQL = new dbLayer;
+		return $oSQL->makeQuery($query);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get distinct RBF territory list for search (U -> RBTR, C -> DID)
+	// -----------------------------------------------------------------------------
+	function getRbfActSearchTerritoryList($employeeCode = false, $vvNumber = false)
+	{
+		$query = 'SELECT DISTINCT
+			vv.`RBDV_RBTR_KODS` AS `RBTR_CODE`,
+			CASE
+				WHEN d.`RBDU_VV_VEIDS` = "U" THEN t.`RBTR_NOSAUKUMS`
+				ELSE t.`RBTR_DID_NOSAUKUMS`
+			END AS `RBTR_NAME`
+			FROM `kl_rbf_du_vv` vv
+			INNER JOIN `kl_rbf_darbuznemeji` d ON d.`RBDU_ID` = vv.`RBDV_RBDU_ID`
+			INNER JOIN `kl_rbf_teritorijas` t ON vv.`RBDV_RBTR_KODS` = CASE
+				WHEN d.`RBDU_VV_VEIDS` = "U" THEN t.`RBTR_KODS`
+				ELSE t.`RBTR_DID_KODS`
+			END
+			WHERE d.`RBDU_IR_AKTIVS` = 1 AND t.`RBTR_IR_AKTIVS` = 1 ';
+
+		if ($employeeCode !== false && $employeeCode != '' && $employeeCode != '-1')
+		{
+			$query .= ' AND d.`RBDU_KODS` = "'.dbLayer::quote_smart($employeeCode).'"';
+		}
+		if ($vvNumber !== false && $vvNumber != '' && $vvNumber != '-1')
+		{
+			$query .= ' AND vv.`RBDV_VV_NUMURS` = "'.dbLayer::quote_smart($vvNumber).'"';
+		}
+
+		$query .= ' ORDER BY `RBTR_CODE`';
+
+		$oSQL = new dbLayer;
+		return $oSQL->makeQuery($query);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get RBF users list for author filter (optionally by DU)
+	// -----------------------------------------------------------------------------
+	function getRbfAdminUsersList($employeeCode = false)
+	{
+		$query = 'SELECT `RLTT_ID`, `RLTT_VARDS`, `RLTT_UZVARDS`
+			FROM `LIETOTAJI`
+			WHERE `RLTT_IR_AKTIVS` = 1
+			AND `RLTT_IR_RBF` = 1 ';
+		if ($employeeCode !== false && $employeeCode != '' && $employeeCode != '-1')
+		{
+			$query .= ' AND `RLTT_KWOI_KODS` = "'.dbLayer::quote_smart($employeeCode).'"';
+		}
+		$query .= '
+			ORDER BY `RLTT_VARDS`, `RLTT_UZVARDS`';
+
+		$oSQL = new dbLayer;
+		return $oSQL->makeQuery($query);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get RBF acts count by advanced criteria
+	// -----------------------------------------------------------------------------
+	function getRbfActSearchCount($employeeCode = '-1', $vvNumber = '-1', $territoryCode = '-1', $actType = '-1', $status = '-1', $authorId = '-1')
+	{
+		$query = 'SELECT COUNT(DISTINCT a.`RAKT_ID`) AS `ACT_COUNT`
+			FROM `AKTI` a
+			WHERE a.`RAKT_IS_RBF` = 1 AND a.`RAKT_PROJECT` = 0 ';
+
+		if ($employeeCode != '-1')
+		{
+			$query .= ' AND a.`RAKT_KWOI_KODS` = "'.dbLayer::quote_smart($employeeCode).'"';
+		}
+		if ($vvNumber != '-1')
+		{
+			$query .= ' AND a.`RAKT_VV_NUMBER` = "'.dbLayer::quote_smart($vvNumber).'"';
+		}
+		if ($territoryCode != '-1')
+		{
+			$query .= ' AND a.`RAKT_KEDI_ID` = "'.dbLayer::quote_smart($territoryCode).'"';
+		}
+		if ($actType != '-1')
+		{
+			$query .= ' AND a.`RAKT_KAKV_ID` = "'.dbLayer::quote_smart($actType).'"';
+		}
+		if ($authorId != '-1')
+		{
+			$query .= ' AND a.`RAKT_RLTT_ID` = "'.dbLayer::quote_smart($authorId).'"';
+		}
+
+		$statusArr = ($status != '-1' && $status != '') ? explode('*', $status) : array('-1');
+		if (!(count($statusArr) == 1 && $statusArr[0] == '-1'))
+		{
+			$statusString = '';
+			foreach ($statusArr as $s)
+			{
+				$statusString .= "'".dbLayer::quote_smart($s)."',";
+			}
+			$statusString = substr($statusString, 0, -1);
+			$query .= " AND a.`RAKT_STATUS` IN (".$statusString.") ";
+		}
+
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+		return isset($result[0]['ACT_COUNT']) ? $result[0]['ACT_COUNT'] : false;
+	}
+
+	// -----------------------------------------------------------------------------
+	// Get RBF acts list by advanced criteria
+	// -----------------------------------------------------------------------------
+	function getRbfActSearchList($offset = false, $limit = false, $employeeCode = '-1', $vvNumber = '-1', $territoryCode = '-1', $actType = '-1', $status = '-1', $authorId = '-1')
+	{
+		$query = 'SELECT a.*,
+			k.`KRFK_NOZIME` AS `STATUS_NAME`,
+			v.`KAKV_NOSAUKUMS` AS `TYPE`,
+			CONCAT(a.`RAKT_KEDI_ID`, ": ", CASE WHEN rbf_du.`RBDU_VV_VEIDS` = "U" THEN rbf_ter.`RBTR_NOSAUKUMS` ELSE rbf_ter.`RBTR_DID_NOSAUKUMS` END) AS `ED`,
+			rbf_du.`RBDU_NOSAUKUMS` AS `WORKER`,
+			a.`RAKT_FULL_NUMBER` AS `NUMURS`,
+			CONCAT(l.`RLTT_VARDS`, " ", l.`RLTT_UZVARDS`) AS `AUTORS`
+			FROM `AKTI` a
+			LEFT JOIN `KL_REF_KODI` k ON (a.`RAKT_STATUS` = k.`KRFK_VERTIBA`)
+			LEFT JOIN `KL_AKTA_VEIDS` v ON (a.`RAKT_KAKV_ID` = v.`KAKV_ID`)
+			LEFT JOIN `kl_rbf_darbuznemeji` rbf_du ON (a.`RAKT_KWOI_KODS` = rbf_du.`RBDU_KODS`)
+			LEFT JOIN `kl_rbf_teritorijas` rbf_ter ON ((a.`RAKT_KEDI_ID` = rbf_ter.`RBTR_KODS` OR a.`RAKT_KEDI_ID` = rbf_ter.`RBTR_DID_KODS`) AND rbf_ter.`RBTR_IR_AKTIVS` = 1)
+			LEFT JOIN `LIETOTAJI` l ON (a.`RAKT_RLTT_ID` = l.`RLTT_ID` AND a.`RAKT_RLTT_ID` != 0)
+			WHERE a.`RAKT_IS_RBF` = 1 AND a.`RAKT_PROJECT` = 0 ';
+
+		if ($employeeCode != '-1')
+		{
+			$query .= ' AND a.`RAKT_KWOI_KODS` = "'.dbLayer::quote_smart($employeeCode).'"';
+		}
+		if ($vvNumber != '-1')
+		{
+			$query .= ' AND a.`RAKT_VV_NUMBER` = "'.dbLayer::quote_smart($vvNumber).'"';
+		}
+		if ($territoryCode != '-1')
+		{
+			$query .= ' AND a.`RAKT_KEDI_ID` = "'.dbLayer::quote_smart($territoryCode).'"';
+		}
+		if ($actType != '-1')
+		{
+			$query .= ' AND a.`RAKT_KAKV_ID` = "'.dbLayer::quote_smart($actType).'"';
+		}
+		if ($authorId != '-1')
+		{
+			$query .= ' AND a.`RAKT_RLTT_ID` = "'.dbLayer::quote_smart($authorId).'"';
+		}
+
+		$statusArr = ($status != '-1' && $status != '') ? explode('*', $status) : array('-1');
+		if (!(count($statusArr) == 1 && $statusArr[0] == '-1'))
+		{
+			$statusString = '';
+			foreach ($statusArr as $s)
+			{
+				$statusString .= "'".dbLayer::quote_smart($s)."',";
+			}
+			$statusString = substr($statusString, 0, -1);
+			$query .= " AND a.`RAKT_STATUS` IN (".$statusString.") ";
+		}
+
+		$query .= ' GROUP BY a.`RAKT_ID` ORDER BY a.`RAKT_FULL_NUMBER` DESC ';
+		if (($offset !== false) && $limit)
+		{
+			$query .= ' limit '.($offset ? (int)$offset.', ' : '').(int)$limit;
+		}
+
+		$oSQL = new dbLayer;
+		return $oSQL->makeQuery($query);
+	}
+
     // -----------------------------------------------------------------------------
 	// Atgriezh akta(-as). atgriezh visas.
 	// Ja doti, njem veeraa nobiidi un daudzumu.
