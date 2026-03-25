@@ -77,6 +77,13 @@ if ( $isAdmin || $isSystemUser )
 	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
 	$actSearchLink=$oLink ->getQuery();
 	unset($oLink);
+
+	// RBF act advanced search form
+	$oLink=new urlQuery();
+	$oLink->addPrm('isSearch', '1');
+	$oLink->addPrm(FORM_ID, 'f.akt.s.35');
+	$actSearchRbfLink=$oLink ->getQuery();
+	unset($oLink);
     // list of acts
 	$oLink=new urlQuery();
 	$oLink->addPrm('isNew', '1');

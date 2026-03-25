@@ -72,10 +72,10 @@ if ($isAdmin || $isRbfUser || $isEconomist)
         // Get act info for permission checks
         $act = array();
         $status = false;
-        $actInfo = dbProc::getActInfo($actId);
+        $actInfo = dbProc::getRbfActInfo($actId);
         if(count($actInfo) > 0)
         {
-            $act = $actInfo[0];
+            $act = $actInfo;
             $status = $act['RAKT_STATUS'];
         }
 

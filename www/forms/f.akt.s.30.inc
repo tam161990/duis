@@ -420,21 +420,62 @@ if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
 // Back button - show for existing acts or when coming from search
 if($actId != false || $isSearch !== false || $searchNum !== false)
 {
+    $fromRbfSearch = reqVar::get('fromRbfSearch');
     // back button
-      // act advanced search form
+    if($fromRbfSearch == 1)
+    {
+      $employeeCodeSearch = reqVar::get('employeeCode');
+      $vvNumberSearch = reqVar::get('vvNumber');
+      $territoryCodeSearch = reqVar::get('territoryCode');
+      $actTypeSearch = reqVar::get('actType');
+      $authorIdSearch = reqVar::get('authorId');
+      $statusSearch = reqVar::get('status');
+
+      // RBF advanced search form (frame_1) with selected criteria restored
+      $oLink=new urlQuery();
+      $oLink->addPrm('isSearch', 1);
+      $oLink->addPrm('isReturn', 1);
+      $oLink->addPrm('selectedId', $actId);
+      $oLink->addPrm('employeeCode', $employeeCodeSearch);
+      $oLink->addPrm('vvNumber', $vvNumberSearch);
+      $oLink->addPrm('territoryCode', $territoryCodeSearch);
+      $oLink->addPrm('actType', $actTypeSearch);
+      $oLink->addPrm('authorId', $authorIdSearch);
+      $oLink->addPrm('status', $statusSearch);
+      $oLink->addPrm(FORM_ID, 'f.akt.s.35');
+      $actSearchLink=$oLink ->getQuery();
+      unset($oLink);
+
+      // RBF acts list (frame_2) with the same criteria
+      $oLink=new urlQuery();
+      $oLink->addPrm('selectedId', $actId);
+      $oLink->addPrm('employeeCode', $employeeCodeSearch);
+      $oLink->addPrm('vvNumber', $vvNumberSearch);
+      $oLink->addPrm('territoryCode', $territoryCodeSearch);
+      $oLink->addPrm('actType', $actTypeSearch);
+      $oLink->addPrm('authorId', $authorIdSearch);
+      $oLink->addPrm('status', $statusSearch);
+      $oLink->addPrm(FORM_ID, 'f.akt.s.35');
+      $actListLink=$oLink ->getQuery();
+      unset($oLink);
+    }
+    else
+    {
+      // legacy search back flow
       $oLink=new urlQuery();
       $oLink->addPrm('isSearch', $isSearch);
       $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
       $oLink->addPrm(FORM_ID, 'f.akt.s.9');
       $actSearchLink=$oLink ->getQuery();
       unset($oLink);
-      // list of acts
+
       $oLink=new urlQuery();
       $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
       $oLink->addPrm('selectedId', $actId);
       $oLink->addPrm(FORM_ID, 'f.akt.s.9');
       $actListLink=$oLink ->getQuery();
       unset($oLink);
+    }
       $oForm -> addElement('static', 'jsBackButtons', '', '
     			<script>
     			    function reloadBack()

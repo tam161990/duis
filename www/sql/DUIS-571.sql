@@ -1,0 +1,6 @@
+-- DUIS-571: RBF advanced search menu label
+
+INSERT INTO `FMK_MESSAGES` (`CODE`, `TEXT`)
+VALUES
+('ADVANCED_SEARCH_RBF', 'RBF Izvērsta meklēšana')
+ON DUPLICATE KEY UPDATE `TEXT` = VALUES(`TEXT`);
