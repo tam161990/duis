@@ -144,7 +144,7 @@ else
                                     <td>
                                         <input type="image" 
                                                src="img/btn_nodot_saskanosanai.gif" 
-                                               onclick="if(confirm('<?= addslashes(text::get('RBF_CONFIRM_MIDDLE_EXPORT')) ?>')) { document.getElementsByName('export_action')[0].value='middle'; document.rbf_auto_works_form.submit(); return false; } return false;" 
+                                               onclick="return handleMiddleExport(this);" 
                                                title="<?= text::get('RBF_MIDDLE_EXPORT_TOOLTIP') ?>" 
                                                style="cursor: pointer;" />
                                     </td>
@@ -156,7 +156,7 @@ else
                                     <td>
                                         <input type="image" 
                                                src="img/btn_120_nodosana.gif" 
-                                               onclick="return handleFinalExport();" 
+                                               onclick="return handleFinalExport(this);" 
                                                title="<?= text::get('RBF_FINAL_EXPORT_TOOLTIP') ?>" 
                                                style="cursor: pointer;" />
                                     </td>
@@ -331,7 +331,7 @@ else
                                     <td>
                                         <input type="image" 
                                                src="img/btn_nodot_saskanosanai.gif" 
-                                               onclick="if(confirm('<?= addslashes(text::get('RBF_CONFIRM_MIDDLE_EXPORT')) ?>')) { document.getElementsByName('export_action')[0].value='middle'; document.rbf_auto_works_form.submit(); return false; } return false;" 
+                                               onclick="return handleMiddleExport(this);" 
                                                title="<?= text::get('RBF_MIDDLE_EXPORT_TOOLTIP') ?>" 
                                                style="cursor: pointer;" />
                                     </td>
@@ -343,7 +343,7 @@ else
                                     <td>
                                         <input type="image" 
                                                src="img/btn_120_nodosana.gif" 
-                                               onclick="return handleFinalExport();" 
+                                               onclick="return handleFinalExport(this);" 
                                                title="<?= text::get('RBF_FINAL_EXPORT_TOOLTIP') ?>" 
                                                style="cursor: pointer;" />
                                     </td>
@@ -386,8 +386,62 @@ else
 ?>
 
 <script type="text/javascript">
+var rbfExportInProgress = false;
+
+function showExportLoading(button) {
+    if (button) {
+        button.disabled = true;
+        button.style.opacity = '0.6';
+        button.style.cursor = 'default';
+    }
+
+    var form = document.forms['rbf_auto_works_form'];
+    if (form) {
+        var images = form.querySelectorAll('input[type="image"]');
+        for (var i = 0; i < images.length; i++) {
+            var imgBtn = images[i];
+            imgBtn.disabled = true;
+            imgBtn.style.opacity = '0.6';
+            imgBtn.style.cursor = 'default';
+        }
+    }
+
+    if (button) {
+        var existing = document.getElementById('rbfExportLoader');
+        if (!existing) {
+            var loader2 = document.createElement('img');
+            loader2.id = 'rbfExportLoader';
+            loader2.src = 'img/loading.gif';
+            loader2.alt = 'Loading';
+            loader2.width = 32;
+            loader2.height = 32;
+            loader2.style.marginLeft = '10px';
+            loader2.style.verticalAlign = 'middle';
+            button.parentNode.appendChild(loader2);
+        }
+    }
+}
+
+function handleMiddleExport(button) {
+    if (rbfExportInProgress) {
+        return false;
+    }
+
+    if (confirm('<?= addslashes(text::get('RBF_CONFIRM_MIDDLE_EXPORT')) ?>')) {
+        rbfExportInProgress = true;
+        showExportLoading(button);
+        document.getElementsByName('export_action')[0].value = 'middle';
+        document.rbf_auto_works_form.submit();
+    }
+    return false;
+}
+
 // Validation for Final Export button
-function handleFinalExport() {
+function handleFinalExport(button) {
+    if (rbfExportInProgress) {
+        return false;
+    }
+
     var processWorkCount = <?= isset($processWorkCount) ? $processWorkCount : 0 ?>;
     var notCompletedWorkCount = <?= isset($notCompletedWorkCount) ? $notCompletedWorkCount : 0 ?>;
     
@@ -405,6 +459,8 @@ function handleFinalExport() {
     
     // All validations passed - show confirmation
     if (confirm('<?= addslashes(text::get('RBF_CONFIRM_FINAL_EXPORT')) ?>')) {
+        rbfExportInProgress = true;
+        showExportLoading(button);
         document.getElementsByName('export_action')[0].value='final';
         document.rbf_auto_works_form.submit();
         return false;

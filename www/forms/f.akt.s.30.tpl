@@ -36,6 +36,47 @@ function loadAuthors(employeeCode) {
 	}
 }
 
+var rbfMainActionInProgress = false;
+function submitRbfMainAction(button, actionValue, confirmText) {
+	if (rbfMainActionInProgress) {
+		return false;
+	}
+
+	if (confirmText && !confirm(confirmText)) {
+		return false;
+	}
+
+	rbfMainActionInProgress = true;
+	document.forms['frmMain']['action'].value = actionValue;
+
+	// Disable all image-submit buttons in the side panel
+	var form = document.forms['frmMain'];
+	if (form) {
+		var buttons = form.querySelectorAll('input[type="image"]');
+		for (var i = 0; i < buttons.length; i++) {
+			buttons[i].disabled = true;
+			buttons[i].style.opacity = '0.6';
+			buttons[i].style.cursor = 'default';
+		}
+	}
+
+	// Show loading indicator near clicked button
+	if (button && !document.getElementById('rbfMainActionLoader')) {
+		var loader = document.createElement('img');
+		loader.id = 'rbfMainActionLoader';
+		loader.src = 'img/loading.gif';
+		loader.alt = 'Loading';
+		loader.width = 32;
+		loader.height = 32;
+		loader.style.marginLeft = '10px';
+		loader.style.verticalAlign = 'middle';
+		button.parentNode.appendChild(loader);
+	}
+
+	form.submit();
+	return false;
+}
+
 // Trigger initial load if employee is pre-selected
 window.onload = function() {
 	var employeeSelect = document.all["employeeCode"];

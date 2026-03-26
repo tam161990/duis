@@ -400,21 +400,21 @@ $oForm->addElement('checkbox', 'capitalize', text::get('RBF_CAPITALIZE'), $capit
 if(!$isReadonly || !$isReadonlyExceptAdmin)
 {
     $oForm->addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 
-        'width="70" height="20" onclick="document.forms[\'frmMain\'][\'action\'].value=\''.OP_UPDATE.'\';"');
+        'width="70" height="20" onclick="return submitRbfMainAction(this,\''.OP_UPDATE.'\');"');
 }
 
 if($actId != false && $isAuto == 0 && ($status == STAT_INSERT || $status == STAT_RETURN))
 {
     $oForm->addElement('submitImg', 'export', text::get('RBF_SUBMIT_FOR_APPROVAL'), 'img/btn_120_nodosana.gif', 
-        ' height="20" onclick="if(confirm(\''.text::get('CONFIRM_EXPORT').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_EXPORT.'\';} else {return false;}"');
+        ' height="20" onclick="return submitRbfMainAction(this,\''.OP_EXPORT.'\', \''.text::get('CONFIRM_EXPORT').'\');"');
 }   
 if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
 {
     $oForm->addElement('submitImg', 'accept', text::get('RBF_APPROVE'), 'img/btn_apstiprinat.gif', 
-        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_ACCEPT').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_ACCEPT.'\';} else {return false;}"');
+        'width="70" height="20" onclick="return submitRbfMainAction(this,\''.OP_ACCEPT.'\', \''.text::get('CONFIRM_ACCEPT').'\');"');
     
     $oForm->addElement('submitImg', 'return', text::get('RBF_RETURN'), 'img/btn_atgriezt.gif', 
-        'width="70" height="20" onclick="if(confirm(\''.text::get('CONFIRM_RETURN').'\')){document.forms[\'frmMain\'][\'action\'].value=\''.OP_RETURN.'\';} else {return false;}"');
+        'width="70" height="20" onclick="return submitRbfMainAction(this,\''.OP_RETURN.'\', \''.text::get('CONFIRM_RETURN').'\');"');
 }
 
 // Back button - show for existing acts or when coming from search
