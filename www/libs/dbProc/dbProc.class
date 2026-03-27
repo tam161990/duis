@@ -13650,6 +13650,19 @@ class dbProc extends dbLayer
 	function exportAutoActWorksToDarbi($actId, $checkedWorkIds, $userId, $isFinalExport, $actLifePeriod)
 	{
 		$oDB = new dbLayer();
+
+		// Get act context for exact RBF calculation matching
+		$actQuery = 'SELECT `RAKT_KWOI_KODS`, `RAKT_VV_NUMBER`, `RAKT_KEDI_ID`
+			FROM `AKTI`
+			WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		$actInfo = $oDB->makeQuery($actQuery);
+		if (!is_array($actInfo) || count($actInfo) == 0)
+		{
+			return array('success' => false, 'inserted_count' => 0, 'message' => 'Act not found');
+		}
+		$actWorkerCode = $actInfo[0]['RAKT_KWOI_KODS'];
+		$actVvNumber = $actInfo[0]['RAKT_VV_NUMBER'];
+		$actTerritoryCode = $actInfo[0]['RAKT_KEDI_ID'];
 		
 		// Get checked works
 		$workIds = implode(',', array_map('intval', $checkedWorkIds));
@@ -13695,15 +13708,19 @@ class dbProc extends dbLayer
 		$insertedCount = 0;
 		foreach ($aggregated as $item)
 		{
-			// Get calculation info from kl_rbf_kalkulacija
+			// Get exact calculation info from kl_rbf_kalkulacija for this act context
 			$calcQuery = 'SELECT `RBKL_ID`, `RBKL_NOSAUKUMS`, `RBKL_CENA` 
 						  FROM `kl_rbf_kalkulacija` 
-						  WHERE `RBKL_SHIFRS` = "'.dbLayer::quote_smart($item['calc_code']).'"';
+						  WHERE `RBKL_SHIFRS` = "'.dbLayer::quote_smart($item['calc_code']).'"
+						  AND `RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($actWorkerCode).'"
+						  AND `RBKL_VV_NUMBER` = "'.dbLayer::quote_smart($actVvNumber).'"
+						  AND `RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($actTerritoryCode).'"
+						  LIMIT 1';
 			$calcInfo = $oDB->makeQuery($calcQuery);
 			
 			if (!is_array($calcInfo) || count($calcInfo) == 0)
 			{
-				files::wh_log("[ERROR] Calculation code not found: {$item['calc_code']}");
+				files::wh_log("[ERROR] Calculation not found for act context (Calc: {$item['calc_code']}, DU: {$actWorkerCode}, VV: {$actVvNumber}, RBF Code: {$actTerritoryCode})");
 				continue;
 			}
 			
@@ -14045,21 +14062,19 @@ class dbProc extends dbLayer
 						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
 						 LIMIT 1)
 					) as DRBI_MERVIENIBA,
-					COALESCE(
-						d.DRBI_KKAL_NORMATIVS,
-						(SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
-						 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
-						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
-						 LIMIT 1)
-					) as DRBI_KKAL_NORMATIVS,
+					(SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+					 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+					 AND RBKL_RBDU_KODS = (SELECT `RAKT_KWOI_KODS` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					 AND RBKL_RBTR_CODE = (SELECT `RAKT_KEDI_ID` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					 LIMIT 1) as DRBI_KKAL_NORMATIVS,
 					COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS) as DRBI_DAUDZUMS,
-					(COALESCE(
-						d.DRBI_KKAL_NORMATIVS,
-						(SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
-						 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
-						 AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
-						 LIMIT 1)
-					) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)) as DRBI_CILVEKSTUNDAS
+					((SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+					  WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+					  AND RBKL_RBDU_KODS = (SELECT `RAKT_KWOI_KODS` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					  AND RBKL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					  AND RBKL_RBTR_CODE = (SELECT `RAKT_KEDI_ID` FROM `AKTI` WHERE `RAKT_ID` = ".dbLayer::quote_smart($actId).")
+					  LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)) as DRBI_CILVEKSTUNDAS
 				  FROM `DARBI` d
 				  WHERE ".$whereClause."
 				  ORDER BY d.DRBI_KKAL_SHIFRS";
