@@ -671,18 +671,18 @@ $manualCost1 = isset($manualWorksApprovedByQuarter[1]) ? $manualWorksApprovedByQ
 $manualCost2 = isset($manualWorksApprovedByQuarter[2]) ? $manualWorksApprovedByQuarter[2] : 0;
 $manualCost3 = isset($manualWorksApprovedByQuarter[3]) ? $manualWorksApprovedByQuarter[3] : 0;
 
-$vatBase1 = number_format($totals['cost_1'] + $manualCost1, 2, '.', '');
-$vatBase2 = number_format($totals['cost_2'] + $manualCost2, 2, '.', '');
-$vatBase3 = number_format($totals['cost_3'] + $manualCost3, 2, '.', '');
+$vatBase1 = $totals['cost_1'] + $manualCost1;
+$vatBase2 = $totals['cost_2'] + $manualCost2;
+$vatBase3 = $totals['cost_3'] + $manualCost3;
 
 $vat1 = $vatBase1 * 0.21;
 $vat2 = $vatBase2 * 0.21;
 $vat3 = $vatBase3 * 0.21;
 
 // Calculate total with VAT (auto + manual)
-$totalWithVat1 = $vatBase1 + number_format($vat1, 2, '.', '');
-$totalWithVat2 = $vatBase2 + number_format($vat2, 2, '.', '');
-$totalWithVat3 = $vatBase3 + number_format($vat3, 2, '.', '');
+$totalWithVat1 = $vatBase1 + $vat1;
+$totalWithVat2 = $vatBase2 + $vat2;
+$totalWithVat3 = $vatBase3 + $vat3;
 
 // Format totals for display
 $totalsFormatted = array(
