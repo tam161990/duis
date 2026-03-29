@@ -6339,7 +6339,14 @@ class dbProc extends dbLayer
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) ) , 0) AS `MATER_TOTAL`,        
-	    (SELECT SUM(d.DRBI_CILVEKSTUNDAS) from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
+	    (SELECT SUM(
+                (SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+                 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+                 AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
+                 AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
+                 AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
+                 LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)
+            ) from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
@@ -6418,7 +6425,13 @@ class dbProc extends dbLayer
 		 $query = " 
         SELECT KWRC_KODS, KWRC_NOSAUKUMS, SUM(DRBI_CILVEKSTUNDAS) as WRITEOFF_SUMM
         FROM (
-        SELECT ww.KWRC_KODS, ww.KWRC_NOSAUKUMS, d.DRBI_CILVEKSTUNDAS
+        SELECT ww.KWRC_KODS, ww.KWRC_NOSAUKUMS,
+               (SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+                WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+                AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
+                AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
+                AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
+                LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS) AS DRBI_CILVEKSTUNDAS
         from `AKTI` a 
         INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
         LEFT JOIN `KL_WRITEOFF_CODE_NEW` ww  ON (ww.KWRC_KKAL_SHIFRS = d.DRBI_KKAL_SHIFRS)
@@ -6430,7 +6443,12 @@ class dbProc extends dbLayer
 		) or ( a.RAKT_IS_AUTO = 0 ) )    
 		UNION ALL
          SELECT  '71882' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_ELEMENT')."' as KWRC_NOSAUKUMS, 
-         d.DRBI_CILVEKSTUNDAS
+               (SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+                WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+                AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
+                AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
+                AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
+                LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS) AS DRBI_CILVEKSTUNDAS
         from `AKTI` a 
         INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
         WHERE a.RAKT_ID IN (".$actIds.")
@@ -6441,7 +6459,12 @@ class dbProc extends dbLayer
 		) or ( a.RAKT_IS_AUTO = 0 ) ) 
 		UNION ALL
           SELECT  '71889' as KWRC_KODS, '".text::get('WRITE_OFF_CODE_PERS')."' as KWRC_NOSAUKUMS, 
-          d.DRBI_CILVEKSTUNDAS
+               (SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
+                WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+                AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
+                AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
+                AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
+                LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS) AS DRBI_CILVEKSTUNDAS
         from `AKTI` a 
         INNER JOIN `DARBI` d ON d.DRBI_RAKT_ID = a.RAKT_ID
         WHERE a.RAKT_ID IN (".$actIds.")
