@@ -128,7 +128,7 @@ if(true/*$isEdUser || $isAdmin*/)
                 'number' => $row['NUMURS'],
                 'designation' => $row['RAKT_WORK_TITLE'],
                 'date' => $approveDate,
-                'work' => $row['WORK_TOTAL'],
+                'work' => number_format($row['WORK_TOTAL'],2,'.',''),
                 'material' => $row['MATER_TOTAL'],
                 'total' => number_format($totalPrice,2,'.',''),
                 'finished' => (($row['RAKT_IR_OBJEKTS_PABEIGTS'] == 1) ? text::get('YES') : text::get('NO'))

@@ -6588,7 +6588,7 @@ class dbProc extends dbLayer
             AND y.DRBI_APPROVE_DATE BETWEEN '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."'            
         )
-        or ( y.RAKT_IS_AUTO = 0 and y.RAKT_IS_RBF = 0
+        or ( y.RAKT_IS_AUTO = 0 and y.RAKT_IS_RBF = 1
                 and y.AAUD_STATUS = 'CLOSE'
                 AND y.AAUD_DATUMS BETWEEN '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' )";
