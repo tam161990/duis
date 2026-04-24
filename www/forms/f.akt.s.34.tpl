@@ -193,6 +193,8 @@ else
                         <th colspan="2">2</th>
                         <th colspan="2">3</th>
                         <th rowspan="2"><?= text::get('RBF_COST_ACCOUNT') ?></th>
+                        <th rowspan="2" width="4%"><?= text::get('ELEMENT'); ?></th>
+                        <th rowspan="2" width="4%"><?= text::get('PERS'); ?></th>
                     </tr>
                     <tr class="table_head_2">
                         <th><?= text::get('RBF_HOURS_TOTAL') ?></th>
@@ -216,6 +218,8 @@ else
                             <td align="right"><?= $item['hours_3'] != '0.00' ? $item['hours_3'] : '0' ?></td>
                             <td align="right"><?= $item['cost_3'] != '0.00' ? $item['cost_3'] : '0' ?></td>
                             <td align="center"><?= $item['account_code'] ?></td>
+                            <td align="center"><?= $item['act_element'] ?></td>
+                            <td align="center"><?= $item['act_pers'] ?></td>
                         </tr>
                         <?
                     }
@@ -230,6 +234,8 @@ else
                         <td align="right"><?= $totalsFormatted['hours_3'] ?></td>
                         <td align="right"><?= $totalsFormatted['cost_3'] ?></td>
                         <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
                     </tr>
                     <!-- Manual Works Total Row - Only show approved works (DRBI_WORK_APPROVE_DATE is set) by quarter -->
                     <? if (isset($aManualWorkExist) && $aManualWorkExist) { ?>
@@ -241,6 +247,8 @@ else
                         <td align="right"><?= isset($manualWorksApprovedByQuarter[2]) && $manualWorksApprovedByQuarter[2] > 0 ? number_format($manualWorksApprovedByQuarter[2], 2, '.', '') : '0.00' ?></td>
                         <td>&nbsp;</td>
                         <td align="right"><?= isset($manualWorksApprovedByQuarter[3]) && $manualWorksApprovedByQuarter[3] > 0 ? number_format($manualWorksApprovedByQuarter[3], 2, '.', '') : '0.00' ?></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
                         <td>&nbsp;</td>
                     </tr>
                     <? } ?>
@@ -254,6 +262,8 @@ else
                         <td>&nbsp;</td>
                         <td align="right"><?= $totalsFormatted['vat_3'] ?></td>
                         <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
                     </tr>
                     <!-- Total with VAT Row -->
                     <tr class="table_head_2" style="font-weight: bold; background-color: #cbeaa0;">
@@ -264,6 +274,8 @@ else
                         <td align="right"><?= $totalsFormatted['total_with_vat_2'] ?></td>
                         <td>&nbsp;</td>
                         <td align="right"><?= $totalsFormatted['total_with_vat_3'] ?></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
                         <td>&nbsp;</td>
                     </tr>
                 </table>

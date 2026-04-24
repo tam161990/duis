@@ -310,7 +310,7 @@ $oForm->addElement('select', 'vvNumber', text::get('RBF_VV_NUMBER'),
     '', '', $vvOptions);
 
 // Act Type dropdown - different types based on RAKT_IS_AUTO
-// Manual acts (RAKT_IS_AUTO = 0): NĪAD (50) and Ceļu remonts (100)
+// Manual acts (RAKT_IS_AUTO = 0): NĪAD (50), Ceļu remonts (100), BIS lietas (70)
 // Automatic acts (RAKT_IS_AUTO = 1): Bojājums (20), Stihija(40), Pers(90), Plāns(10), Defekts (30)
 $isAuto = isset($act['RAKT_IS_AUTO']) ? $act['RAKT_IS_AUTO'] : 0;
 $actTypeOptions = array();
