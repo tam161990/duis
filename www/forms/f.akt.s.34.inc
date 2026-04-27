@@ -287,15 +287,19 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     $oFormManualWorks->addElement('label', 'work_norm_sum['.$k.']', '', number_format($workNormSum, 2, '.', ''));
                 }
 
-                // Write off account (Izmaksu konts) - always readonly
-                $oFormManualWorks->addElement('label', 'write_off_code['.$k.']', '', $row['KWRC_KODS']);
+                // Write off account (Izmaksu konts) - always readonly                '
+                $kwrcCode = (($act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID) ?
+                    '71882' :
+                        (($act['RAKT_KAKV_ID'] == ACT_TYPE_PERS_ID)? 
+                            '71889' : $row['KWRC_KODS']));
+                $oFormManualWorks->addElement('label', 'write_off_code['.$k.']', '', $kwrcCode);
 
                 // Element (Stihija) - always readonly label showing YES/NO
-                $elementText = (!empty($row['DRBI_ELEMENT']) && $row['DRBI_ELEMENT'] != 0) ? text::get('YES') : text::get('NO');
+                $elementText = ($act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID) ? text::get('YES'): text::get('NO');                
                 $oFormManualWorks->addElement('label', 'act_element['.$k.']', '', $elementText);
 
                 // Pers - always readonly label showing YES/NO
-                $persText = (!empty($row['DRBI_PERS']) && $row['DRBI_PERS'] != 0) ? text::get('YES') : text::get('NO');
+                $persText = ($act['RAKT_KAKV_ID'] == ACT_TYPE_PERS_ID) ? text::get('YES'): text::get('NO');
                 $oFormManualWorks->addElement('label', 'act_pers['.$k.']', '', $persText);
 
                 // Delete button
@@ -613,93 +617,111 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                 $worksFormatted[] = $workFormatted;
             }
         }
-    }
-}
+        // ============================================================================
+        // Fetch DARBI summary for the summary table
+        // ============================================================================
 
-// ============================================================================
-// Fetch DARBI summary for the summary table
-// ============================================================================
+        $darbiSummary = dbProc::getDarbiSummaryByActId($actId);
 
-$darbiSummary = dbProc::getDarbiSummaryByActId($actId);
-
-// Calculate costs and totals for each period
-$darbiFormatted = array();
-$totals = array(
-    'hours_1' => 0,
-    'cost_1' => 0,
-    'hours_2' => 0,
-    'cost_2' => 0,
-    'hours_3' => 0,
-    'cost_3' => 0
-);
-
-if ($darbiSummary && is_array($darbiSummary)) {
-    foreach ($darbiSummary as $item) {
-        $price = floatval($item['DRBI_KKAL_NORMATIVS']);
-        $hours1 = floatval($item['PERIOD_1_HOURS']);
-        $hours2 = floatval($item['PERIOD_2_HOURS']);
-        $hours3 = floatval($item['PERIOD_3_HOURS']);
-        
-        $cost1 = $price * $hours1;
-        $cost2 = $price * $hours2;
-        $cost3 = $price * $hours3;
-        
-        $darbiFormatted[] = array(
-            'calc_code' => htmlspecialchars($item['DRBI_KKAL_SHIFRS']),
-            'calc_name' => htmlspecialchars($item['DRBI_KKAL_NOSAUKUMS']),
-            'price' => number_format($price, 2, '.', ''),
-            'hours_1' => number_format($hours1, 2, '.', ''),
-            'cost_1' => number_format($cost1, 2, '.', ''),
-            'hours_2' => number_format($hours2, 2, '.', ''),
-            'cost_2' => number_format($cost2, 2, '.', ''),
-            'hours_3' => number_format($hours3, 2, '.', ''),
-            'cost_3' => number_format($cost3, 2, '.', ''),
-            'account_code' => htmlspecialchars($item['KWRC_KODS'] ? $item['KWRC_KODS'] : '')
+        // Calculate costs and totals for each period
+        $darbiFormatted = array();
+        $totals = array(
+            'hours_1' => 0,
+            'cost_1' => 0,
+            'hours_2' => 0,
+            'cost_2' => 0,
+            'hours_3' => 0,
+            'cost_3' => 0
         );
+
         
-        $totals['hours_1'] += $hours1;
-        $totals['cost_1'] += $cost1;
-        $totals['hours_2'] += $hours2;
-        $totals['cost_2'] += $cost2;
-        $totals['hours_3'] += $hours3;
-        $totals['cost_3'] += $cost3;
+        // Element (Stihija) - always readonly label showing YES/NO
+        $elementText = ($act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID) ? text::get('YES'): text::get('NO'); 
+        // Pers - always readonly label showing YES/NO
+        $persText = ($act['RAKT_KAKV_ID'] == ACT_TYPE_PERS_ID) ? text::get('YES'): text::get('NO');
+
+        if ($darbiSummary && is_array($darbiSummary)) {
+            foreach ($darbiSummary as $item) {
+                $price = floatval($item['DRBI_KKAL_NORMATIVS']);
+                $hours1 = floatval($item['PERIOD_1_HOURS']);
+                $hours2 = floatval($item['PERIOD_2_HOURS']);
+                $hours3 = floatval($item['PERIOD_3_HOURS']);
+                
+                $cost1 = $price * $hours1;
+                $cost2 = $price * $hours2;
+                $cost3 = $price * $hours3;
+
+                // Write off account (Izmaksu konts) - always readonly                '
+                $kwrcCode = (($act['RAKT_KAKV_ID'] == ACT_TYPE_STIHIJA_ID) ?
+                '71882' :
+                    (($act['RAKT_KAKV_ID'] == ACT_TYPE_PERS_ID)? 
+                        '71889' : $item['KWRC_KODS']));
+                
+                $darbiFormatted[] = array(
+                    'calc_code' => htmlspecialchars($item['DRBI_KKAL_SHIFRS']),
+                    'calc_name' => htmlspecialchars($item['DRBI_KKAL_NOSAUKUMS']),
+                    'price' => number_format($price, 2, '.', ''),
+                    'hours_1' => number_format($hours1, 2, '.', ''),
+                    'cost_1' => number_format($cost1, 2, '.', ''),
+                    'hours_2' => number_format($hours2, 2, '.', ''),
+                    'cost_2' => number_format($cost2, 2, '.', ''),
+                    'hours_3' => number_format($hours3, 2, '.', ''),
+                    'cost_3' => number_format($cost3, 2, '.', ''),
+                    'account_code' => htmlspecialchars($kwrcCode ? $kwrcCode : ''),
+                    'act_element' => htmlspecialchars($elementText),
+                    'act_pers' => htmlspecialchars($persText)
+                );
+                
+                $totals['hours_1'] += $hours1;
+                $totals['cost_1'] += $cost1;
+                $totals['hours_2'] += $hours2;
+                $totals['cost_2'] += $cost2;
+                $totals['hours_3'] += $hours3;
+                $totals['cost_3'] += $cost3;
+            }
+        }
+
+        // Calculate VAT (21%) on auto works + manual works (approved)
+        $manualCost1 = isset($manualWorksApprovedByQuarter[1]) ? $manualWorksApprovedByQuarter[1] : 0;
+        $manualCost2 = isset($manualWorksApprovedByQuarter[2]) ? $manualWorksApprovedByQuarter[2] : 0;
+        $manualCost3 = isset($manualWorksApprovedByQuarter[3]) ? $manualWorksApprovedByQuarter[3] : 0;
+
+        $vatBase1 = $totals['cost_1'] + $manualCost1;
+        $vatBase2 = $totals['cost_2'] + $manualCost2;
+        $vatBase3 = $totals['cost_3'] + $manualCost3;
+
+        $vat1 = $vatBase1 * 0.21;
+        $vat2 = $vatBase2 * 0.21;
+        $vat3 = $vatBase3 * 0.21;
+
+        // Calculate total with VAT (auto + manual)
+        $totalWithVat1 = $vatBase1 + $vat1;
+        $totalWithVat2 = $vatBase2 + $vat2;
+        $totalWithVat3 = $vatBase3 + $vat3;
+
+        // Format totals for display
+        $totalsFormatted = array(
+            'hours_1' => number_format($totals['hours_1'], 2, '.', ''),
+            'cost_1' => number_format($totals['cost_1'], 2, '.', ''),
+            'hours_2' => number_format($totals['hours_2'], 2, '.', ''),
+            'cost_2' => number_format($totals['cost_2'], 2, '.', ''),
+            'hours_3' => number_format($totals['hours_3'], 2, '.', ''),
+            'cost_3' => number_format($totals['cost_3'], 2, '.', ''),
+            'vat_1' => number_format($vat1, 2, '.', ''),
+            'vat_2' => number_format($vat2, 2, '.', ''),
+            'vat_3' => number_format($vat3, 2, '.', ''),
+            'total_with_vat_1' => number_format($totalWithVat1, 2, '.', ''),
+            'total_with_vat_2' => number_format($totalWithVat2, 2, '.', ''),
+            'total_with_vat_3' => number_format($totalWithVat3, 2, '.', '')
+        );
+
+        // Include the template
+        include('f.akt.s.34.tpl');
     }
 }
+else
+{
+    RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
+}
 
-// Calculate VAT (21%) on auto works + manual works (approved)
-$manualCost1 = isset($manualWorksApprovedByQuarter[1]) ? $manualWorksApprovedByQuarter[1] : 0;
-$manualCost2 = isset($manualWorksApprovedByQuarter[2]) ? $manualWorksApprovedByQuarter[2] : 0;
-$manualCost3 = isset($manualWorksApprovedByQuarter[3]) ? $manualWorksApprovedByQuarter[3] : 0;
-
-$vatBase1 = $totals['cost_1'] + $manualCost1;
-$vatBase2 = $totals['cost_2'] + $manualCost2;
-$vatBase3 = $totals['cost_3'] + $manualCost3;
-
-$vat1 = $vatBase1 * 0.21;
-$vat2 = $vatBase2 * 0.21;
-$vat3 = $vatBase3 * 0.21;
-
-// Calculate total with VAT (auto + manual)
-$totalWithVat1 = $vatBase1 + $vat1;
-$totalWithVat2 = $vatBase2 + $vat2;
-$totalWithVat3 = $vatBase3 + $vat3;
-
-// Format totals for display
-$totalsFormatted = array(
-    'hours_1' => number_format($totals['hours_1'], 2, '.', ''),
-    'cost_1' => number_format($totals['cost_1'], 2, '.', ''),
-    'hours_2' => number_format($totals['hours_2'], 2, '.', ''),
-    'cost_2' => number_format($totals['cost_2'], 2, '.', ''),
-    'hours_3' => number_format($totals['hours_3'], 2, '.', ''),
-    'cost_3' => number_format($totals['cost_3'], 2, '.', ''),
-    'vat_1' => number_format($vat1, 2, '.', ''),
-    'vat_2' => number_format($vat2, 2, '.', ''),
-    'vat_3' => number_format($vat3, 2, '.', ''),
-    'total_with_vat_1' => number_format($totalWithVat1, 2, '.', ''),
-    'total_with_vat_2' => number_format($totalWithVat2, 2, '.', ''),
-    'total_with_vat_3' => number_format($totalWithVat3, 2, '.', '')
-);
-
-// Include the template
-include('f.akt.s.34.tpl');
 ?>

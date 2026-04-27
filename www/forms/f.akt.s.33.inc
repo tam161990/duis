@@ -168,4 +168,4 @@ else
 {
     RequestHandler::showErrorAndDie(text::get('ERROR_NOT_PERMISSION'));
 }
-?>
+

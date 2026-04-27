@@ -12527,9 +12527,9 @@ class dbProc extends dbLayer
 				AND `KAKV_IR_AKTIVS` = 1
 				ORDER BY `KAKV_NOSAUKUMS`';
 		} else {
-			// Manual acts: NĪAD (50) and Ceļu remonts (100)
+			// Manual acts: NĪAD (50), Ceļu remonts (100), BIS lietas (70)
 			$query = 'SELECT * FROM `kl_akta_veids`
-				WHERE `KAKV_KODS` IN ("50", "100")
+				WHERE `KAKV_KODS` IN ("50", "100", "70")
 				AND `KAKV_IR_AKTIVS` = 1
 				ORDER BY `KAKV_NOSAUKUMS`';
 		}
