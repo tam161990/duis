@@ -6529,11 +6529,19 @@ class dbProc extends dbLayer
                  AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
                  AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
                  LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)
-            ) from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
+            ) +
+			COALESCE((SELECT SUM(COALESCE(DRBI_CILVEKSTUNDAS, DRBI_KKAL_NORMATIVS*DRBI_DAUDZUMS)) 
+            from `DARBI` d 
+			WHERE d.DRBI_RAKT_ID = a.RAKT_ID 
+			AND d.DRBI_IS_WORKER = 1
+			AND DRBI_WORK_APROVE_DATE BETWEEN 
+        '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
+                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."'), 0) 
+			from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
 		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
-		) or ( a.RAKT_IS_AUTO = 0 ) ) )  AS `WORK_TOTAL`,              
+		) or ( a.RAKT_IS_AUTO = 0 ) ) )  AS `WORK_TOTAL`,                        
             (SELECT MAX(DRBI_WORK_APROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID 
         AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
