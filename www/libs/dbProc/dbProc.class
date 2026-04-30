@@ -6522,27 +6522,55 @@ class dbProc extends dbLayer
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
 		) or ( a.RAKT_IS_AUTO = 0 ) ) ) , 0) AS `MATER_TOTAL`,        
-	    (SELECT SUM(
-                (SELECT RBKL_CENA FROM `kl_rbf_kalkulacija`
-                 WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
-                 AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
-                 AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
-                 AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
-                 LIMIT 1) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)
-            ) +
-			COALESCE((SELECT SUM(COALESCE(DRBI_CILVEKSTUNDAS, DRBI_KKAL_NORMATIVS*DRBI_DAUDZUMS)) 
-            from `DARBI` d 
-			WHERE d.DRBI_RAKT_ID = a.RAKT_ID 
-			AND d.DRBI_IS_WORKER = 1
-			AND DRBI_WORK_APROVE_DATE BETWEEN 
-        '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
-                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."'), 0) 
-			from `DARBI` d WHERE d.DRBI_RAKT_ID = a.RAKT_ID
-		AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
-        '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
-                AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
-		) or ( a.RAKT_IS_AUTO = 0 ) ) )  AS `WORK_TOTAL`,                        
-            (SELECT MAX(DRBI_WORK_APROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID 
+	    	(SELECT COALESCE(
+                (
+                    SELECT SUM(
+                        (
+                            SELECT RBKL_CENA
+                            FROM `kl_rbf_kalkulacija`
+                            WHERE RBKL_SHIFRS = d.DRBI_KKAL_SHIFRS
+                            AND RBKL_RBDU_KODS = a.RAKT_KWOI_KODS
+                            AND RBKL_VV_NUMBER = a.RAKT_VV_NUMBER
+                            AND RBKL_RBTR_CODE = a.RAKT_KEDI_ID
+                            LIMIT 1
+                        ) * COALESCE(d.DRBI_DAUDZUMS, d.DRBI_CILVEKSTUNDAS)
+                    )
+                    FROM `DARBI` d
+                    WHERE d.DRBI_RAKT_ID = a.RAKT_ID
+                    AND d.DRBI_IS_WORKER = 0
+                    AND (
+                            (
+                                a.RAKT_IS_AUTO = 1
+                                AND d.DRBI_WORK_APROVE_DATE BETWEEN 
+                                    '" . dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year']) . "'
+                                    AND 
+                                    '" . dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year']) . "'
+                            )
+                            OR a.RAKT_IS_AUTO = 0
+                    )
+                ),
+                0
+            )
+            +
+            COALESCE(
+                (
+                    SELECT SUM(
+                        COALESCE(
+                            d.DRBI_CILVEKSTUNDAS,
+                            d.DRBI_KKAL_NORMATIVS * d.DRBI_DAUDZUMS
+                        )
+                    )
+                    FROM `DARBI` d
+                    WHERE d.DRBI_RAKT_ID = a.RAKT_ID
+                    AND d.DRBI_IS_WORKER = 1
+                    AND d.DRBI_WORK_APROVE_DATE BETWEEN 
+                            '" . dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year']) . "'
+                            AND 
+                            '" . dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year']) . "'
+                ),
+                0
+            ) ) AS `WORK_TOTAL`,              
+        (SELECT MAX(DRBI_WORK_APROVE_DATE) FROM `DARBI` WHERE DRBI_RAKT_ID = a.RAKT_ID 
         AND ((a.RAKT_IS_AUTO = 1 and ( DRBI_WORK_APROVE_DATE BETWEEN 
         '" .  dbProc::getActDateFromRbf($searcCriteria['month'], $searcCriteria['year'])."'
                 AND '".dbProc::getActDateToRbf($searcCriteria['month'], $searcCriteria['year'])."' ) 
@@ -13948,6 +13976,7 @@ class dbProc extends dbLayer
 						SUM(CASE WHEN DRBI_ACT_QUART = 3 THEN DRBI_DAUDZUMS ELSE 0 END) AS PERIOD_3_HOURS
 					FROM `DARBI`
 					WHERE DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"
+                    AND DRBI_IS_WORKER = 0
 					GROUP BY DRBI_KKAL_SHIFRS
 				  ) darbi_agg ON codes.RADR_RBKL_SHIFRS = darbi_agg.DRBI_KKAL_SHIFRS
 				  ORDER BY codes.RADR_RBKL_SHIFRS';
