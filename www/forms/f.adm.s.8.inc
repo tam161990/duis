@@ -1,5 +1,126 @@
 <?
 // RBF Akts Upload Form
+
+/**
+ * Lowercase + remove Latvian diacritics so header matching works even if PHP/Excel uses different UTF-8 or file encoding on the server.
+ * All substring needles passed to rbfAktsStrContains should be ASCII-only.
+ */
+function rbfAktsFoldLvAscii($str)
+{
+	if ($str === '')
+	{
+		return '';
+	}
+	if (function_exists('mb_strtolower'))
+	{
+		$str = mb_strtolower($str, 'UTF-8');
+	}
+	else
+	{
+		$str = strtolower($str);
+	}
+	static $lv = array(
+		'ā' => 'a', 'č' => 'c', 'ē' => 'e', 'ģ' => 'g', 'ī' => 'i',
+		'ķ' => 'k', 'ļ' => 'l', 'ņ' => 'n', 'š' => 's', 'ū' => 'u', 'ž' => 'z',
+		'Ā' => 'a', 'Č' => 'c', 'Ē' => 'e', 'Ģ' => 'g', 'Ī' => 'i',
+		'Ķ' => 'k', 'Ļ' => 'l', 'Ņ' => 'n', 'Š' => 's', 'Ū' => 'u', 'Ž' => 'z',
+	);
+
+	return strtr($str, $lv);
+}
+
+/**
+ * Substring check after Latvian folding; $needle must be ASCII (safe for PHP source encoding on deploy).
+ */
+function rbfAktsStrContains($haystack, $needle)
+{
+	$h = rbfAktsFoldLvAscii($haystack);
+	$n = rbfAktsFoldLvAscii($needle);
+	if ($h === '' || $n === '')
+	{
+		return false;
+	}
+	return strpos($h, $n) !== false;
+}
+
+/**
+ * Normalize Sheet 1 header cell (row 1) for layout fingerprinting.
+ */
+function rbfAktsExcelHeaderNorm($sheet, $colLetter)
+{
+	$v = $sheet->getCell($colLetter . '1')->getValue();
+	if ($v === null)
+	{
+		return '';
+	}
+	if (is_object($v) && method_exists($v, '__toString'))
+	{
+		$v = (string)$v;
+	}
+	$v = trim((string)$v);
+	if ($v === '')
+	{
+		return '';
+	}
+	if (function_exists('mb_strtolower'))
+	{
+		return mb_strtolower($v, 'UTF-8');
+	}
+	return strtolower($v);
+}
+
+/**
+ * Detect when index-0 sheet is the RBF "Darbi" template instead of "Akti".
+ */
+function rbfAktsExcelSheetLooksLikeWorksSheet($sheet)
+{
+	$a = rbfAktsExcelHeaderNorm($sheet, 'A');
+	$b = rbfAktsExcelHeaderNorm($sheet, 'B');
+	$e = rbfAktsExcelHeaderNorm($sheet, 'E');
+
+	if ($a !== '' && rbfAktsStrContains($a, 'uzturesanas'))
+	{
+		return true;
+	}
+	if ($b !== '' && rbfAktsStrContains($b, 'kalkulaciju') && rbfAktsStrContains($b, 'sifrs'))
+	{
+		return true;
+	}
+	if ($e !== '' && rbfAktsStrContains($e, 'darbibas statusa'))
+	{
+		return true;
+	}
+	return false;
+}
+
+/**
+ * If Sheet 1 matches darbu veidne, acts import must not run (wrong upload type).
+ */
+function rbfAktsExcelValidateActsSheetLayout($sheet)
+{
+	if (rbfAktsExcelSheetLooksLikeWorksSheet($sheet))
+	{
+		return array(
+			'ok' => false,
+			'message' => text::get('RBF_IMPORT_ACTS_SHEET_LOOKS_LIKE_WORKS')
+		);
+	}
+	return array('ok' => true, 'message' => '');
+}
+
+/** RBF darbu rindas statusa kodi (2. lapas kolonna E); nedrīkst būt 1. lapas „Autors”. */
+function rbfAktsImportedAuthorLooksLikeWorkStatus($rlttText)
+{
+	static $statuses = array(
+		'COMPLETED' => true,
+		'PROCESS' => true,
+		'NOTHING_TO_DO' => true,
+		'CANT_DO' => true,
+	);
+	$key = strtoupper(trim((string)$rlttText));
+	return isset($statuses[$key]);
+}
+
 if (userAuthorization::isAdmin())
 {
 	$oLink = new urlQuery();
@@ -87,6 +208,13 @@ if (userAuthorization::isAdmin())
 								// IMPORTANT: Explicitly get Sheet 1 (index 0) for acts data
 								// Don't use getActiveSheet() as it might return Sheet 2 if that was active when file was saved
 								$sheet = $objPHPExcel->getSheet(0);
+								$layoutCheck = rbfAktsExcelValidateActsSheetLayout($sheet);
+								if (!$layoutCheck['ok'])
+								{
+									$oForm->addError($layoutCheck['message']);
+								}
+								else
+								{
 								$highestRow = $sheet->getHighestRow();
 								
 								$successCount = 0;
@@ -136,6 +264,17 @@ if (userAuthorization::isAdmin())
 								{
 									$errorCount++;
 									$errors[] = text::get('ERROR_REQUIRED_FIELD') . " (Row $row)";
+									continue;
+								}
+
+								if (rbfAktsImportedAuthorLooksLikeWorkStatus($rltt_text))
+								{
+									$errorCount++;
+									$errors[] = sprintf(
+										text::get('RBF_IMPORT_ACT_AUTHOR_WORK_STATUS_ROW'),
+										$row,
+										$rltt_text
+									);
 									continue;
 								}
 								
@@ -194,6 +333,7 @@ if (userAuthorization::isAdmin())
 									if ($uploadType == 'acts') {
 										exit;
 									}
+								}
 								}
 							} // End of Acts processing
 							
