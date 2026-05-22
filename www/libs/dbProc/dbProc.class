@@ -13069,6 +13069,33 @@ class dbProc extends dbLayer
 	}
 
 	/**
+	 * Confirm automatic RBF act row exists in AKTI before marking rbf_akti processed (avoids FAKT_PROCESSED=1 when insert rollback / replication / phantom insert_id).
+	 * @param int $raktId RAKT_ID returned from createAutomaticRbfAct
+	 * @param string $numPostfix Must match RAKT_NUM_POSTFIX (= FAKT_NUM_POSTFIX)
+	 * @return bool
+	 */
+	function verifyRbfAutomaticActInAkti($raktId, $numPostfix)
+	{
+		$raktId = (int)$raktId;
+		if ($raktId < 1 || $numPostfix === '' || $numPostfix === null)
+		{
+			return false;
+		}
+
+		$query = 'SELECT `RAKT_ID` FROM `AKTI`
+				WHERE `RAKT_ID` = "'.dbLayer::quote_smart($raktId).'"
+				AND `RAKT_NUM_POSTFIX` = "'.dbLayer::quote_smart($numPostfix).'"
+				AND `RAKT_IS_RBF` = "1"
+				AND `RAKT_IS_AUTO` = "1"
+				LIMIT 1';
+
+		$oSQL = new dbLayer;
+		$result = $oSQL->makeQuery($query);
+
+		return is_array($result) && count($result) > 0;
+	}
+
+	/**
 	 * Mark RBF Akt as processed
 	 * @param int $faktId FAKT_ID
 	 * @return bool Success
