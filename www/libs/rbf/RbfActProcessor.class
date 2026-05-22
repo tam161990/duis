@@ -116,6 +116,18 @@ class RbfActProcessor
 			$this->stats['acts']['errors'][] = $error;
 			return false;
 		}
+
+		// INSERT may report an id but row missing (rollback, replication, etc.) — do not mark rbf_akti processed
+		if (!dbProc::verifyRbfAutomaticActInAkti($createdActId, $faktNumPostfix))
+		{
+			$error = "[ERROR] FAKT_ID $faktId: RAKT_ID $createdActId not found in AKTI "
+				."with RAKT_NUM_POSTFIX \"$faktNumPostfix\" (RAKT_IS_RBF=1, RAKT_IS_AUTO=1). "
+				."Skipping audit, email and FAKT_PROCESSED — will retry on next job run.";
+			files::wh_log($error);
+			$this->stats['acts']['error']++;
+			$this->stats['acts']['errors'][] = $error;
+			return false;
+		}
 		
 		// Save audit records and send notification
 		$this->processActPostCreation($createdActId, $faktId, $validation['warnings']);
