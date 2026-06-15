@@ -335,4 +335,3 @@
                 // redirect output to client browser
                 $pdf->Output("actreport.pdf", 'D');
 
-?>

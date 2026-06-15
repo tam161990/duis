@@ -237,7 +237,8 @@ class dbProc extends dbLayer
         LEFT JOIN `KL_ED_IECIRKNI` k ON (RLTT_KEDI_ID  = k.KEDI_ID)
         LEFT JOIN `KL_WORK_OWNERS` w ON (RLTT_KWOI_KODS  = w.KWOI_KODS)
         LEFT JOIN `KL_REF_KODI` l ON (RLTT_ROLE = l.KRFK_VERTIBA AND l.KRFK_NOSAUKUMS = "'.KRFK_ROLE.'"  )
-        where '. $searchString . (($isRltt) ? ' AND (`RLTT_KWOI_KODS` IS NULL OR  `RLTT_KWOI_KODS` = "") ' : ' AND (`RLTT_KWOI_KODS` IS NOT NULL AND `RLTT_KWOI_KODS` <> "")' );
+        where '. $searchString . (($isRltt) ? ' AND (`RLTT_KWOI_KODS` IS NULL OR  `RLTT_KWOI_KODS` = "") ' : ' AND (`RLTT_KWOI_KODS` IS NOT NULL AND `RLTT_KWOI_KODS` <> "")' ).
+        ' group by `RLTT_USER_NAME` ';
 		$res=$oSQL->makeQuery($sql);
 
 		if($res)
@@ -12952,7 +12953,7 @@ class dbProc extends dbLayer
                   LEFT JOIN `KL_REF_KODI` l ON (RLTT_ROLE = l.KRFK_VERTIBA AND l.KRFK_NOSAUKUMS = "'.KRFK_ROLE.'"  )
                     where '. $searchString .
                     (($isRltt) ? ' AND (`RLTT_KWOI_KODS` IS NULL OR  `RLTT_KWOI_KODS` = "") ' : ' AND (`RLTT_KWOI_KODS` IS NOT NULL AND  `RLTT_KWOI_KODS` <> "")' ).
-                    ' order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order);
+                    ' group by `RLTT_USER_NAME` order by '.dbLayer::quote_smart($orderColumn).' '.dbLayer::quote_smart($order);
 			if (($offset !== false) && $limit)
 			{
 				$sql .= ' limit '.
