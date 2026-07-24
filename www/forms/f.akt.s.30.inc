@@ -43,9 +43,10 @@ if (reqVar::get('xmlHttp') == 1)
         $res = dbProc::getRbfEmployeeVVList(reqVar::get('employeeCode'));
         if (is_array($res) && count($res)>0)
         {
+            $emptyOption = json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE);
             ?>
-            document.all["vvNumber"].options[0] = new Option('<?=addslashes(text::get('EMPTY_SELECT_OPTION'));?>', '');
-            document.all["department"].options[0] = new Option('<?=addslashes(text::get('EMPTY_SELECT_OPTION'));?>', '');
+            document.all["vvNumber"].options[0] = new Option(<?=$emptyOption?>, '');
+            document.all["department"].options[0] = new Option(<?=$emptyOption?>, '');
             <?
             $i = 1;
             foreach ($res as $row)
@@ -81,8 +82,9 @@ if (reqVar::get('xmlHttp') == 1)
                 }
             }
             
+            $emptyOption = json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE);
             ?>
-            document.all["department"].options[0] = new Option('<?=addslashes(text::get('EMPTY_SELECT_OPTION'));?>', '');
+            document.all["department"].options[0] = new Option(<?=$emptyOption?>, '');
             <?
             $i = 1;
             foreach ($deptOptionsTemp as $code => $name)
@@ -108,8 +110,9 @@ if (reqVar::get('xmlHttp') == 1)
         $res = dbProc::getUsersList(false, false, false, false, false, false, 'ASC', false);
         if (is_array($res) && count($res)>0)
         {
+            $emptyOption = json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE);
             ?>
-            document.all["author"].options[0] = new Option('<?=addslashes(text::get('EMPTY_SELECT_OPTION'));?>', '');
+            document.all["author"].options[0] = new Option(<?=$emptyOption?>, '');
             <?
             $i = 1;
             foreach ($res as $row)
@@ -759,7 +762,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         
         echo 'console.log("Loading VV for employee: '.$employeeCode.'");';
         echo 'vvNumbers = [];';
-        echo 'vvNumbers[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
+        echo 'vvNumbers[0] = ["", '.json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE).'];';
         
         if(is_array($vvList) && count($vvList) > 0)
         {
@@ -789,7 +792,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         
         echo 'console.log("Loading departments for VV: '.$vvNumber.'");';
         echo 'departments = [];';
-        echo 'departments[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
+        echo 'departments[0] = ["", '.json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE).'];';
         
         if(is_array($territories) && count($territories) > 0)
         {
@@ -818,7 +821,7 @@ if(isset($_GET['xmlHttp']) && $_GET['xmlHttp'] == 1)
         $authors = dbProc::getUsersList(false, false, false, false, false, false, 'ASC', false);
         
         echo 'authors = [];';
-        echo 'authors[0] = ["", "'.addslashes(text::get('EMPTY_SELECT_OPTION')).'"];';
+        echo 'authors[0] = ["", '.json_encode(text::get('EMPTY_SELECT_OPTION'), JSON_UNESCAPED_UNICODE).'];';
         
         if(is_array($authors) && count($authors) > 0)
         {

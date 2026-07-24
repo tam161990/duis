@@ -130,10 +130,6 @@ window.onload = function() {
 				<? if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))  {?>
 					<tr><td><?=$oForm->getElementHtml('export');?></td></tr>
 				<? } ?>
-
-				<? if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))  {?>
-					<tr><td><?=$oForm->getElementHtml('middle_export');?></td></tr>
-				<? } ?>
 				
 				<? if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))  {?>
 					<tr><td><?=$oForm->getElementHtml('accept');?></td></tr>

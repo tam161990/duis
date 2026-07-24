@@ -50,7 +50,10 @@ define('EMAIL_FROM', 'softex@softex.lv');
 # =============================================================================
 
 // SMTP server hostname
-define('SMTP_HOST', 'mail.energo.lv');
+// Use localhost to connect to local Postfix relay
+// Direct connections to mail.energo.lv (10.21.11.2) or external IPs are blocked by firewall
+// Local Postfix on this server will handle mail routing to mail.energo.lv
+define('SMTP_HOST', 'localhost');
 
 // SMTP server port (25 for no encryption, 587 for TLS, 465 for SSL)
 define('SMTP_PORT', 25);
