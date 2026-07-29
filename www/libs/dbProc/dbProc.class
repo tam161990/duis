@@ -6986,7 +6986,10 @@ class dbProc extends dbLayer
                 $order = $orderColumn . ' ' . $sortOrder;
             }
             
-            $query = "select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .",                     
+            $query = "select DISTINCT `DRBI_ID`, `DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
+                    `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, 
+                    `DRBI_MERVIENIBA`, `KKNO_NORM`, `KWRC_KODS`,
+					".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .",                     
                     ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                     (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
                     AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
@@ -7002,7 +7005,10 @@ class dbProc extends dbLayer
                 " . (($manualOnly) ? " AND `DRBI_IS_WORKER` = 1 " : "" ) ."
                 AND ".$column_name." IS NOT NULL
                 union
-                select *, ".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
+                select DISTINCT `DRBI_ID`, `DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
+                    `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, 
+                    `DRBI_MERVIENIBA`, `KKNO_NORM`, `KWRC_KODS`,
+				".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
                 ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
                 (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
                 AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
