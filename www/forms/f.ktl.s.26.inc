@@ -137,12 +137,14 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				for ($i = 0; $i < $vvRowCount; $i++) {
 					$vvNumber = reqVar::get('vvNumber_' . $i);
 					$territory = reqVar::get('territory_' . $i);
+					$contacts = reqVar::get('contacts_' . $i);
 					$deleted = reqVar::get('deleted_' . $i);
 					
 					if ($deleted != '1' && $vvNumber && $territory) {
 						$vvEntries[] = array(
 							'vvNumber' => $vvNumber,
-							'territory' => $territory
+							'territory' => $territory,
+							'contacts' => $contacts
 						);
 					}
 				}
