@@ -402,8 +402,11 @@ if ($isAdmin || $isRbfUser || $isEconomist)
         {
             $checkedWorks = reqVar::get('checked_works');
             
-            // Validation: Check if works are selected
-            if (empty($checkedWorks) || !is_array($checkedWorks) || count($checkedWorks) == 0)
+            // Check if we have manual works to export (they don't require checkboxes)
+            $hasManualWorksToExport = ($aManualWorkExist && count($aManualWorks) > 0);
+            
+            // Validation: Check if works are selected OR if we have manual works
+            if ((empty($checkedWorks) || !is_array($checkedWorks) || count($checkedWorks) == 0) && !$hasManualWorksToExport)
             {
                 $exportMessage = text::get('ERROR') . ': ' . text::get('NO_WORKS_SELECTED');
             }
@@ -453,29 +456,51 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                 // If validation passed, perform export
                 if ($validationPassed)
                 {
-                    $result = dbProc::exportAutoActWorksToDarbi($actId, $checkedWorks, $userId, $isFinalExport, $actLifePeriod);
-                    
-                    if ($result['success'])
+                    // Export auto works if any are selected
+                    if (!empty($checkedWorks) && is_array($checkedWorks) && count($checkedWorks) > 0)
                     {
-                        $oldStatus = STAT_INSERT;
-                        // Send email notification about status change
-                        email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
-                
-                        // Build and set flash message (will show once after redirect)
-                        $insertedCount = $result['inserted_count'];
-                        $successMessage = text::get('RBF_WORKS_EXPORTED_SUCCESS') . " ($insertedCount " . text::get('RBF_CALC_GROUPS') . ")";
-                        session::setFlash('successMessage', $successMessage);
+                        $result = dbProc::exportAutoActWorksToDarbi($actId, $checkedWorks, $userId, $isFinalExport, $actLifePeriod);
                         
-                        // Redirect back to act form
-                        $oLink = new urlQuery();
-                        $oLink->addPrm(FORM_ID, 'f.akt.s.30');
-                        $oLink->addPrm('actId', $actId);
-                        $oLink->addPrm('tab', 'RBF_WORKS');
-                        RequestHandler::makeRedirect($oLink->getQuery() . '#tab');
+                        if (!$result['success'])
+                        {
+                            $exportMessage = text::get('ERROR') . ': ' . $result['message'];
+                            $validationPassed = false;
+                        }
                     }
-                    else
+                    
+                    // If auto works export succeeded (or there were no auto works to export), change act status
+                    if ($validationPassed)
                     {
-                        $exportMessage = text::get('ERROR') . ': ' . $result['message'];
+                        // Update act status to ACCEPT
+                        $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
+                        
+                        // Save user action
+                        dbProc::setUserActionDate($userId, ACT_EXPORT);
+                        
+                        // Finalize the object
+                        dbProc::closeObject($actId, 1);
+                        
+                        if ($r !== false)
+                        {
+                            $oldStatus = STAT_INSERT;
+                            // Send email notification about status change
+                            email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
+                    
+                            // Build and set flash message (will show once after redirect)
+                            $successMessage = text::get('ACT_SUBMITTED_FOR_APPROVAL');
+                            session::setFlash('successMessage', $successMessage);
+                            
+                            // Redirect back to act form
+                            $oLink = new urlQuery();
+                            $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+                            $oLink->addPrm('actId', $actId);
+                            $oLink->addPrm('tab', 'RBF_WORKS');
+                            RequestHandler::makeRedirect($oLink->getQuery() . '#tab');
+                        }
+                        else
+                        {
+                            $exportMessage = text::get('ERROR_IN_DB_QUERY') . dbProc::getError();
+                        }
                     }
                 }
             }

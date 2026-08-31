@@ -50,7 +50,10 @@ define('EMAIL_FROM', 'softex@softex.lv');
 # =============================================================================
 
 // SMTP server hostname
-define('SMTP_HOST', 'mail.energo.lv');
+// Use tmail as recommended by system administrators
+// Direct connections to mail.energo.lv (10.21.11.2) or external IPs are blocked by firewall
+// tmail server will handle mail routing
+define('SMTP_HOST', 'tmail');
 
 // SMTP server port (25 for no encryption, 587 for TLS, 465 for SSL)
 define('SMTP_PORT', 25);

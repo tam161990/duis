@@ -172,7 +172,7 @@ else
     <? } ?>
     <!-- End Manual Works Section -->
     
-    <? if ($darbiFormatted && count($darbiFormatted) > 0) { ?>
+    <!-- Export Form - Always create this form so JavaScript can find it -->
     <form method="post" name="rbf_auto_works_form">
     <input type="hidden" name="export_action" value="" />
     
@@ -181,6 +181,9 @@ else
             <?= $exportMessage ?>
         </div>
     <? } ?>
+    
+    <? if ($darbiFormatted && count($darbiFormatted) > 0) { ?>
+    <!-- Exported Works Summary Table -->
     
     <table cellpadding="5" cellspacing="1" border="0" width="100%">
         <tr>
@@ -369,8 +372,8 @@ else
             </td>
         </tr>
     </table>
-    </form>
     <? } else { ?>
+    <!-- No automatic works exported yet, but form still exists for export buttons -->
     <table cellpadding="5" cellspacing="1" border="0" width="100%">
         <tr>
             <td valign="top">
@@ -392,6 +395,7 @@ else
         </tr>
     </table>
     <? } // End if/else for automatic works ?>
+    </form>
     <?
 } // End main else block
 
@@ -439,7 +443,7 @@ function handleMiddleExport(button) {
         return false;
     }
 
-    if (confirm('<?= addslashes(text::get('RBF_CONFIRM_MIDDLE_EXPORT')) ?>')) {
+    if (confirm(<?= json_encode(text::get('RBF_CONFIRM_MIDDLE_EXPORT'), JSON_UNESCAPED_UNICODE) ?>)) {
         rbfExportInProgress = true;
         showExportLoading(button);
         document.getElementsByName('export_action')[0].value = 'middle';
@@ -459,18 +463,18 @@ function handleFinalExport(button) {
     
     // Check if there are PROCESS works - must use Middle Export first
     if (processWorkCount > 0) {
-        alert('<?= addslashes(text::get('RBF_ERROR_NEED_MIDDLE_EXPORT')) ?>');
+        alert(<?= json_encode(text::get('RBF_ERROR_NEED_MIDDLE_EXPORT'), JSON_UNESCAPED_UNICODE) ?>);
         return false;
     }
     
     // Check if all works are COMPLETED
     if (notCompletedWorkCount > 0) {
-        alert('<?= addslashes(text::get('RBF_ERROR_NOT_ALL_WORKS_COMPLETED')) ?>');
+        alert(<?= json_encode(text::get('RBF_ERROR_NOT_ALL_WORKS_COMPLETED'), JSON_UNESCAPED_UNICODE) ?>);
         return false;
     }
     
     // All validations passed - show confirmation
-    if (confirm('<?= addslashes(text::get('RBF_CONFIRM_FINAL_EXPORT')) ?>')) {
+    if (confirm(<?= json_encode(text::get('RBF_CONFIRM_FINAL_EXPORT'), JSON_UNESCAPED_UNICODE) ?>)) {
         rbfExportInProgress = true;
         showExportLoading(button);
         document.getElementsByName('export_action')[0].value='final';
@@ -493,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (workStatus === 'PROCESS' && this.checked) {
                 e.preventDefault();
                 this.checked = false;
-                alert('<?= addslashes(text::get('RBF_WORK_PROCESS_ERROR')) ?>');
+                alert(<?= json_encode(text::get('RBF_WORK_PROCESS_ERROR'), JSON_UNESCAPED_UNICODE) ?>);
                 return false;
             }
         });

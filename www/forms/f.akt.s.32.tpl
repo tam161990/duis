@@ -70,7 +70,7 @@
 					if (isset($fileInfo[$i]['fileType']) && $fileInfo[$i]['fileType'] == 'RBF'): 
 					?>
 					<a href="?formId=f.akt.s.30&actId=<?=$actId;?>&tab=RBF_ATTACHMENTS&delete_file=<?=$fileInfo[$i]['RFLS_ID'];?>" 
-					   onclick="return confirm('<?=addslashes(text::get('CONFIRM_DELETE_FILE'));?>');">
+					   onclick="return confirm(<?= json_encode(text::get('CONFIRM_DELETE_FILE'), JSON_UNESCAPED_UNICODE) ?>);">
 						<img src="img/btn_delete.gif" alt="<?=text::get('BTN_DELETE');?>" border="0">
 					</a>
 					<? else: ?>

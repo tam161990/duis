@@ -6973,7 +6973,64 @@ class dbProc extends dbLayer
 	// Atgriezh akta darbus. atgriezh visas p�c akta ID.
 	// Author: Tatjana Fedorkova
     // -----------------------------------------------------------------------------
-        function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false, 
+        function getActWorkListRbf($ID, $tame = false, $onlyNotApproved = false, $group_id = false, 
+                                $project = false, $work_type_text = false,
+                                $sortOrder = false, $orderColumn = false, $manualOnly = false)
+	{
+            $table_name = ($tame) ? 'TAME_DARBI' : 'DARBI';
+            $column_name = ($tame) ? '`DRBI_DAUDZUMS_KOR`' : '`DRBI_DAUDZUMS`';
+            $group_name = ($project) ? ',`KLDV_NOSAUKUMS`' : ',`KKNO_NORM`*`DRBI_DAUDZUMS` as WORK_NORM_SUM';
+            if($orderColumn == false) {
+                $order = '11, 1';
+            } else {
+                $order = $orderColumn . ' ' . $sortOrder;
+            }
+            
+            $query = "select DISTINCT `DRBI_ID`, `DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
+                    `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, 
+                    `DRBI_MERVIENIBA`, `KKNO_NORM`, `KWRC_KODS`,
+					".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .",                     
+                    ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
+                    (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
+                    AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
+                    AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
+                from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_writeoff_code_new` ON `KWRC_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
+                " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
+                " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
+                " . (($work_type_text !== false) ? (empty($work_type_text) ? " AND `DRBI_WORK_TYPE_TEXT` IS NULL " : " AND `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'" ) : "" ) ."
+                " . (($manualOnly) ? " AND `DRBI_IS_WORKER` = 1 " : "" ) ."
+                AND ".$column_name." IS NOT NULL
+                union
+                select DISTINCT `DRBI_ID`, `DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
+                    `DRBI_KKAL_NOSAUKUMS`, `DRBI_KKAL_NORMATIVS`, `DRBI_DAUDZUMS`, `DRBI_CILVEKSTUNDAS`, 
+                    `DRBI_MERVIENIBA`, `KKNO_NORM`, `KWRC_KODS`,
+				".dbLayer::sqlParseDate('DRBI_PLAN_DATE') .", 
+                ".dbLayer::sqlParseDate('DRBI_APPROVE_DATE') .", ".dbLayer::sqlParseDate('DRBI_WORK_APROVE_DATE') .",
+                (SELECT DISTINCT TRIM(KKAL_APRAKSTS) FROM `KL_KALKULACIJA` WHERE KKAL_SHIFRS = DRBI_KKAL_SHIFRS
+                AND KKAL_VV_NUMBER = (SELECT `RAKT_VV_NUMBER` FROM `AKTI` WHERE `RAKT_ID` =  ".dbLayer::quote_smart($ID).") 
+                AND KKAL_IR_AKTIVS = 1  LIMIT 1 ) as KKAL_APRAKSTS ". $group_name."
+                from " . $table_name . "
+                ".(($project) ? 'INNER JOIN `kl_darba_veidi` ON `KLDV_ID` = `DRBI_WORK_TYPE_ID` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_kalkulacijas_normas` ON `KKNO_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                ".((!$project) ? 'LEFT JOIN `kl_writeoff_code_new` ON `KWRC_KKAL_SHIFRS` = `DRBI_KKAL_SHIFRS` ': '')."
+                WHERE `DRBI_RAKT_ID` = ".dbLayer::quote_smart($ID)."
+                " . (($onlyNotApproved) ? " AND `DRBI_APPROVE_DATE` IS NULL " : "" ) ." 
+                " . (($group_id !== false) ? " AND `DRBI_WORK_TYPE_ID` = ".dbLayer::quote_smart($group_id) : "" ) ."
+                " . (($work_type_text !== false) ? (empty($work_type_text) ? " AND `DRBI_WORK_TYPE_TEXT` IS NULL " : " AND `DRBI_WORK_TYPE_TEXT` = '".dbLayer::quote_smart($work_type_text)."'" ) : "" ) ."
+                " . (($manualOnly) ? " AND `DRBI_IS_WORKER` = 1 " : "" ) ."
+                AND ".$column_name." IS NULL 
+                ORDER BY " . $order;
+
+        //echo $query;
+		$oSQL = new dbLayer;
+		return $oSQL -> makeQuery($query);
+	}
+
+    function getActWorkList($ID, $tame = false, $onlyNotApproved = false, $group_id = false, 
                                 $project = false, $work_type_text = false,
                                 $sortOrder = false, $orderColumn = false, $manualOnly = false)
 	{
@@ -11928,7 +11985,7 @@ class dbProc extends dbLayer
 			}
 		}
 
-		// Save VV entries (VV Number + Territory Code)
+		// Save VV entries (VV Number + Territory Code + Contacts)
 		if ($ID && $result !== false) {
 			// Delete existing VV entries
 			$deleteQuery = 'delete from `kl_rbf_du_vv` where `RBDV_RBDU_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -11942,12 +11999,14 @@ class dbProc extends dbLayer
 				foreach ($vvEntries as $entry) {
 					if (isset($entry['vvNumber']) && isset($entry['territory']) && 
 					    $entry['vvNumber'] && $entry['territory']) {
+						$contacts = isset($entry['contacts']) ? $entry['contacts'] : '';
 						$insertQuery = 'insert into `kl_rbf_du_vv` 
-							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_KODS`) 
+							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_KODS`, `RBDV_KONTAKTI`) 
 							values (
 								"'.dbLayer::quote_smart($ID).'", 
 								"'.dbLayer::quote_smart($entry['vvNumber']).'", 
-								"'.dbLayer::quote_smart($entry['territory']).'"
+								"'.dbLayer::quote_smart($entry['territory']).'",
+								"'.dbLayer::quote_smart($contacts).'"
 							)';
 						$oDB -> makeQuery($insertQuery);
 					}
@@ -14199,36 +14258,75 @@ class dbProc extends dbLayer
 		}
 
 		$oDB = new dbLayer();
-		$query = 'SELECT `RBDU_KONTAKTI`
-				  FROM `kl_rbf_darbuznemeji`
-				  WHERE `RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
-				  AND `RBDU_IR_AKTIVS` = 1
-				  LIMIT 1';
+		
+		// Get emails from kl_rbf_du_vv table (new location)
+		$query = 'SELECT vv.`RBDV_KONTAKTI`
+				  FROM `kl_rbf_darbuznemeji` d
+				  INNER JOIN `kl_rbf_du_vv` vv ON d.`RBDU_ID` = vv.`RBDV_RBDU_ID`
+				  WHERE d.`RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
+				  AND d.`RBDU_IR_AKTIVS` = 1
+				  AND vv.`RBDV_KONTAKTI` IS NOT NULL
+				  AND vv.`RBDV_KONTAKTI` != ""';
 		
 		$result = $oDB->makeQuery($query);
 		
+		// If no emails found in new location, fallback to old location (backward compatibility)
 		if ($result === false || !is_array($result) || count($result) == 0) {
-			return array();
+			$query = 'SELECT `RBDU_KONTAKTI`
+					  FROM `kl_rbf_darbuznemeji`
+					  WHERE `RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
+					  AND `RBDU_IR_AKTIVS` = 1
+					  AND `RBDU_KONTAKTI` IS NOT NULL
+					  AND `RBDU_KONTAKTI` != ""
+					  LIMIT 1';
+			
+			$result = $oDB->makeQuery($query);
+			
+			if ($result === false || !is_array($result) || count($result) == 0) {
+				return array();
+			}
+			
+			// Use old field for backward compatibility
+			$contacts = $result[0]['RBDU_KONTAKTI'];
+			if (empty($contacts)) {
+				return array();
+			}
+			
+			// Parse email addresses - can be separated by semicolon, comma, or space
+			$emails = array();
+			$parts = preg_split('/[;,\s]+/', $contacts);
+			
+			foreach ($parts as $part) {
+				$part = trim($part);
+				// Check if it's a valid email format
+				if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
+					$emails[] = $part;
+				}
+			}
+			
+			return $emails;
 		}
 
-		$contacts = $result[0]['RBDU_KONTAKTI'];
-		if (empty($contacts)) {
-			return array();
-		}
-
-		// Parse email addresses - can be separated by semicolon, comma, or space
+		// Parse email addresses from all VV entries (new location)
 		$emails = array();
-		$parts = preg_split('/[;,\s]+/', $contacts);
-		
-		foreach ($parts as $part) {
-			$part = trim($part);
-			// Check if it's a valid email format
-			if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
-				$emails[] = $part;
+		foreach ($result as $row) {
+			$contacts = $row['RBDV_KONTAKTI'];
+			if (!empty($contacts)) {
+				// Parse email addresses - can be separated by semicolon, comma, or space
+				$parts = preg_split('/[;,\s]+/', $contacts);
+				
+				foreach ($parts as $part) {
+					$part = trim($part);
+					// Check if it's a valid email format
+					if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
+						$emails[] = $part;
+					}
+				}
 			}
 		}
 
-		return $emails;
+		// Return unique emails
+		return array_unique($emails);
 	}
 
     function getRbfActById($ID)
