@@ -11985,7 +11985,7 @@ class dbProc extends dbLayer
 			}
 		}
 
-		// Save VV entries (VV Number + Territory Code)
+		// Save VV entries (VV Number + Territory Code + Contacts)
 		if ($ID && $result !== false) {
 			// Delete existing VV entries
 			$deleteQuery = 'delete from `kl_rbf_du_vv` where `RBDV_RBDU_ID` = "'.dbLayer::quote_smart($ID).'"';
@@ -11999,12 +11999,14 @@ class dbProc extends dbLayer
 				foreach ($vvEntries as $entry) {
 					if (isset($entry['vvNumber']) && isset($entry['territory']) && 
 					    $entry['vvNumber'] && $entry['territory']) {
+						$contacts = isset($entry['contacts']) ? $entry['contacts'] : '';
 						$insertQuery = 'insert into `kl_rbf_du_vv` 
-							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_KODS`) 
+							(`RBDV_RBDU_ID`, `RBDV_VV_NUMURS`, `RBDV_RBTR_KODS`, `RBDV_KONTAKTI`) 
 							values (
 								"'.dbLayer::quote_smart($ID).'", 
 								"'.dbLayer::quote_smart($entry['vvNumber']).'", 
-								"'.dbLayer::quote_smart($entry['territory']).'"
+								"'.dbLayer::quote_smart($entry['territory']).'",
+								"'.dbLayer::quote_smart($contacts).'"
 							)';
 						$oDB -> makeQuery($insertQuery);
 					}
@@ -14256,36 +14258,75 @@ class dbProc extends dbLayer
 		}
 
 		$oDB = new dbLayer();
-		$query = 'SELECT `RBDU_KONTAKTI`
-				  FROM `kl_rbf_darbuznemeji`
-				  WHERE `RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
-				  AND `RBDU_IR_AKTIVS` = 1
-				  LIMIT 1';
+		
+		// Get emails from kl_rbf_du_vv table (new location)
+		$query = 'SELECT vv.`RBDV_KONTAKTI`
+				  FROM `kl_rbf_darbuznemeji` d
+				  INNER JOIN `kl_rbf_du_vv` vv ON d.`RBDU_ID` = vv.`RBDV_RBDU_ID`
+				  WHERE d.`RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
+				  AND d.`RBDU_IR_AKTIVS` = 1
+				  AND vv.`RBDV_KONTAKTI` IS NOT NULL
+				  AND vv.`RBDV_KONTAKTI` != ""';
 		
 		$result = $oDB->makeQuery($query);
 		
+		// If no emails found in new location, fallback to old location (backward compatibility)
 		if ($result === false || !is_array($result) || count($result) == 0) {
-			return array();
+			$query = 'SELECT `RBDU_KONTAKTI`
+					  FROM `kl_rbf_darbuznemeji`
+					  WHERE `RBDU_KODS` = "'.dbLayer::quote_smart($contractorCode).'"
+					  AND `RBDU_IR_AKTIVS` = 1
+					  AND `RBDU_KONTAKTI` IS NOT NULL
+					  AND `RBDU_KONTAKTI` != ""
+					  LIMIT 1';
+			
+			$result = $oDB->makeQuery($query);
+			
+			if ($result === false || !is_array($result) || count($result) == 0) {
+				return array();
+			}
+			
+			// Use old field for backward compatibility
+			$contacts = $result[0]['RBDU_KONTAKTI'];
+			if (empty($contacts)) {
+				return array();
+			}
+			
+			// Parse email addresses - can be separated by semicolon, comma, or space
+			$emails = array();
+			$parts = preg_split('/[;,\s]+/', $contacts);
+			
+			foreach ($parts as $part) {
+				$part = trim($part);
+				// Check if it's a valid email format
+				if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
+					$emails[] = $part;
+				}
+			}
+			
+			return $emails;
 		}
 
-		$contacts = $result[0]['RBDU_KONTAKTI'];
-		if (empty($contacts)) {
-			return array();
-		}
-
-		// Parse email addresses - can be separated by semicolon, comma, or space
+		// Parse email addresses from all VV entries (new location)
 		$emails = array();
-		$parts = preg_split('/[;,\s]+/', $contacts);
-		
-		foreach ($parts as $part) {
-			$part = trim($part);
-			// Check if it's a valid email format
-			if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
-				$emails[] = $part;
+		foreach ($result as $row) {
+			$contacts = $row['RBDV_KONTAKTI'];
+			if (!empty($contacts)) {
+				// Parse email addresses - can be separated by semicolon, comma, or space
+				$parts = preg_split('/[;,\s]+/', $contacts);
+				
+				foreach ($parts as $part) {
+					$part = trim($part);
+					// Check if it's a valid email format
+					if (filter_var($part, FILTER_VALIDATE_EMAIL)) {
+						$emails[] = $part;
+					}
+				}
 			}
 		}
 
-		return $emails;
+		// Return unique emails
+		return array_unique($emails);
 	}
 
     function getRbfActById($ID)
