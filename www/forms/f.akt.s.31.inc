@@ -180,7 +180,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
       }
 
       // Get work list from DB
-      $aWorkDb = dbProc::getActWorkList($actId, 0); // tame=0 for RBF acts
+      $aWorkDb = dbProc::getActWorkListRbf($actId, 0); // tame=0 for RBF acts
 
       if (is_array($aWorkDb) && count($aWorkDb) > 0)
       {

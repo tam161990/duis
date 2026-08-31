@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<title>DUIS — Tāmes augšupielāde no Excel</title>
+<style>
+  :root{
+    --blue:#1a5fb4;
+    --blue-dark:#0f3d78;
+    --green:#2e7d32;
+    --green-bg:#eaf6ea;
+    --amber:#b8860b;
+    --amber-bg:#fdf3e0;
+    --red:#c0392b;
+    --red-bg:#fdecea;
+    --gray:#5b6472;
+    --line:#dfe4ea;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","Calibri","Arial",sans-serif;
+    color:#232a33;
+    background:#f4f6f9;
+    font-size:12.5px;
+    line-height:1.32;
+  }
+  .page{
+    max-width:960px;
+    margin:18px auto 40px;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 2px 18px rgba(20,30,50,.10);
+    overflow:hidden;
+  }
+  header{
+    background:linear-gradient(135deg,var(--blue-dark),var(--blue) 65%,#2f7fd6);
+    color:#fff;
+    padding:12px 30px 10px;
+  }
+  header .top-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  header .tag{
+    display:inline-block;
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:20px;
+    padding:2px 10px;
+    font-size:10.5px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+  }
+  header h1{
+    margin:0;
+    font-size:19px;
+    font-weight:700;
+  }
+  header p.lead{
+    margin:4px 0 0;
+    font-size:11.8px;
+    opacity:.92;
+    max-width:800px;
+  }
+  .content{
+    padding:12px 30px 16px;
+  }
+  h2{
+    font-size:13px;
+    color:var(--blue-dark);
+    border-bottom:2px solid var(--line);
+    padding-bottom:2px;
+    margin:10px 0 5px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  h2:first-child{margin-top:0;}
+  h2 .num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:19px;height:19px;
+    border-radius:50%;
+    background:var(--blue);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    flex:none;
+  }
+  h3{
+    font-size:12px;
+    margin:8px 0 4px;
+    color:#1c2733;
+  }
+  p{margin:4px 0;}
+  ul{margin:4px 0 4px 18px; padding:0;}
+  li{margin:2px 0;}
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .card{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    background:#fbfcfe;
+  }
+  table.cols{
+    width:100%;
+    border-collapse:collapse;
+    margin:5px 0 3px;
+    font-size:11.8px;
+  }
+  table.cols th, table.cols td{
+    border:1px solid var(--line);
+    padding:3px 6px;
+    text-align:left;
+    vertical-align:top;
+  }
+  table.cols th{
+    background:#eef3fa;
+    color:var(--blue-dark);
+    font-weight:600;
+  }
+  table.cols td.colcell{
+    font-weight:700;
+    color:var(--blue);
+    width:36px;
+    text-align:center;
+    background:#f7f9fc;
+  }
+  .example{
+    font-family:"Consolas","Courier New",monospace;
+    background:#eef1f5;
+    border-radius:5px;
+    padding:1px 6px;
+    font-size:12px;
+  }
+  .rule-list{list-style:none; margin:3px 0; padding:0;}
+  .rule-list li{
+    margin:2px 0;
+    padding:4px 8px 4px 26px;
+    border-radius:6px;
+    position:relative;
+    font-size:11.3px;
+  }
+  .rule-list li:before{
+    position:absolute; left:8px; top:4px; font-size:11px; font-weight:700;
+  }
+  .rule-list li.ok{background:var(--green-bg);}
+  .rule-list li.ok:before{content:"✓"; color:var(--green);}
+  .rule-list li.bad{background:var(--red-bg);}
+  .rule-list li.bad:before{content:"✕"; color:var(--red);}
+  .rule-list li.warn{background:var(--amber-bg);}
+  .rule-list li.warn:before{content:"!"; color:var(--amber);}
+  .statuses{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+    margin:5px 0;
+  }
+  .status{
+    border-radius:7px;
+    padding:5px 8px;
+    font-size:11px;
+    text-align:center;
+    font-weight:600;
+  }
+  .status.s-ok{background:var(--green-bg); color:var(--green);}
+  .status.s-exists{background:#eef0fb; color:#4949c0;}
+  .status.s-notfound{background:var(--red-bg); color:var(--red);}
+  .status.s-noamount{background:var(--amber-bg); color:var(--amber);}
+  footer{
+    padding:8px 30px 12px;
+    border-top:1px solid var(--line);
+    font-size:10.3px;
+    color:var(--gray);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  @media print{
+    body{background:#fff; font-size:10.3px; line-height:1.15;}
+    .page{box-shadow:none; margin:0; border-radius:0; max-width:100%;}
+    header{background:var(--blue-dark) !important; padding:8px 26px 7px; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .content{padding:7px 26px 4px;}
+    h2{margin:6px 0 3px;}
+    h3{margin:4px 0 2px;}
+    p{margin:2px 0;}
+    ul{margin:2px 0 2px 16px;}
+    .rule-list li{padding:2px 8px 2px 24px; margin:1px 0;}
+    table.cols{margin:2px 0 1px;}
+    .statuses{margin:3px 0;}
+    footer{padding:2px 26px 3px; font-size:9px;}
+    .box, .status, .rule-list li{ -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    @page{size:A4; margin:8mm;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="top-row">
+      <h1>Tāmes augšupielāde no Excel</h1>
+      <span class="tag">DUIS · Lietotāja pamācība</span>
+    </div>
+    <p class="lead">Kā projektētājam pareizi sagatavot tāmes Excel failu un izmantot pogu „Augšuplādēt tāmi”,
+    lai DUIS korekti izveidotu tāmes rindas Darbos un Materiālos.</p>
+  </header>
+
+  <div class="content">
+
+    <h2><span class="num">1</span> Kur atrodas funkcija, kad tā pieejama un kādi faili</h2>
+    <ul>
+      <li>Poga <b>„Augšuplādēt tāmi”</b> atrodas akta lapā, virs pozīciju tabulas. Tā ir aktīva tikai tad, ja
+        <b>akts jau ir saglabāts</b> (tam ir piešķirts ID) un tā statuss ir <b>„Ievads”</b> vai
+        <b>„Atgriezts labošanai”</b> — apstiprinātā / aizvērtā aktā tāmi augšupielādēt nevar.</li>
+      <li>Atbalstītie formāti: <span class="example">.xlsx</span>, <span class="example">.xls</span>,
+        <span class="example">.csv</span> (atdalītāju sistēma nosaka automātiski); līdz <b>~1000 rindām</b> failā.</li>
+      <li>Visi augšupielādes gadījumi tiek reģistrēti auditācijas nolūkos jaunā cilnē
+        <b>„Augšupielādes statistika”</b> — datums, faila nosaukums, lietotājs, rindu skaits un
+        lejupielādējams detalizēts rezultātu pārskats (Excel).</li>
+    </ul>
+
+    <h2><span class="num">2</span> Kā jābūt sagatavotam Excel failam</h2>
+    <p>Sistēma faila pirmās <b>6 kolonnas (A–F)</b> lasa pēc šādas loģikas (C kolonna netiek izmantota):</p>
+    <table class="cols">
+      <tr><th style="width:36px">Kol.</th><th>Nozīme</th><th>Piezīmes</th></tr>
+      <tr><td class="colcell">A</td><td>Kods / šifrs <b>vai</b> sadaļas (darba veida) nosaukums</td>
+        <td>Skatīt zemāk — rindas tips atkarīgs no tā, kuras kolonnas ir aizpildītas.</td></tr>
+      <tr><td class="colcell">B</td><td>Darba / materiāla nosaukums</td>
+        <td>Tukša B kolonna + aizpildīta A = tā ir <b>sadaļas virsraksta</b> rinda, ne pozīcija.</td></tr>
+      <tr><td class="colcell">C</td><td>—</td><td>Sistēma šo kolonnu ignorē.</td></tr>
+      <tr><td class="colcell">D</td><td>Mērvienība</td><td></td></tr>
+      <tr><td class="colcell">E</td><td>Daudzums (apjoms)</td><td><b>Obligāts</b> — sk. 3. sadaļu.</td></tr>
+      <tr><td class="colcell">F</td><td>Piezīmes</td><td>Pēc izvēles.</td></tr>
+    </table>
+
+    <h3>Trīs rindu veidi failā</h3>
+    <ul>
+      <li><b>Sadaļas / darba veida virsraksts</b> — rindā aizpildīta <u>tikai</u> A kolonna (viss pārējais tukšs).
+        Šis nosaukums attiecas uz visām zemāk sekojošajām rindām līdz nākamajam virsrakstam
+        (piem. <span class="example">Jumiķa darbi</span>).</li>
+      <li><b>Sadaļu marķieri „Darbu izmaksas” / „Materiālu izmaksas”</b> — īpašas rindas, kas pasaka sistēmai,
+        vai tālākās rindas ir darbi vai materiāli.</li>
+      <li><b>Pozīcijas rinda</b> — konkrēts darbs vai materiāls: A = kods, B = nosaukums, D = mērvienība, E = daudzums, F = piezīmes.</li>
+    </ul>
+
+    <h3>Koda (šifra) formāts</h3>
+    <table class="cols">
+      <tr><th>Tips</th><th>Formāts</th><th>Piemērs</th></tr>
+      <tr><td>Darbs</td><td>5 cipari</td><td class="example">12106</td></tr>
+      <tr><td>Materiāls</td><td>4 cipari + punkts + 3 cipari</td><td class="example">3210.002</td></tr>
+    </table>
+    <p style="font-size:11px; color:var(--gray); margin-top:3px;">Šis formāts kalpo kā „rezerves” pazīme, ja rindas
+    tips nav skaidrs no „Darbu izmaksas” / „Materiālu izmaksas” marķiera (sk. 3. sadaļu). Starpsummu, kopsummu un
+    citas nevajadzīgas rindas failā var atstāt — sistēma tās automātiski ignorē.</p>
+
+    <h2><span class="num">3</span> Svarīgākie noteikumi — jāzina obligāti</h2>
+
+    <ul class="rule-list">
+      <li class="ok">Sadaļas (darba veida) nosaukumu var importēt, <b>pat ja tas nesakrīt ar DUIS katalogu</b> —
+        sistēma automātiski izveidos jaunu darba veidu ar šo nosaukumu.</li>
+      <li class="ok">Pozīcijas <b>bez koda/šifra</b> ir atļautas (piem., strādnieku / darbaspēka rindas) —
+        tās tiks pievienotas ar norādīto nosaukumu (vai „Strādnieks”, ja nosaukums nav norādīts).</li>
+      <li class="bad">Pozīcijas <b>bez norādīta daudzuma (apjoma)</b> Excel failā <b>NETIEK importētas</b>.
+        Pārskatā tās parādīsies ar statusu „Apjoms nav norādīts” — jāizlabo Excel failā un jāaugšuplādē no jauna.</li>
+      <li class="warn">Vārdiem <b>„Darbu izmaksas”</b> un <b>„Materiālu izmaksas”</b> jābūt uzrakstītiem tieši tā —
+        burtiski un gramatiski pareizi. Ja tie ir sarakstīti citādi vai ar kļūdu, sistēma sadaļas tipu var
+        neatpazīt pareizi (paļaujas tikai uz koda formātu, kas var maldināt).</li>
+      <li class="bad">Ja tajā pašā tāmes sadaļā (darba veidā) DUIS <b>nav ne vienas darba pozīcijas</b> —
+        ne manuāli ievadītas, ne agrāk importētas — <b>materiālus šai sadaļai importēt nevar</b> (materiāli
+        vienmēr piesaistās jau esošai darba pozīcijai — tāda ir sistēmas loģika arī manuālai ievadei). Tāpēc,
+        ja sadaļā ir gan darbi, gan materiāli — vispirms jāimportē/jāievada vismaz viens darbs, tad var pievienot materiālus.</li>
+      <li class="ok">Darbu var importēt sadaļā, kurā (pagaidām) nav materiālu — tas ir atļauts bez ierobežojumiem.</li>
+      <li class="ok">Ja pozīcija (kods + darba veids) aktā <b>jau eksistē</b>, tā <b>netiek pievienota otrreiz</b> —
+        drošs atkārtoti augšuplādēt to pašu vai papildinātu failu, dublēšanās nebūs.</li>
+    </ul>
+
+    <h2><span class="num">4</span> Kas notiek pēc augšupielādes</h2>
+    <p>Uzreiz pēc faila apstrādes parādās kopsavilkuma ziņojums ar rindu statistiku, un katrai rindai tiek
+    piešķirts statuss:</p>
+    <div class="statuses">
+      <div class="status s-ok">Saglabāts</div>
+      <div class="status s-exists">Jau eksistē</div>
+      <div class="status s-notfound">Nav atrasts katalogā</div>
+      <div class="status s-noamount">Apjoms nav norādīts</div>
+    </div>
+    <ul>
+      <li>Pilns rindu statusu pārskats tiek saglabāts kā Excel fails un ir pieejams lejupielādei cilnē
+        <b>„Augšupielādes statistika”</b> (kopā ar oriģinālo augšupielādēto failu auditācijai).</li>
+      <li>Pēc importa lietotājs var DUIS pusē manuāli labot atsevišķus laukus (piem., daudzumu vai piezīmes).</li>
+      <li>Rindas ar statusu „Nav atrasts katalogā” vai „Apjoms nav norādīts” <b>nav importētas</b> — tās jāsakārto
+        Excel failā (vai jāievada manuāli DUIS) un, ja vajadzīgs, fails jāaugšuplādē vēlreiz.</li>
+    </ul>
+
+  </div>
+
+  <footer>
+    <span>DUIS — Tāmes Excel importa funkcionalitāte (DUIS-548)</span>
+    <span>Jautājumu gadījumā vērsieties pie sistēmas administratora.</span>
+  </footer>
+</div>
+</body>
+</html>
