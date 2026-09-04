@@ -344,7 +344,9 @@ if ($isAdmin || $isRbfUser || $isEconomist)
             $actLifePeriod = 0;
         }
         $isFinalExportAct = !empty($act['RAKT_IR_OBJEKTS_PABEIGTS']);
-        $forceManualWorksToPeriod = ($isFinalExportAct || $actLifePeriod == 3) ? $actLifePeriod : false;
+        
+        // Cap life period at 3 for manual works calculation (quarterly table only supports 1-3)
+        $forceManualWorksToPeriod = ($isFinalExportAct || $actLifePeriod == 3) ? min($actLifePeriod, 3) : false;
         
        
             $oPopLinkManual = new urlQuery;

@@ -12834,6 +12834,13 @@ class dbProc extends dbLayer
 	 */
 	function saveRbfAkt($kwoiKods, $vvNumber, $rbtrKods, $rlttText, $kakvKods, $numPostfix, $workTitle, $signature = '', $piezimes = '', $fflsId = null)
 	{
+		// DEBUG: Log function parameters
+		files::wh_log("[RBF saveRbfAkt DEBUG] Function called with parameters:");
+		files::wh_log("[RBF saveRbfAkt DEBUG]   kwoiKods: '" . $kwoiKods . "'");
+		files::wh_log("[RBF saveRbfAkt DEBUG]   vvNumber: '" . $vvNumber . "'");
+		files::wh_log("[RBF saveRbfAkt DEBUG]   rbtrKods: '" . $rbtrKods . "'");
+		files::wh_log("[RBF saveRbfAkt DEBUG]   numPostfix: '" . $numPostfix . "'");
+		
 		$query = 'INSERT INTO `rbf_akti` (
 				`FAKT_KWOI_KODS`,
 				`FAKT_VV_NUMBER`,
@@ -12859,9 +12866,19 @@ class dbProc extends dbLayer
 				'.($fflsId ? '"'.dbLayer::quote_smart($fflsId).'"' : 'NULL').',
 				"0"
 			)';
+		
+		// DEBUG: Log generated SQL query
+		files::wh_log("[RBF saveRbfAkt DEBUG] Generated SQL query: " . $query);
 
 		$oSQL = new dbLayer;
 		$result = $oSQL->makeQuery($query);
+		
+		if ($result !== false) {
+			$insertedId = dbLayer::getInsertId();
+			files::wh_log("[RBF saveRbfAkt DEBUG] Insert successful, ID: " . $insertedId);
+		} else {
+			files::wh_log("[RBF saveRbfAkt DEBUG] Insert FAILED");
+		}
 		
 		return ($result !== false);
 	}
@@ -13239,28 +13256,30 @@ class dbProc extends dbLayer
 		$name = trim($parts[0]);
 		$surname = trim($parts[1]);
 		
+		// Find active user who belongs to the specific employee code
 		$query = 'SELECT `RLTT_ID`, `RLTT_KWOI_KODS` FROM `LIETOTAJI`
 			WHERE `RLTT_VARDS` = "'.dbLayer::quote_smart($name).'"
 			AND `RLTT_UZVARDS` = "'.dbLayer::quote_smart($surname).'"
+			AND `RLTT_KWOI_KODS` = "'.dbLayer::quote_smart($employeeCode).'"
+			AND `RLTT_IR_AKTIVS` = 1
 			LIMIT 1';
 		
 		$oSQL = new dbLayer;
 		$result = $oSQL->makeQuery($query);
 		
+		// If found active user for this specific employee, return it
 		if (is_array($result) && count($result) > 0) {
 			$userId = $result[0]['RLTT_ID'];
 			$userEmployeeCode = $result[0]['RLTT_KWOI_KODS'];
 			
-			// Check if user belongs to the employee
-			$belongsToEmployee = ($userEmployeeCode == $employeeCode);
-			
 			return array(
 				'RLTT_ID' => $userId,
 				'RLTT_KWOI_KODS' => $userEmployeeCode,
-				'belongs_to_employee' => $belongsToEmployee
+				'belongs_to_employee' => true
 			);
 		}
 		
+		// Not found for this specific active employee
 		return false;
 	}
 

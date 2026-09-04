@@ -249,8 +249,16 @@ if (userAuthorization::isAdmin())
 								$signature = trim($sheet->getCell('I' . $row)->getCalculatedValue());
 								$piezimes = trim($sheet->getCell('J' . $row)->getCalculatedValue());
 								
+								// DEBUG: Log raw values from Excel before processing
+								files::wh_log("[RBF IMPORT DEBUG] Row $row - VV_NUMBER from Excel (col B): '" . $vv_number . "'");
+								files::wh_log("[RBF IMPORT DEBUG] Row $row - NODALA_KODS from Excel (col C): '" . $nodala_kods . "'");
+								files::wh_log("[RBF IMPORT DEBUG] Row $row - DALA_KODS from Excel (col D): '" . $dala_kods . "'");
+								
 								// Determine which territory code to use (only one should be filled)
 								$rbtr_kods = !empty($nodala_kods) ? $nodala_kods : $dala_kods;
+								
+								// DEBUG: Log determined territory code
+								files::wh_log("[RBF IMPORT DEBUG] Row $row - Determined RBTR_KODS: '" . $rbtr_kods . "'");
 								
 								// Skip empty rows
 								if (empty($kwoi_kods) && empty($vv_number) && empty($num_postfix))
@@ -288,6 +296,14 @@ if (userAuthorization::isAdmin())
 								
 								// Save to database with file reference
 								// Function signature: saveRbfAkt($kwoiKods, $vvNumber, $rbtrKods, $rlttText, $kakvKods, $numPostfix, $workTitle, $signature = '', $piezimes = '', $fflsId = null)
+								
+								// DEBUG: Log values before saving to database
+								files::wh_log("[RBF IMPORT DEBUG] Row $row - Saving to DB:");
+								files::wh_log("[RBF IMPORT DEBUG]   KWOI_KODS: '" . $kwoi_kods . "'");
+								files::wh_log("[RBF IMPORT DEBUG]   VV_NUMBER: '" . $vv_number . "'");
+								files::wh_log("[RBF IMPORT DEBUG]   RBTR_KODS: '" . $rbtr_kods . "'");
+								files::wh_log("[RBF IMPORT DEBUG]   NUM_POSTFIX: '" . $num_postfix . "'");
+								
 								$result = dbProc::saveRbfAkt(
 									$kwoi_kods,
 									$vv_number,
@@ -303,10 +319,12 @@ if (userAuthorization::isAdmin())
 								
 								if ($result)
 								{
+									files::wh_log("[RBF IMPORT DEBUG] Row $row - Successfully saved");
 									$successCount++;
 								}
 								else
 								{
+									files::wh_log("[RBF IMPORT DEBUG] Row $row - FAILED to save");
 									$errorCount++;
 									$errors[] = text::get('ERROR_IN_DB_QUERY') . " (Row $row)";
 								}
