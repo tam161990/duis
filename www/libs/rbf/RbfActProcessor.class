@@ -218,23 +218,14 @@ class RbfActProcessor
 		$userInfo = dbProc::findUserByNameForEmployee($faktAct['FAKT_RLTT_TEXT'], $faktAct['FAKT_KWOI_KODS']);
 		
 		if ($userInfo === false) {
-			$warning = "[ERROR] FAKT_ID $faktId: User '{$faktAct['FAKT_RLTT_TEXT']}' not found in LIETOTAJI. Setting RAKT_RLTT_ID = 0";
+			$warning = "[ERROR] FAKT_ID $faktId: Active user '{$faktAct['FAKT_RLTT_TEXT']}' not found for employee '{$faktAct['FAKT_KWOI_KODS']}' in LIETOTAJI. Setting RAKT_RLTT_ID = 0";
 			files::wh_log($warning);
 			$warnings[] = $warning;
 			return 0;
 		}
 		
 		$authorId = $userInfo['RLTT_ID'];
-		
-		// Check if user belongs to the employee
-		if (!$userInfo['belongs_to_employee']) {
-			$warning = "[ERROR] FAKT_ID $faktId: User '{$faktAct['FAKT_RLTT_TEXT']}' (ID: {$authorId}, KWOI: {$userInfo['RLTT_KWOI_KODS']}) is not related to employee '{$faktAct['FAKT_KWOI_KODS']}'. Setting RAKT_RLTT_ID = 0";
-			files::wh_log($warning);
-			$warnings[] = $warning;
-			return 0;
-		}
-		
-		files::wh_log("[INFO] Found user ID: $authorId for '{$faktAct['FAKT_RLTT_TEXT']}' (belongs to employee {$faktAct['FAKT_KWOI_KODS']})");
+		files::wh_log("[INFO] Found active user ID: $authorId for '{$faktAct['FAKT_RLTT_TEXT']}' (employee {$faktAct['FAKT_KWOI_KODS']})");
 		return $authorId;
 	}
 	

@@ -1,0 +1,23 @@
+DUIS-549: Fix RBF auto act export issues
+
+- Fix JavaScript syntax error: replace addslashes() with json_encode() for Latvian text
+  - Fixed in f.akt.s.34.tpl, f.akt.s.32.tpl, f.akt.s.30.inc
+  - Latvian characters (ā, č, ē, etc.) now properly escaped in JavaScript
+  
+- Fix form not found error: rbf_auto_works_form now always created
+  - Moved form creation outside conditional block in f.akt.s.34.tpl
+  - Export buttons now work even when no DARBI records exist yet
+  
+- Fix export validation: allow export with manual works only
+  - Updated logic in f.akt.s.34.inc to check for manual works
+  - No longer requires auto work checkboxes if manual works present
+  
+- Fix export workflow: properly handle auto + manual works
+  - Export auto works if selected
+  - Update act status to ACCEPT
+  - Save user action and finalize object
+  
+- Remove unused middle_export button from f.akt.s.30.tpl
+  
+- Fix SMTP configuration: use localhost instead of direct IP
+  - Updated config/main.conf.php to use localhost relay
