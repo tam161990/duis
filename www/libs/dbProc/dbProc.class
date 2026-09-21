@@ -13081,40 +13081,15 @@ class dbProc extends dbLayer
 			$planDate = dbLayer::parseDate($planDate);
 		}
 		
-		// Calculate DRBI_ACT_QUART based on plan date and act life period
+		// Get current act life period (based on number of exports)
 		$actLifePeriod = self::getActLifePeriod($actId);
 		if ($actLifePeriod === false)
 		{
 			$actLifePeriod = 1; // Default to period 1 if can't determine
 		}
 		
-		// Get act creation date to calculate which quarter the plan_date falls into
-		$oSQL = new dbLayer;
-		$actQuery = 'SELECT `RAKT_DATUMS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
-		$actResult = $oSQL->makeQuery($actQuery);
-		
-		$actQuart = $actLifePeriod; // Default to current period
-		
-		if (is_array($actResult) && count($actResult) > 0 && !empty($actResult[0]['RAKT_DATUMS']))
-		{
-			$actDate = $actResult[0]['RAKT_DATUMS'];
-			
-			// Calculate period number for act creation date
-			$actPeriod = self::calculatePeriodNumber($actDate);
-			
-			// Calculate period number for plan date
-			$planPeriod = self::calculatePeriodNumber($planDate . ' 00:00:00');
-			
-			// Calculate which quarter the plan date falls into (relative to act creation)
-			$calculatedQuart = ($planPeriod - $actPeriod) + 1;
-			
-			// Use calculated quarter if it's within valid range (1 to actLifePeriod)
-			if ($calculatedQuart >= 1 && $calculatedQuart <= $actLifePeriod)
-			{
-				$actQuart = $calculatedQuart;
-			}
-			// Otherwise, use current act life period (already set as default)
-		}
+		// Work goes into current period (no date-based calculation)
+		$actQuart = $actLifePeriod;
 		
 		$query = 'INSERT INTO `DARBI` 
 				  (`DRBI_RAKT_ID`, `DRBI_KKAL_ID`, `DRBI_KKAL_SHIFRS`, 
@@ -13691,12 +13666,24 @@ class dbProc extends dbLayer
 	 * @param int $actId Act ID (RAKT_ID)
 	 * @return int|false Period number (1, 2, 3, etc.) or false on error
 	 */
+	/**
+	 * Get act life period based on number of exports (submissions)
+	 * Period is determined by counting how many times the act was submitted (STAT_ACCEPT)
+	 * 
+	 * Logic:
+	 * - If final act (RAKT_IR_OBJEKTS_PABEIGTS = 1) → period 3
+	 * - Otherwise: count STAT_ACCEPT entries in AKTA_STATUSA_MAINA + 1 (current period)
+	 * - Maximum: 3 periods
+	 * 
+	 * @param int $actId Act ID
+	 * @return int|false Period number (1-3) or false on error
+	 */
 	function getActLifePeriod($actId)
 	{
 		$oDB = new dbLayer();
 		
-		// Get act creation date
-		$query = 'SELECT `RAKT_DATUMS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
+		// Get act info including final status
+		$query = 'SELECT `RAKT_IR_OBJEKTS_PABEIGTS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 		$result = $oDB->makeQuery($query);
 		
 		if (!is_array($result) || count($result) == 0)
@@ -13704,23 +13691,35 @@ class dbProc extends dbLayer
 			return false;
 		}
 		
-		$actDate = $result[0]['RAKT_DATUMS'];
-		if (empty($actDate))
+		// If this is a final act, always return period 3
+		if (!empty($result[0]['RAKT_IR_OBJEKTS_PABEIGTS']))
 		{
-			return false;
+			return 3;
 		}
 		
-		// Get current date
-		$today = date('Y-m-d H:i:s');
+		// Count how many times the act was submitted (STAT_ACCEPT)
+		$query = 'SELECT COUNT(*) as export_count FROM `AKTA_STATUSA_MAINA`
+				  WHERE `AAUD_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `AAUD_STATUS` = "'.STAT_ACCEPT.'"';
 		
-		// Calculate period number for act creation date
-		$actPeriod = self::calculatePeriodNumber($actDate);
+		$result = $oDB->makeQuery($query);
 		
-		// Calculate period number for today
-		$todayPeriod = self::calculatePeriodNumber($today);
+		if (!is_array($result) || count($result) == 0)
+		{
+			// No exports yet, this is the first period
+			return 1;
+		}
 		
-		// Return difference + 1
-		return ($todayPeriod - $actPeriod) + 1;
+		$exportCount = intval($result[0]['export_count']);
+		
+		// Period = number of exports + 1 (current period)
+		// Example: 0 exports = period 1 (first submission)
+		//          1 export = period 2 (second submission)
+		//          2 exports = period 3 (final submission)
+		$period = $exportCount + 1;
+		
+		// Cap at 3 (maximum 3 periods)
+		return min($period, 3);
 	}
 	
 	/**
