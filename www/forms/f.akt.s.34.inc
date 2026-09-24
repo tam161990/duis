@@ -156,26 +156,17 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                   }
                   else
                   {
-                      // Pre-calculate act period values for DRBI_ACT_QUART
+                      // Get current act life period (based on number of exports)
                       $actLifePeriod = dbProc::getActLifePeriod($actId);
                       if ($actLifePeriod === false) {
                           $actLifePeriod = 1;
                       }
-                      $actDate = isset($act['RAKT_DATUMS']) ? $act['RAKT_DATUMS'] : false;
-                      $actPeriod = $actDate ? rbfCalculatePeriodNumber($actDate) : false;
 
                       // Re-insert all manual work records
                       foreach($aWorkFr as $i => $work)
                       {
+                          // All works go into current period (no date-based calculation)
                           $actQuart = $actLifePeriod;
-                          if ($actPeriod !== false && !empty($work['DRBI_PLAN_DATE'])) {
-                              $planDate = dbLayer::parseDate($work['DRBI_PLAN_DATE']);
-                              $planPeriod = rbfCalculatePeriodNumber($planDate . ' 00:00:00');
-                              $calculatedQuart = ($planPeriod - $actPeriod) + 1;
-                              if ($calculatedQuart >= 1 && $calculatedQuart <= $actLifePeriod) {
-                                  $actQuart = $calculatedQuart;
-                              }
-                          }
                           
                           $r = dbProc::writeActWork(
                               $actId,
