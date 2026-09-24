@@ -473,6 +473,14 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     // If auto works export succeeded (or there were no auto works to export), change act status
                     if ($validationPassed)
                     {
+                        // If there were only manual works (no auto works checked), set approve date for manual works
+                        if ((empty($checkedWorks) || count($checkedWorks) == 0) && $hasManualWorksToExport)
+                        {
+                            // Set approve date for manual works in current period
+                            $approveDate = date('Y-m-d H:i:s');
+                            dbProc::setApproveDate($actId, $approveDate, $actLifePeriod);
+                        }
+                        
                         // Update act status to ACCEPT
                         $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
                         

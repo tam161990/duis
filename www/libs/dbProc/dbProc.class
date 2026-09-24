@@ -13933,6 +13933,11 @@ class dbProc extends dbLayer
 								 AND `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 			$oDB->makeQuery($updateWorksQuery);
 			
+			// Set approve date for works in current period
+			// This sets DRBI_WORK_APROVE_DATE for all works in the current act quarter
+			$approveDate = date('Y-m-d H:i:s');
+			self::setApproveDate($actId, $approveDate, $actLifePeriod);
+			
 			// Update act status to ACCEPT using existing function
 			self::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
 			
