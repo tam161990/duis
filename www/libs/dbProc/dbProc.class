@@ -2742,6 +2742,16 @@ class dbProc extends dbLayer
 		if (isset($result[0]['NOSAUKUMS']))
 		{
 			return $result[0]['NOSAUKUMS'];
+		} else {
+				$query = 'select RBDU_NOSAUKUMS as `NOSAUKUMS`
+			from `kl_rbf_darbuznemeji`
+			where `RBDU_KODS` = "'.dbLayer::quote_smart($Code).'"';
+			
+			$result = $oSQL -> makeQuery($query);
+			if (isset($result[0]['NOSAUKUMS']))
+			{
+				return $result[0]['NOSAUKUMS'];
+			}
 		}
 		return false;
 	}
@@ -13071,6 +13081,8 @@ class dbProc extends dbLayer
 	// =============================================================================
 	function saveRbfActWorkRecord($actId, $calcId, $planDate = false)
 	{
+		$oSQL = new dbLayer();
+		
 		if($planDate === false)
 		{
 			$planDate = date('Y-m-d');
