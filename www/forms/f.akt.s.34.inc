@@ -464,14 +464,20 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     // If auto works export succeeded (or there were no auto works to export), change act status
                     if ($validationPassed)
                     {
-                        // Update act status to ACCEPT
+                        // Set status to ACCEPT for both middle and final export
                         $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
                         
-                        // Save user action
-                        dbProc::setUserActionDate($userId, ACT_EXPORT);
-                        
-                        // Finalize the object
-                        dbProc::closeObject($actId, 1);
+                        if (!$isFinalExport)
+                        {
+                            // Middle export: save user action as ACT_ESTIMATE
+                            dbProc::setUserActionDate($userId, ACT_ESTIMATE);
+                        }
+                        else
+                        {
+                            // Final export: save user action as ACT_EXPORT and finalize object
+                            dbProc::setUserActionDate($userId, ACT_EXPORT);
+                            dbProc::closeObject($actId, 1);
+                        }
                         
                         if ($r !== false)
                         {
