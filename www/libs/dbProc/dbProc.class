@@ -13949,19 +13949,8 @@ class dbProc extends dbLayer
 			$approveDate = date('Y-m-d H:i:s');
 			self::setApproveDate($actId, $approveDate, $actLifePeriod);
 			
-			// Update act status to ACCEPT using existing function
-			self::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
-			
-			// For final export, also set RAKT_IR_OBJEKTS_PABEIGTS = 1
-			if ($isFinalExport)
-			{
-				self::closeObject($actId, 1);
-			}
-			
-			// Log user action using existing function
-			// ACT_EXPORT for final export, ACT_ESTIMATE for middle export
-			$actionType = $isFinalExport ? ACT_EXPORT : ACT_ESTIMATE;
-			self::setUserActionDate($userId, $actionType);
+			// Note: Act status update, closeObject, and setUserActionDate are handled by the calling form
+			// to avoid duplicate status records and ensure proper transaction flow
 			
 			return array(
 				'success' => true,
