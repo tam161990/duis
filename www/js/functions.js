@@ -827,6 +827,11 @@ function setKlsValue(name,value)
 
 function isSetFormField(formname,name)
 {
+	// Check if form exists first
+	if (!formname || typeof document.forms[formname] == "undefined")
+	{
+		return false;
+	}
 	if (typeof document.forms[formname][name] == "undefined")
 	{
 		return false;
