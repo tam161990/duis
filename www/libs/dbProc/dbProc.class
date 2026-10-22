@@ -1285,7 +1285,7 @@ class dbProc extends dbLayer
 	// Atgriezh kolonnas nosaukumu peec nokluseejuma atbilstosha katalogaa
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getKlklDefaultColumn($cCatalogName)
+	static function getKlklDefaultColumn($cCatalogName)
 	{
 		$query = 'select KLKL_COLUMN kolonna from `KL_REF_KOLONNAS`
         WHERE KLKL_CATALOG="'.$cCatalogName.'" and KLKL_IS_DEFAULT = 1';
