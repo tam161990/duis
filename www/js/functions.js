@@ -742,16 +742,7 @@ function moveCursorInForm(formname, name, isMove)
 {
 	if (isMove)
 	{
-		// If no form name, use direct field access
-		if (!formname || formname === '')
-		{
-			if (isSet(name) && document.all[name].offsetWidth > 0)
-			{
-				document.all[name].focus();
-				return false;
-			}
-		}
-		else if (isShowFormField(formname,name))
+		if (isShowFormField(formname,name))
 		{
 			document.forms[formname][name].focus();
 			return false;
@@ -788,12 +779,6 @@ function isEmptyField(name)
 
 function isEmptyFormField(formname,name)
 {
-	// If no form name, use direct field access
-	if (!formname || formname === '')
-	{
-		return isEmptyField(name);
-	}
-	
 	if (isSetFormField(formname,name))
 	{
 		switch (document.forms[formname][name].type)
@@ -842,16 +827,6 @@ function setKlsValue(name,value)
 
 function isSetFormField(formname,name)
 {
-	// Check if form exists first
-	if (!formname || formname === '')
-	{
-		// If no form name, check field directly
-		return isSet(name);
-	}
-	if (typeof document.forms[formname] == "undefined")
-	{
-		return false;
-	}
 	if (typeof document.forms[formname][name] == "undefined")
 	{
 		return false;

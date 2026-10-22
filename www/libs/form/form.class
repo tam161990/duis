@@ -1061,15 +1061,8 @@ class form
 	{
 
 		$aReturn=array();
-		// Build form attributes, skip empty name/method
-		$formName = trim($this->aForm['name']);
-		$formMethod = trim($this->aForm['method']);
-		if (empty($formMethod)) $formMethod = 'post'; // Default to POST
-		
-		$nameAttr = !empty($formName) ? ' name="'.$formName.'"' : '';
-		
-		$aReturn['attributes']=' encType="multipart/form-data" onsubmit="return '.jsValidation::getValidationFunctionName($formName).'();" action="'.$this->aForm['action'].'"'.$nameAttr.' method="'.$formMethod.'" '.$this->aForm['attributes'].' ';
-		$aReturn['javascript']=jsValidation::getStartHtml($formName).$this->getJavaScript($this->aRules).jsValidation::getFinishHtml($formName,$this->jsDisableFields($this->aParam)).$this->getFormClearJavascript();
+		$aReturn['attributes']=' encType="multipart/form-data" onsubmit="return '.jsValidation::getValidationFunctionName($this->aForm['name']).'();" action="'.$this->aForm['action'].'" name="'.$this->aForm['name'].'" method="'.$this->aForm['method'].'" '.$this->aForm['attributes'].' ';
+		$aReturn['javascript']=jsValidation::getStartHtml($this->aForm['name']).$this->getJavaScript($this->aRules).jsValidation::getFinishHtml($this->aForm['name'],$this->jsDisableFields($this->aParam)).$this->getFormClearJavascript();
 		$aElements=$this->getVariablesArray($this->aParam);;
 		$aReturn['elements']=$this->getNotHiddenVariables($aElements);
 		$aReturn['hidden']=$this->getHiddenVariables($aElements);

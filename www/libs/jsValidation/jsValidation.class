@@ -46,15 +46,15 @@ class jsValidation
 				{
 					foreach ($fieldName as $name)
 					{
-					?>
-					if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$name'":"'$formName','$name'";?>)) {return true;}
-					<?
+						?>
+						if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>('<?=$formName;?>','<?=$name;?>')) {return true;}
+						<?
 					}
 				}
 				else
 				{
 					?>
-					if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>)) {return true;}
+					if (!<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>('<?=$formName;?>','<?=$fieldName;?>')) {return true;}
 					<?
 				}
 				break;
@@ -115,7 +115,7 @@ class jsValidation
 		{
 			case 'required':
 				?>                                      
-				if ( (!errFlag['<?=$fieldName;?>']) && ( <?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) ) )
+				if ( (!errFlag['<?=$fieldName;?>']) && ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
 				{
 					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
@@ -126,7 +126,7 @@ class jsValidation
 				break;
 			case 'requiredext':
 				?>                                      
-				if ( ( <?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) ) )
+				if ( ( isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) )
 				{
 					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
@@ -138,7 +138,7 @@ class jsValidation
 
 			case 'validatedate':					
 				?>
-				if ( (!errFlag['<?=$fieldName;?>']) && ( !<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) ) && (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') ) && (!isDate(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
 					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
@@ -149,7 +149,7 @@ class jsValidation
 				break;
 			case 'numeric':
 			        ?>
-				if ( (!errFlag['<?=$fieldName;?>']) && ( !<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) )  && ((!isNumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && ((!isNumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) || (document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value < 0) ) ))
 				{
 					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
@@ -160,7 +160,7 @@ class jsValidation
 				break;
             case 'alphanumeric':
 			        ?>
-				if ( (!errFlag['<?=$fieldName;?>']) && ( !<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) )  && (!isAlphanumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
+				if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && (!isAlphanumeric(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value) ) )
 				{
 					showError( '<?=$fieldName;?>', "<?=$message;?>", '<?=$formName;?>' );
 					isMoveCursor=moveCursorInForm('<?=$formName;?>','<?=$fieldName;?>',isMoveCursor);
@@ -171,7 +171,7 @@ class jsValidation
 				break;
 			case 'toid':
 			?>
-			if ( (!errFlag['<?=$fieldName;?>']) && ( !<?=empty($formName)?'isEmptyField':'isEmptyFormField';?>(<?=empty($formName)?"'$fieldName'":"'$formName','$fieldName'";?>) )  && 
+			if ( (!errFlag['<?=$fieldName;?>']) && ( !isEmptyFormField('<?=$formName;?>','<?=$fieldName;?>') )  && 
 				(!isToIdn(document.forms['<?=$formName;?>']['<?=$fieldName;?>'].value, 
 						'<?=ACT_TYPE_STIHIJA_ID;?>', 
 						'<?=ACT_TYPE_STIHIJA_TR_ID;?>',
