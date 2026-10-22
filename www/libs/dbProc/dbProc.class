@@ -11270,7 +11270,7 @@ class dbProc extends dbLayer
     // Saglabaa notikuma info
     // Author: Tatjana Fedorkova
     // -----------------------------------------------------------------------------
-    function saveEvent($type, $form, $op, $isEpla = 0, $user, $request, $section = false, $description = false)
+    static function saveEvent($type, $form, $op, $isEpla = 0, $user, $request, $section = false, $description = false)
     {
 
         $query = 'insert into `event_log`
@@ -11306,7 +11306,7 @@ class dbProc extends dbLayer
 	// Pārbaude, vai eksistē modulis pēc file_id
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-    function isModuleExist($file_id)
+    static function isModuleExist($file_id)
 	{
 		$oSQL=new dbLayer();
         $sql = 'select * from `event_modules` where `EVMD_FORM_ID` = "'.dbLayer::quote_smart($file_id).'"';

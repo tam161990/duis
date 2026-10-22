@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * PHPExcel
@@ -5905,7 +5905,7 @@ class PHPExcel_Calculation_Functions {
 		}
 
 		//	Split the input into its Real and Imaginary components
-		$leadingSign = (($workString{0} == '+') || ($workString{0} == '-')) ? 1 : 0;
+		$leadingSign = (($workString[0] == '+') || ($workString[0] == '-')) ? 1 : 0;
 		$power = '';
 		$realNumber = strtok($workString, '+-');
 		if (strtoupper(substr($realNumber,-1)) == 'E') {

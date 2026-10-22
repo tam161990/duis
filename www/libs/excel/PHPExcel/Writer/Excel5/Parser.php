@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
 *  Class for parsing Excel formulas
 *
@@ -1004,7 +1004,7 @@ class PHPExcel_Writer_Excel5_Parser
         $col    = 0;
         $col_ref_length = strlen($col_ref);
         for ($i = 0; $i < $col_ref_length; ++$i) {
-            $col += (ord($col_ref{$i}) - ord('A') + 1) * pow(26, $expn);
+            $col += (ord($col_ref[$i]) - ord('A') + 1) * pow(26, $expn);
             --$expn;
         }
 
@@ -1202,7 +1202,7 @@ class PHPExcel_Writer_Excel5_Parser
     {
         $this->_current_char = 0;
         $this->_formula      = $formula;
-        $this->_lookahead    = $formula{1};
+        $this->_lookahead    = $formula[1];
         $this->_advance();
         $this->_parse_tree   = $this->_condition();
         return true;
