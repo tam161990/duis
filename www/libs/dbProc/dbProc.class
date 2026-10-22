@@ -1197,7 +1197,7 @@ class dbProc extends dbLayer
 // =============================================================================
 // FMK_MESSAGES
 // =============================================================================
-	function getFMKText($code=false)
+	static function getFMKText($code=false)
 	{
 		$oSQL=new dbLayer();
 		$sql = 'select * from `FMK_MESSAGES`';

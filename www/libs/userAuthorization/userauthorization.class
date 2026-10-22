@@ -134,7 +134,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// return user id
 	// -----------------------------------------------------------------------------
-	function getUserId()
+	static function getUserId()
 	{
 		return session::get('userId');
 	}
@@ -174,7 +174,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// authorization status
 	// -----------------------------------------------------------------------------
-	function isLogin()
+	static function isLogin()
 	{
 		return session::get('isLogin');
 	}

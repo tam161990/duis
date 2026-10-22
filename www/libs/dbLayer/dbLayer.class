@@ -84,21 +84,27 @@ class dbLayer
 	}
 
 
-	function quote_smart($value)
+	static function quote_smart($value)
 	{
 		if ($value==='')
 		{
 			return 'NULL';
 		}
-		// Stripslashes
-		if (get_magic_quotes_gpc()) 
-		{
-			$value = stripslashes($value);
-		}
+		// Stripslashes - magic_quotes_gpc removed in PHP 8.0, always false
+		// if (get_magic_quotes_gpc()) 
+		// {
+		// 	$value = stripslashes($value);
+		// }
 		// Quote if not integer
 		if (is_string($value)) 
 		{
-			$value = mysqli_real_escape_string($GLOBALS['sql_connect'], $value);
+			// PHP 8: Ensure connection exists
+			if (!isset($GLOBALS['sql_connect']) || !$GLOBALS['sql_connect']) {
+				$tempDb = new dbLayer();
+				$value = mysqli_real_escape_string($tempDb->sql_connect, $value);
+			} else {
+				$value = mysqli_real_escape_string($GLOBALS['sql_connect'], $value);
+			}
 		}
 		return $value;
 	}

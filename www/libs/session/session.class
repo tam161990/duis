@@ -11,7 +11,7 @@ class session
 	// return session variable value
 	// public
 	// -----------------------------------------------------------------------------
-	function get($name)
+	static function get($name)
 	{
 		if (isset($_SESSION[$name]))
 		{
@@ -25,7 +25,7 @@ class session
 	// set session variable value
 	// public
 	// -----------------------------------------------------------------------------
-	function set($name,$value)
+	static function set($name,$value)
 	{
 		$_SESSION[$name]=$value;
 	}
@@ -34,7 +34,7 @@ class session
 	// erase session variable 
 	// public
 	// -----------------------------------------------------------------------------
-	function del($name)
+	static function del($name)
 	{
 		if (isset($_SESSION[$name]))
 		{
@@ -48,7 +48,7 @@ class session
 	// start sessions
 	// public
 	// -----------------------------------------------------------------------------
-	function start()
+	static function start()
 	{
 		session_cache_limiter('none');
        	session_name(SESSION_NAME);
@@ -70,13 +70,13 @@ class session
 	// destroy session
 	// public
 	// -----------------------------------------------------------------------------
-	function destroy()
+	static function destroy()
 	{
 		$_SESSION = array();
 		session_destroy();
 	}
 
-	function isNew()
+	static function isNew()
 	{
 		return session::get(SESSION_PRFX.'is_new');
 	}
@@ -85,7 +85,7 @@ class session
 	// Set a flash message (will be available only for the next request)
 	// public
 	// -----------------------------------------------------------------------------
-	function setFlash($name, $value)
+	static function setFlash($name, $value)
 	{
 		if (!isset($_SESSION[SESSION_PRFX.'flash']))
 		{
@@ -98,7 +98,7 @@ class session
 	// Get and remove a flash message
 	// public
 	// -----------------------------------------------------------------------------
-	function getFlash($name)
+	static function getFlash($name)
 	{
 		if (isset($_SESSION[SESSION_PRFX.'flash'][$name]))
 		{
@@ -113,7 +113,7 @@ class session
 	// Check if a flash message exists
 	// public
 	// -----------------------------------------------------------------------------
-	function hasFlash($name)
+	static function hasFlash($name)
 	{
 		return isset($_SESSION[SESSION_PRFX.'flash'][$name]);
 	}

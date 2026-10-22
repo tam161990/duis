@@ -31,7 +31,7 @@ class text
 	// save to global array TEXT LABEL from DB
 	// public / private
 	// -----------------------------------------------------------------------------
-	function getDataFromMySQL()
+	static function getDataFromMySQL()
 	{
 		$res=dbProc::getFMKText();	
 		if (is_array($res))

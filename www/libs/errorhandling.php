@@ -2,7 +2,7 @@
 set_error_handler("errorHandler");
 register_shutdown_function("shutdownHandler");
 
-function errorHandler($error_level, $error_message, $error_file, $error_line, $error_context)
+function errorHandler($error_level, $error_message, $error_file, $error_line, $error_context = null)
 {
     $error = "lvl: " . $error_level . " | msg:" . $error_message . " | file:" . $error_file . " | ln:" . $error_line;
     switch ($error_level) {

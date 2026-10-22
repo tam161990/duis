@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 
 class RequestHandler
@@ -18,7 +18,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// add a javascript window open code to a href string
 	// -----------------------------------------------------------------------------
-	function popupHref($cHref,$cHrefParser=false,$cWidth=500,$cHeight=400,$nForLink=true,$nOrigWin=false,$nResizable=false)
+	static function popupHref($cHref,$cHrefParser=false,$cWidth=500,$cHeight=400,$nForLink=true,$nOrigWin=false,$nResizable=false)
 	{
 		return	($nForLink?"javascript:":'').($nOrigWin?"openOriginalWin":"openWin")."("
 		.(strlen($cHrefParser)?$cHrefParser."('".$cHref."')":"'".$cHref."'")
@@ -29,7 +29,7 @@ class RequestHandler
     // -----------------------------------------------------------------------------
 	// die with opener window reload javascript (for popups to return to main window)
 	// -----------------------------------------------------------------------------
-	function makeParentReload()
+	static function makeParentReload()
 	{
 		die('<script>window.opener.location.reload();</script>');
 	}
@@ -37,7 +37,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// die with opener window perlace javascript (for popups to return to main window)
 	// -----------------------------------------------------------------------------
-	function makeParentReplace( $url )
+	static function makeParentReplace( $url )
 	{
 		// window.close();
         die('<script>window.opener.location.replace( "'.$url.'" );window.close();</script>');
@@ -47,7 +47,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// die with opener window perlace javascript (for popups to return to main window)
 	// -----------------------------------------------------------------------------
-	function makeParentReplaceWithoutClosure( $url )
+	static function makeParentReplaceWithoutClosure( $url )
 	{
 		echo ('<script>window.opener.location.replace( "'.$url.'" );</script>');
 
@@ -58,7 +58,7 @@ class RequestHandler
 	// show error message and die
 	// if this is xmlHTTP query - return null
 	// -----------------------------------------------------------------------------
-	function showErrorAndDie( $errorMessage , $isHtmlError=false )
+	static function showErrorAndDie( $errorMessage , $isHtmlError=false )
 	{
 		include_once(RequestHandler::getFormPath('fmk_header'));
 		include(RequestHandler::getFormPath('fmk_critical_error'));
@@ -72,7 +72,7 @@ class RequestHandler
 	// show error message and die
 	// if this is xmlHTTP query - return null
 	// -----------------------------------------------------------------------------
-	function showCriticalErrorAndDie( $errorMessage , $debugInfo = false)
+	static function showCriticalErrorAndDie( $errorMessage , $debugInfo = false)
 	{
 		include_once(RequestHandler::getFormPath('fmk_header'));
 		include(RequestHandler::getFormPath('fmk_critical_error'));
@@ -97,7 +97,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return new validate password (random)
 	// -----------------------------------------------------------------------------
-	function getNewPassword($length=6)
+	static function getNewPassword($length=6)
 	{
 		$r='';
 		$aValidateSimbols[0]='0123456789';
@@ -116,7 +116,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return encrypt key
 	// -----------------------------------------------------------------------------
-	function getEncryptKey()
+	static function getEncryptKey()
 	{
         if (!isset($_SESSION[ENCRYPT_KEY]))
         {
@@ -128,7 +128,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return encrypt string
 	// -----------------------------------------------------------------------------
-	function encryptString($string)
+	static function encryptString($string)
 	{
 		$key=RequestHandler::getEncryptKey();
 		if ($key!==false)
@@ -150,7 +150,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return descrypt string
 	// -----------------------------------------------------------------------------
-	function decryptString($string)
+	static function decryptString($string)
 	{
 		$key=RequestHandler::getEncryptKey();
 		if ($key!==false)
@@ -173,7 +173,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// make redirect
 	// -----------------------------------------------------------------------------
-	function makeRedirect($url)
+	static function makeRedirect($url)
 	{	
 		RequestHandler::save_event_log();
 		header('Location: '.$url);
@@ -183,7 +183,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// function truncate $string to the max of $amount chars
 	// -----------------------------------------------------------------------------
-	function truncateText($string, $amount = MAX_SHOW_TEXT_LENGTH)
+	static function truncateText($string, $amount = MAX_SHOW_TEXT_LENGTH)
 	{
 		$str = trim($string);
 		$firstSpace = strpos($str, ' ');
@@ -221,7 +221,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return from cookie last access login name
 	// -----------------------------------------------------------------------------
-	function getLastAccessLogin()
+	static function getLastAccessLogin()
 	{
 		if (isset($_COOKIE[COOKIE_LOGIN]))
 		{
@@ -236,7 +236,7 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// return path on server for this form
 	// -----------------------------------------------------------------------------
-	function getFormPath($formId)
+	static function getFormPath($formId)
 	{
 		if (file_exists(ZR_FORMS_DIR.'/'.$formId.'.inc'))
 		{
@@ -249,7 +249,7 @@ class RequestHandler
 		}
 	}
 
-	function save_event_log($type = false, $description = false) {
+	static function save_event_log($type = false, $description = false) {
 		//echo $url22;
 		$url = $_SERVER['REQUEST_URI'];
 		foreach (getallheaders() as $name => $value) {
@@ -457,16 +457,16 @@ class RequestHandler
 
 	{
 			issue_key: "REM-XXXX"
-			issue_status: "Kāds no statusiem"
+			issue_status: "KÄds no statusiem"
 	}
 
-	Status saraskts (Ja protams tie nav tūlkojumi kautkādiem statusu key, ja ir tad būtu labi iedot sarakstu, kas kuram atbilst - PROCES etc):
-	Reģistrēts
+	Status saraskts (Ja protams tie nav tÅ«lkojumi kautkÄdiem statusu key, ja ir tad bÅ«tu labi iedot sarakstu, kas kuram atbilst - PROCES etc):
+	ReÄ£istrÄ“ts
 	Ievads
-	Saskaņošana
+	SaskaÅ†oÅ¡ana
 	Atgriezts
-	Slēgts
-	Norakstīts
+	SlÄ“gts
+	NorakstÄ«ts
 
 	Response - success (200):
 	{
@@ -480,8 +480,8 @@ class RequestHandler
 			details: "error string"
 	}
 	*/
-	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-	function sentDataToKvikStep ($mms_kods, $trase, $workTotal, $materialTotal,
+	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
+	static function sentDataToKvikStep ($mms_kods, $trase, $workTotal, $materialTotal,
 									$m3 = false, $ha = false, $km = false, $gab = false ) 
 	{
 		
@@ -547,8 +547,8 @@ class RequestHandler
 		
 	}
 
-	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-	function sentExcelToKvikStep ($mms_kods, $fileId) 
+	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
+	static function sentExcelToKvikStep ($mms_kods, $fileId) 
 	{
 			
 		// get file link
@@ -596,8 +596,8 @@ class RequestHandler
 		}		
 	}
 
-	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-	function getLimitkarteReport ($reportName, $code, $pageNumber, $recordsPerPage) 
+	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
+	static function getLimitkarteReport ($reportName, $code, $pageNumber, $recordsPerPage) 
 	{			
 		// The data to send to the API		
 		files::wh_log('getLimitkarteReport report:'.$reportName.PHP_EOL.
@@ -643,8 +643,8 @@ class RequestHandler
 
 	}
 
-	// funkcija sūta materiāla pieprasījumu uz Oracle caus SOA servisu
-	function sentMaterialRequest ($postData, $idFile) 
+	// funkcija sÅ«ta materiÄla pieprasÄ«jumu uz Oracle caus SOA servisu
+	static function sentMaterialRequest ($postData, $idFile) 
 	{		
 		// The data to send to the API		
 		files::wh_log('sentMaterialRequest:'.json_encode($postData).PHP_EOL.
@@ -695,8 +695,8 @@ class RequestHandler
 		}			
 	}
 
-	// funkcija sūta API pieprasījumu, lai dabūt projekta numuru
-	function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
+	// funkcija sÅ«ta API pieprasÄ«jumu, lai dabÅ«t projekta numuru
+	static function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
 	{	
 		sleep(10);
 		// The data to send to the API		
@@ -749,9 +749,9 @@ class RequestHandler
 	}
 
 	// -----------------------------------------------------------------------------
-	// funkcija pārbauda palaistus procesus, un, gadijumā, jka process apstajas, palaiž viņu
+	// funkcija pÄrbauda palaistus procesus, un, gadijumÄ, jka process apstajas, palaiÅ¾ viÅ†u
 	// -----------------------------------------------------------------------------
-	function checkProcess()
+	static function checkProcess()
 	{
 		$res = dbProc::getJobList(0);
 
@@ -766,16 +766,16 @@ class RequestHandler
 				{
 					$proc = new Process();
 					$proc->setPid($job['PROC_PID']); 
-					$proc_status = $proc->status(); // возвращает true или false
-					// ja prosecc apstajas, dzēšam info
+					$proc_status = $proc->status(); // Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ true Ð¸Ð»Ð¸ false
+					// ja prosecc apstajas, dzÄ“Å¡am info
 					if(!$proc_status) {
 						$r=dbProc::saveJob( $job['PROC_KODS'],false,0 );
 
-						// tad laižam procesu no jaunas
+						// tad laiÅ¾am procesu no jaunas
 						$command = $job['PROC_KOMANDA'];
 						$process = new Process($command);
 						$processId = $process->getPid();
-						$status = $process->status(); // возвращает true или false
+						$status = $process->status(); // Ð²Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ true Ð¸Ð»Ð¸ false
 						if($status) {
 							$r=dbProc::saveJob( $job['PROC_KODS'], $processId, 1);
 						}
@@ -786,8 +786,8 @@ class RequestHandler
 		}				
 	}
 
-	// funkcija sūta akta ststusu uz KvikStep caus SOA servisu
-	function getPPAReport ($code, $pageNumber, $recordsPerPage) 
+	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
+	static function getPPAReport ($code, $pageNumber, $recordsPerPage) 
 	{			
 		// The data to send to the API		
 		files::wh_log('getPPAReport report:'.PHP_EOL.
