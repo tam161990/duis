@@ -323,10 +323,10 @@ class RequestHandler
 		// -----------------------------------------------------------------------------
 		if (!userAuthorization::isLogin())
 		{
-            if ( reqVar::get('login')!==false && reqVar::get('password')!==false )
+            if ( reqVar::get('login')!==false && reqVar::get('passw')!==false )
 			{
 
-                if (userAuthorization::login(reqVar::get('login'),reqVar::get('password')))
+                if (userAuthorization::login(reqVar::get('login'),reqVar::get('passw')))
 				{
 					setcookie(COOKIE_LOGIN,reqVar::get('login'),time()+60*60*24*30);
 					RequestHandler::checkProcess();
@@ -338,7 +338,7 @@ class RequestHandler
 			}
             else
             {
-              if ($_SERVER["REMOTE_ADDR"] == "10.0.17.3" && (isset($_REQUEST[COOKIE_LOGIN]) || (reqVar::get('login')!==false && reqVar::get('password')!==false)))
+              if ($_SERVER["REMOTE_ADDR"] == "10.0.17.3" && (isset($_REQUEST[COOKIE_LOGIN]) || (reqVar::get('login')!==false && reqVar::get('passw')!==false)))
               {
                 if (userAuthorization::loginAuto(reqVar::get('login'), ''))
 				{
