@@ -131,7 +131,8 @@ class dbLayer
 		if ($res)
 		{
 			$r=array();
-			if (@mysqli_num_rows($res))
+			// PHP 8: Check if result is a result set (SELECT) or boolean (INSERT/UPDATE/DELETE)
+			if ($res instanceof mysqli_result && @mysqli_num_rows($res))
 			{
 				while($row=mysqli_fetch_array($res,MYSQLI_ASSOC))
 				{

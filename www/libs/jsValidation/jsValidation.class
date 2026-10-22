@@ -1,16 +1,16 @@
-<?
+﻿<?
 
 
 class jsValidation
 {
 	
 	
-	function getValidationFunctionName($formName)
+	static function getValidationFunctionName($formName)
 	{
 		return $formName.'ValidationScript';
 	}
 
-	function getStartHtml($formName)
+	static function getStartHtml($formName)
 	{
 		ob_start();
 		?>
@@ -31,7 +31,7 @@ class jsValidation
 	}
 
 
-	function getValidationHtml($formName='',$name,$type,$fieldName,$other='')
+	static function getValidationHtml($formName='',$name,$type,$fieldName,$other='')
 	{
 		ob_start();
 		?>
@@ -106,7 +106,7 @@ class jsValidation
 		return $output;
 	}
 
-	function getRuleHtml($formName,$type,$fieldName,$fieldType,$message,$other)
+	static function getRuleHtml($formName,$type,$fieldName,$fieldType,$message,$other)
 	{
 		
 		ob_start();
@@ -565,7 +565,7 @@ class jsValidation
 	}
 
 
-	function getFinishHtml($formName,$jsCode='')
+	static function getFinishHtml($formName,$jsCode='')
 	{
 		ob_start();
 		if (!empty($jsCode))

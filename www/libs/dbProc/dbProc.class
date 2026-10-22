@@ -9173,7 +9173,7 @@ class dbProc extends dbLayer
 	// atgriezh sist�mas inform�ciju
 	// author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getSystemInfo()
+	static function getSystemInfo()
 	{
 		$oSQL=new dbLayer();
 		$sql = 'select * from `SYSTEM_INFO` where `SNFO_ID` = 1';

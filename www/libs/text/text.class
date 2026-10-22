@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 class text
 {
@@ -6,7 +6,7 @@ class text
 	// return TEXT LABEL by CODE
 	// public
 	// -----------------------------------------------------------------------------
-	function get($code)
+	static function get($code)
 	{
 		if (!isset($GLOBALS['fmk_text']))
 		{
@@ -19,7 +19,7 @@ class text
 	// return TEXT LABEL by CODE
 	// public
 	// -----------------------------------------------------------------------------
-	function getAndReplace($code, $replacement)
+	static function getAndReplace($code, $replacement)
 	{
 		if (!isset($GLOBALS['fmk_text']))
 		{
@@ -48,7 +48,7 @@ class text
 	// return TEXT LABEL by CODE from Array
 	// private
 	// -----------------------------------------------------------------------------
-	function getFromArray($code)
+	static function getFromArray($code)
 	{
 		return (isset($GLOBALS['fmk_text'][$code])?$GLOBALS['fmk_text'][$code]:false);
 	}
@@ -57,7 +57,7 @@ class text
 	// return text in upper case
 	// public
 	// -----------------------------------------------------------------------------
-	function toUpper($s)
+	static function toUpper($s)
 	{
 		return text::latvianUtf8Uppercase($s);
 	}
@@ -66,7 +66,7 @@ class text
 	// return latvian text in upper case (utf8)
 	// private
 	// -----------------------------------------------------------------------------
-	function latvianUtf8Uppercase($string)
+	static function latvianUtf8Uppercase($string)
 	{
 		$tran = Array(
 			chr(196).chr(129) => chr(196).chr(128), 
@@ -90,7 +90,7 @@ class text
 	// return latin text without latvian letters
 	// private
 	// -----------------------------------------------------------------------------
-	function latvianToLatin($string)
+	static function latvianToLatin($string)
 	{
 		
 		$tran = Array(
@@ -130,9 +130,9 @@ class text
 	// check that sting contains only letters and simbol "_"
 	// public
 	// -----------------------------------------------------------------------------
-	function cleanText($s)
+	static function cleanText($s)
 	{
-		return preg_match("/^(�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|�|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
+		return preg_match("/^(ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
 	}
 
     function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false, &$linescnt=false)
