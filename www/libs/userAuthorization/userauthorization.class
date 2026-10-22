@@ -1,4 +1,4 @@
-<?
+﻿<?
  
 class userAuthorization 
 {
@@ -6,7 +6,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// login
 	// -----------------------------------------------------------------------------
-	function login($login,$password)
+	static function login($login,$password)
 	{
 	        if (!empty($login) && !empty($password))
 	        {
@@ -142,7 +142,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// return user login
 	// -----------------------------------------------------------------------------
-	function getUserLogin()
+	static function getUserLogin()
 	{
 		return session::get('login');
 	}
@@ -150,7 +150,7 @@ class userAuthorization
     // -----------------------------------------------------------------------------
 	// return worker code
 	// -----------------------------------------------------------------------------
-	function getWorker()
+	static function getWorker()
 	{
 		return session::get('workerCode');
 	}
@@ -158,7 +158,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// is admin user?
 	// -----------------------------------------------------------------------------
-	function isAdmin()
+	static function isAdmin()
 	{
 		return session::get('isAdmin');
 	}
@@ -166,7 +166,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// is super admin user?
 	// -----------------------------------------------------------------------------
-	function isSuperAdmin()
+	static function isSuperAdmin()
 	{
 		return session::get('isSuperAdmin');
 	}
@@ -182,7 +182,7 @@ class userAuthorization
     // -----------------------------------------------------------------------------
 	// authorization status
 	// -----------------------------------------------------------------------------
-	function isTrase()
+	static function isTrase()
 	{
 		return session::get('isTrase');
 	}
@@ -190,23 +190,23 @@ class userAuthorization
     // -----------------------------------------------------------------------------
 	// authorization status
 	// -----------------------------------------------------------------------------
-	function isContract()
+	static function isContract()
 	{
 		return session::get('isContract');
 	}
 
 	// -----------------------------------------------------------------------------
-	// piekļuve sadaļai LIMITKARTE
+	// piekÄ¼uve sadaÄ¼ai LIMITKARTE
 	// -----------------------------------------------------------------------------
-	function isLimitcard()
+	static function isLimitcard()
 	{
 		return session::get('isLimitcard');
 	}
 
 	// -----------------------------------------------------------------------------
-	// piekļuve sadaļai PPA
+	// piekÄ¼uve sadaÄ¼ai PPA
 	// -----------------------------------------------------------------------------
-	function isPpaReport()
+	static function isPpaReport()
 	{
 		return session::get('isPpaReport');
 	}
@@ -214,7 +214,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// isRbfUser
 	// -----------------------------------------------------------------------------
-	function isRbfUser()
+	static function isRbfUser()
 	{
 		return session::get('isRbfUser');
 	}
@@ -222,7 +222,7 @@ class userAuthorization
 	// -----------------------------------------------------------------------------
 	// logout
 	// -----------------------------------------------------------------------------
-	function logout()
+	static function logout()
 	{
 		session::destroy();
 	}
