@@ -10723,7 +10723,7 @@ class dbProc extends dbLayer
         // Ja doti, njem veeraa nobiidi un daudzumu.
         // Author: Tatjana Fedorkova
         // -----------------------------------------------------------------------------
-        function getJobList($ID = false, $offset = false, $limit = false,
+        static function getJobList($ID = false, $offset = false, $limit = false,
                                         $search =  false,
                                         $column = false,
                                         $order =  'ASC',
