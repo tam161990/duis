@@ -105,7 +105,7 @@ class RequestHandler
 		$aValidateSimbols[2]='QWERTYUIOPASDFGHJKLZXCVBNM';
 		for ($i=0; $i < $length; $i++)
 		{
-			$c=$aValidateSimbols[$i%3] {mt_rand(0, strlen( $aValidateSimbols[$i%3] )-1 ) };
+			$c=$aValidateSimbols[$i%3][mt_rand(0, strlen( $aValidateSimbols[$i%3] )-1 )];
 			$rand=mt_rand(0,strlen($r)-1);
 			$r=substr($r,0,$rand).$c.substr($r,$rand);
 		}
