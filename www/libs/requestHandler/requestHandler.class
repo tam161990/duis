@@ -175,6 +175,8 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	static function makeRedirect($url)
 	{	
+		// Ensure session is written before redirect
+		session_write_close();
 		RequestHandler::save_event_log();
 		header('Location: '.$url);
 		exit;
