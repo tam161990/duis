@@ -98,12 +98,12 @@ class dbLayer
 		// Quote if not integer
 		if (is_string($value)) 
 		{
-			// PHP 8: Ensure connection exists
-			if (!isset($GLOBALS['sql_connect']) || !$GLOBALS['sql_connect']) {
-				$tempDb = new dbLayer();
-				$value = mysqli_real_escape_string($tempDb->sql_connect, $value);
-			} else {
+			// PHP 8: Ensure connection exists before using mysqli_real_escape_string
+			if (isset($GLOBALS['sql_connect']) && $GLOBALS['sql_connect'] instanceof mysqli) {
 				$value = mysqli_real_escape_string($GLOBALS['sql_connect'], $value);
+			} else {
+				// Fallback if no DB connection yet (e.g., during error handling)
+				$value = addslashes($value);
 			}
 		}
 		return $value;

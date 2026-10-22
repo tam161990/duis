@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 
 define('URL_QUERY_CRYPT_CRC_SLASH','|');
@@ -13,37 +13,37 @@ class urlQuery
 {
 	var $param;
 
-	function urlQuery ()
+	static function urlQuery ()
 	{
 		$this->param=array();
 	}
 
 	// addPrm - add parametrs
 	// public
-	function addPrm($paramName,$paramValue)
+	static function addPrm($paramName,$paramValue)
 	{
 		if (!is_array($this->param)) $this->param=array();
 		$this->param[$paramName]=array( 'name' => $paramName, 'value' => $paramValue);
 	}
 
 	// public
-	function addPrmByRef($paramName,&$paramValue)
+	static function addPrmByRef($paramName,&$paramValue)
 	{
 		if (!is_array($this->param)) $this->param=array();
 		$this->param[$paramName]=array( 'name' => $paramName, 'value' => &$paramValue);
 	}
 
-	function delPrm($paramName)
+	static function delPrm($paramName)
 	{
 		if (isset($this->param[$paramName])) unset($this->param[$paramName]);
 	}
 
-	function delAllPrm()
+	static function delAllPrm()
 	{
 		$this->param=array();
 	}
 
-	function getQuery($isEncrypt=URL_QUERY_IS_CRYPT)
+	static function getQuery($isEncrypt=URL_QUERY_IS_CRYPT)
 	{
 		if (isset($this->param) && is_array($this->param))
 		{
@@ -72,7 +72,7 @@ class urlQuery
 	}
 
 	// validate hash of url query string
-	function validateHash()
+	static function validateHash()
 	{
 		if (URL_QUERY_IS_HASH)
 		{
@@ -106,13 +106,13 @@ class urlQuery
 	}
 
 	// ecoding url
-	function encodeUrl($query)
+	static function encodeUrl($query)
 	{
 		return URL_QUERY_CRYPT.'='.urlencode(base64_encode(RequestHandler::encryptString(md5($query).URL_QUERY_CRYPT_CRC_SLASH.$query)));
 	}
 
 	// decoding url and put variables into $_GET and $_REQUEST
-	function decodeUrl()
+	static function decodeUrl()
 	{
 		if (isset($_GET[URL_QUERY_CRYPT]))
 		{
