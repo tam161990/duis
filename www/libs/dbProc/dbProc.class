@@ -418,7 +418,7 @@ class dbProc extends dbLayer
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function getUserInfo($id='', $login='', $password='')
+	static function getUserInfo($id='', $login='', $password='')
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select *, '.dbLayer::sqlParseDateTime('RLTT_DATUMS').'
