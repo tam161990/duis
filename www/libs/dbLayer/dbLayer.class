@@ -231,7 +231,7 @@ class dbLayer
 	// return sql for date-time in LV format
 	// public
 	// -----------------------------------------------------------------------------
-	function sqlParseDateTime($field, $isAlias=true)
+	static function sqlParseDateTime($field, $isAlias=true)
 	{
 		return ' IF (`'.$field.'` != "0000-00-00 00:00:00" , DATE_FORMAT(`'.$field.'`,"%d.%m.%Y %H:%i:%s"), "")  '.(($isAlias)?' as `'.$field.'` ':' ');
 	}
