@@ -623,7 +623,7 @@ class dbProc extends dbLayer
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function isExistsUserRole($userId)
+	static function isExistsUserRole($userId)
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
@@ -668,7 +668,7 @@ class dbProc extends dbLayer
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function isExistsUserRoleWithProject($userId)
+	static function isExistsUserRoleWithProject($userId)
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
