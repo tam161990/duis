@@ -53,7 +53,7 @@ class dbProc extends dbLayer
 	// Set user last login date
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function setUserActionDate($userId, $action)
+	static function setUserActionDate($userId, $action)
 	{
 		$oSQL=new dbLayer();
 		$sql = 'update `LIETOTAJI`
