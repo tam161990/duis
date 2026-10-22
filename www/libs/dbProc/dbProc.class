@@ -554,7 +554,7 @@ class dbProc extends dbLayer
 	// Ja eksiste - atgriezh true, cita gadijuma - false
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
-	function checkUserForLogin($login, $password='')
+	static function checkUserForLogin($login, $password='')
 	{
 		$oSQL=new dbLayer();
 		$res=$oSQL->makeQuery('select * from `LIETOTAJI`
