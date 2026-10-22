@@ -11,46 +11,46 @@ define ('URL_QUERY_CRYPT','q');
 
 class urlQuery
 {
-	var $param;
+	static $param = array();
 
 	static function urlQuery ()
 	{
-		$this->param=array();
+		self::$param=array();
 	}
 
 	// addPrm - add parametrs
 	// public
 	static function addPrm($paramName,$paramValue)
 	{
-		if (!is_array($this->param)) $this->param=array();
-		$this->param[$paramName]=array( 'name' => $paramName, 'value' => $paramValue);
+		if (!is_array(self::$param)) self::$param=array();
+		self::$param[$paramName]=array( 'name' => $paramName, 'value' => $paramValue);
 	}
 
 	// public
 	static function addPrmByRef($paramName,&$paramValue)
 	{
-		if (!is_array($this->param)) $this->param=array();
-		$this->param[$paramName]=array( 'name' => $paramName, 'value' => &$paramValue);
+		if (!is_array(self::$param)) self::$param=array();
+		self::$param[$paramName]=array( 'name' => $paramName, 'value' => &$paramValue);
 	}
 
 	static function delPrm($paramName)
 	{
-		if (isset($this->param[$paramName])) unset($this->param[$paramName]);
+		if (isset(self::$param[$paramName])) unset(self::$param[$paramName]);
 	}
 
 	static function delAllPrm()
 	{
-		$this->param=array();
+		self::$param=array();
 	}
 
 	static function getQuery($isEncrypt=URL_QUERY_IS_CRYPT)
 	{
-		if (isset($this->param) && is_array($this->param))
+		if (isset(self::$param) && is_array(self::$param))
 		{
 			$z='';
 			$query='';
 			$hashString='';
-			foreach($this->param as $paramName=>$paramDescription)
+			foreach(self::$param as $paramName=>$paramDescription)
 			{
 				$query.=$z.$paramName.'='.urlencode($paramDescription['value']);
 				$hashString.=$paramName.$paramDescription['value'];
@@ -65,7 +65,7 @@ class urlQuery
 
 		if ($isEncrypt)
 		{
-			$query=$this->encodeUrl($query);
+			$query=self::encodeUrl($query);
 		}
 				
 		return '?'.$query.'&fakeVar=';
