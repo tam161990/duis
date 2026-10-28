@@ -71,7 +71,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
             {
                //Popup saites sagatave
               $oPopLink=new urlQuery;
-			  $oPopLink->addPrm(url, 'f.ktl.s.15');
+			  $oPopLink->addPrm('url', 'f.ktl.s.15');
 			  $oPopLink->addPrm(FORM_ID,'fmk_main_2_frame');			  
               $oPopLink->addPrm('id',$worker['KWOI_KODS']);
 

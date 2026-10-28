@@ -23,6 +23,9 @@
 </script>
 <body class="frame_1">
 <h1><?= $title; ?></h1>
+<? if (!empty($reportApiError)) { ?>
+<p style="color:#c00;"><?= htmlspecialchars($reportApiError, ENT_QUOTES, 'UTF-8'); ?></p>
+<? } ?>
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
 <tr>
   <td>
@@ -39,18 +42,20 @@
                       ?>
                       <select id="Columns">
                       <?
+                       if (is_array($columns))
+                       {
                        foreach ($columns as $col)
                        {
                             ?>
-                            <option value="<?= $col['kolonna']; ?>"  <?= ( (isset($_GET['column']) && $_GET['column'] == $col['kolonna'])? "selected" : (!isset($_GET['column']) && $col['def']==1)? "selected" : "");?> ><?= $col['nosaukums']; ?></option>
+                            <option value="<?= $col['kolonna']; ?>"  <?= ((isset($_GET['column']) && $_GET['column'] == $col['kolonna']) ? "selected" : ((!isset($_GET['column']) && $col['def']==1) ? "selected" : ""));?> ><?= $col['nosaukums']; ?></option>
                             <?
                            }
+                       }
                       ?>
-                      <select id="Columns">
+                      </select>&nbsp;
                       <?
                       }
                       ?>
-                      </select>&nbsp;
                   </td>
         <? if(isset($searchTitle)) { ?>
           <td nowrap ><a href="#" onclick="doSearchOnlyText()">

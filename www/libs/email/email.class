@@ -11,7 +11,7 @@ class email
 	// Author: Tatjana Fedorkova
 	// -----------------------------------------------------------------------------
 	
-	function sendMsgStatusChangeNotification($messageId, $projectId, $actionId, $msgId, $msgType, $msgShortDescr, $msgDescr, $eventDescr=false, $changedEventId=false, $actionCode=false, $msgTypeCode=false)
+	static function sendMsgStatusChangeNotification($messageId, $projectId, $actionId, $msgId, $msgType, $msgShortDescr, $msgDescr, $eventDescr=false, $changedEventId=false, $actionCode=false, $msgTypeCode=false)
 	{
 		// email subject
 		$subject = text::latvianToLatin($msgType).' - '.text::latvianToLatin($msgShortDescr);
@@ -91,7 +91,7 @@ class email
 	// Send email notification when RBF act status changes
 	// Public
 	// -----------------------------------------------------------------------------
-	function sendRbfActStatusChangeNotification($actId, $oldStatus, $newStatus, $userId = null)
+	static function sendRbfActStatusChangeNotification($actId, $oldStatus, $newStatus, $userId = null)
 	{
 		// === LOG: Function entry ===
 		files::wh_log("========================================");
@@ -232,4 +232,3 @@ class email
 
 	
 }
-?>

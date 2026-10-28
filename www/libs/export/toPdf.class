@@ -1,7 +1,7 @@
 <?
 class toPdf {	
 
-	function approvedTrasePdf($actId, $userId, $type, $master = false, $engineer = false, $date = false){
+	static function approvedTrasePdf($actId, $userId, $type, $master = false, $engineer = false, $date = false){
 		// get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
 		if(count($actInfo)>0)
@@ -237,7 +237,7 @@ class toPdf {
 		return $idFile;
 	}
 
-	function estimateTrasePdf($actId, $userId, $type) {
+	static function estimateTrasePdf($actId, $userId, $type) {
 
 		// get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
@@ -456,7 +456,7 @@ class toPdf {
             return $idFile;
     }
             
-    function projectTammePdf($actId, $userId, $type) {
+    static function projectTammePdf($actId, $userId, $type) {
 		// need to merge        
         // get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
@@ -668,7 +668,7 @@ class toPdf {
 		return $idFile;
 	}
 
-	function exportActPdf($actId, $userId, $type) {
+	static function exportActPdf($actId, $userId, $type) {
 
 		// get info about voltage
 		$actInfo = dbProc::getActInfo($actId);
@@ -1006,12 +1006,28 @@ class toPdf {
 	// Export RBF Act to PDF
 	// Created for DUIS-549
 	// -----------------------------------------------------------------------------
-	function exportRbfActPdf($actId, $userId) {
+	static function exportRbfActPdf($actId, $userId, $pdfOptions = array()) {
+
+		$idFile = false;
 
 		// Get RBF act info
 		$act = dbProc::getRbfActInfo($actId);
 		if(!$act) {
 			return false;
+		}
+
+		$isAutoAct = (isset($act['RAKT_IS_AUTO']) && $act['RAKT_IS_AUTO'] == 1);
+		$workListPeriod = null;
+		if ($isAutoAct)
+		{
+			if (!empty($pdfOptions['allPeriods']))
+			{
+				$workListPeriod = 'all';
+			}
+			elseif (isset($pdfOptions['period']))
+			{
+				$workListPeriod = intval($pdfOptions['period']);
+			}
 		}
 
 		// Create PDF
@@ -1100,7 +1116,7 @@ class toPdf {
 		);
 
 		// Get work list
-		$aWorkDb = dbProc::getRbfActWorkList($actId, (isset($act['RAKT_IS_AUTO']) && $act['RAKT_IS_AUTO'] == 1));
+		$aWorkDb = dbProc::getRbfActWorkList($actId, $isAutoAct, $workListPeriod);
 
 		$data = array();
 		$total = 0;

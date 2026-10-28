@@ -1,4 +1,4 @@
-﻿<?
+<?
  
 class userAuthorization 
 {
@@ -86,7 +86,7 @@ class userAuthorization
 		return false;
 	}
 
-    function loginAuto($login, $password)
+    static function loginAuto($login, $password)
 	{
 		if (!empty($login))
 		{

@@ -108,6 +108,122 @@ function rbfAktsExcelValidateActsSheetLayout($sheet)
 	return array('ok' => true, 'message' => '');
 }
 
+/**
+ * Read cell as trimmed string (PHP 8 + PHPExcel: prefer getValue(), same as catalog import).
+ */
+function rbfAktsExcelCellString($sheet, $cellAddress)
+{
+	$cell = $sheet->getCell($cellAddress);
+	$v = $cell->getValue();
+	if ($v === null || (is_string($v) && trim($v) === ''))
+	{
+		$v = $cell->getCalculatedValue();
+	}
+	if ($v === null || (is_string($v) && trim($v) === ''))
+	{
+		try
+		{
+			$fv = $cell->getFormattedValue();
+			if ($fv !== null && !(is_string($fv) && trim($fv) === ''))
+			{
+				$v = $fv;
+			}
+		}
+		catch (Exception $e)
+		{
+		}
+	}
+	if (is_object($v))
+	{
+		if ($v instanceof PHPExcel_RichText)
+		{
+			$v = $v->getPlainText();
+		}
+		elseif (method_exists($v, '__toString'))
+		{
+			$v = (string)$v;
+		}
+		else
+		{
+			$v = '';
+		}
+	}
+	if (is_int($v) || is_float($v))
+	{
+		$v = (string)$v;
+	}
+
+	return trim((string)$v);
+}
+
+function rbfAktsExcelReadCol($sheet, $colLetter, $row)
+{
+	if ($colLetter === '' || $colLetter === null)
+	{
+		return '';
+	}
+
+	return rbfAktsExcelCellString($sheet, $colLetter . $row);
+}
+
+/**
+ * 10-column (Nodaļa + Daļa) vs legacy 8-column (RBF nodaļa + Autors in D).
+ */
+function rbfAktsDetectActsColumnMap($sheet)
+{
+	$dHeader = rbfAktsExcelHeaderNorm($sheet, 'D');
+	if ($dHeader !== '' && rbfAktsStrContains($dHeader, 'autor'))
+	{
+		return array(
+			'legacy' => true,
+			'cols' => array(
+				'kwoi' => 'A', 'vv' => 'B', 'nodala' => 'C', 'dala' => '',
+				'author' => 'D', 'kakv' => 'E', 'postfix' => 'F', 'title' => 'G',
+				'signature' => '', 'piezimes' => 'H',
+			),
+		);
+	}
+
+	return array(
+		'legacy' => false,
+		'cols' => array(
+			'kwoi' => 'A', 'vv' => 'B', 'nodala' => 'C', 'dala' => 'D',
+			'author' => 'E', 'kakv' => 'F', 'postfix' => 'G', 'title' => 'H',
+			'signature' => 'I', 'piezimes' => 'J',
+		),
+	);
+}
+
+/**
+ * Load .xls / .xlsx with the correct reader.
+ * PHPExcel_IOFactory::load() without ext-zip treats .xlsx as CSV and reads garbage.
+ *
+ * @return PHPExcel|false
+ */
+function rbfAktsLoadPhpExcelFile($filePath, $fileExt)
+{
+	$fileExt = strtolower((string)$fileExt);
+	if ($fileExt === 'xlsx')
+	{
+		if (!class_exists('ZipArchive'))
+		{
+			return false;
+		}
+		$reader = PHPExcel_IOFactory::createReader('Excel2007');
+	}
+	elseif ($fileExt === 'xls')
+	{
+		$reader = PHPExcel_IOFactory::createReader('Excel5');
+	}
+	else
+	{
+		return false;
+	}
+	$reader->setReadDataOnly(true);
+
+	return $reader->load($filePath);
+}
+
 /** RBF darbu rindas statusa kodi (2. lapas kolonna E); nedrīkst būt 1. lapas „Autors”. */
 function rbfAktsImportedAuthorLooksLikeWorkStatus($rlttText)
 {
@@ -195,9 +311,20 @@ if (userAuthorization::isAdmin())
 						
 						try
 						{
-							// Load Excel file
-							$objPHPExcel = PHPExcel_IOFactory::load($destinationPath);
-							
+							$objPHPExcel = rbfAktsLoadPhpExcelFile($destinationPath, $fileExt);
+							if (!$objPHPExcel)
+							{
+								if ($fileExt === 'xlsx' && !class_exists('ZipArchive'))
+								{
+									$oForm->addError('PHP paplašinājums „zip” nav ieslēgts — .xlsx failu nevar nolasīt. Ieslēdziet extension=zip php.ini un restartējiet Apache.');
+								}
+								else
+								{
+									$oForm->addError(text::get('ERROR_INVALID_FILE_TYPE'));
+								}
+							}
+							else
+							{
 							$sheet1SuccessMsg = "";
 							
 							// =========================================================
@@ -221,38 +348,30 @@ if (userAuthorization::isAdmin())
 								$skipCount = 0;
 								$errorCount = 0;
 								$errors = array();
+								$actsColMap = rbfAktsDetectActsColumnMap($sheet);
+								$actsCols = $actsColMap['cols'];
+								files::wh_log('[RBF IMPORT DEBUG] Acts layout: ' . ($actsColMap['legacy'] ? 'legacy 8 columns' : 'new 10 columns'));
+								files::wh_log('[RBF IMPORT DEBUG] Header A1=' . rbfAktsExcelCellString($sheet, 'A1') . ' D1=' . rbfAktsExcelCellString($sheet, 'D1'));
 							
 							// Process each row (skip header row)
 							for ($row = 2; $row <= $highestRow; $row++)
 							{
-								// Read data from Excel columns (NEW STRUCTURE with Daļa column)
-								// Column A: FAKT_KWOI_KODS (Darbuzņēmēja kods) - REQUIRED
-								// Column B: FAKT_VV_NUMBER (VV numurs) - REQUIRED
-								// Column C: Nodaļ (RBTR_KODS - for VV Type U) - ONE OF C or D REQUIRED
-								// Column D: Daļa (RBTR_DID_KODS - for VV Type C) - ONE OF C or D REQUIRED
-								// Column E: FAKT_RLTT_TEXT (Autors) - REQUIRED
-								// Column F: FAKT_KAKV_KODS (Akta veids) - REQUIRED
-								// Column G: FAKT_NUM_POSTFIX (Pasūtījuma ID) - REQUIRED
-								// Column H: FAKT_WORK_TITLE (Darba nosaukums) - REQUIRED
-								// Column I: FAKT_SIGNATURE (Paraksts E/P/K) - OPTIONAL
-								// Column J: FAKT_PIEZIMES (Piezīmes) - OPTIONAL
+								$c = $actsCols;
+								$kwoi_kods = rbfAktsExcelReadCol($sheet, $c['kwoi'], $row);
+								$vv_number = rbfAktsExcelReadCol($sheet, $c['vv'], $row);
+								$nodala_kods = rbfAktsExcelReadCol($sheet, $c['nodala'], $row);
+								$dala_kods = rbfAktsExcelReadCol($sheet, $c['dala'], $row);
+								$rltt_text = rbfAktsExcelReadCol($sheet, $c['author'], $row);
+								$kakv_kods = rbfAktsExcelReadCol($sheet, $c['kakv'], $row);
+								$num_postfix = rbfAktsExcelReadCol($sheet, $c['postfix'], $row);
+								$work_title = rbfAktsExcelReadCol($sheet, $c['title'], $row);
+								$signature = rbfAktsExcelReadCol($sheet, $c['signature'], $row);
+								$piezimes = rbfAktsExcelReadCol($sheet, $c['piezimes'], $row);
 								
-								// Read data and ensure UTF-8 encoding for Latvian characters
-								$kwoi_kods = trim($sheet->getCell('A' . $row)->getCalculatedValue());
-								$vv_number = trim($sheet->getCell('B' . $row)->getCalculatedValue());
-								$nodala_kods = trim($sheet->getCell('C' . $row)->getCalculatedValue()); // RBTR_KODS for U type
-								$dala_kods = trim($sheet->getCell('D' . $row)->getCalculatedValue());   // RBTR_DID_KODS for C type
-								$rltt_text = trim($sheet->getCell('E' . $row)->getCalculatedValue());
-								$kakv_kods = trim($sheet->getCell('F' . $row)->getCalculatedValue());
-								$num_postfix = trim($sheet->getCell('G' . $row)->getCalculatedValue());
-								$work_title = trim($sheet->getCell('H' . $row)->getCalculatedValue());
-								$signature = trim($sheet->getCell('I' . $row)->getCalculatedValue());
-								$piezimes = trim($sheet->getCell('J' . $row)->getCalculatedValue());
-								
-								// DEBUG: Log raw values from Excel before processing
-								files::wh_log("[RBF IMPORT DEBUG] Row $row - VV_NUMBER from Excel (col B): '" . $vv_number . "'");
-								files::wh_log("[RBF IMPORT DEBUG] Row $row - NODALA_KODS from Excel (col C): '" . $nodala_kods . "'");
-								files::wh_log("[RBF IMPORT DEBUG] Row $row - DALA_KODS from Excel (col D): '" . $dala_kods . "'");
+								if ($row <= 4)
+								{
+									files::wh_log("[RBF IMPORT DEBUG] Row $row - KWOI: '$kwoi_kods' VV: '$vv_number' NODALA: '$nodala_kods' DALA: '$dala_kods' POSTFIX: '$num_postfix'");
+								}
 								
 								// Determine which territory code to use (only one should be filled)
 								$rbtr_kods = !empty($nodala_kods) ? $nodala_kods : $dala_kods;
@@ -352,6 +471,10 @@ if (userAuthorization::isAdmin())
 										exit;
 									}
 								}
+								if ($successCount === 0 && $errorCount === 0 && $skipCount === 0 && $highestRow >= 2)
+								{
+									$oForm->addError('Nav atrasti aktu dati pirmajā lapā. Pārbaudiet, ka fails ir Excel (.xls/.xlsx), pirmajā rindā ir virsraksti, un dati sākas no 2. rindas.');
+								}
 								}
 							} // End of Acts processing
 							
@@ -393,17 +516,21 @@ if (userAuthorization::isAdmin())
 										// Column I: FADR_NORMA (Normatīvais koeficients / C.st.) - REQUIRED
 										// Column J: FADR_PLAN_DATE (Izpildes datums) - OPTIONAL
 										
-										// Read data and ensure UTF-8 encoding for Latvian characters
-										$numPostfix = trim($sheet2->getCell('A' . $row)->getCalculatedValue());
-										$rbklShifrs = trim($sheet2->getCell('B' . $row)->getCalculatedValue());
-										$mmsKods = trim($sheet2->getCell('C' . $row)->getCalculatedValue());
-										$mmsTitle = trim($sheet2->getCell('D' . $row)->getCalculatedValue());
-										$status = trim($sheet2->getCell('E' . $row)->getCalculatedValue());
-										$mervieniba = trim($sheet2->getCell('F' . $row)->getCalculatedValue());
-										$apjoms = trim($sheet2->getCell('G' . $row)->getCalculatedValue());
-										$cstNorma = trim($sheet2->getCell('H' . $row)->getCalculatedValue());
-										$norma = trim($sheet2->getCell('I' . $row)->getCalculatedValue());
-										$planDateRaw = $sheet2->getCell('J' . $row)->getValue();
+										$numPostfix = rbfAktsExcelCellString($sheet2, 'A' . $row);
+										$rbklShifrs = rbfAktsExcelCellString($sheet2, 'B' . $row);
+										$mmsKods = rbfAktsExcelCellString($sheet2, 'C' . $row);
+										$mmsTitle = rbfAktsExcelCellString($sheet2, 'D' . $row);
+										$status = rbfAktsExcelCellString($sheet2, 'E' . $row);
+										$mervieniba = rbfAktsExcelCellString($sheet2, 'F' . $row);
+										$apjoms = rbfAktsExcelCellString($sheet2, 'G' . $row);
+										$cstNorma = rbfAktsExcelCellString($sheet2, 'H' . $row);
+										$norma = rbfAktsExcelCellString($sheet2, 'I' . $row);
+										$planDateCell = $sheet2->getCell('J' . $row);
+										$planDateRaw = $planDateCell->getValue();
+										if ($planDateRaw === null || $planDateRaw === '')
+										{
+											$planDateRaw = $planDateCell->getCalculatedValue();
+										}
 										
 										
 										// Skip empty rows
@@ -488,6 +615,7 @@ if (userAuthorization::isAdmin())
 										}
 									}
 								}
+							}
 							}
 						}
 						catch (Exception $e)

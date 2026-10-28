@@ -13,7 +13,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		$voltageId = reqVar::get('voltageId');
 
 		$oLink=new urlQuery();
-		$oLink->addPrm(FORM_ID, 'f.ktl.s.6');
+		$oLink->addPrm(FORM_ID, 'f.ktl.s.16');
 		$oLink->addPrm('editMode', 1 );
 		// form inicialization
 		$oForm = new Form('frmMain','post',$oLink->getQuery());
@@ -127,7 +127,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 				if ($r)
 				{
 					$oLink=new urlQuery();
-					$oLink->addPrm(FORM_ID, 'f.ktl.s.6');
+					$oLink->addPrm(FORM_ID, 'f.ktl.s.16');
 					$oLink->addPrm('editMode', '1');
 					switch($oForm->getValue('action'))
 					{
@@ -149,7 +149,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 		}
 
        	$oForm -> makeHtml();
-		include('f.ktl.s.6.2.tpl');
+		include('f.ktl.s.16.2.tpl');
 	}
 	// top frale
 	else
@@ -216,7 +216,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
         // URL to search Zinojums by number.
     	$oLink = new urlQuery;
-    	$oLink -> addPrm(FORM_ID, 'f.ktl.s.6');
+    	$oLink -> addPrm(FORM_ID, 'f.ktl.s.16');
     	$oLink->addPrm('isNew', '1');
 
         // add search/order params to listing
@@ -237,7 +237,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
 
 		//link for frame2
 		$oLink=new urlQuery();
-		$oLink->addPrm(FORM_ID, 'f.ktl.s.6');
+		$oLink->addPrm(FORM_ID, 'f.ktl.s.16');
 		$oLink->addPrm('editMode', 1);
 
 		// gel list of users

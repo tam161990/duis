@@ -9,6 +9,11 @@ class listing
 
 	var $amount;
 
+	function __construct()
+	{
+		$this->amount=0;
+	}
+
 	function listing()
 	{
 		$this->amount=0;

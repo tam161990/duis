@@ -28,12 +28,16 @@
 	}
 	ob_start();
 	$r = false;
+	$err_message = '';
 	try
 	{
-		// if you are doing ajax with application-json headers
-		$data = json_decode(file_get_contents("php://input")) ? : 'nifiga net';	
+		$rawBody = file_get_contents("php://input");
+		$data = json_decode($rawBody);
+		if (!is_object($data))
+		{
+			throw new Exception('Invalid JSON body');
+		}
 
-		//var_dump($data);
 		if( isset($data->issue_key) && !empty($data->issue_key) )
 		{
 
@@ -46,8 +50,6 @@
 										'issue_district:' .((isset($data->issue_district) && !empty($data->issue_district)) ? $data->issue_district :'').PHP_EOL
 								);						
 		
-			
-			//var_dump($data);
 			$r = dbProc::saveKvikStepActStatus($data->issue_key, 
 										isset($data->issue_status) && !empty($data->issue_status) ? $data->issue_status : false, 
 										isset($data->issue_assignee) && !empty($data->issue_assignee) ? $data->issue_assignee : false,
@@ -57,28 +59,25 @@
 										false,
 										isset($data->issue_district) && !empty($data->issue_district) ? $data->issue_district : false 
 										);	
-			
-			$response = ob_get_clean();	
 		}	
 		else {
 			$err_message = "issue_key not set";
 		}
 	}
 	catch(Throwable $e) {
-
-		//$trace = $e->getTrace();
 		$err_message = $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine();
-			
 	}	
 
-		$response = ob_get_clean();	
+	if (ob_get_level() > 0)
+	{
+		ob_end_clean();
+	}
 	if( $r !== false ) {
 		$response = json_response(200, "OK");
 	} else {
 		$response = json_response(500, "NOK: ".$err_message);
 	}
 
-		
 	echo $response;
 	
 	

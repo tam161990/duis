@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 class dtime
 {
@@ -6,7 +6,7 @@ class dtime
 	// validate a DD.MM.YYYY format date
 	// public
 	// -----------------------------------------------------------------------------
-	function isValidDate($cDate)
+	static function isValidDate($cDate)
 	{
 		$aDate=explode('.',$cDate);
 		if (isset($aDate[0])
@@ -26,7 +26,7 @@ class dtime
 	// compare two DD.MM.YYYY date strings, return true if the first one is older or equal
 	// public
 	// -----------------------------------------------------------------------------
-	function isDateSequence($cFirstDate,$cSecondDate)
+	static function isDateSequence($cFirstDate,$cSecondDate)
 	{
 		if (!$cFirstDate) $cFirstDate=C_DATE_NULL;
 		if (!$cSecondDate) $cSecondDate=C_DATE_UNDEFINED;
@@ -46,7 +46,7 @@ class dtime
 	// converts a DD.MM.YYYY date to YYYYMMDD, used for comparing dates
 	// private
 	// -----------------------------------------------------------------------------
-	function dateToInt($cDate)
+	static function dateToInt($cDate)
 	{
 		$aDate=explode('.',$cDate);
 		if ((isset($aDate[0])&&isset($aDate[1])&&isset($aDate[2]))) 
@@ -64,7 +64,7 @@ class dtime
 	// returns true if current system time is within the specified period
 	// public
 	// -----------------------------------------------------------------------------
-	function isPeriodActive($cStartDate,$cEndDate)
+	static function isPeriodActive($cStartDate,$cEndDate)
 	{
 		if (!$cStartDate) $cStartDate=C_DATE_NULL;
 		if (!$cEndDate) $cEndDate=C_DATE_UNDEFINED;
@@ -79,7 +79,7 @@ class dtime
 	// in order to pass the validation 
 	// public
 	// -----------------------------------------------------------------------------
-	function isPeriodIndependent($cStartDate1,$cEndDate1,$cStartDate2,$cEndDate2,$nSticky=false)
+	static function isPeriodIndependent($cStartDate1,$cEndDate1,$cStartDate2,$cEndDate2,$nSticky=false)
 	{
 		if (!$cStartDate1) $cStartDate1=C_DATE_NULL;
 		if (!$cStartDate2) $cStartDate2=C_DATE_NULL;
@@ -107,7 +107,7 @@ class dtime
 	// returns the current server date in DD.MM.YYYY format
 	// public
 	// -----------------------------------------------------------------------------
-	function now()
+	static function now()
 	{
 		return date('d.m.Y');
 	}
@@ -117,7 +117,7 @@ class dtime
 	// if input time format is invalid, the function returns -1
 	// public
 	// -----------------------------------------------------------------------------
-	function toMinutes($cTime)
+	static function toMinutes($cTime)
 	{
 		$nResult=0;
 		$aElements=explode(':',$cTime);
@@ -147,7 +147,7 @@ class dtime
 	// converts a int of minutes to hh:mm format string
 	// public
 	// -----------------------------------------------------------------------------
-	function toHours($nMinutes)
+	static function toHours($nMinutes)
 	{
 		if (is_numeric($nMinutes))
 		{
@@ -159,7 +159,7 @@ class dtime
 	// returns the DD.MM.YYYY date of monday on the same week as the given date
 	// public
 	// -----------------------------------------------------------------------------
-	function getPrevMonday($cDate)
+	static function getPrevMonday($cDate)
 	{
 		if (dtime::isValidDate($cDate))
 		{
@@ -181,7 +181,7 @@ class dtime
 	// returns the DD.MM.YYYY date of sunday on the same week as the given date
 	// public
 	// -----------------------------------------------------------------------------
-	function getNextSunday($cDate)
+	static function getNextSunday($cDate)
 	{
 		if (dtime::isValidDate($cDate))
 		{
@@ -206,7 +206,7 @@ class dtime
 	// array indexes are monday=1, sunday=7
 	// public
 	// -----------------------------------------------------------------------------
-	function getWeekArray($cDate)
+	static function getWeekArray($cDate)
 	{
 		if (dtime::isValidDate($cDate))
 		{
@@ -234,7 +234,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function getMonthArray()
+    static function getMonthArray()
     {
       $monthList = array();
       for($i = 1; $i < 13; $i ++)
@@ -249,7 +249,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function getCurrentMonth()
+    static function getCurrentMonth()
     {
       $cDate = dtime::now();
       $aDate=explode('.',$cDate);
@@ -261,7 +261,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function get5YearsInFromtArray()
+    static function get5YearsInFromtArray()
     {
       $yearList = array();
       $current_year = dtime::getSmartCurrentYear();
@@ -274,7 +274,7 @@ class dtime
 
     }
 
-	function get5YearsForward1YearBackwardArray()
+	static function get5YearsForward1YearBackwardArray()
     {
       $yearList = array();
       $current_year = dtime::getSmartCurrentYear();
@@ -289,7 +289,7 @@ class dtime
 
 
 // returns current year, from user defined date from config file
-    function getSmartCurrentYear()
+    static function getSmartCurrentYear()
     {
         $current_year = ((dtime::dateToInt(dtime::now()) > NEXT_YEAR_START && dtime::dateToInt(dtime::now()) < PREV_YEAR_END) ?  date("Y") + 1 : date("Y") );
         return $current_year;
@@ -300,7 +300,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function getYearArray()
+    static function getYearArray()
     {
       $yearList = array();
       $init_year = 2009;
@@ -312,7 +312,7 @@ class dtime
       return $yearList;
     }
 
-    function getCurYearArray()
+    static function getCurYearArray()
     {
       $yearList = array();
       $current_year = dtime::getSmartCurrentYear();
@@ -328,7 +328,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function getCurrentYear()
+    static function getCurrentYear()
     {
       $cDate = dtime::now();
       $aDate=explode('.',$cDate);
@@ -340,7 +340,7 @@ class dtime
 	// public
 	// ---------------------------
 
-    function getQuarterArray()
+    static function getQuarterArray()
     {
       $quarterList = array();
       for($i = 1; $i < 5; $i ++)
@@ -362,7 +362,7 @@ class dtime
 	// public
 	// -----------------------------------------------------------------------------
 
-	function getMonthName($monthNumber)
+	static function getMonthName($monthNumber)
 	{
 		$month = '';
 		switch($monthNumber)
@@ -388,7 +388,7 @@ class dtime
 	// public
 	// -----------------------------------------------------------------------------
 
-	function getMonthNameInTime($monthNumber)
+	static function getMonthNameInTime($monthNumber)
 	{
 		$month = '';
 		switch($monthNumber)
@@ -413,7 +413,7 @@ class dtime
 	// function returns weekday short name by latvian format index (mon=1, sun=7)
 	// public
 	// -----------------------------------------------------------------------------
-	function getWeekdayNames()
+	static function getWeekdayNames()
 	{
 		return array(
 			1 =>text::get('WEEKDAY_MON'),
@@ -430,7 +430,7 @@ class dtime
 	// function increments or decrements the given DD.MM.YYYY format date by specified number of days
 	// public
 	// -----------------------------------------------------------------------------
-	function offsetDateByDays($cDate,$nOffsetDays)
+	static function offsetDateByDays($cDate,$nOffsetDays)
 	{
 		if (dtime::isValidDate($cDate)&&is_numeric($nOffsetDays))
 		{
@@ -446,7 +446,7 @@ class dtime
 	}
 
     // format input date DD.MM.YYYY in lv string format
-    function dateToLvString($cDate)
+    static function dateToLvString($cDate)
     {
         if (dtime::isValidDate($cDate))
 		{
@@ -461,7 +461,7 @@ class dtime
     }
 
     // format input date DD.MM.YYYY in empty string
-    function dateToLvStringEmpty($cDate)
+    static function dateToLvStringEmpty($cDate)
     {
         if (dtime::isValidDate($cDate))
 		{

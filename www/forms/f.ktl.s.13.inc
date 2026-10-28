@@ -170,7 +170,10 @@ if (userAuthorization::isAdmin() || $isEdUser )
                   }
               }
               // calculation
-              elseif(files::isUploadFileOfTYpe('fileName', 'application/vnd.ms-excel'))
+              elseif(
+                  files::isUploadFileOfExt('fileName', 'xls')
+                  || files::isUploadFileOfTYpe('fileName', 'application/vnd.ms-excel')
+              )
               {
                   $file = files::saveFileToStore('fileName');
                   // if operation is success
@@ -564,7 +567,7 @@ if (userAuthorization::isAdmin() || $isEdUser )
                   break;                                          
                
             }
-            $listLink=$oLink ->getQuery();
+            $listLink='./'.$oLink ->getQuery();
             unset($oLink);
             // add/edit
             $oLink=new urlQuery();
@@ -611,18 +614,37 @@ if (userAuthorization::isAdmin() || $isEdUser )
                     break;      
             }
             $oLink->addPrm('editMode', '1');
-            $editLink = $oLink->getQuery();
+            $editLink = './'.$oLink->getQuery();
             unset($oLink);
 
            $oForm->addElement('static','jsRefresh2','','
             <script>
-                parent["frameTop"].enableFrameControl();
-                window.top.enableResize();
-                window.top.min(0);
-                window.top.normal();
-                reloadFrame(1,"'.$listLink.'");
-                reloadFrame(2,"'.$editLink.'");
-                reloadFrame(3,"");
+            (function () {
+                var listUrl = "'.str_replace('"', '\\"', $listLink).'";
+                var editUrl = "'.str_replace('"', '\\"', $editLink).'";
+                var hasFrames = (typeof parent !== "undefined" && parent.frame_1 && parent.frame_2);
+                if (hasFrames) {
+                    try {
+                        if (parent.frameTop && typeof parent.frameTop.enableFrameControl === "function") {
+                            parent.frameTop.enableFrameControl();
+                        }
+                    } catch (e) {}
+                    if (typeof window.top.enableResize === "function") {
+                        window.top.enableResize();
+                    }
+                    if (typeof window.top.min === "function") {
+                        window.top.min(0);
+                    }
+                    if (typeof window.top.normal === "function") {
+                        window.top.normal();
+                    }
+                    reloadFrame(1, listUrl);
+                    reloadFrame(2, editUrl);
+                    reloadFrame(3, "");
+                } else {
+                    (window.top || window).location.replace(listUrl);
+                }
+            })();
             </script>
             '); 
             }

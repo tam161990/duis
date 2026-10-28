@@ -35,7 +35,18 @@ class form
 	// $method - post or get, default - post
 	// $attributes - form attributes
 	// -----------------------------------------------------------------------------
+	function __construct($name='frmMain',$method='post',$action='',$attributes='')
+	{
+		$this->formInit($name, $method, $action, $attributes);
+	}
+
+	// PHP 4 style name kept for backward compatibility
 	function form($name='frmMain',$method='post',$action='',$attributes='')
+	{
+		$this->formInit($name, $method, $action, $attributes);
+	}
+
+	function formInit($name='frmMain',$method='post',$action='',$attributes='')
 	{                       
 		$this->aForm=array('name'=>$name,
 				'action'=>$action,

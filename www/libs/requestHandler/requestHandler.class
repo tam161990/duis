@@ -5,6 +5,8 @@ class RequestHandler
 {
 	public static $success;
 	public static $error;
+	/** Last cURL/API error for report forms (not set when extension missing). */
+	public static $lastApiError = '';
 
 	public static function addSuccess($value)
 	{
@@ -289,6 +291,12 @@ class RequestHandler
 	// -----------------------------------------------------------------------------
 	// ZR application start
 	// -----------------------------------------------------------------------------
+	/** Report/binary export forms (PDF, Excel) set their own Content-Type. */
+	static function isRawResponseForm($formId)
+	{
+		return is_string($formId) && preg_match('/^f\.rpt\.e\./', $formId);
+	}
+
 	static function run()
 	{
 
@@ -297,12 +305,21 @@ class RequestHandler
 		// -----------------------------------------------------------------------------
 		session::start();
 
+		$formIdEarly = reqVar::get(FORM_ID);
+		if (empty($formIdEarly))
+		{
+			$formIdEarly = 'fmk_main';
+		}
+
 		// -----------------------------------------------------------------------------
 		// Headers
 		// -----------------------------------------------------------------------------
 		// header('Cache-Control: no-cache, no-store');
 		// header('Pragma: no-cache');
-		header('Content-type: text/html; Charset=UTF-8'."\n");
+		if (!RequestHandler::isRawResponseForm($formIdEarly))
+		{
+			header('Content-type: text/html; Charset=UTF-8'."\n");
+		}
 
 		// if exist session...
 		if (!session::isNew())
@@ -323,10 +340,10 @@ class RequestHandler
 		// -----------------------------------------------------------------------------
 		if (!userAuthorization::isLogin())
 		{
-            if ( reqVar::get('login')!==false && reqVar::get('passw')!==false )
+            if ( reqVar::get('login')!==false && reqVar::get('password')!==false )
 			{
 
-                if (userAuthorization::login(reqVar::get('login'),reqVar::get('passw')))
+                if (userAuthorization::login(reqVar::get('login'),reqVar::get('password')))
 				{
 					setcookie(COOKIE_LOGIN,reqVar::get('login'),time()+60*60*24*30);
 					RequestHandler::checkProcess();
@@ -338,7 +355,7 @@ class RequestHandler
 			}
             else
             {
-              if ($_SERVER["REMOTE_ADDR"] == "10.0.17.3" && (isset($_REQUEST[COOKIE_LOGIN]) || (reqVar::get('login')!==false && reqVar::get('passw')!==false)))
+              if ($_SERVER["REMOTE_ADDR"] == "10.0.17.3" && (isset($_REQUEST[COOKIE_LOGIN]) || (reqVar::get('login')!==false && reqVar::get('password')!==false)))
               {
                 if (userAuthorization::loginAuto(reqVar::get('login'), ''))
 				{
@@ -434,6 +451,10 @@ class RequestHandler
 			if ($formPath!==false)
 			{			  
 				include($formPath);
+				if (RequestHandler::isRawResponseForm($formId))
+				{
+					exit;
+				}
 				RequestHandler::save_event_log('A');				
 			}
 			else
@@ -516,6 +537,9 @@ class RequestHandler
 			];
 		}
 		$data_json = json_encode($postData);
+		if (!self::ensureCurlExtension()) {
+			return false;
+		}
 		// Setup cURL
 		$ch = curl_init(SOA_SERVISE_STATUS_TO_KVIKSTEP);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -547,10 +571,42 @@ class RequestHandler
 		
 	}
 
+	static function ensureCurlExtension()
+	{
+		if (function_exists('curl_init'))
+		{
+			return true;
+		}
+		$ini = function_exists('php_ini_loaded_file') ? php_ini_loaded_file() : '';
+		$extDir = function_exists('ini_get') ? ini_get('extension_dir') : '';
+		files::wh_log('ERROR: PHP curl extension is not loaded. php.ini='.$ini.' extension_dir='.$extDir
+			.' (Apache: PHPRC must match PHPINIDir C:/php-8.3.36, not C:/xampp/php).'.PHP_EOL);
+
+		return false;
+	}
+
+	static function getLastApiError()
+	{
+		return self::$lastApiError;
+	}
+
+	static function configureCurlHandle($ch)
+	{
+		if (defined('HTTP_CLIENT_SSL_VERIFY') && !HTTP_CLIENT_SSL_VERIFY)
+		{
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		}
+	}
+
 	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
 	static function sentExcelToKvikStep ($mms_kods, $fileId) 
 	{
-			
+		if (!self::ensureCurlExtension())
+		{
+			return false;
+		}
+
 		// get file link
 		$oLinkFile=new urlQuery();
 		$oLinkFile->addPrm(IS_GET_PEXCEL_FILE_VARIABLE, 1);
@@ -598,7 +654,12 @@ class RequestHandler
 
 	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
 	static function getLimitkarteReport ($reportName, $code, $pageNumber, $recordsPerPage) 
-	{			
+	{
+		if (!self::ensureCurlExtension())
+		{
+			return false;
+		}
+
 		// The data to send to the API		
 		files::wh_log('getLimitkarteReport report:'.$reportName.PHP_EOL.
 				'code: '.$code.PHP_EOL.
@@ -620,7 +681,9 @@ class RequestHandler
 				break;			
 		}
 		//var_dump($postData);
+		self::$lastApiError = '';
 		$ch = curl_init($url);
+		self::configureCurlHandle($ch);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
@@ -633,19 +696,30 @@ class RequestHandler
 		$response = curl_exec($ch);	
 		//echo $response;
 		if (curl_errno($ch)) {
-			files::wh_log('getLimitkarteReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
-		} else { 
-			// Decode the response
-			$responseData = json_decode($response, TRUE);
-		}	
+			self::$lastApiError = curl_error($ch);
+			files::wh_log('getLimitkarteReport RESPONSE ERROR:'.self::$lastApiError.PHP_EOL );
+			curl_close($ch);
+			return false;
+		}
+		$responseData = json_decode($response, TRUE);
+		if (!is_array($responseData))
+		{
+			self::$lastApiError = 'API atbilde nav derīgs JSON';
+			files::wh_log('getLimitkarteReport RESPONSE ERROR: invalid JSON'.PHP_EOL );
+		}
 		curl_close($ch);
-		return 	$responseData;
+		return $responseData;
 
 	}
 
 	// funkcija sÅ«ta materiÄla pieprasÄ«jumu uz Oracle caus SOA servisu
 	static function sentMaterialRequest ($postData, $idFile) 
-	{		
+	{
+		if (!self::ensureCurlExtension())
+		{
+			return false;
+		}
+
 		// The data to send to the API		
 		files::wh_log('sentMaterialRequest:'.json_encode($postData).PHP_EOL.
 				'url: '.MATERIAL_REQUEST_URL .PHP_EOL.
@@ -653,7 +727,7 @@ class RequestHandler
 				
 		// Setup cURL
 		$ch = curl_init(MATERIAL_REQUEST_URL);
-
+		self::configureCurlHandle($ch);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
@@ -697,7 +771,12 @@ class RequestHandler
 
 	// funkcija sÅ«ta API pieprasÄ«jumu, lai dabÅ«t projekta numuru
 	static function sentPrNumberRequest ($duisRequestId, $idFile, $status) 
-	{	
+	{
+		if (!self::ensureCurlExtension())
+		{
+			return false;
+		}
+
 		sleep(10);
 		// The data to send to the API		
 		files::wh_log('sentPrNumberRequest url: '.PRNUMBER_REQUEST_URL .PHP_EOL.
@@ -710,7 +789,7 @@ class RequestHandler
 
 		// Setup cURL
 		$ch = curl_init(PRNUMBER_REQUEST_URL);
-
+		self::configureCurlHandle($ch);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
@@ -788,7 +867,14 @@ class RequestHandler
 
 	// funkcija sÅ«ta akta ststusu uz KvikStep caus SOA servisu
 	static function getPPAReport ($code, $pageNumber, $recordsPerPage) 
-	{			
+	{
+		if (!self::ensureCurlExtension())
+		{
+			return false;
+		}
+
+		self::$lastApiError = '';
+		$responseData = false;
 		// The data to send to the API		
 		files::wh_log('getPPAReport report:'.PHP_EOL.
 				'code: '.$code.PHP_EOL.
@@ -800,6 +886,7 @@ class RequestHandler
 		//var_dump($postData);
 		// Setup cURL			
 		$ch = curl_init(API_PPA);
+		self::configureCurlHandle($ch);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//Attach our encoded JSON string to the POST fields.
@@ -812,14 +899,20 @@ class RequestHandler
 		$response = curl_exec($ch);	
 		//echo $response;
 		if (curl_errno($ch)) {
-			files::wh_log('getPPAReport RESPONSE ERROR:'.curl_error($ch).PHP_EOL );	
-		} else { 
-			// Decode the response
-			$responseData = json_decode($response, TRUE);
-		}	
+			self::$lastApiError = curl_error($ch);
+			files::wh_log('getPPAReport RESPONSE ERROR:'.self::$lastApiError.PHP_EOL );
+			curl_close($ch);
+			return false;
+		}
+		$responseData = json_decode($response, TRUE);
+		if (!is_array($responseData))
+		{
+			self::$lastApiError = 'API atbilde nav derīgs JSON';
+			files::wh_log('getPPAReport RESPONSE ERROR: invalid JSON'.PHP_EOL );
+		}
 		curl_close($ch);
 		//print_r( $responseData);
-		return 	$responseData;
+		return $responseData;
 	}
 }
 

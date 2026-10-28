@@ -7,7 +7,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// Ja fails ir noladets - atgriezh true
 	// -----------------------------------------------------------------------------
-	function isUploadFile($fieldName)
+	static function isUploadFile($fieldName)
 	{
 		if (isset($_FILES[$fieldName]) && empty($_FILES[$fieldName]['error']))
 		{
@@ -19,8 +19,12 @@ class files
     // -----------------------------------------------------------------------------
 	// Ja fails ir pareiza datu tipa - atgriezh true
 	// -----------------------------------------------------------------------------
-	function isUploadFileOfTYpe($fieldName, $type)
+	static function isUploadFileOfTYpe($fieldName, $type)
 	{
+		if (!isset($_FILES[$fieldName]['type']))
+		{
+			return false;
+		}
 		if ($_FILES[$fieldName]['type'] == $type)
 		{
 			return true;
@@ -32,23 +36,24 @@ class files
 	// -----------------------------------------------------------------------------
 	// Ja fails ir ar pareiza paplasinajumu - atgriezh true
 	// -----------------------------------------------------------------------------
-	function isUploadFileOfExt($fieldName, $ext)
+	static function isUploadFileOfExt($fieldName, $ext)
 	{
-		$filename = explode(".", $_FILES[$fieldName]['name']);
-  		
-		if ($filename[1] == $ext)
-		{
-			return true;
+		if (!isset($_FILES[$fieldName]['name'])) {
+			return false;
 		}
-		return false;
-
+		$fileExt = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
+		return ($fileExt === strtolower($ext));
 	}
 
 	// -----------------------------------------------------------------------------
 	// Check if uploaded file has valid extension for RBF attachments
 	// -----------------------------------------------------------------------------
-	function isValidRbfFile($fieldName)
+	static function isValidRbfFile($fieldName)
 	{
+		if (!isset($_FILES[$fieldName]['name']))
+		{
+			return false;
+		}
 		$allowedExtensions = array('docx', 'pdf', 'xls', 'xlsx', 'gif', 'jpeg', 'jpg', 'png');
 		$filename = $_FILES[$fieldName]['name'];
 		$ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
@@ -59,7 +64,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// nodzes failu no diska
 	// -----------------------------------------------------------------------------
-	function eraseFileFromStore($idFile, $type = 'PDF')
+	static function eraseFileFromStore($idFile, $type = 'PDF')
 	{
 
         if($type == "PDF")
@@ -79,7 +84,7 @@ class files
     // -----------------------------------------------------------------------------
 	// nodzes failu no diska
 	// -----------------------------------------------------------------------------
-	function eraseFileFromStore2($File)
+	static function eraseFileFromStore2($File)
 	{
 		return @unlink($File);
 	}
@@ -87,7 +92,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// nodzes failu no MySQL tabulu un no diska
 	// -----------------------------------------------------------------------------
-	function deleteFile($idFile, $type = 'PDF')
+	static function deleteFile($idFile, $type = 'PDF')
 	{
 		$res=false;
         //echo  $idFile;
@@ -106,7 +111,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// saglaba failu
 	// -----------------------------------------------------------------------------
-	function saveFile($fieldName,$description=false,$userId,$messagesId,$idFile=false,$type=false)
+	static function saveFile($fieldName,$description=false,$userId,$messagesId,$idFile=false,$type=false)
 	{
 	        if (files::isUploadFile($fieldName))
 	        {
@@ -152,7 +157,7 @@ class files
     // -----------------------------------------------------------------------------
 	// saglab�t failu disk�
 	// -----------------------------------------------------------------------------
-	function saveFileToStore($fieldName)
+	static function saveFileToStore($fieldName)
 	{
         if (files::isUploadFile($fieldName))
 	    {
@@ -170,7 +175,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// atgriezh informaciju par failu
 	// -----------------------------------------------------------------------------
-	function getFileInfo($idFile, $type)
+	static function getFileInfo($idFile, $type)
 	{
 	        return dbProc::getFileInfo($idFile, $type);
 	}
@@ -179,7 +184,7 @@ class files
 	// -----------------------------------------------------------------------------
 	// suta failu klientam
 	// -----------------------------------------------------------------------------
-	function sendFile($idFile, $isExit=true, $type = 'PDF')
+	static function sendFile($idFile, $isExit=true, $type = 'PDF')
 	{
 			
 		$info=files::getFileInfo($idFile, $type);
@@ -233,7 +238,7 @@ class files
 	}
 
 
-	function wh_log($log_msg)
+	static function wh_log($log_msg)
 	{
 		$log_filename = LOG_STORE_PATH;
 		if (!file_exists($log_filename)) 
@@ -244,10 +249,102 @@ class files
 		$log_file_data = $log_filename.'/log_' . date('d-M-Y') . '.log';
 		// if you don't add `FILE_APPEND`, the file will be erased each time you add a log
 		file_put_contents($log_file_data, $log_msg . "\n", FILE_APPEND);
-	} 
+	}
 
+	// -----------------------------------------------------------------------------
+	// GPS_FAILI: upload, delete, download (f.gps.s.0)
+	// -----------------------------------------------------------------------------
+	static function saveGpsFile($fieldName, $region = '')
+	{
+		if (!files::isUploadFile($fieldName))
+		{
+			return false;
+		}
 
+		$filename = $_FILES[$fieldName]['name'];
+		$mime = isset($_FILES[$fieldName]['type']) ? $_FILES[$fieldName]['type'] : 'application/octet-stream';
+		$res = dbProc::replaceGpsFile($filename, $region, $mime);
+		if (!$res)
+		{
+			return false;
+		}
 
+		$idFile = dbLayer::getInsertId();
+		if ($idFile === false || $idFile === '')
+		{
+			return false;
+		}
 
+		if (!file_exists(GPS_FILES_STORE_PATH))
+		{
+			mkdir(GPS_FILES_STORE_PATH, 0777, true);
+		}
+
+		$dest = GPS_FILES_STORE_PATH.'/'.$idFile;
+		if (@move_uploaded_file($_FILES[$fieldName]['tmp_name'], $dest))
+		{
+			return $idFile;
+		}
+
+		dbProc::deleteGpsFile($idFile);
+		@unlink($dest);
+
+		return false;
+	}
+
+	static function deleteGpsFile($idFile)
+	{
+		if (!is_numeric($idFile))
+		{
+			return false;
+		}
+
+		if (dbProc::getGpsFileInfo($idFile) === false)
+		{
+			return false;
+		}
+
+		$res = dbProc::deleteGpsFile($idFile);
+		if ($res)
+		{
+			@unlink(GPS_FILES_STORE_PATH.'/'.$idFile);
+		}
+
+		return $res;
+	}
+
+	static function sendGpsFile($idFile, $isExit = true)
+	{
+		$info = dbProc::getGpsFileInfo($idFile);
+		if (!$info)
+		{
+			return false;
+		}
+
+		$c = @file_get_contents(GPS_FILES_STORE_PATH.'/'.$idFile);
+		if ($c === false)
+		{
+			return false;
+		}
+
+		while (ob_get_level())
+		{
+			ob_end_clean();
+		}
+
+		$mime = !empty($info['GFLS_META_INFO']) ? $info['GFLS_META_INFO'] : 'application/octet-stream';
+		header('Content-Type: '.$mime);
+		header('Content-Disposition: attachment; filename="'.$info['GFLS_NOSAUKUMS'].'"');
+		header('Content-Length: '.strlen($c));
+		header('Cache-Control: max-age=0');
+		header('Pragma: public');
+		echo $c;
+		if ($isExit)
+		{
+			exit();
+		}
+
+		return true;
+	}
 
 }

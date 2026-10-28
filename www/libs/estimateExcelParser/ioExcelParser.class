@@ -287,5 +287,4 @@ class ioExcelParser
         return ($semicolonCount > $commaCount) ? ';' : ',';
     }
 }
-?>
 

@@ -1,4 +1,4 @@
-﻿<?
+<?
 
 class text
 {
@@ -135,7 +135,7 @@ class text
 		return preg_match("/^(ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|ï¿½|[A-Z]|[a-z]|[0-9]|_|\.| )*$/",$s);
 	}
 
-    function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false, &$linescnt=false)
+    static function returnsplit($str, $lines, $delimiter, $maxStrLen, $array=false, &$linescnt=false)
     {
 	  $strlength = strlen($str);
 	  $linescnt = 1;

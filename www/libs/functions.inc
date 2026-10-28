@@ -7,7 +7,3 @@ function getFileOutput( $file )
 	ob_end_clean();
 	return $output;
 }
-
-
-
-?>

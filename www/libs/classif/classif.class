@@ -1,10 +1,10 @@
-<?
+﻿<?
 
 
 class classif
 {
 
-	function getValueArray($classifName)
+	static function getValueArray($classifName)
 	{
 		$m=array();
 		switch ($classifName)
@@ -175,7 +175,7 @@ class classif
 	}
 		
 
-	function getHtml($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+	static function getHtml($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
 	{
 		$m=classif::getValueArray($classifName);
 
@@ -194,7 +194,7 @@ class classif
 		return $r;
 	}
 
-    function getHtml2($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+    static function getHtml2($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
 	{
 		$m=classif::getValueArray($classifName);
 
@@ -212,7 +212,7 @@ class classif
 		$r.='</select>';
 		return $r;
 	}
-    function getHtml3($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
+    static function getHtml3($classifName,$name,$value,$attributes,$onlyLabel=false,$disabled=false)
 	{
 		$m=classif::getValueArray($classifName);
 

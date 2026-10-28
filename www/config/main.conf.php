@@ -32,6 +32,9 @@ define ('LDAP_ACCOUNT_SUFFIX','@energo.lv');
 // is test mode
 define ('TEST_MODE', true);
 
+// HTTPS API calls (LEWS test): skip TLS verify only when TEST_MODE (local/dev CA chain)
+define('HTTP_CLIENT_SSL_VERIFY', !TEST_MODE);
+
 // is LDAP autentificate mode
 define ('LDAP_AUTH_MODE', false);
 
@@ -186,6 +189,9 @@ define ('IS_GET_PEXCEL_FILE_VARIABLE','get_excel_file');
 
 // getting gps file - flag
 define ('IS_GET_GPS_FILE_VARIABLE','get_gps_file');
+
+// GPS file id query parameter (same as GET_FILE_VARIABLE)
+define ('GET_GPS_FILE_VARIABLE','idFile');
 
 // getting xml file - flag
 define ('IS_GET_XML_FILE_VARIABLE','get_xml_file');

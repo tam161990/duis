@@ -182,10 +182,32 @@ $isReadonlyExceptAdmin = $isReadonly && !$isAdmin;
 // Capitalize field can be edited by economist in ACCEPT status
 $isCapitalizeDisabled = !($status == STAT_ACCEPT && ($isEconomist || $isAdmin));
 
-// Create form
+// Create form (preserve search context in action URL for POST)
 $oLink = new urlQuery();
 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
 if($actId) $oLink->addPrm('actId', $actId);
+if (reqVar::get('fromRbfSearch') == 1)
+{
+    include_once('f.akt.rbfSearchCtx.inc');
+    $oLink->addPrm('fromRbfSearch', '1');
+    $oLink->addPrm('isSearch', '1');
+    foreach ($aktRbfSrchCtxMap as $urlKey => $hiddenName)
+    {
+        $ctxVal = aktRbfSearchCtxRaw($urlKey);
+        if ($ctxVal !== '')
+        {
+            $oLink->addPrm($hiddenName, $ctxVal);
+        }
+    }
+}
+elseif ($isSearch !== false && $isSearch !== '')
+{
+    $oLink->addPrm('isSearch', $isSearch);
+    if ($searchNum !== false && $searchNum !== '')
+    {
+        $oLink->addPrm('searchNum', $searchNum);
+    }
+}
 
 $oForm = new Form('frmMain', 'post', $oLink->getQuery());
 unset($oLink);
@@ -200,6 +222,24 @@ if (!empty($successMessage))
 $oForm->addElement('hidden', 'action', '');
 $oForm->addElement('hidden', 'actId', '', $actId);
 $oForm->addElement('hidden', 'status', '', $status);
+if (reqVar::get('fromRbfSearch') == 1)
+{
+    include_once('f.akt.rbfSearchCtx.inc');
+    $oForm->addElement('hidden', 'fromRbfSearch', '', '1');
+    $oForm->addElement('hidden', 'isSearch', '', '1');
+    foreach ($aktRbfSrchCtxMap as $urlKey => $hiddenName)
+    {
+        $oForm->addElement('hidden', $hiddenName, '', aktRbfSearchCtxRaw($urlKey));
+    }
+}
+elseif ($isSearch !== false && $isSearch !== '')
+{
+    $oForm->addElement('hidden', 'isSearch', '', $isSearch);
+    if ($searchNum !== false && $searchNum !== '')
+    {
+        $oForm->addElement('hidden', 'searchNum', '', $searchNum);
+    }
+}
 
 // Act number display
 if($actId != false)
@@ -423,62 +463,7 @@ if($actId != false && $status == STAT_ACCEPT && ($isEconomist || $isAdmin))
 // Back button - show for existing acts or when coming from search
 if($actId != false || $isSearch !== false || $searchNum !== false)
 {
-    $fromRbfSearch = reqVar::get('fromRbfSearch');
-    // back button
-    if($fromRbfSearch == 1)
-    {
-      $employeeCodeSearch = reqVar::get('employeeCode');
-      $vvNumberSearch = reqVar::get('vvNumber');
-      $territoryCodeSearch = reqVar::get('territoryCode');
-      $actTypeSearch = reqVar::get('actType');
-      $authorIdSearch = reqVar::get('authorId');
-      $statusSearch = reqVar::get('status');
-
-      // RBF advanced search form (frame_1) with selected criteria restored
-      $oLink=new urlQuery();
-      $oLink->addPrm('isSearch', 1);
-      $oLink->addPrm('isReturn', 1);
-      $oLink->addPrm('selectedId', $actId);
-      $oLink->addPrm('employeeCode', $employeeCodeSearch);
-      $oLink->addPrm('vvNumber', $vvNumberSearch);
-      $oLink->addPrm('territoryCode', $territoryCodeSearch);
-      $oLink->addPrm('actType', $actTypeSearch);
-      $oLink->addPrm('authorId', $authorIdSearch);
-      $oLink->addPrm('status', $statusSearch);
-      $oLink->addPrm(FORM_ID, 'f.akt.s.35');
-      $actSearchLink=$oLink ->getQuery();
-      unset($oLink);
-
-      // RBF acts list (frame_2) with the same criteria
-      $oLink=new urlQuery();
-      $oLink->addPrm('selectedId', $actId);
-      $oLink->addPrm('employeeCode', $employeeCodeSearch);
-      $oLink->addPrm('vvNumber', $vvNumberSearch);
-      $oLink->addPrm('territoryCode', $territoryCodeSearch);
-      $oLink->addPrm('actType', $actTypeSearch);
-      $oLink->addPrm('authorId', $authorIdSearch);
-      $oLink->addPrm('status', $statusSearch);
-      $oLink->addPrm(FORM_ID, 'f.akt.s.35');
-      $actListLink=$oLink ->getQuery();
-      unset($oLink);
-    }
-    else
-    {
-      // legacy search back flow
-      $oLink=new urlQuery();
-      $oLink->addPrm('isSearch', $isSearch);
-      $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
-      $oLink->addPrm(FORM_ID, 'f.akt.s.9');
-      $actSearchLink=$oLink ->getQuery();
-      unset($oLink);
-
-      $oLink=new urlQuery();
-      $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
-      $oLink->addPrm('selectedId', $actId);
-      $oLink->addPrm(FORM_ID, 'f.akt.s.9');
-      $actListLink=$oLink ->getQuery();
-      unset($oLink);
-    }
+    include('f.akt.backLinks.inc');
       $oForm -> addElement('static', 'jsBackButtons', '', '
     			<script>
     			    function reloadBack()
@@ -581,63 +566,67 @@ if($oForm->getValue('action'))
     {
             // Get old status before update
             $oldStatus = STAT_INSERT;
-            
-            // Update act status (INSERT → ACCEPT) - also saves audit record automatically
-            $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
-            
-            // Save user action
-            dbProc::setUserActionDate($userId, ACT_EXPORT);
-            // finilize the object
-            dbProc::closeObject($actId, 1);
-            
-            if($r)
+
+            // PDF for Pielikumi (FILE_EXPORT) — same order as f.akt.s.1 export: PDF first, then status
+            $idFile = toPdf::exportRbfActPdf($actId, $userId);
+
+            if ($idFile !== false)
             {
-                // Send email notification about status change
-                email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
-                
-                // Set flash message (will show once after redirect)
-                session::setFlash('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
-                
-                $oLink=new urlQuery();
-                $oLink->addPrm(FORM_ID, 'f.akt.s.30');
-                $oLink->addPrm('actId', $actId);
-                RequestHandler::makeRedirect($oLink->getQuery());
+                // Update act status (INSERT → ACCEPT) - also saves audit record automatically
+                $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
+
+                // Save user action
+                dbProc::setUserActionDate($userId, ACT_EXPORT);
+                // finilize the object
+                dbProc::closeObject($actId, 1);
+
+                if($r)
+                {
+                    // Send email notification about status change
+                    email::sendRbfActStatusChangeNotification($actId, $oldStatus, STAT_ACCEPT, $userId);
+
+                    // Set flash message (will show once after redirect)
+                    session::setFlash('successMessage', text::get('ACT_SUBMITTED_FOR_APPROVAL'));
+
+                    $oLink=new urlQuery();
+                    $oLink->addPrm(FORM_ID, 'f.akt.s.30');
+                    $oLink->addPrm('actId', $actId);
+                    RequestHandler::makeRedirect($oLink->getQuery());
+                }
+                else
+                {
+                    $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
+                }
             }
             else
             {
-                $oForm->addError(text::get('ERROR_IN_DB_QUERY') . dbProc::getError());
+                $oForm->addError(text::get('ERROR_GENERATING_PDF'));
             }
-       
+
     }
     else if($oForm->getValue('action') == OP_ACCEPT)
     {
-        // Set approve date for works and materials
-        if($isAuto == 1) {
-            // For automatic acts, only approve works for the current period
-            $actLifePeriod = dbProc::getActLifePeriod($actId);
-            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()), $actLifePeriod);
-            
-            // Set approve date for processed RBF works
-            dbProc::setRbfWorksApproveDate($actId, dbLayer::parseDate(dtime::now()));
-            
-            // Set approve date for manual works (DRBI_IS_WORKER = 1)
-            // If final export or actLifePeriod = 3, approve all remaining manual works
-            // Otherwise, only approve manual works for the current period
-            $isFinalExport = !empty($act['RAKT_IR_OBJEKTS_PABEIGTS']);
-            $approveAllManual = ($isFinalExport || $actLifePeriod == 3);
-            dbProc::setManualWorksApproveDate(
-                $actId,
-                dbLayer::parseDate(dtime::now()),
-                $actLifePeriod,
-                $approveAllManual
-            );
-        } else {
-            // For manual acts, approve all works
-            dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()));
+        $approveActId = (int)$oForm->getValue('actId');
+        if ($approveActId <= 0)
+        {
+            $approveActId = (int)$actId;
         }
+        $approveActInfo = ($approveActId > 0) ? dbProc::getRbfActInfo($approveActId) : false;
+        $isAutoAct = ($approveActInfo && !empty($approveActInfo['RAKT_IS_AUTO']));
 
-        // Generate PDF
-        $idFile = toPdf::exportRbfActPdf($actId, $userId);
+        // Auto RBF: dates are set on starpakt export (f.akt.s.34), not on economist approve
+        if ($isAutoAct)
+        {
+            $idFile = true;
+            files::wh_log('[RBF APPROVE] actId='.$approveActId.' auto=1 status-only (dates on export)');
+        }
+        else
+        {
+            // For manual acts, approve all works and generate PDF
+            dbProc::setApproveDate($approveActId, dbLayer::parseDate(dtime::now()));
+            $idFile = toPdf::exportRbfActPdf($approveActId, $userId);
+            files::wh_log('[RBF APPROVE] actId='.$approveActId.' auto=0 manual setApproveDate+PDF');
+        }
         
         if ($idFile !== false)
         {
@@ -645,34 +634,29 @@ if($oForm->getValue('action'))
             $targetStatus = STAT_CLOSE;
             $actionType = ACT_CLOSE;
             
-            if($isAuto == 1) {
-                // Check if period < 3 and there are remaining unapproved works
-                $actLifePeriod = dbProc::getActLifePeriod($actId);
-                $hasRemainingWorks = dbProc::hasRemainingUnapprovedWorks($actId);
-                
-                if ($actLifePeriod < 3 && $hasRemainingWorks) {
-                    // Set status back to INSERT if there are more works to process
-                    $targetStatus = STAT_INSERT;
-                    $actionType = ACT_INSERT;
-                }
+            if ($isAutoAct)
+            {
+                $targetStatus = dbProc::resolveRbfActStatusAfterApprove($approveActId);
+                $actionType = ($targetStatus == STAT_INSERT) ? ACT_INSERT : ACT_CLOSE;
             }
             
             // Save capitalize checkbox value
             $capitalizeValue = $oForm->getValue('capitalize') ? 1 : 0;
-            $r = dbProc::updateRbfActCapitalize($actId, $capitalizeValue);  
+            $r = dbProc::updateRbfActCapitalize($approveActId, $capitalizeValue);  
 
             // Get old status before update
             $oldStatus = STAT_ACCEPT;
             
             // Update act status - also saves audit record automatically
-            $r3 = dbProc::updateRbfActStatus($actId, $targetStatus, $userId);
+            $r3 = dbProc::updateRbfActStatus($approveActId, $targetStatus, $userId);
+            files::wh_log('[RBF APPROVE] actId='.$approveActId.' targetStatus='.$targetStatus.' capitalize='.($r !== false ? 'OK' : 'FAIL').' status='.($r3 !== false ? 'OK' : 'FAIL'));
             
             // Save user action
             dbProc::setUserActionDate($userId, $actionType);
             
             // Send email notification about status change
             if($r3 !== false) {
-                email::sendRbfActStatusChangeNotification($actId, $oldStatus, $targetStatus, $userId);
+                email::sendRbfActStatusChangeNotification($approveActId, $oldStatus, $targetStatus, $userId);
             }
             
             // Debug logging
@@ -691,7 +675,7 @@ if($oForm->getValue('action'))
                 
                 $oLink=new urlQuery();
                 $oLink->addPrm(FORM_ID, 'f.akt.s.30');
-                $oLink->addPrm('actId', $actId);
+                $oLink->addPrm('actId', $approveActId);
                 RequestHandler::makeRedirect($oLink->getQuery());
             }
             else
@@ -708,11 +692,8 @@ if($oForm->getValue('action'))
     else if($oForm->getValue('action') == OP_RETURN)
     {
         if($isAuto == 1) {
-            // Reset processed flag for unapproved works
-            dbProc::resetUnprocessedRbfWorks($actId);
-            
-            // Delete unapproved DARBI records for current period
-            dbProc::deleteUnapprovedDarbiForCurrentPeriod($actId);
+            // Undo current starpakt: DARBI rows + approve dates on rbf_akta_darbi
+            dbProc::revertRbfStarpaktSubmission($actId);
         }
 
         // open the object

@@ -1,7 +1,7 @@
 <?
 class toExcel {	
 
-function projectTammeExcel($actId, $userId, $action){
+static function projectTammeExcel($actId, $userId, $action){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
     if(count($actInfo)>0)
@@ -154,7 +154,7 @@ function projectTammeExcel($actId, $userId, $action){
     return $idFile;
 }
 
-function projectExportExcel($actId, $userId){
+static function projectExportExcel($actId, $userId){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
     if(count($actInfo)>0)
@@ -309,7 +309,7 @@ function projectExportExcel($actId, $userId){
 }
 
 
-function exportTameMaterial($actId, $userId, $type){
+static function exportTameMaterial($actId, $userId, $type){
     // get info about voltage
     $actInfo = dbProc::getActInfo($actId);
     if(count($actInfo)>0)
@@ -453,7 +453,7 @@ function exportTameMaterial($actId, $userId, $type){
 
     }
 	
-	function exportTameWork($actId, $userId, $type){
+	static function exportTameWork($actId, $userId, $type){
         // get info about voltage
         $actInfo = dbProc::getActInfo($actId);
         if(count($actInfo)>0)
@@ -597,7 +597,7 @@ function exportTameMaterial($actId, $userId, $type){
     
         }
 
-        function exportTameAll($actId, $userId, $type){
+        static function exportTameAll($actId, $userId, $type){
             // get info about voltage
             $actInfo = dbProc::getActInfo($actId);
             if(count($actInfo)>0)
@@ -775,7 +775,7 @@ function exportTameMaterial($actId, $userId, $type){
     // Export estimate file statistics to Excel
     // Returns: file ID on success, false on failure
     // -----------------------------------------------------------------------------
-    function exportEstimateStatistics($estimateId, $userId, $actId)
+    static function exportEstimateStatistics($estimateId, $userId, $actId)
     {
         // Get estimate file info
         $estimateInfo = dbProc::getEstimateFileInfo($estimateId);

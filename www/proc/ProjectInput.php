@@ -38,20 +38,16 @@
 	}
 	ob_start();
 	$r = false;
+	$err_message = '';
 	try
 	{
-		// if you are doing ajax with application-json headers
-		$data = json_decode(file_get_contents("php://input")) ? : 'nifiga net';	
+		$rawBody = file_get_contents("php://input");
+		$data = json_decode($rawBody);
+		if (!is_object($data))
+		{
+			throw new Exception('Invalid JSON body');
+		}
 
-		/*issue_key			kods
-			issue_status		status
-			issue_type			tips
-			issue_summary		saturs
-			issue_designer		projket�t�js
-			issue_invest_year	invest�ciju gads
-			issue_territory		atbild�bas teritorija*/
-
-		//var_dump($data);
 		if( isset($data->issue_key) && !empty($data->issue_key) )
 		{
 
@@ -67,11 +63,10 @@
 										'issue_summary:' .(isset($data->issue_summary) ? $data->issue_summary :'').PHP_EOL.
 										'issue_type:' .(isset($data->issue_type) ? $data->issue_type :'').PHP_EOL.
 										'issue_proj:' .(isset($data->issue_proj) ? $data->issue_proj :'').PHP_EOL.
-										'customfield_11505:' .(isset($data->customfield_11505) ? $data->customfield_11505 :'').PHP_EOL. // Būvkomersants
-										'customfield_28740:' .(isset($data->customfield_28740) ? $data->customfield_28740 :'').PHP_EOL. // transition_ID
-										'issue_needByDate:' .(isset($data->issue_needByDate) ? $data->issue_needByDate :'').PHP_EOL // Plānotais izbūves sākums
+										'customfield_11505:' .(isset($data->customfield_11505) ? $data->customfield_11505 :'').PHP_EOL.
+										'customfield_28740:' .(isset($data->customfield_28740) ? $data->customfield_28740 :'').PHP_EOL.
+										'issue_needByDate:' .(isset($data->issue_needByDate) ? $data->issue_needByDate :'').PHP_EOL
 								);						
-			var_dump($data);
 			if( (isset($data->issue_invest_year) && !empty($data->issue_invest_year))  || 
 					(isset($data->issue_designer) && !empty($data->issue_designer)) ||
 					(isset($data->issue_territory) && !empty($data->issue_territory))  ||
@@ -113,18 +108,22 @@
 			} else {
 				throw new Exception('not all data set');
 			}
-			
-			$response = ob_get_clean();	
 		}	
 		else {
 			throw new Exception('issue_key not set');
 		}
 	}
 	catch(Throwable $e) {
-		$err_message = $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine();			
+		if ($err_message === '')
+		{
+			$err_message = $e->getMessage().' in '.$e->getFile().' on line '.$e->getLine();
+		}
 	}	
 
-	$response = ob_get_clean();	
+	if (ob_get_level() > 0)
+	{
+		ob_end_clean();
+	}
 	if( $r !== false ) {
 		$response = json_response(200, "OK");
 	} else {

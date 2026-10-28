@@ -1,7 +1,7 @@
 <?
 class toJson {	
 
-    function projectOrderMaterial($actId, $userId){
+    static function projectOrderMaterial($actId, $userId){
         
         $actInfo = dbProc::getActInfo($actId);
         if(count($actInfo)>0)

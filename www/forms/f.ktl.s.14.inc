@@ -69,7 +69,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
          $contract['']=text::get('EMPTY_SELECT_OPTION');
 		// inicial state: mmsId=0;
 		// if mmsId>0 ==> mms selected from the list
-		if($mmsId != false)
+		if ($mmsId !== false && $mmsId !== '')
 		{
 			// get info about voltage
 			$mmsInfo = dbProc::getMMSWorkList($mmsId);
@@ -194,16 +194,16 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 		// form buttons
         if($isAdmin || $isEdUser)
         {
-    		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setValue(\'action\',\''.OP_INSERT.'\');"');
+    		$oForm -> addElement('submitImg', 'add', text::get('ADD'), 'img/btn_pievienot.gif', 'width="70" height="20" onclick="setFormValue(\'frmMain\',\'action\',\''.OP_INSERT.'\');"');
     		if($isEdit) {
-				$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyField(\'mmsId\')) {setValue(\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
-				$oForm -> addElement('submitImg', 'delete_row', text::get('DELETE_ROW'), 'img/btn90_delete_row.gif', 'width="90" height="20" onclick="if (!isEmptyField(\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE_ROW.'\');} else {return false;}"');
+				$oForm -> addElement('submitImg', 'save', text::get('SAVE'), 'img/btn_saglabat.gif', 'width="70" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'mmsId\')) {setFormValue(\'frmMain\',\'action\',\''.OP_UPDATE.'\');} else {return false;}"');
+				$oForm -> addElement('submitImg', 'delete_row', text::get('DELETE_ROW'), 'img/btn90_delete_row.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_DELETE_ROW.'\');} else {return false;}"');
 			}
     		$oForm -> addElement('clearImg', 'clear', text::get('CLEAR'), 'img/btn_attirit.gif', 'width="70" height="20"','','',array('onClick'=>'refreshButton(\'mmsId\');parent.frame_1.unActiveRow();'));
             
             if ($isDelete)
             {
-			  $oForm -> addElement('submitImg', 'delete_work', text::get('DELETE_WORK'), 'img/btn90_delete_work.gif', 'width="90" height="20" onclick="if (!isEmptyField(\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setValue(\'action\',\''.OP_DELETE.'\');} else {return false;}"');
+			  $oForm -> addElement('submitImg', 'delete_work', text::get('DELETE_WORK'), 'img/btn90_delete_work.gif', 'width="90" height="20" onclick="if (!isEmptyFormField(\'frmMain\',\'mmsId\') && isDeleteWithMessage(\''.text::get('WARNING_DELETE_ROW').'\')) {setFormValue(\'frmMain\',\'action\',\''.OP_DELETE.'\');} else {return false;}"');
             }
          	$oForm -> addElement('static', 'jsButtonsControl', '', '
     			<script>
@@ -211,16 +211,16 @@ if ($isAdmin || $isEdUser || $isAuditUser)
     				{
     					if (!isEmptyField(name))
     					{
-							document.all["save"].src="img/btn_saglabat.gif";
-							document.all["delete_row"].src="img/btn90_delete_row.gif";
-							document.all["delete_work"].src="img/btn90_delete_work.gif";
+							if (document.all["save"]) document.all["save"].src="img/btn_saglabat.gif";
+							if (document.all["delete_row"]) document.all["delete_row"].src="img/btn90_delete_row.gif";
+							if (document.all["delete_work"]) document.all["delete_work"].src="img/btn90_delete_work.gif";
 
     					}
     					else
     					{
-    						document.all["save"].src="img/btn_saglabat_disabled.gif";
-							document.all["delete_row"].src="img/btn90_delete_row_disabled.gif";
-							document.all["delete_work"].src="img/btn90_delete_work_disabled.gif";
+    						if (document.all["save"]) document.all["save"].src="img/btn_saglabat_disabled.gif";
+							if (document.all["delete_row"]) document.all["delete_row"].src="img/btn90_delete_row_disabled.gif";
+							if (document.all["delete_work"]) document.all["delete_work"].src="img/btn90_delete_work_disabled.gif";
     					}
     				}
     				refreshButton("mmsId");
@@ -233,6 +233,11 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 			$check = true;
 			$r = false;
 			$checkRequiredFields = false;
+			$formAction = $oForm->getValue('action');
+			$formMmsId = $oForm->getValue('mmsId');
+			if ($formMmsId === '' || $formMmsId === false) {
+				$formMmsId = $oForm->getValue('mmsId', '', true);
+			}
             // delete
             if ($oForm->getValue('action')== OP_DELETE && $oForm -> getValue('kods') )
             {
@@ -247,9 +252,17 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 												) ;
 			}			
             // save
-			else if ($oForm->getValue('action')==OP_INSERT || ($oForm->getValue('action')==OP_UPDATE  && is_numeric($oForm->getValue('mmsId'))))
+			else if ($formAction==OP_INSERT || ($formAction==OP_UPDATE && $formMmsId !== false && $formMmsId !== '' && is_numeric($formMmsId)))
 			{
-    			if ($oForm -> getValue('kods') && $oForm -> getValue('edAreaCode') )
+    			$kodsVal = $oForm->getValue('kods');
+    			if ($kodsVal === '' || $kodsVal === false) {
+    				$kodsVal = $oForm->getValue('kods', '', true);
+    			}
+    			$edAreaVal = $oForm->getValue('edAreaCode');
+    			if ($edAreaVal === '' || $edAreaVal === false) {
+    				$edAreaVal = $oForm->getValue('edAreaCode', '', true);
+    			}
+    			if ($kodsVal !== '' && $kodsVal !== false && $edAreaVal !== '' && $edAreaVal !== false)
     			{
     				$checkRequiredFields = true;
     			}
@@ -259,8 +272,8 @@ if ($isAdmin || $isEdUser || $isAuditUser)
 					// if all is ok, do operation
 					if($check)
 					{
-						$r=dbProc::saveMMSWork(($oForm->getValue('action')==OP_UPDATE?$oForm->getValue('mmsId'):false),
-						$oForm->getValue('kods'),
+						$r=dbProc::saveMMSWork(($formAction==OP_UPDATE?$formMmsId:false),
+						$kodsVal,
 						$oForm->getValue('designation'),
 						$oForm->getValue('worktitle'),						
                         $oForm->getValue('proces_date'),
@@ -319,7 +332,7 @@ if ($isAdmin || $isEdUser || $isAuditUser)
     					$oLink->addPrm('successMessage', text::get('RECORD_WAS_DELETED'));
     					break;
     			}
-    			//RequestHandler::makeRedirect($oLink->getQuery());
+    			RequestHandler::makeRedirect($oLink->getQuery());
     		}
 		}
 

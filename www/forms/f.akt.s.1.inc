@@ -209,10 +209,27 @@ if ( $isAdmin || $isSystemUser)
 {
   $oLink=new urlQuery();
   $oLink->addPrm(FORM_ID, 'f.akt.s.1');
-  $oLink->addPrm('isSearch', $isSearch);
   $oLink->addPrm('isTrase', $trase );
   $oLink->addPrm('isAuto', $isAuto);
-  $oLink->addPrm('searchNum', $searchNum);
+  if (reqVar::get('fromRbfSearch') == 1)
+  {
+      include_once('f.akt.rbfSearchCtx.inc');
+      $oLink->addPrm('fromRbfSearch', '1');
+      $oLink->addPrm('isSearch', '1');
+      foreach ($aktRbfSrchCtxMap as $urlKey => $hiddenName)
+      {
+          $ctxVal = aktRbfSearchCtxRaw($urlKey);
+          if ($ctxVal !== '')
+          {
+              $oLink->addPrm($hiddenName, $ctxVal);
+          }
+      }
+  }
+  else
+  {
+      $oLink->addPrm('isSearch', $isSearch);
+      $oLink->addPrm('searchNum', $searchNum);
+  }
   $oForm = new Form('frmMain','post',$oLink->getQuery());
   unset($oLink);
 
@@ -602,8 +619,21 @@ unset($res);
 
   // form elements
   $oForm -> addElement('hidden', 'isTrase', null, $trase);
-  $oForm -> addElement('hidden', 'isSearch', '', $isSearch);
-  $oForm -> addElement('hidden', 'searchNum', '', $searchNum);
+  if (reqVar::get('fromRbfSearch') == 1)
+  {
+      include_once('f.akt.rbfSearchCtx.inc');
+      $oForm -> addElement('hidden', 'fromRbfSearch', '', '1');
+      $oForm -> addElement('hidden', 'isSearch', '', '1');
+      foreach ($aktRbfSrchCtxMap as $urlKey => $hiddenName)
+      {
+          $oForm -> addElement('hidden', $hiddenName, '', aktRbfSearchCtxRaw($urlKey));
+      }
+  }
+  else
+  {
+      $oForm -> addElement('hidden', 'isSearch', '', $isSearch);
+      $oForm -> addElement('hidden', 'searchNum', '', $searchNum);
+  }
   $oForm -> addElement('hidden', 'action', '');
   $oForm -> addElement('hidden', 'actId', null, isset($act['RAKT_ID'])? $act['RAKT_ID']:'');
   $oForm -> addElement('hidden', 'status', null, $status);
@@ -826,20 +856,7 @@ if(true)
   {
     
       // back button
-      // act advanced search form
-    	$oLink=new urlQuery();
-    	$oLink->addPrm('isSearch', $isSearch);
-      $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
-    	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
-    	$actSearchLink=$oLink ->getQuery();
-    	unset($oLink);
-      // list of acts
-    	$oLink=new urlQuery();
-      $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
-      $oLink->addPrm('selectedId', $actId);
-    	$oLink->addPrm(FORM_ID, 'f.akt.s.9');
-    	$actListLink=$oLink ->getQuery();
-    	unset($oLink);
+      include('f.akt.backLinks.inc');
       $oForm -> addElement('static', 'jsBackButtons', '', '
     			<script>
     			    function reloadBack()
@@ -1414,20 +1431,7 @@ if(true)
 
         if ($r7)
         {
-          // act advanced search form
-          $oLink=new urlQuery();
-          $oLink->addPrm('isSearch', $isSearch);
-          $oLink->addPrm('selectedId', ($isSearch == 1 || $isSearch == 3)?$actId : $searchNum);
-          $oLink->addPrm(FORM_ID, 'f.akt.s.9');
-          $actSearchLink=$oLink ->getQuery();
-          unset($oLink);
-          // list of acts
-          $oLink=new urlQuery();
-          $oLink->addPrm('isNumber', ($isSearch == 1 || $isSearch == 3)?0 : $searchNum);
-          $oLink->addPrm('selectedId', $actId);
-          $oLink->addPrm(FORM_ID, 'f.akt.s.9');
-          $actListLink=$oLink ->getQuery();
-          unset($oLink);
+          include('f.akt.backLinks.inc');
 
           $oForm->addElement('static','jsRefresh2','','
           <script>

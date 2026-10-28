@@ -72,6 +72,10 @@
         $Totalpct = 0;
         $Totaltotal = 0;
         $duMaterials = 0;
+        $konts = array();
+        $WriteOffTotalsumma = 0;
+        $WriteOffTotalpct = 0;
+        $WriteOffTotaltotal = 0;
 
         if (is_array($res))
 		{

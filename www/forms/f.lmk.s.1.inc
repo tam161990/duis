@@ -81,10 +81,34 @@ if($isLimitCardUser || $isAdmin)
 
 		// inicialising of listing object
         $listing=new listing();
-        
+        $reportApiError = '';
+
         if($searchText !== false) {
+            if (!RequestHandler::ensureCurlExtension())
+            {
+                $reportApiError = text::get('ERROR') . ': PHP curl paplašinājums nav pieejams (extension=curl php.ini, pārstartējiet Apache).';
+                $amount = 0;
+                $res = array();
+                $rowCount = 0;
+                $listingHtml = '';
+                unset($oLink);
+            }
+            else
+            {
             $reportData = RequestHandler::getLimitkarteReport($report, $searchText, 1, 1);
 
+            if ($reportData === false || !is_array($reportData))
+            {
+                $apiErr = RequestHandler::getLastApiError();
+                $reportApiError = text::get('ERROR') . ': ' . ($apiErr !== '' ? $apiErr : 'API pieprasījums neizdevās');
+                $amount = 0;
+                $res = array();
+                $rowCount = 0;
+                $listingHtml = '';
+                unset($oLink);
+            }
+            else
+            {
             $amount = $reportData['totalRecordCount']; 
             $listing->setAmount($amount);
             $listingHtml=$listing->getHtml($oLink ->getQuery());
@@ -151,7 +175,9 @@ if($isLimitCardUser || $isAdmin)
 			$total1 = session::get('LIMITCARD_TOTAL');			
 			$subtotal = ((isset($total1) && !empty($total1) ) ? $total1 : $total2);
             $subtotal = number_format($subtotal, 2, '.', '');
-			
+            }
+            }
+
         } 
 		
 		// inicial state of users number

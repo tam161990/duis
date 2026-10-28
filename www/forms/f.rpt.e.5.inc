@@ -30,7 +30,7 @@
            $searchCr[] = text::get('ACT_OUNER').': '.dbProc::getUserName($sCr[6]);
         }
 
-        $status = explode("*", $sCr[8]);
+        $status = explode("*", isset($sCr[8]) ? $sCr[8] : '-1');
         $statusString = '';
         if($status[0] == -1)
         {
@@ -52,7 +52,8 @@
         }
         if(isset($sCr[10]) && $sCr[10] != -1)
         {
-           $searchCr[] = text::get('ED_SECTION').': '.$sCr[10];
+           $sectionLabel = is_array($sCr[10]) ? implode(', ', $sCr[10]) : $sCr[10];
+           $searchCr[] = text::get('ED_SECTION').': '.$sectionLabel;
         }
    $excel = '<html><head><meta http-equiv=Content-Type content="text/html; charset=utf-8"></head><body>';
 

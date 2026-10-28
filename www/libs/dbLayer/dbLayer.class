@@ -118,7 +118,7 @@ class dbLayer
 
 		ob_start();
 
-		dbLayer::dbConnect();
+		$this->dbConnect();
 
 		$sqlQuery=str_replace('"NULL"','NULL',$sqlQuery);
 
@@ -146,7 +146,7 @@ class dbLayer
 		}
 
 
-		dbLayer::dbDisconnect();
+		$this->dbDisconnect();
 
 		$workTime=RequestHandler::getMicroTime()-$timeStart;
 
@@ -173,7 +173,7 @@ class dbLayer
 	// return last error text
 	// public
 	// -----------------------------------------------------------------------------
-	function getError($withHtml=true)
+	static function getError($withHtml=true)
 	{
 		
 		return @mysqli_error($GLOBALS['sql_connect']);
@@ -183,7 +183,7 @@ class dbLayer
 	// return last insert id
 	// public
 	// -----------------------------------------------------------------------------
-	function getInsertId()
+	static function getInsertId()
 	{
 		return @mysqli_insert_id($GLOBALS['sql_connect']);
 	}
@@ -192,7 +192,7 @@ class dbLayer
 	// parse date from LV to USA format (for MySQL)
 	// public
 	// -----------------------------------------------------------------------------
-	function parseDate($date)
+	static function parseDate($date)
 	{
 		$m=explode('.',$date);
 		if (count($m)==3)
@@ -205,7 +205,7 @@ class dbLayer
 		}
 	}
 
-    function parseDateWithTime($date, $time)
+    static function parseDateWithTime($date, $time)
 	{
 		$m=explode('.',$date);
 		if (count($m)==3 && $time != '')
@@ -222,7 +222,7 @@ class dbLayer
 	// return sql for date in LV format
 	// public
 	// -----------------------------------------------------------------------------
-	function sqlParseDate($field, $isAlias=true)
+	static function sqlParseDate($field, $isAlias=true)
 	{
 		return ' IF (`'.$field.'` != "0000-00-00" , DATE_FORMAT(`'.$field.'`,"%d.%m.%Y"), "")  '.(($isAlias)?' as `'.$field.'` ':' ');
 	}
@@ -240,7 +240,7 @@ class dbLayer
 	// prepare data from a php array for use with the sql IN keyword
 	// public
 	// -----------------------------------------------------------------------------
-	function parseArray($aData)
+	static function parseArray($aData)
 	{
 		$cParsedString='';
 		if (is_array($aData))

@@ -127,7 +127,7 @@ window.onload = function() {
 					<tr><td><?= $oForm -> getElementHtml('save'); ?></td></tr>
 				<? } ?>
 				
-				<? if($actId != false && ($status == STAT_INSERT || $status == STAT_RETURN))  {?>
+				<? if($actId != false && $isAuto == 0 && ($status == STAT_INSERT || $status == STAT_RETURN))  {?>
 					<tr><td><?=$oForm->getElementHtml('export');?></td></tr>
 				<? } ?>
 				

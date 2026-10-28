@@ -12,8 +12,9 @@ require_once(dirname(__FILE__).'/../libs/export/toExcel.class');
 require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
 //require_once(dirname(__FILE__).'/../libs/errorhandling.php');
 
-$processId;
+$processId = false;
 $interval = 10;
+$isStoped = false;
 
 while(true) {
 	//dbProc::updateActStatusFromKvikStep();

@@ -30,7 +30,7 @@
            $searchCr[] = text::get('SINGLE_ACT_TYPE').': '.dbProc::getActTypeName($sCr[5]);
         }
 
-        $status = explode("*", $sCr[7]);
+        $status = explode("*", isset($sCr[7]) ? $sCr[7] : '-1');
         $statusString = '';
         if($status[0] == -1)
         {
@@ -48,7 +48,8 @@
         $searchCr[] = text::get('STATUS').': '.$statusString;
         if(isset($sCr[8]) && $sCr[8] != -1)
         {
-           $searchCr[] = text::get('ED_SECTION').': '.$sCr[8];
+           $sectionLabel = is_array($sCr[8]) ? implode(', ', $sCr[8]) : $sCr[8];
+           $searchCr[] = text::get('ED_SECTION').': '.$sectionLabel;
         }
    $excel = '<html><head><meta http-equiv=Content-Type content="text/html; charset=utf-8"></head><body>';
 

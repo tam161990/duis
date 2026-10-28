@@ -48,26 +48,40 @@ if($isPpaUser || $isAdmin)
     $searchLink = $oLink -> getQuery();
     unset($oLink);
  	
+    $res = array();
+    $rowCount = 0;
+    $reportApiError = '';
+
     if($searchText !== false) {
-        $reportData = RequestHandler::getPPAReport($searchText, 1, 30);
-      //  echo '<pre>';		
-	  //  print_r($reportData);		
-	  //  echo '</pre>';		
-        $rows = $reportData['ppaReport'];
-        $i = 0;
-        if (is_array($rows))
+        if (!RequestHandler::ensureCurlExtension())
         {
-            $res = array();           
-            $total2 = 0;
-            foreach ($rows as $row) {
-                $res[$i] = $row;
-                $date = new DateTime((string)substr($row['ExpectedExecutionDate'], 0, strrpos($row['ExpectedExecutionDate'], 'T')));
-                $res[$i]['ExpectedExecutionDate'] =  $date->format('d.m.Y');                    
-                $i ++;					
-            }
+            $reportApiError = text::get('ERROR') . ': PHP curl paplašinājums nav pieejams (extension=curl php.ini, pārstartējiet Apache).';
         }
-        $rowCount = $i;
-    } 
+        else
+        {
+        $reportData = RequestHandler::getPPAReport($searchText, 1, 30);
+        if ($reportData === false || !is_array($reportData))
+        {
+            $apiErr = RequestHandler::getLastApiError();
+            $reportApiError = text::get('ERROR') . ': ' . ($apiErr !== '' ? $apiErr : 'API pieprasījums neizdevās');
+        }
+        else
+        {
+            $rows = isset($reportData['ppaReport']) ? $reportData['ppaReport'] : null;
+            $i = 0;
+            if (is_array($rows))
+            {
+                foreach ($rows as $row) {
+                    $res[$i] = $row;
+                    $date = new DateTime((string)substr($row['ExpectedExecutionDate'], 0, strrpos($row['ExpectedExecutionDate'], 'T')));
+                    $res[$i]['ExpectedExecutionDate'] =  $date->format('d.m.Y');
+                    $i ++;
+                }
+            }
+            $rowCount = $i;
+        }
+        }
+    }
     
     include('f.ktl.s.x.1.tpl');
 

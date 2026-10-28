@@ -14,8 +14,9 @@ require_once(dirname(__FILE__).'/../libs/datetime/dtime.class');
 require_once(dirname(__FILE__).'/../libs/email/email.class');
 require_once(dirname(__FILE__).'/../libs/rbf/RbfActProcessor.class');
 
-$processId;
+$processId = null;
 $interval = 86400;
+$isStoped = false;
 
 while(true) {
 	try {

@@ -861,6 +861,12 @@ function disableFormField(formname,name,value)
 
 function setValue(name,value)
 {   
+	// Prefer named control on frmMain (avoids clashing with form.action etc. in modern browsers)
+	if (typeof document.forms['frmMain'] !== 'undefined' && isSetFormField('frmMain', name))
+	{
+		setFormValue('frmMain', name, value);
+		return;
+	}
     if (isSet(name))
 	{
 
@@ -1340,38 +1346,27 @@ function reloadFrame(num, url)
 			break;
 	}
 	
-	// Check if we're in a frame-based environment
-	var isInFrame = (window.parent !== window) && parent;
-	var targetFrame = frameName && isInFrame ? parent[frameName] : null;
-	
 	if(url == '')
 	{
 		switch(num)
 		{
 			case 23:
-				if(isInFrame && parent.frame_2 && parent.frameButtons) {
-					parent.frame_2.location.replace('./?formId=blank');
-					parent.frameButtons.location.replace('./?formId=blank');
-				}
+				parent.frame_2.location.replace('./?formId=blank');
+				parent.frameButtons.location.replace('./?formId=blank');
 				break;
 			case 1:
 			case 2:
 			case 3:
-				if(targetFrame && targetFrame.location) {
-					targetFrame.location.replace('./?formId=blank');
-				}
+				parent[frameName].location.replace('./?formId=blank');
 				break;
 		}
 	}
 	else
 	{
-		// If target frame exists, reload it; otherwise reload current window
-		if(targetFrame && targetFrame.location) {
-			targetFrame.location.replace(url);
-		} else {
-			// Not in a frame or frame doesn't exist - reload current window
-			window.location.replace(url);
+		if (url.charAt(0) === '?') {
+			url = './' + url;
 		}
+		parent[frameName].location.replace(url);
 	}
 	return true;
 }
