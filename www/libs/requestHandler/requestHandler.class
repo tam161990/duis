@@ -571,6 +571,17 @@ class RequestHandler
 		
 	}
 
+	static function lewsApiHttpHeaders()
+	{
+		$headers = array('Content-Type: application/json');
+		if (defined('LEVS_ACCESS_TOCKEN'))
+		{
+			$headers[] = 'x-access-token: ' . LEVS_ACCESS_TOCKEN;
+		}
+
+		return $headers;
+	}
+
 	static function ensureCurlExtension()
 	{
 		if (function_exists('curl_init'))
@@ -689,8 +700,7 @@ class RequestHandler
 		//Attach our encoded JSON string to the POST fields.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+		curl_setopt($ch, CURLOPT_HTTPHEADER, self::lewsApiHttpHeaders());
 
 		// Send the request
 		$response = curl_exec($ch);	
@@ -733,8 +743,7 @@ class RequestHandler
 		//Attach our encoded JSON string to the POST fields.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+		curl_setopt($ch, CURLOPT_HTTPHEADER, self::lewsApiHttpHeaders());
 
 		// Send the request
 		$response = curl_exec($ch);	
@@ -795,8 +804,7 @@ class RequestHandler
 		//Attach our encoded JSON string to the POST fields.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+		curl_setopt($ch, CURLOPT_HTTPHEADER, self::lewsApiHttpHeaders());
 
 		// Send the request
 		$response = curl_exec($ch);	
@@ -892,8 +900,7 @@ class RequestHandler
 		//Attach our encoded JSON string to the POST fields.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+		curl_setopt($ch, CURLOPT_HTTPHEADER, self::lewsApiHttpHeaders());
 
 		// Send the request
 		$response = curl_exec($ch);	
