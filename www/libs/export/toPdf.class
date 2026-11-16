@@ -1006,12 +1006,28 @@ class toPdf {
 	// Export RBF Act to PDF
 	// Created for DUIS-549
 	// -----------------------------------------------------------------------------
-	function exportRbfActPdf($actId, $userId) {
+	function exportRbfActPdf($actId, $userId, $pdfOptions = array()) {
+
+		$idFile = false;
 
 		// Get RBF act info
 		$act = dbProc::getRbfActInfo($actId);
 		if(!$act) {
 			return false;
+		}
+
+		$isAutoAct = (isset($act['RAKT_IS_AUTO']) && $act['RAKT_IS_AUTO'] == 1);
+		$workListPeriod = null;
+		if ($isAutoAct)
+		{
+			if (!empty($pdfOptions['allPeriods']))
+			{
+				$workListPeriod = 'all';
+			}
+			elseif (isset($pdfOptions['period']))
+			{
+				$workListPeriod = intval($pdfOptions['period']);
+			}
 		}
 
 		// Create PDF
@@ -1100,7 +1116,7 @@ class toPdf {
 		);
 
 		// Get work list
-		$aWorkDb = dbProc::getRbfActWorkList($actId, (isset($act['RAKT_IS_AUTO']) && $act['RAKT_IS_AUTO'] == 1));
+		$aWorkDb = dbProc::getRbfActWorkList($actId, $isAutoAct, $workListPeriod);
 
 		$data = array();
 		$total = 0;

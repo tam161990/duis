@@ -418,8 +418,8 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                 // Validation based on export type
                 if ($isFinalExport)
                 {
-                    // Final export validation: Check for PROCESS works
-                    $processCount = dbProc::countWorksByStatus($actId, 'PROCESS');
+                    // Final export: PROCESS works still needing a starpakt (not already exported)
+                    $processCount = dbProc::countUnprocessedWorksByStatus($actId, 'PROCESS');
                     if ($processCount > 0)
                     {
                         $exportMessage = text::get('RBF_ERROR_NEED_MIDDLE_EXPORT');
@@ -464,14 +464,33 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                     // If auto works export succeeded (or there were no auto works to export), change act status
                     if ($validationPassed)
                     {
-                        // If there were only manual works (no auto works checked), set approve date for manual works
-                        if ((empty($checkedWorks) || count($checkedWorks) == 0) && $hasManualWorksToExport)
+                        // Approve dates must exist before PDF (same as starpakts 1–2)
+                        $checkedWorkIds = (is_array($checkedWorks) && count($checkedWorks) > 0)
+                            ? $checkedWorks
+                            : array();
+                        dbProc::applyRbfActStarpaktDatesOnExport(
+                            $actId,
+                            $actLifePeriod,
+                            $isFinalExport,
+                            $checkedWorkIds
+                        );
+
+                        // PDF for Pielikumi: one starpakt = one PDF with works from this period only (final = all periods)
+                        $pdfOpts = array('period' => $actLifePeriod);
+                        if ($isFinalExport)
                         {
-                            // Set approve date for manual works in current period
-                            $approveDate = date('Y-m-d H:i:s');
-                            dbProc::setApproveDate($actId, $approveDate, $actLifePeriod);
+                            $pdfOpts['allPeriods'] = true;
                         }
-                        
+                        $idFile = toPdf::exportRbfActPdf($actId, $userId, $pdfOpts);
+                        if ($idFile === false)
+                        {
+                            $exportMessage = text::get('ERROR') . ': ' . text::get('ERROR_GENERATING_PDF');
+                            $validationPassed = false;
+                        }
+                    }
+
+                    if ($validationPassed)
+                    {
                         // Set status to ACCEPT for both middle and final export
                         $r = dbProc::updateRbfActStatus($actId, STAT_ACCEPT, $userId);
                         
@@ -512,7 +531,7 @@ if ($isAdmin || $isRbfUser || $isEconomist)
                 }
             }
         }
-        
+
         // Popup link preparation for ALL_WORK
         $oPopLink = new urlQuery;
         $oPopLink->addPrm(FORM_ID, 'f.akt.s.33');
@@ -569,11 +588,15 @@ if ($isAdmin || $isRbfUser || $isEconomist)
         {
             foreach ($works as $work)
             {
+                if (!empty($work['RADR_IS_PROCESSED']) && $work['RADR_IS_PROCESSED'] == 1)
+                {
+                    continue;
+                }
                 if ($work['RADR_STATUS'] == 'PROCESS')
                 {
                     $processWorkCount++;
                 }
-                if ($work['RADR_STATUS'] != 'COMPLETED')
+                if (!in_array($work['RADR_STATUS'], array('COMPLETED', 'NOTHING_TO_DO', 'CANT_DO'), true))
                 {
                     $notCompletedWorkCount++;
                 }
