@@ -13679,22 +13679,57 @@ class dbProc extends dbLayer
 	 * @return int|false Period number (1, 2, 3, etc.) or false on error
 	 */
 	/**
-	 * Get act life period based on number of exports (submissions)
-	 * Period is determined by counting how many times the act was submitted (STAT_ACCEPT)
-	 * 
-	 * Logic:
-	 * - If final act (RAKT_IR_OBJEKTS_PABEIGTS = 1) → period 3
-	 * - Otherwise: count STAT_ACCEPT entries in AKTA_STATUSA_MAINA + 1 (current period)
-	 * - Maximum: 3 periods
-	 * 
+	 * Count starpakts economist-approved (ACCEPT followed by INSERT, not cancelled by RETURN).
+	 */
+	function getRbfApprovedStarpaktCount($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT `AAUD_STATUS` FROM `AKTA_STATUSA_MAINA`
+				  WHERE `AAUD_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  ORDER BY `AAUD_ID` ASC';
+		$rows = $oDB->makeQuery($query);
+
+		if (!is_array($rows) || count($rows) == 0)
+		{
+			return 0;
+		}
+
+		$approvedCount = 0;
+		$awaitingEconomist = false;
+
+		foreach ($rows as $row)
+		{
+			$status = $row['AAUD_STATUS'];
+			if ($status == STAT_ACCEPT)
+			{
+				$awaitingEconomist = true;
+			}
+			elseif ($status == STAT_RETURN && $awaitingEconomist)
+			{
+				// Economist rejected this submission — does not count as a completed starpakt
+				$awaitingEconomist = false;
+			}
+			elseif ($status == STAT_INSERT && $awaitingEconomist)
+			{
+				$approvedCount++;
+				$awaitingEconomist = false;
+			}
+		}
+
+		return $approvedCount;
+	}
+
+	/**
+	 * Get act life period based on economist-approved starpakts (RETURN cancels pending ACCEPT).
+	 *
 	 * @param int $actId Act ID
+	 * @param bool $forApproval When true, period of starpakt awaiting economist (approved count + 1 if pending ACCEPT).
 	 * @return int|false Period number (1-3) or false on error
 	 */
-	function getActLifePeriod($actId)
+	function getActLifePeriod($actId, $forApproval = false)
 	{
 		$oDB = new dbLayer();
 		
-		// Get act info including final status
 		$query = 'SELECT `RAKT_IR_OBJEKTS_PABEIGTS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 		$result = $oDB->makeQuery($query);
 		
@@ -13703,35 +13738,20 @@ class dbProc extends dbLayer
 			return false;
 		}
 		
-		// If this is a final act, always return period 3
 		if (!empty($result[0]['RAKT_IR_OBJEKTS_PABEIGTS']))
 		{
 			return 3;
 		}
-		
-		// Count how many times the act was submitted (STAT_ACCEPT)
-		$query = 'SELECT COUNT(*) as export_count FROM `AKTA_STATUSA_MAINA`
-				  WHERE `AAUD_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `AAUD_STATUS` = "'.STAT_ACCEPT.'"';
-		
-		$result = $oDB->makeQuery($query);
-		
-		if (!is_array($result) || count($result) == 0)
+
+		$approvedCount = self::getRbfApprovedStarpaktCount($actId);
+		$nextPeriod = min($approvedCount + 1, 3);
+
+		if ($forApproval)
 		{
-			// No exports yet, this is the first period
-			return 1;
+			return min(max(1, $nextPeriod), 3);
 		}
-		
-		$exportCount = intval($result[0]['export_count']);
-		
-		// Period = number of exports + 1 (current period)
-		// Example: 0 exports = period 1 (first submission)
-		//          1 export = period 2 (second submission)
-		//          2 exports = period 3 (final submission)
-		$period = $exportCount + 1;
-		
-		// Cap at 3 (maximum 3 periods)
-		return min($period, 3);
+
+		return $nextPeriod;
 	}
 	
 	/**
@@ -13793,21 +13813,98 @@ class dbProc extends dbLayer
 		
 		return (is_array($result) && isset($result[0]['cnt'])) ? (int)$result[0]['cnt'] : 0;
 	}
+
+	/**
+	 * Count unprocessed works by status (for starpakt / final export validation).
+	 * Already exported works (RADR_IS_PROCESSED=1) are ignored.
+	 */
+	function countUnprocessedWorksByStatus($actId, $status)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT COUNT(*) as cnt FROM `rbf_akta_darbi`
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_IS_PROCESSED` = 0
+				  AND `RADR_STATUS` = "'.dbLayer::quote_smart($status).'"';
+		$result = $oDB->makeQuery($query);
+
+		return (is_array($result) && isset($result[0]['cnt'])) ? (int)$result[0]['cnt'] : 0;
+	}
 	
 	/**
-	 * Count works that are NOT in COMPLETED status for an act
-	 * @param int $actId Act ID (RAKT_ID)
-	 * @return int Count of works not completed
+	 * Count works that still block final export (unprocessed, not completed).
+	 * NOTHING_TO_DO / CANT_DO do not block final export.
 	 */
 	function countWorksNotCompleted($actId)
 	{
 		$oDB = new dbLayer();
 		$query = 'SELECT COUNT(*) as cnt FROM `rbf_akta_darbi` 
 				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `RADR_STATUS` != "COMPLETED"';
+				  AND `RADR_IS_PROCESSED` = 0
+				  AND `RADR_STATUS` NOT IN ("COMPLETED", "NOTHING_TO_DO", "CANT_DO")';
 		$result = $oDB->makeQuery($query);
 		
 		return (is_array($result) && isset($result[0]['cnt'])) ? (int)$result[0]['cnt'] : 0;
+	}
+
+	/**
+	 * Find kl_rbf_kalkulacija row for auto-act export (exact act context, then single-row fallbacks).
+	 *
+	 * @return array|false Row with RBKL_ID, RBKL_NOSAUKUMS, RBKL_CENA
+	 */
+	function resolveRbfKalkulacijaForActExport($calcCode, $employeeCode, $vvNumber, $territoryCode)
+	{
+		$oDB = new dbLayer();
+		$calcCode = (string)$calcCode;
+		$employeeCode = (string)$employeeCode;
+		$vvNumber = (string)$vvNumber;
+		$territoryCode = (string)$territoryCode;
+
+		$run = function ($extraWhere) use ($oDB, $calcCode, $employeeCode) {
+			$query = 'SELECT `RBKL_ID`, `RBKL_NOSAUKUMS`, `RBKL_CENA`, `RBKL_VV_NUMBER`, `RBKL_RBTR_CODE`
+				FROM `kl_rbf_kalkulacija`
+				WHERE `RBKL_SHIFRS` = "'.dbLayer::quote_smart($calcCode).'"
+				AND `RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($employeeCode).'"
+				AND `RBKL_IR_AKTIVS` = 1'.$extraWhere;
+			$result = $oDB->makeQuery($query);
+
+			return (is_array($result) && count($result) > 0) ? $result : false;
+		};
+
+		$exact = $run(
+			' AND `RBKL_VV_NUMBER` = "'.dbLayer::quote_smart($vvNumber).'"
+			AND `RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($territoryCode).'" LIMIT 1'
+		);
+		if ($exact && count($exact) === 1)
+		{
+			return $exact[0];
+		}
+
+		$byVv = $run(' AND `RBKL_VV_NUMBER` = "'.dbLayer::quote_smart($vvNumber).'"');
+		if ($byVv && count($byVv) === 1)
+		{
+			files::wh_log('[WARN] Export calc '.$calcCode.': matched by DU+VV only (catalog RBTR '
+				.$byVv[0]['RBKL_RBTR_CODE'].', act '.$territoryCode.')');
+			return $byVv[0];
+		}
+
+		$byRbtr = $run(' AND `RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($territoryCode).'"');
+		if ($byRbtr && count($byRbtr) === 1)
+		{
+			files::wh_log('[WARN] Export calc '.$calcCode.': matched by DU+RBTR only (catalog VV '
+				.$byRbtr[0]['RBKL_VV_NUMBER'].', act '.$vvNumber.')');
+			return $byRbtr[0];
+		}
+
+		$byDu = $run('');
+		if ($byDu && count($byDu) === 1)
+		{
+			files::wh_log('[WARN] Export calc '.$calcCode.': matched sole active catalog row for DU (catalog VV '
+				.$byDu[0]['RBKL_VV_NUMBER'].', RBTR '.$byDu[0]['RBKL_RBTR_CODE'].') vs act VV '
+				.$vvNumber.', RBTR '.$territoryCode);
+			return $byDu[0];
+		}
+
+		return false;
 	}
 
 	/**
@@ -13881,28 +13978,28 @@ class dbProc extends dbLayer
 		
 		// Insert into DARBI table
 		$insertedCount = 0;
+		$missingCalcCodes = array();
 		foreach ($aggregated as $item)
 		{
-			// Get exact calculation info from kl_rbf_kalkulacija for this act context
-			$calcQuery = 'SELECT `RBKL_ID`, `RBKL_NOSAUKUMS`, `RBKL_CENA` 
-						  FROM `kl_rbf_kalkulacija` 
-						  WHERE `RBKL_SHIFRS` = "'.dbLayer::quote_smart($item['calc_code']).'"
-						  AND `RBKL_RBDU_KODS` = "'.dbLayer::quote_smart($actWorkerCode).'"
-						  AND `RBKL_VV_NUMBER` = "'.dbLayer::quote_smart($actVvNumber).'"
-						  AND `RBKL_RBTR_CODE` = "'.dbLayer::quote_smart($actTerritoryCode).'"
-						  LIMIT 1';
-			$calcInfo = $oDB->makeQuery($calcQuery);
-			
-			if (!is_array($calcInfo) || count($calcInfo) == 0)
+			$calcRow = self::resolveRbfKalkulacijaForActExport(
+				$item['calc_code'],
+				$actWorkerCode,
+				$actVvNumber,
+				$actTerritoryCode
+			);
+
+			if ($calcRow === false)
 			{
-				files::wh_log("[ERROR] Calculation not found for act context (Calc: {$item['calc_code']}, DU: {$actWorkerCode}, VV: {$actVvNumber}, RBF Code: {$actTerritoryCode})");
+				$missingCalcCodes[] = $item['calc_code'];
+				files::wh_log('[ERROR] Calculation not found for act context (Calc: '.$item['calc_code']
+					.', DU: '.$actWorkerCode.', VV: '.$actVvNumber.', RBF Code: '.$actTerritoryCode.')');
 				continue;
 			}
-			
-			$rbklId = $calcInfo[0]['RBKL_ID'];
-			$rbklNosaukums = $calcInfo[0]['RBKL_NOSAUKUMS'];
-            $rbkPrice = $calcInfo[0]['RBKL_CENA'];
-            $rbkTotal = $calcInfo[0]['RBKL_CENA'] * $item['norma_sum'];
+
+			$rbklId = $calcRow['RBKL_ID'];
+			$rbklNosaukums = $calcRow['RBKL_NOSAUKUMS'];
+            $rbkPrice = $calcRow['RBKL_CENA'];
+            $rbkTotal = $calcRow['RBKL_CENA'] * $item['norma_sum'];
 			
 			// Insert into DARBI
 			$insertQuery = 'INSERT INTO `DARBI` (
@@ -13939,18 +14036,14 @@ class dbProc extends dbLayer
 			// Mark checked works as processed in rbf_akta_darbi
 			$workIds = implode(',', array_map('intval', $checkedWorkIds));
 			$updateWorksQuery = 'UPDATE `rbf_akta_darbi` 
-								 SET `RADR_IS_PROCESSED` = 1 
+								 SET `RADR_IS_PROCESSED` = 1,
+								     `RADR_ACT_QUART` = '.intval($actLifePeriod).'
 								 WHERE `RADR_ID` IN (' . $workIds . ')
 								 AND `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 			$oDB->makeQuery($updateWorksQuery);
 			
-			// Set approve date for works in current period
-			// This sets DRBI_WORK_APROVE_DATE for all works in the current act quarter
-			$approveDate = date('Y-m-d H:i:s');
-			self::setApproveDate($actId, $approveDate, $actLifePeriod);
-			
 			// Note: Act status update, closeObject, and setUserActionDate are handled by the calling form
-			// to avoid duplicate status records and ensure proper transaction flow
+			// DRBI_WORK_APROVE_DATE / RADR_APPROVE_DATE are set in f.akt.s.34 before PDF (applyRbfActStarpaktDatesOnExport)
 			
 			return array(
 				'success' => true,
@@ -13959,7 +14052,14 @@ class dbProc extends dbLayer
 			);
 		}
 		
-		return array('success' => false, 'inserted_count' => 0, 'message' => 'Failed to export works');
+		$msg = 'Failed to export works';
+		if (count($missingCalcCodes) > 0)
+		{
+			$msg = 'Nav kalkulācijas katalogā šifriem: '.implode(', ', array_unique($missingCalcCodes))
+				.' (DU '.$actWorkerCode.', VV '.$actVvNumber.', RBF '.$actTerritoryCode.')';
+		}
+
+		return array('success' => false, 'inserted_count' => 0, 'message' => $msg);
 	}
 
     function closeObject($actId, $close) {
@@ -14115,16 +14215,179 @@ class dbProc extends dbLayer
 	 * @param string $date - Approve date
 	 * @return bool - True on success, false on failure
 	 */
-	public static function setRbfWorksApproveDate($actId, $date)
+	public static function setRbfWorksApproveDate($actId, $date, $onlyProcessed = true, $actQuart = null)
 	{
 		$oDB = new dbLayer();
+		$quartSql = ($actQuart !== null && intval($actQuart) >= 1 && intval($actQuart) <= 3)
+			? ', `RADR_ACT_QUART` = '.intval($actQuart)
+			: '';
 		$query = 'UPDATE `rbf_akta_darbi`
-				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"
+				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"'.$quartSql.'
 				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `RADR_APPROVE_DATE` IS NULL
-				  AND `RADR_IS_PROCESSED` = 1';
+				  AND (`RADR_APPROVE_DATE` IS NULL OR `RADR_APPROVE_DATE` = "" OR `RADR_APPROVE_DATE` = "0000-00-00 00:00:00")';
+		if ($onlyProcessed)
+		{
+			$query .= ' AND `RADR_IS_PROCESSED` = 1';
+		}
 		$result = $oDB->makeQuery($query);
 		return ($result !== false);
+	}
+
+	/**
+	 * Set RADR_APPROVE_DATE for works included in this starpakt export.
+	 */
+	public static function setRbfWorksApproveDateByIds($actId, $radrIds, $date, $actQuart = null)
+	{
+		if (!is_array($radrIds) || count($radrIds) == 0)
+		{
+			return true;
+		}
+		$oDB = new dbLayer();
+		$ids = implode(',', array_map('intval', $radrIds));
+		$quartSql = ($actQuart !== null && intval($actQuart) >= 1 && intval($actQuart) <= 3)
+			? ', `RADR_ACT_QUART` = '.intval($actQuart)
+			: '';
+		$query = 'UPDATE `rbf_akta_darbi`
+				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"'.$quartSql.'
+				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  AND `RADR_ID` IN ('.$ids.')';
+		$result = $oDB->makeQuery($query);
+		return ($result !== false);
+	}
+
+	/**
+	 * RBF auto act: set DARBI / rbf_akta_darbi dates when submitting starpakt (before PDF).
+	 */
+	public static function applyRbfActStarpaktDatesOnExport($actId, $actLifePeriod, $isFinalExport, $checkedWorkIds = array())
+	{
+		$actInfo = self::getRbfActInfo($actId);
+		if (!$actInfo || empty($actInfo['RAKT_IS_AUTO']))
+		{
+			return false;
+		}
+
+		$approveDate = date('Y-m-d H:i:s');
+		$period = intval($actLifePeriod);
+		if ($period < 1 || $period > 3)
+		{
+			$period = self::getActLifePeriod($actId);
+			if ($period === false)
+			{
+				$period = 1;
+			}
+		}
+
+		self::setApproveDate($actId, $approveDate, $period);
+		self::setManualWorksApproveDate(
+			$actId,
+			$approveDate,
+			$period,
+			($isFinalExport || $period == 3)
+		);
+
+		if (!empty($checkedWorkIds))
+		{
+			self::setRbfWorksApproveDateByIds($actId, $checkedWorkIds, $approveDate, $period);
+		}
+		elseif ($isFinalExport)
+		{
+			self::setRbfWorksApproveDate($actId, $approveDate, true, $period);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Economist return: undo current starpakt export (DARBI rows, dates on rbf_akta_darbi).
+	 */
+	public static function revertRbfStarpaktSubmission($actId)
+	{
+		$period = self::getActLifePeriod($actId, true);
+		if ($period === false)
+		{
+			$period = 1;
+		}
+
+		$oDB = new dbLayer();
+		$periodSql = dbLayer::quote_smart(intval($period));
+
+		// Match rbf rows to this starpakt via DARBI (same dates as export/PDF), not AAUD timestamps
+		// (AAUD and RADR can differ by timezone; DARBI dates are set together with RADR on export)
+		// Reset only rows exported with this starpakt (by RADR_ACT_QUART)
+		$resetRbfQuery = 'UPDATE `rbf_akta_darbi`
+			SET `RADR_APPROVE_DATE` = NULL, `RADR_IS_PROCESSED` = 0, `RADR_ACT_QUART` = NULL
+			WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `RADR_ACT_QUART` = "'.$periodSql.'"';
+		$oDB->makeQuery($resetRbfQuery);
+
+		// Legacy rows without RADR_ACT_QUART: match export timestamp batch from DARBI (never by calc code alone)
+		$darbiBatchQuery = 'SELECT DISTINCT `DRBI_WORK_APROVE_DATE` AS approve_ts
+			FROM `DARBI`
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 0
+			AND `DRBI_ACT_QUART` = "'.$periodSql.'"
+			AND `DRBI_WORK_APROVE_DATE` IS NOT NULL
+			AND `DRBI_WORK_APROVE_DATE` != "0000-00-00 00:00:00"';
+		$darbiBatch = $oDB->makeQuery($darbiBatchQuery);
+
+		if (is_array($darbiBatch) && count($darbiBatch) > 0)
+		{
+			foreach ($darbiBatch as $darbiRow)
+			{
+				$darbiApprove = $darbiRow['approve_ts'];
+				if (empty($darbiApprove))
+				{
+					continue;
+				}
+				$legacyResetQuery = 'UPDATE `rbf_akta_darbi`
+					SET `RADR_APPROVE_DATE` = NULL, `RADR_IS_PROCESSED` = 0, `RADR_ACT_QUART` = NULL
+					WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+					AND `RADR_IS_PROCESSED` = 1
+					AND (`RADR_ACT_QUART` IS NULL OR `RADR_ACT_QUART` = 0)
+					AND (
+						`RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($darbiApprove).'"
+						OR ABS(TIMESTAMPDIFF(SECOND, `RADR_APPROVE_DATE`, "'.dbLayer::quote_smart($darbiApprove).'")) <= 120
+					)';
+				$oDB->makeQuery($legacyResetQuery);
+			}
+		}
+
+		$deleteDarbiQuery = 'DELETE FROM `DARBI`
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 0
+			AND `DRBI_ACT_QUART` = "'.$periodSql.'"';
+		$oDB->makeQuery($deleteDarbiQuery);
+
+		$clearManualQuery = 'UPDATE `DARBI`
+			SET `DRBI_WORK_APROVE_DATE` = NULL
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 1
+			AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart(intval($period)).'"';
+		$oDB->makeQuery($clearManualQuery);
+
+		return true;
+	}
+
+	/**
+	 * RBF auto act status after economist approve (INSERT if more starpakts remain, else CLOSE).
+	 */
+	public static function resolveRbfActStatusAfterApprove($actId)
+	{
+		$actInfo = self::getRbfActInfo($actId);
+		if (!$actInfo || empty($actInfo['RAKT_IS_AUTO']))
+		{
+			return STAT_CLOSE;
+		}
+		if (!empty($actInfo['RAKT_IR_OBJEKTS_PABEIGTS']))
+		{
+			return STAT_CLOSE;
+		}
+		$actLifePeriod = self::getActLifePeriod($actId, true);
+		if ($actLifePeriod < 3 && self::hasRemainingUnapprovedWorks($actId))
+		{
+			return STAT_INSERT;
+		}
+		return STAT_CLOSE;
 	}
 
 	/**
@@ -14208,18 +14471,24 @@ class dbProc extends dbLayer
 	 * @param bool $isAuto - True for automatic acts (filter by period), false for manual acts (all periods)
 	 * @return array - Aggregated work list
 	 */
-	public static function getRbfActWorkList($actId, $isAuto = false)
+	public static function getRbfActWorkList($actId, $isAuto = false, $limitToPeriod = null)
 	{
 		$oDB = new dbLayer();
 		
 		// Build the WHERE clause
 		$whereClause = 'd.DRBI_RAKT_ID = "'.dbLayer::quote_smart($actId).'"';
 		
-		// For automatic acts, only include current period
-		//if ($isAuto) {
-		//	$actLifePeriod = self::getActLifePeriod($actId);
-		//	$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart($actLifePeriod).'"';
-		//}
+		if ($isAuto && $limitToPeriod !== 'all')
+		{
+			if ($limitToPeriod === null)
+			{
+				$limitToPeriod = self::getActLifePeriod($actId);
+			}
+			if ($limitToPeriod !== false && $limitToPeriod !== null)
+			{
+				$whereClause .= ' AND d.DRBI_ACT_QUART = "'.dbLayer::quote_smart(intval($limitToPeriod)).'"';
+			}
+		}
 		
 		$query = "SELECT
 					d.DRBI_KKAL_SHIFRS,
@@ -14259,15 +14528,7 @@ class dbProc extends dbLayer
 	 */
 	public static function deleteUnapprovedDarbiForCurrentPeriod($actId)
 	{
-		$actLifePeriod = self::getActLifePeriod($actId);
-		$oDB = new dbLayer();
-		$query = 'DELETE FROM `DARBI`
-				  WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `DRBI_WORK_APROVE_DATE` IS NULL
-                  AND `DRBI_IS_WORKER` = 0
-				  AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart($actLifePeriod).'"';
-		$result = $oDB->makeQuery($query);
-		return ($result !== false);
+		return self::revertRbfStarpaktSubmission($actId);
 	}
 
     // -----------------------------------------------------------------------------
