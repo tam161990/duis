@@ -13679,22 +13679,56 @@ class dbProc extends dbLayer
 	 * @return int|false Period number (1, 2, 3, etc.) or false on error
 	 */
 	/**
-	 * Get act life period based on number of exports (submissions)
-	 * Period is determined by counting how many times the act was submitted (STAT_ACCEPT)
-	 * 
-	 * Logic:
-	 * - If final act (RAKT_IR_OBJEKTS_PABEIGTS = 1) → period 3
-	 * - Otherwise: count STAT_ACCEPT entries in AKTA_STATUSA_MAINA + 1 (current period)
-	 * - Maximum: 3 periods
-	 * 
+	 * Count starpakts economist-approved (ACCEPT followed by INSERT, not cancelled by RETURN).
+	 */
+	function getRbfApprovedStarpaktCount($actId)
+	{
+		$oDB = new dbLayer();
+		$query = 'SELECT `AAUD_STATUS` FROM `AKTA_STATUSA_MAINA`
+				  WHERE `AAUD_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+				  ORDER BY `AAUD_ID` ASC';
+		$rows = $oDB->makeQuery($query);
+
+		if (!is_array($rows) || count($rows) == 0)
+		{
+			return 0;
+		}
+
+		$approvedCount = 0;
+		$awaitingEconomist = false;
+
+		foreach ($rows as $row)
+		{
+			$status = $row['AAUD_STATUS'];
+			if ($status == STAT_ACCEPT)
+			{
+				$awaitingEconomist = true;
+			}
+			elseif ($status == STAT_RETURN && $awaitingEconomist)
+			{
+				$awaitingEconomist = false;
+			}
+			elseif ($status == STAT_INSERT && $awaitingEconomist)
+			{
+				$approvedCount++;
+				$awaitingEconomist = false;
+			}
+		}
+
+		return $approvedCount;
+	}
+
+	/**
+	 * Get act life period from economist-approved starpakts (RETURN cancels pending ACCEPT).
+	 *
 	 * @param int $actId Act ID
+	 * @param bool $forApproval When true, period of starpakt awaiting economist (approved count + 1 if pending ACCEPT).
 	 * @return int|false Period number (1-3) or false on error
 	 */
-	function getActLifePeriod($actId)
+	function getActLifePeriod($actId, $forApproval = false)
 	{
 		$oDB = new dbLayer();
 		
-		// Get act info including final status
 		$query = 'SELECT `RAKT_IR_OBJEKTS_PABEIGTS` FROM `AKTI` WHERE `RAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 		$result = $oDB->makeQuery($query);
 		
@@ -13703,35 +13737,20 @@ class dbProc extends dbLayer
 			return false;
 		}
 		
-		// If this is a final act, always return period 3
 		if (!empty($result[0]['RAKT_IR_OBJEKTS_PABEIGTS']))
 		{
 			return 3;
 		}
-		
-		// Count how many times the act was submitted (STAT_ACCEPT)
-		$query = 'SELECT COUNT(*) as export_count FROM `AKTA_STATUSA_MAINA`
-				  WHERE `AAUD_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `AAUD_STATUS` = "'.STAT_ACCEPT.'"';
-		
-		$result = $oDB->makeQuery($query);
-		
-		if (!is_array($result) || count($result) == 0)
+
+		$approvedCount = self::getRbfApprovedStarpaktCount($actId);
+		$nextPeriod = min($approvedCount + 1, 3);
+
+		if ($forApproval)
 		{
-			// No exports yet, this is the first period
-			return 1;
+			return min(max(1, $nextPeriod), 3);
 		}
-		
-		$exportCount = intval($result[0]['export_count']);
-		
-		// Period = number of exports + 1 (current period)
-		// Example: 0 exports = period 1 (first submission)
-		//          1 export = period 2 (second submission)
-		//          2 exports = period 3 (final submission)
-		$period = $exportCount + 1;
-		
-		// Cap at 3 (maximum 3 periods)
-		return min($period, 3);
+
+		return $nextPeriod;
 	}
 	
 	/**
@@ -13939,7 +13958,8 @@ class dbProc extends dbLayer
 			// Mark checked works as processed in rbf_akta_darbi
 			$workIds = implode(',', array_map('intval', $checkedWorkIds));
 			$updateWorksQuery = 'UPDATE `rbf_akta_darbi` 
-								 SET `RADR_IS_PROCESSED` = 1 
+								 SET `RADR_IS_PROCESSED` = 1,
+								     `RADR_ACT_QUART` = '.intval($actLifePeriod).'
 								 WHERE `RADR_ID` IN (' . $workIds . ')
 								 AND `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"';
 			$oDB->makeQuery($updateWorksQuery);
@@ -14115,16 +14135,111 @@ class dbProc extends dbLayer
 	 * @param string $date - Approve date
 	 * @return bool - True on success, false on failure
 	 */
-	public static function setRbfWorksApproveDate($actId, $date)
+	public static function setRbfWorksApproveDate($actId, $date, $onlyProcessed = true, $actQuart = null)
 	{
 		$oDB = new dbLayer();
+		$quartSql = ($actQuart !== null && intval($actQuart) >= 1 && intval($actQuart) <= 3)
+			? ', `RADR_ACT_QUART` = '.intval($actQuart)
+			: '';
 		$query = 'UPDATE `rbf_akta_darbi`
-				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"
+				  SET `RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($date).'"'.$quartSql.'
 				  WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `RADR_APPROVE_DATE` IS NULL
-				  AND `RADR_IS_PROCESSED` = 1';
+				  AND (`RADR_APPROVE_DATE` IS NULL OR `RADR_APPROVE_DATE` = "" OR `RADR_APPROVE_DATE` = "0000-00-00 00:00:00")';
+		if ($onlyProcessed)
+		{
+			$query .= ' AND `RADR_IS_PROCESSED` = 1';
+		}
 		$result = $oDB->makeQuery($query);
 		return ($result !== false);
+	}
+
+	/**
+	 * Economist return: undo current starpakt export (DARBI rows, dates on rbf_akta_darbi).
+	 */
+	public static function revertRbfStarpaktSubmission($actId)
+	{
+		$period = self::getActLifePeriod($actId, true);
+		if ($period === false)
+		{
+			$period = 1;
+		}
+
+		$oDB = new dbLayer();
+		$periodSql = dbLayer::quote_smart(intval($period));
+
+		$resetRbfQuery = 'UPDATE `rbf_akta_darbi`
+			SET `RADR_APPROVE_DATE` = NULL, `RADR_IS_PROCESSED` = 0, `RADR_ACT_QUART` = NULL
+			WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `RADR_ACT_QUART` = "'.$periodSql.'"';
+		$oDB->makeQuery($resetRbfQuery);
+
+		$darbiBatchQuery = 'SELECT DISTINCT `DRBI_WORK_APROVE_DATE` AS approve_ts
+			FROM `DARBI`
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 0
+			AND `DRBI_ACT_QUART` = "'.$periodSql.'"
+			AND `DRBI_WORK_APROVE_DATE` IS NOT NULL
+			AND `DRBI_WORK_APROVE_DATE` != "0000-00-00 00:00:00"';
+		$darbiBatch = $oDB->makeQuery($darbiBatchQuery);
+
+		if (is_array($darbiBatch) && count($darbiBatch) > 0)
+		{
+			foreach ($darbiBatch as $darbiRow)
+			{
+				$darbiApprove = $darbiRow['approve_ts'];
+				if (empty($darbiApprove))
+				{
+					continue;
+				}
+				$legacyResetQuery = 'UPDATE `rbf_akta_darbi`
+					SET `RADR_APPROVE_DATE` = NULL, `RADR_IS_PROCESSED` = 0, `RADR_ACT_QUART` = NULL
+					WHERE `RADR_FAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+					AND `RADR_IS_PROCESSED` = 1
+					AND (`RADR_ACT_QUART` IS NULL OR `RADR_ACT_QUART` = 0)
+					AND (
+						`RADR_APPROVE_DATE` = "'.dbLayer::quote_smart($darbiApprove).'"
+						OR ABS(TIMESTAMPDIFF(SECOND, `RADR_APPROVE_DATE`, "'.dbLayer::quote_smart($darbiApprove).'")) <= 120
+					)';
+				$oDB->makeQuery($legacyResetQuery);
+			}
+		}
+
+		$deleteDarbiQuery = 'DELETE FROM `DARBI`
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 0
+			AND `DRBI_ACT_QUART` = "'.$periodSql.'"';
+		$oDB->makeQuery($deleteDarbiQuery);
+
+		$clearManualQuery = 'UPDATE `DARBI`
+			SET `DRBI_WORK_APROVE_DATE` = NULL
+			WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
+			AND `DRBI_IS_WORKER` = 1
+			AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart(intval($period)).'"';
+		$oDB->makeQuery($clearManualQuery);
+
+		return true;
+	}
+
+	/**
+	 * RBF auto act status after economist approve (INSERT if more starpakts remain, else CLOSE).
+	 */
+	public static function resolveRbfActStatusAfterApprove($actId)
+	{
+		$actInfo = self::getRbfActInfo($actId);
+		if (!$actInfo || empty($actInfo['RAKT_IS_AUTO']))
+		{
+			return STAT_CLOSE;
+		}
+		if (!empty($actInfo['RAKT_IR_OBJEKTS_PABEIGTS']))
+		{
+			return STAT_CLOSE;
+		}
+		$actLifePeriod = self::getActLifePeriod($actId, true);
+		if ($actLifePeriod < 3 && self::hasRemainingUnapprovedWorks($actId))
+		{
+			return STAT_INSERT;
+		}
+		return STAT_CLOSE;
 	}
 
 	/**
@@ -14259,15 +14374,7 @@ class dbProc extends dbLayer
 	 */
 	public static function deleteUnapprovedDarbiForCurrentPeriod($actId)
 	{
-		$actLifePeriod = self::getActLifePeriod($actId);
-		$oDB = new dbLayer();
-		$query = 'DELETE FROM `DARBI`
-				  WHERE `DRBI_RAKT_ID` = "'.dbLayer::quote_smart($actId).'"
-				  AND `DRBI_WORK_APROVE_DATE` IS NULL
-                  AND `DRBI_IS_WORKER` = 0
-				  AND `DRBI_ACT_QUART` = "'.dbLayer::quote_smart($actLifePeriod).'"';
-		$result = $oDB->makeQuery($query);
-		return ($result !== false);
+		return self::revertRbfStarpaktSubmission($actId);
 	}
 
     // -----------------------------------------------------------------------------

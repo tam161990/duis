@@ -614,11 +614,11 @@ if($oForm->getValue('action'))
         // Set approve date for works and materials
         if($isAuto == 1) {
             // For automatic acts, only approve works for the current period
-            $actLifePeriod = dbProc::getActLifePeriod($actId);
+            $actLifePeriod = dbProc::getActLifePeriod($actId, true);
             dbProc::setApproveDate($actId, dbLayer::parseDate(dtime::now()), $actLifePeriod);
             
             // Set approve date for processed RBF works
-            dbProc::setRbfWorksApproveDate($actId, dbLayer::parseDate(dtime::now()));
+            dbProc::setRbfWorksApproveDate($actId, dbLayer::parseDate(dtime::now()), true, $actLifePeriod);
             
             // Set approve date for manual works (DRBI_IS_WORKER = 1)
             // If final export or actLifePeriod = 3, approve all remaining manual works
@@ -646,15 +646,8 @@ if($oForm->getValue('action'))
             $actionType = ACT_CLOSE;
             
             if($isAuto == 1) {
-                // Check if period < 3 and there are remaining unapproved works
-                $actLifePeriod = dbProc::getActLifePeriod($actId);
-                $hasRemainingWorks = dbProc::hasRemainingUnapprovedWorks($actId);
-                
-                if ($actLifePeriod < 3 && $hasRemainingWorks) {
-                    // Set status back to INSERT if there are more works to process
-                    $targetStatus = STAT_INSERT;
-                    $actionType = ACT_INSERT;
-                }
+                $targetStatus = dbProc::resolveRbfActStatusAfterApprove($actId);
+                $actionType = ($targetStatus == STAT_INSERT) ? ACT_INSERT : ACT_CLOSE;
             }
             
             // Save capitalize checkbox value
@@ -708,11 +701,7 @@ if($oForm->getValue('action'))
     else if($oForm->getValue('action') == OP_RETURN)
     {
         if($isAuto == 1) {
-            // Reset processed flag for unapproved works
-            dbProc::resetUnprocessedRbfWorks($actId);
-            
-            // Delete unapproved DARBI records for current period
-            dbProc::deleteUnapprovedDarbiForCurrentPeriod($actId);
+            dbProc::revertRbfStarpaktSubmission($actId);
         }
 
         // open the object
